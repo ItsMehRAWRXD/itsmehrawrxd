@@ -1033,21 +1033,182 @@ class RawrZStandalone {
         const filename = `encrypted_${inputName}_${timestamp}${extension}`;
         const filePath = path.join(this.uploadDir, filename);
         
-        const metadata = {
-            algorithm: result.algorithm,
-            key: result.key,
-            iv: result.iv,
-            timestamp: new Date().toISOString(),
-            originalSize: result.data.length
-        };
+        // Handle different file types based on extension
+        if (this.isValidExtension(extension, 'executable')) {
+            // For executable extensions, create a wrapper that can be executed
+            await this.createExecutableWrapper(result, algorithm, filePath, extension);
+        } else if (this.isValidExtension(extension, 'script')) {
+            // For script extensions, create appropriate script wrapper
+            await this.createScriptWrapper(result, algorithm, filePath, extension);
+        } else {
+            // For other extensions, save as JSON data with metadata
+            const metadata = {
+                algorithm: result.algorithm || algorithm,
+                key: result.key,
+                iv: result.iv,
+                cam: result.cam,
+                authTag: result.authTag,
+                timestamp: new Date().toISOString(),
+                originalSize: result.data ? result.data.length : 0
+            };
+            
+            const output = {
+                metadata: metadata,
+                data: result.data ? result.data.toString('base64') : result.data
+            };
+            
+            await fs.writeFile(filePath, JSON.stringify(output, null, 2));
+        }
         
-        const output = {
-            metadata: metadata,
-            data: result.data.toString('base64')
-        };
-        
-        await fs.writeFile(filePath, JSON.stringify(output, null, 2));
         return filename;
+    }
+
+    async createExecutableWrapper(result, algorithm, filePath, extension) {
+        const ext = extension.toLowerCase();
+        let wrapperContent = '';
+        
+        switch (ext) {
+            case '.exe':
+                // Create a batch file that can be renamed to .exe
+                wrapperContent = `@echo off
+REM RawrZ Encrypted File - ${algorithm}
+REM Timestamp: ${new Date().toISOString()}
+REM Extension: ${extension}
+
+echo RawrZ Encrypted File
+echo Algorithm: ${algorithm}
+echo Extension: ${extension}
+echo.
+echo Encrypted data saved as: ${path.basename(filePath)}
+echo Use RawrZ decrypt command to decrypt this file
+echo.
+pause`;
+                break;
+            case '.dll':
+                wrapperContent = `// RawrZ Encrypted DLL Wrapper - ${algorithm}
+// This file contains encrypted data that can be loaded as a DLL
+// Use RawrZ decrypt command to decrypt the embedded data
+
+${JSON.stringify(result, null, 2)}`;
+                break;
+            case '.sys':
+                wrapperContent = `; RawrZ Encrypted System Driver - ${algorithm}
+; This file contains encrypted data for system driver
+; Use RawrZ decrypt command to decrypt the embedded data
+
+${JSON.stringify(result, null, 2)}`;
+                break;
+            case '.scr':
+                wrapperContent = `@echo off
+REM RawrZ Encrypted Screensaver - ${algorithm}
+REM This appears as a screensaver but contains encrypted data
+
+echo RawrZ Encrypted Screensaver
+echo Algorithm: ${algorithm}
+echo.
+echo This file contains encrypted data
+echo Use RawrZ decrypt command to decrypt
+echo.
+timeout /t 3 /nobreak >nul`;
+                break;
+            case '.com':
+                wrapperContent = `REM RawrZ Encrypted COM File - ${algorithm}
+REM This file contains encrypted data in COM format
+
+${JSON.stringify(result, null, 2)}`;
+                break;
+            default:
+                // Default executable wrapper
+                wrapperContent = `@echo off
+REM RawrZ Encrypted File - ${algorithm}
+echo RawrZ Encrypted File
+echo Algorithm: ${algorithm}
+echo Extension: ${extension}
+echo.
+echo Use RawrZ decrypt command to decrypt this file
+pause`;
+        }
+        
+        await fs.writeFile(filePath, wrapperContent);
+    }
+
+    async createScriptWrapper(result, algorithm, filePath, extension) {
+        const ext = extension.toLowerCase();
+        let scriptContent = '';
+        
+        switch (ext) {
+            case '.bat':
+            case '.cmd':
+                scriptContent = `@echo off
+REM RawrZ Encrypted Batch File - ${algorithm}
+REM Timestamp: ${new Date().toISOString()}
+
+echo RawrZ Encrypted Batch File
+echo Algorithm: ${algorithm}
+echo.
+echo Encrypted data:
+echo ${JSON.stringify(result, null, 2)}
+echo.
+echo Use RawrZ decrypt command to decrypt this file
+pause`;
+                break;
+            case '.ps1':
+                scriptContent = `# RawrZ Encrypted PowerShell Script - ${algorithm}
+# Timestamp: ${new Date().toISOString()}
+
+Write-Host "RawrZ Encrypted PowerShell Script" -ForegroundColor Green
+Write-Host "Algorithm: ${algorithm}" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "Encrypted data:" -ForegroundColor Cyan
+Write-Host '${JSON.stringify(result, null, 2)}'
+Write-Host ""
+Write-Host "Use RawrZ decrypt command to decrypt this file" -ForegroundColor Red
+Read-Host "Press Enter to continue"`;
+                break;
+            case '.vbs':
+                scriptContent = `' RawrZ Encrypted VBScript - ${algorithm}
+' Timestamp: ${new Date().toISOString()}
+
+WScript.Echo "RawrZ Encrypted VBScript"
+WScript.Echo "Algorithm: ${algorithm}"
+WScript.Echo ""
+WScript.Echo "Encrypted data:"
+WScript.Echo "${JSON.stringify(result, null, 2)}"
+WScript.Echo ""
+WScript.Echo "Use RawrZ decrypt command to decrypt this file"
+WScript.Echo "Press any key to continue..."
+WScript.StdIn.ReadLine()`;
+                break;
+            case '.js':
+                scriptContent = `// RawrZ Encrypted JavaScript - ${algorithm}
+// Timestamp: ${new Date().toISOString()}
+
+console.log("RawrZ Encrypted JavaScript");
+console.log("Algorithm: ${algorithm}");
+console.log("");
+console.log("Encrypted data:");
+console.log('${JSON.stringify(result, null, 2)}');
+console.log("");
+console.log("Use RawrZ decrypt command to decrypt this file");
+console.log("Press any key to continue...");
+process.stdin.setRawMode(true);
+process.stdin.resume();
+process.stdin.on('data', process.exit.bind(process, 0));`;
+                break;
+            default:
+                scriptContent = `# RawrZ Encrypted Script - ${algorithm}
+# Timestamp: ${new Date().toISOString()}
+
+echo "RawrZ Encrypted Script"
+echo "Algorithm: ${algorithm}"
+echo ""
+echo "Encrypted data:"
+echo '${JSON.stringify(result, null, 2)}'
+echo ""
+echo "Use RawrZ decrypt command to decrypt this file"`;
+        }
+        
+        await fs.writeFile(filePath, scriptContent);
     }
 
     async saveDecryptedFile(data, algorithm, extension = '.bin') {
@@ -1074,7 +1235,7 @@ class RawrZStandalone {
                     console.log('[ERROR] Usage: encrypt <algorithm> <input> [extension]');
                     console.log('[INFO] Algorithms: aes256, aes192, aes128, blowfish, rsa2048, rsa4096, cam');
                     console.log('[INFO] Input: text, file:filename, C:\\path\\file, https://url');
-                    console.log('[INFO] Extension: .exe, .enc, .bin, .dat (default: .enc)');
+                    console.log('[INFO] Extension: .exe, .dll, .sys, .scr, .com, .bat, .cmd, .ps1, .vbs, .js, .enc, .bin, .dat, .txt (default: .enc)');
                     return;
                 }
                 return await this.encrypt(commandArgs[0], commandArgs[1], commandArgs[2]);
@@ -1082,7 +1243,7 @@ class RawrZStandalone {
             case 'decrypt':
                 if (commandArgs.length < 2) {
                     console.log('[ERROR] Usage: decrypt <algorithm> <input> [key] [extension]');
-                    console.log('[INFO] Extension: .exe, .bin, .dat, .txt (default: .bin)');
+                    console.log('[INFO] Extension: .exe, .dll, .sys, .scr, .com, .bat, .cmd, .ps1, .vbs, .js, .bin, .dat, .txt (default: .bin)');
                     return;
                 }
                 return await this.decrypt(commandArgs[0], commandArgs[1], commandArgs[2], commandArgs[3]);
