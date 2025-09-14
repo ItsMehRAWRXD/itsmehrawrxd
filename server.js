@@ -41,4 +41,4 @@ app.post('/textops',requireAuth,async(req,res)=>{try{const{operation,input,optio
 app.post('/validate',requireAuth,async(req,res)=>{try{const{input,type}=req.body||{};if(!input||!type)return res.status(400).json({error:'input and type are required'});const rawrz=new RawrZStandalone();const result=await rawrz.validate(input,type);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 app.get('/time',requireAuth,async(req,res)=>{try{const rawrz=new RawrZStandalone();const result=await rawrz.getTime();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/math',requireAuth,async(req,res)=>{try{const{expression}=req.body||{};if(!expression)return res.status(400).json({error:'expression is required'});const rawrz=new RawrZStandalone();const result=await rawrz.mathOperation(expression);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.listen(port,()=>console.log([OK] RawrZ API listening on ));
+app.listen(port,()=>console.log('[OK] RawrZ API listening on port',port));
