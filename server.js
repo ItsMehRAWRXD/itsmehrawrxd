@@ -16,4 +16,4 @@ app.get('/files',requireAuth,async(_req,res)=>{try{res.json(await rawrz.listFile
 app.post('/upload',requireAuth,async(req,res)=>{try{const{filename,base64}=req.body||{};if(!filename||!base64)return res.status(400).json({error:'filename and base64 required'});res.json(await rawrz.uploadFile(filename,base64))}catch(e){res.status(500).json({error:e.message})}});
 app.get('/download',requireAuth,async(req,res)=>{try{const fn=String(req.query.filename||'');if(!fn)return res.status(400).json({error:'filename required'});res.download(path.join(__dirname,'uploads',fn),fn)}catch(e){res.status(500).json({error:e.message})}});
 app.post('/cli',requireAuth,async(req,res)=>{try{const{command,args=[]}=req.body||{};if(!command)return res.status(400).json({error:'command required'});const i=new RawrZStandalone();const out=await i.processCommand([command,...args]);res.json({success:true,result:out})}catch(e){res.status(500).json({error:e.message})}});
-app.listen(port,()=>console.log([OK] RawrZ API listening on ));
+app.listen(port,()=>console.log('[OK] RawrZ API listening on ' + port));
