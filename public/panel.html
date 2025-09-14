@@ -1,30 +1,1681 @@
-﻿<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>RawrZ Panel</title>
-<style>body{font-family:system-ui,Segoe UI,Arial;margin:0;background:#0b1020;color:#e6e9ef}header{padding:16px 20px;background:#11162a;border-bottom:1px solid #222a45}.container{max-width:960px;margin:0 auto;padding:20px}.card{background:#12192f;border:1px solid #20284a;border-radius:10px;padding:16px;margin:12px 0}.row{display:flex;gap:8px;flex-wrap:wrap}input,select,button{background:#0f1530;color:#e6e9ef;border:1px solid #263056;border-radius:8px;padding:10px 12px}pre{background:#0a0f24;border:1px solid #1d2444;padding:12px;border-radius:8px;overflow:auto;max-height:360px}</style>
-<script>
-async function api(p,m='GET',b){const t=localStorage.getItem('authToken')||'';const h={'Content-Type':'application/json'};if(t)h.Authorization='Bearer '+t;const r=await fetch(p,{method:m,headers:h,body:b?JSON.stringify(b):undefined});const x=await r.text();try{return{status:r.status,json:JSON.parse(x)}}catch{return{status:r.status,text:x}}}
-async function checkHealth(){render('out',await api('/health'))}
-async function runHash(){const input=document.getElementById('hashInput').value;const algorithm=document.getElementById('hashAlgo').value;render('out',await api('/hash','POST',{input,algorithm}))}
-async function runEncrypt(){const algorithm=document.getElementById('encAlgo').value;const input=document.getElementById('encInput').value;render('out',await api('/encrypt','POST',{algorithm,input}))}
-async function runDecrypt(){const algorithm=document.getElementById('encAlgo').value;const input=document.getElementById('encInput').value;render('out',await api('/decrypt','POST',{algorithm,input}))}
-function saveToken(){localStorage.setItem('authToken',document.getElementById('authToken').value.trim())}
-function render(id,obj){document.getElementById(id).textContent=JSON.stringify(obj,null,2)}
-window.addEventListener('DOMContentLoaded',checkHealth);
-</script></head><body>
-<header><div class='container'><h3>RawrZ Security Platform Panel</h3></div></header>
-<div class='container'>
-  <div class='card'><div class='row'>
-    <input id='authToken' placeholder='Auth token (optional)' /><button onclick='saveToken()'>Save Token</button>
-    <button onclick='checkHealth()'>Health</button>
-  </div></div>
-  <div class='card'><div class='row'>
-    <input id='hashInput' placeholder='hash input'/><select id='hashAlgo'><option>sha256</option><option>md5</option><option>sha1</option><option>sha512</option></select>
-    <button onclick='runHash()'>Hash</button>
-  </div></div>
-  <div class='card'><div class='row'>
-    <select id='encAlgo'><option>aes256</option><option>aes192</option><option>aes128</option><option>blowfish</option></select>
-    <input id='encInput' placeholder='text or file:filename or /abs/path'/>
-    <button onclick='runEncrypt()'>Encrypt</button>
-    <button onclick='runDecrypt()'>Decrypt (auto-metadata)</button>
-  </div></div>
-  <pre id='out'></pre>
-</div></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RawrZ Security Platform - Advanced Panel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #0c0f1a 0%, #1a1f2e 100%);
+            color: #e6e9ef; 
+            min-height: 100vh;
+        }
+        .header { 
+            background: linear-gradient(90deg, #1a1f2e 0%, #2d3748 100%);
+            padding: 1rem 2rem; 
+            border-bottom: 2px solid #4a5568;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .header h1 { 
+            color: #68d391; 
+            font-size: 1.8rem; 
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(104, 211, 145, 0.3);
+        }
+        .header .subtitle { 
+            color: #a0aec0; 
+            font-size: 0.9rem; 
+            margin-top: 0.25rem;
+        }
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            padding: 2rem; 
+        }
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); 
+            gap: 1.5rem; 
+            margin-bottom: 2rem;
+        }
+        .card { 
+            background: linear-gradient(145deg, #1a202c 0%, #2d3748 100%);
+            border: 1px solid #4a5568; 
+            border-radius: 12px; 
+            padding: 1.5rem; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        .card h3 { 
+            color: #68d391; 
+            margin-bottom: 1rem; 
+            font-size: 1.1rem;
+            border-bottom: 1px solid #4a5568;
+            padding-bottom: 0.5rem;
+        }
+        .form-group { 
+            margin-bottom: 1rem; 
+        }
+        .form-group label { 
+            display: block; 
+            margin-bottom: 0.5rem; 
+            color: #cbd5e0; 
+            font-weight: 500;
+        }
+        input, select, textarea, button { 
+            width: 100%; 
+            padding: 0.75rem; 
+            border: 1px solid #4a5568; 
+            border-radius: 8px; 
+            background: #2d3748; 
+            color: #e6e9ef; 
+            font-size: 0.9rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input:focus, select:focus, textarea:focus { 
+            outline: none; 
+            border-color: #68d391; 
+            box-shadow: 0 0 0 3px rgba(104, 211, 145, 0.1);
+        }
+        button { 
+            background: linear-gradient(135deg, #68d391 0%, #48bb78 100%);
+            border: none; 
+            color: #1a202c; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.2s;
+            margin-top: 0.5rem;
+        }
+        button:hover { 
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(104, 211, 145, 0.3);
+        }
+        button:disabled { 
+            background: #4a5568; 
+            cursor: not-allowed; 
+            transform: none;
+        }
+        .row { 
+            display: flex; 
+            gap: 0.5rem; 
+            flex-wrap: wrap; 
+        }
+        .row input, .row select, .row button { 
+            flex: 1; 
+            min-width: 120px; 
+        }
+        .output { 
+            background: #0c0f1a; 
+            border: 1px solid #2d3748; 
+            border-radius: 8px; 
+            padding: 1rem; 
+            margin-top: 1rem; 
+            max-height: 400px; 
+            overflow-y: auto; 
+            font-family: 'Courier New', monospace; 
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .status { 
+            padding: 0.5rem 1rem; 
+            border-radius: 6px; 
+            margin: 0.5rem 0; 
+            font-weight: 500;
+        }
+        .status.success { background: rgba(104, 211, 145, 0.2); color: #68d391; border: 1px solid #68d391; }
+        .status.error { background: rgba(245, 101, 101, 0.2); color: #f56565; border: 1px solid #f56565; }
+        .status.info { background: rgba(66, 153, 225, 0.2); color: #4299e1; border: 1px solid #4299e1; }
+        .auth-section { 
+            background: linear-gradient(145deg, #2d3748 0%, #4a5568 100%);
+            border: 2px solid #68d391;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .tabs { 
+            display: flex; 
+            border-bottom: 1px solid #4a5568; 
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .tab { 
+            padding: 0.75rem 1.5rem; 
+            background: #2d3748; 
+            border: none; 
+            color: #a0aec0; 
+            cursor: pointer; 
+            border-radius: 8px 8px 0 0;
+            margin-right: 0.25rem;
+            transition: all 0.2s;
+            margin-bottom: 0.25rem;
+        }
+        .tab.active { 
+            background: #68d391; 
+            color: #1a202c; 
+        }
+        .tab-content { 
+            display: none; 
+        }
+        .tab-content.active { 
+            display: block; 
+        }
+        .file-list { 
+            max-height: 200px; 
+            overflow-y: auto; 
+            border: 1px solid #4a5568; 
+            border-radius: 6px; 
+            padding: 0.5rem;
+        }
+        .file-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 0.5rem; 
+            border-bottom: 1px solid #2d3748;
+        }
+        .file-item:last-child { 
+            border-bottom: none; 
+        }
+        .file-name { 
+            color: #e6e9ef; 
+            font-family: monospace; 
+        }
+        .file-size { 
+            color: #a0aec0; 
+            font-size: 0.8rem; 
+        }
+        .loading { 
+            display: inline-block; 
+            width: 20px; 
+            height: 20px; 
+            border: 2px solid #4a5568; 
+            border-radius: 50%; 
+            border-top-color: #68d391; 
+            animation: spin 1s ease-in-out infinite; 
+        }
+        @keyframes spin { 
+            to { transform: rotate(360deg); } 
+        }
+        .feature-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 1rem; 
+        }
+        .feature-card { 
+            background: #1a202c; 
+            border: 1px solid #4a5568; 
+            border-radius: 8px; 
+            padding: 1rem; 
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .feature-card:hover { 
+            border-color: #68d391; 
+            background: #2d3748;
+        }
+        .feature-card h4 { 
+            color: #68d391; 
+            margin-bottom: 0.5rem;
+        }
+        .feature-card p { 
+            color: #a0aec0; 
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>RawrZ Security Platform</h1>
+        <div class="subtitle">Advanced Security Tools & Analysis Suite - 102+ Features</div>
+    </div>
+
+    <div class="container">
+        <!-- Authentication Section -->
+        <div class="auth-section">
+            <h3>Authentication</h3>
+            <div class="row">
+                <input type="password" id="authToken" placeholder="Enter auth token (optional)" />
+                <button onclick="saveToken()">Save Token</button>
+                <button onclick="checkHealth()">Test Connection</button>
+            </div>
+            <div id="connectionStatus"></div>
+        </div>
+
+        <!-- Main Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('crypto')">Cryptography</button>
+            <button class="tab" onclick="showTab('stub')">Stub Generation</button>
+            <button class="tab" onclick="showTab('network')">Network Tools</button>
+            <button class="tab" onclick="showTab('system')">System Info</button>
+            <button class="tab" onclick="showTab('files')">File Operations</button>
+            <button class="tab" onclick="showTab('analysis')">Analysis Tools</button>
+            <button class="tab" onclick="showTab('utilities')">Utilities</button>
+            <button class="tab" onclick="showTab('advanced')">Advanced Features</button>
+        </div>
+
+        <!-- Cryptography Tab -->
+        <div id="crypto" class="tab-content active">
+            <div class="grid">
+                <!-- Encryption -->
+                <div class="card">
+                    <h3>Encryption</h3>
+                    <div class="form-group">
+                        <label>Algorithm</label>
+                        <select id="encAlgo">
+                            <option value="aes256">AES-256-GCM</option>
+                            <option value="aes192">AES-192-GCM</option>
+                            <option value="aes128">AES-128-GCM</option>
+                            <option value="aes256cbc">AES-256-CBC</option>
+                            <option value="chacha20">ChaCha20</option>
+                            <option value="blowfish">Blowfish</option>
+                            <option value="cam">CAM</option>
+                            <option value="rsa">RSA-4096</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Input (text or file:filename)</label>
+                        <textarea id="encInput" rows="3" placeholder="Enter text to encrypt or file:filename"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Output Extension</label>
+                        <select id="encExtension">
+                            <option value=".enc">.enc (JSON)</option>
+                            <option value=".exe">.exe (Executable)</option>
+                            <option value=".dll">.dll (Library)</option>
+                            <option value=".ps1">.ps1 (PowerShell)</option>
+                            <option value=".bat">.bat (Batch)</option>
+                            <option value=".js">.js (JavaScript)</option>
+                        </select>
+                    </div>
+                    <button onclick="runEncrypt()">Encrypt</button>
+                </div>
+
+                <!-- Decryption -->
+                <div class="card">
+                    <h3>Decryption</h3>
+                    <div class="form-group">
+                        <label>Algorithm</label>
+                        <select id="decAlgo">
+                            <option value="aes256">AES-256-GCM</option>
+                            <option value="aes192">AES-192-GCM</option>
+                            <option value="aes128">AES-128-GCM</option>
+                            <option value="aes256cbc">AES-256-CBC</option>
+                            <option value="chacha20">ChaCha20</option>
+                            <option value="blowfish">Blowfish</option>
+                            <option value="cam">CAM</option>
+                            <option value="rsa">RSA-4096</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Encrypted Data</label>
+                        <textarea id="decInput" rows="3" placeholder="Enter encrypted data or file:filename"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Key (optional - auto from metadata)</label>
+                        <input type="text" id="decKey" placeholder="Base64 key" />
+                    </div>
+                    <div class="form-group">
+                        <label>IV (optional - auto from metadata)</label>
+                        <input type="text" id="decIv" placeholder="Base64 IV" />
+                    </div>
+                    <button onclick="runDecrypt()">Decrypt</button>
+                </div>
+
+                <!-- Key Generation -->
+                <div class="card">
+                    <h3>Key Generation</h3>
+                    <div class="form-group">
+                        <label>Algorithm</label>
+                        <select id="keyAlgo">
+                            <option value="aes256">AES-256</option>
+                            <option value="aes192">AES-192</option>
+                            <option value="aes128">AES-128</option>
+                            <option value="rsa">RSA-4096</option>
+                            <option value="cam">CAM</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Key Length (bits)</label>
+                        <input type="number" id="keyLength" value="256" min="128" max="4096" />
+                    </div>
+                    <div class="row">
+                        <button onclick="runKeygen()">Generate Key</button>
+                        <button onclick="runRandom()">Random Bytes</button>
+                    </div>
+                </div>
+
+                <!-- Hashing -->
+                <div class="card">
+                    <h3>Hashing</h3>
+                    <div class="form-group">
+                        <label>Algorithm</label>
+                        <select id="hashAlgo">
+                            <option value="sha256">SHA-256</option>
+                            <option value="sha512">SHA-512</option>
+                            <option value="sha1">SHA-1</option>
+                            <option value="md5">MD5</option>
+                            <option value="blake2b">BLAKE2b</option>
+                            <option value="blake2s">BLAKE2s</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Input</label>
+                        <textarea id="hashInput" rows="3" placeholder="Enter text to hash"></textarea>
+                    </div>
+                    <div class="row">
+                        <button onclick="runHash()">Hash</button>
+                        <button onclick="runUUID()">Generate UUID</button>
+                        <button onclick="runPassword()">Generate Password</button>
+                    </div>
+                </div>
+
+                <!-- Encoding/Decoding -->
+                <div class="card">
+                    <h3>Encoding & Decoding</h3>
+                    <div class="form-group">
+                        <label>Input</label>
+                        <textarea id="encodeInput" rows="3" placeholder="Enter text to encode/decode"></textarea>
+                    </div>
+                    <div class="row">
+                        <button onclick="runBase64Encode()">Base64 Encode</button>
+                        <button onclick="runBase64Decode()">Base64 Decode</button>
+                    </div>
+                    <div class="row">
+                        <button onclick="runHexEncode()">Hex Encode</button>
+                        <button onclick="runHexDecode()">Hex Decode</button>
+                    </div>
+                    <div class="row">
+                        <button onclick="runUrlEncode()">URL Encode</button>
+                        <button onclick="runUrlDecode()">URL Decode</button>
+                    </div>
+                </div>
+
+                <!-- Digital Signatures -->
+                <div class="card">
+                    <h3>Digital Signatures</h3>
+                    <div class="form-group">
+                        <label>Input to Sign</label>
+                        <textarea id="signInput" rows="2" placeholder="Enter data to sign"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Private Key (optional)</label>
+                        <textarea id="signPrivateKey" rows="2" placeholder="PEM private key"></textarea>
+                    </div>
+                    <div class="row">
+                        <button onclick="runSign()">Sign Data</button>
+                        <button onclick="runVerify()">Verify Signature</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stub Generation Tab -->
+        <div id="stub" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>Stub Generation</h3>
+                    <div class="form-group">
+                        <label>Target File</label>
+                        <input type="text" id="stubTarget" placeholder="file:filename or /path/to/file" />
+                    </div>
+                    <div class="form-group">
+                        <label>Stub Type</label>
+                        <select id="stubType">
+                            <option value="native">Native (C++/Assembly)</option>
+                            <option value="dotnet">.NET (C#)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Framework</label>
+                        <select id="stubFramework">
+                            <option value="cpp">C++</option>
+                            <option value="asm">Assembly</option>
+                            <option value="powershell">PowerShell</option>
+                            <option value="python">Python</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Encryption</label>
+                        <select id="stubEncryption">
+                            <option value="aes256">AES-256-GCM</option>
+                            <option value="aes256cbc">AES-256-CBC</option>
+                            <option value="chacha20">ChaCha20</option>
+                            <option value="cam">CAM</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Output Options</label>
+                        <div class="row">
+                            <input type="text" id="stubOutput" placeholder="output.exe (optional)" />
+                            <input type="text" id="stubAttach" placeholder="attach:target.exe (optional)" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Anti-Analysis</label>
+                        <div class="row">
+                            <label><input type="checkbox" id="stubAntiDebug" checked /> Anti-Debug</label>
+                            <label><input type="checkbox" id="stubAntiVM" checked /> Anti-VM</label>
+                            <label><input type="checkbox" id="stubAntiSandbox" checked /> Anti-Sandbox</label>
+                        </div>
+                    </div>
+                    <button onclick="runStub()">Generate Stub</button>
+                </div>
+
+                <div class="card">
+                    <h3>Advanced Stub Options</h3>
+                    <div class="form-group">
+                        <label>Polymorphic Engine</label>
+                        <select id="stubPolymorphic">
+                            <option value="none">None</option>
+                            <option value="basic">Basic</option>
+                            <option value="advanced">Advanced</option>
+                            <option value="extreme">Extreme</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Stealth Level</label>
+                        <select id="stubStealth">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="maximum">Maximum</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Compression</label>
+                        <select id="stubCompression">
+                            <option value="none">None</option>
+                            <option value="gzip">GZIP</option>
+                            <option value="brotli">Brotli</option>
+                            <option value="lz4">LZ4</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Additional Features</label>
+                        <div class="row">
+                            <label><input type="checkbox" id="stubHotPatch" /> Hot Patching</label>
+                            <label><input type="checkbox" id="stubMemoryProtect" /> Memory Protection</label>
+                        </div>
+                        <div class="row">
+                            <label><input type="checkbox" id="stubObfuscation" /> Code Obfuscation</label>
+                            <label><input type="checkbox" id="stubPacking" /> Executable Packing</label>
+                        </div>
+                    </div>
+                    <button onclick="runAdvancedStub()">Generate Advanced Stub</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Network Tools Tab -->
+        <div id="network" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>Network Diagnostics</h3>
+                    <div class="form-group">
+                        <label>Host/IP Address</label>
+                        <input type="text" id="networkHost" placeholder="example.com or 192.168.1.1" />
+                    </div>
+                    <div class="row">
+                        <button onclick="runPing()">Ping</button>
+                        <button onclick="runDns()">DNS Lookup</button>
+                        <button onclick="runTraceroute()">Traceroute</button>
+                        <button onclick="runWhois()">WHOIS</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Port Scanning</h3>
+                    <div class="form-group">
+                        <label>Target Host</label>
+                        <input type="text" id="scanHost" placeholder="192.168.1.1" />
+                    </div>
+                    <div class="row">
+                        <input type="number" id="scanStartPort" placeholder="Start Port" value="1" />
+                        <input type="number" id="scanEndPort" placeholder="End Port" value="1000" />
+                    </div>
+                    <div class="form-group">
+                        <label>Scan Type</label>
+                        <select id="scanType">
+                            <option value="tcp">TCP</option>
+                            <option value="udp">UDP</option>
+                            <option value="syn">SYN</option>
+                            <option value="ack">ACK</option>
+                        </select>
+                    </div>
+                    <button onclick="runPortScan()">Scan Ports</button>
+                </div>
+
+                <div class="card">
+                    <h3>Network Analysis</h3>
+                    <div class="form-group">
+                        <label>Target</label>
+                        <input type="text" id="networkTarget" placeholder="IP, domain, or network range" />
+                    </div>
+                    <div class="row">
+                        <button onclick="runNetworkScan()">Network Scan</button>
+                        <button onclick="runServiceDetection()">Service Detection</button>
+                        <button onclick="runVulnerabilityScan()">Vulnerability Scan</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Traffic Analysis</h3>
+                    <div class="form-group">
+                        <label>Interface</label>
+                        <select id="networkInterface">
+                            <option value="any">Any Interface</option>
+                            <option value="eth0">Ethernet 0</option>
+                            <option value="wlan0">Wireless 0</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <button onclick="runPacketCapture()">Packet Capture</button>
+                        <button onclick="runTrafficAnalysis()">Traffic Analysis</button>
+                        <button onclick="runProtocolAnalysis()">Protocol Analysis</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Info Tab -->
+        <div id="system" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>System Information</h3>
+                    <div class="row">
+                        <button onclick="runSysInfo()">Get System Info</button>
+                        <button onclick="runProcesses()">List Processes</button>
+                        <button onclick="runTime()">Get Time</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Memory Management</h3>
+                    <div class="row">
+                        <button onclick="runMemoryInfo()">Memory Info</button>
+                        <button onclick="runGarbageCollect()">Garbage Collect</button>
+                        <button onclick="runMemoryCleanup()">Memory Cleanup</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Performance Monitoring</h3>
+                    <div class="row">
+                        <button onclick="runCpuUsage()">CPU Usage</button>
+                        <button onclick="runDiskUsage()">Disk Usage</button>
+                        <button onclick="runNetworkStats()">Network Stats</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Security Status</h3>
+                    <div class="row">
+                        <button onclick="runSecurityScan()">Security Scan</button>
+                        <button onclick="runThreatDetection()">Threat Detection</button>
+                        <button onclick="runVulnerabilityCheck()">Vulnerability Check</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- File Operations Tab -->
+        <div id="files" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>File Management</h3>
+                    <div class="form-group">
+                        <label>File Operations</label>
+                        <select id="fileOp">
+                            <option value="list">List Files</option>
+                            <option value="read">Read File</option>
+                            <option value="write">Write File</option>
+                            <option value="copy">Copy File</option>
+                            <option value="move">Move File</option>
+                            <option value="delete">Delete File</option>
+                            <option value="upload">Upload File</option>
+                            <option value="download">Download File</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Input File</label>
+                        <input type="text" id="fileInput" placeholder="filename or path" />
+                    </div>
+                    <div class="form-group">
+                        <label>Output File (for copy/move/write)</label>
+                        <input type="text" id="fileOutput" placeholder="output filename" />
+                    </div>
+                    <div class="form-group">
+                        <label>File Content (for write)</label>
+                        <textarea id="fileContent" rows="3" placeholder="File content"></textarea>
+                    </div>
+                    <button onclick="runFileOps()">Execute</button>
+                    <button onclick="listFiles()">List Uploads</button>
+                </div>
+
+                <div class="card">
+                    <h3>Uploaded Files</h3>
+                    <div id="fileList" class="file-list"></div>
+                </div>
+
+                <div class="card">
+                    <h3>File Analysis</h3>
+                    <div class="form-group">
+                        <label>File to Analyze</label>
+                        <input type="text" id="fileAnalyze" placeholder="filename or path" />
+                    </div>
+                    <div class="row">
+                        <button onclick="runFileAnalysis()">Analyze File</button>
+                        <button onclick="runFileHash()">Calculate Hash</button>
+                        <button onclick="runFileSignature()">Check Signature</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Backup & Recovery</h3>
+                    <div class="form-group">
+                        <label>Backup Source</label>
+                        <input type="text" id="backupSource" placeholder="file or directory" />
+                    </div>
+                    <div class="form-group">
+                        <label>Backup Destination</label>
+                        <input type="text" id="backupDest" placeholder="backup location" />
+                    </div>
+                    <div class="row">
+                        <button onclick="runBackup()">Create Backup</button>
+                        <button onclick="runRestore()">Restore Backup</button>
+                        <button onclick="runBackupList()">List Backups</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis Tools Tab -->
+        <div id="analysis" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>File Analysis</h3>
+                    <div class="form-group">
+                        <label>File to Analyze</label>
+                        <input type="text" id="analyzeFile" placeholder="filename or path" />
+                    </div>
+                    <div class="form-group">
+                        <label>Analysis Type</label>
+                        <select id="analysisType">
+                            <option value="basic">Basic Analysis</option>
+                            <option value="deep">Deep Analysis</option>
+                            <option value="malware">Malware Analysis</option>
+                            <option value="forensic">Forensic Analysis</option>
+                        </select>
+                    </div>
+                    <button onclick="runAnalyze()">Analyze File</button>
+                </div>
+
+                <div class="card">
+                    <h3>Data Validation</h3>
+                    <div class="form-group">
+                        <label>Input to Validate</label>
+                        <input type="text" id="validateInput" placeholder="Enter data to validate" />
+                    </div>
+                    <div class="form-group">
+                        <label>Validation Type</label>
+                        <select id="validateType">
+                            <option value="email">Email</option>
+                            <option value="url">URL</option>
+                            <option value="ip">IP Address</option>
+                            <option value="json">JSON</option>
+                            <option value="uuid">UUID</option>
+                            <option value="creditcard">Credit Card</option>
+                            <option value="phone">Phone Number</option>
+                        </select>
+                    </div>
+                    <button onclick="runValidate()">Validate</button>
+                </div>
+
+                <div class="card">
+                    <h3>Malware Analysis</h3>
+                    <div class="form-group">
+                        <label>Sample File</label>
+                        <input type="text" id="malwareFile" placeholder="malware sample path" />
+                    </div>
+                    <div class="row">
+                        <button onclick="runMalwareScan()">Scan for Malware</button>
+                        <button onclick="runBehaviorAnalysis()">Behavior Analysis</button>
+                        <button onclick="runSignatureCheck()">Signature Check</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Digital Forensics</h3>
+                    <div class="form-group">
+                        <label>Target</label>
+                        <input type="text" id="forensicsTarget" placeholder="file, disk, or memory dump" />
+                    </div>
+                    <div class="row">
+                        <button onclick="runForensicsScan()">Forensics Scan</button>
+                        <button onclick="runDataRecovery()">Data Recovery</button>
+                        <button onclick="runTimelineAnalysis()">Timeline Analysis</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Reverse Engineering</h3>
+                    <div class="form-group">
+                        <label>Binary File</label>
+                        <input type="text" id="reverseFile" placeholder="executable or binary file" />
+                    </div>
+                    <div class="row">
+                        <button onclick="runDisassembly()">Disassemble</button>
+                        <button onclick="runDecompilation()">Decompile</button>
+                        <button onclick="runStringExtraction()">Extract Strings</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Memory Analysis</h3>
+                    <div class="form-group">
+                        <label>Memory Dump</label>
+                        <input type="text" id="memoryDump" placeholder="memory dump file" />
+                    </div>
+                    <div class="row">
+                        <button onclick="runMemoryAnalysis()">Analyze Memory</button>
+                        <button onclick="runProcessDump()">Process Dump</button>
+                        <button onclick="runHeapAnalysis()">Heap Analysis</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Utilities Tab -->
+        <div id="utilities" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>Text Operations</h3>
+                    <div class="form-group">
+                        <label>Text Input</label>
+                        <textarea id="textInput" rows="3" placeholder="Enter text to process"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Operation</label>
+                        <select id="textOp">
+                            <option value="uppercase">Uppercase</option>
+                            <option value="lowercase">Lowercase</option>
+                            <option value="reverse">Reverse</option>
+                            <option value="wordcount">Word Count</option>
+                            <option value="charcount">Character Count</option>
+                            <option value="linescount">Line Count</option>
+                            <option value="trim">Trim Whitespace</option>
+                            <option value="replace">Find & Replace</option>
+                        </select>
+                    </div>
+                    <button onclick="runTextOps()">Process Text</button>
+                </div>
+
+                <div class="card">
+                    <h3>Mathematical Operations</h3>
+                    <div class="form-group">
+                        <label>Expression</label>
+                        <input type="text" id="mathExpression" placeholder="2 + 2 * 3" />
+                    </div>
+                    <div class="row">
+                        <button onclick="runMath()">Calculate</button>
+                        <button onclick="runRandomMath()">Random Math</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>CLI Command</h3>
+                    <div class="form-group">
+                        <label>RawrZ Command</label>
+                        <input type="text" id="cliCommand" placeholder="help, encrypt aes256 'hello', etc." />
+                    </div>
+                    <button onclick="runCLI()">Execute CLI</button>
+                </div>
+
+                <div class="card">
+                    <h3>Data Conversion</h3>
+                    <div class="form-group">
+                        <label>Input Data</label>
+                        <textarea id="convertInput" rows="3" placeholder="Enter data to convert"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Conversion Type</label>
+                        <select id="convertType">
+                            <option value="json2yaml">JSON to YAML</option>
+                            <option value="yaml2json">YAML to JSON</option>
+                            <option value="xml2json">XML to JSON</option>
+                            <option value="json2xml">JSON to XML</option>
+                            <option value="csv2json">CSV to JSON</option>
+                            <option value="json2csv">JSON to CSV</option>
+                        </select>
+                    </div>
+                    <button onclick="runDataConversion()">Convert</button>
+                </div>
+
+                <div class="card">
+                    <h3>Compression Tools</h3>
+                    <div class="form-group">
+                        <label>Input Data</label>
+                        <textarea id="compressInput" rows="3" placeholder="Enter data to compress"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Compression Algorithm</label>
+                        <select id="compressAlgo">
+                            <option value="gzip">GZIP</option>
+                            <option value="brotli">Brotli</option>
+                            <option value="lz4">LZ4</option>
+                            <option value="zstd">Zstandard</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <button onclick="runCompress()">Compress</button>
+                        <button onclick="runDecompress()">Decompress</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>QR Code & Barcode</h3>
+                    <div class="form-group">
+                        <label>Text to Encode</label>
+                        <input type="text" id="qrInput" placeholder="Enter text for QR code" />
+                    </div>
+                    <div class="row">
+                        <button onclick="runQRGenerate()">Generate QR Code</button>
+                        <button onclick="runBarcodeGenerate()">Generate Barcode</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Features Tab -->
+        <div id="advanced" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>Advanced Cryptography</h3>
+                    <div class="form-group">
+                        <label>Input Data</label>
+                        <textarea id="advancedCryptoInput" rows="3" placeholder="Enter data for advanced crypto"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Operation</label>
+                        <select id="advancedCryptoOp">
+                            <option value="encrypt">Encrypt</option>
+                            <option value="decrypt">Decrypt</option>
+                            <option value="hybrid">Hybrid Encryption</option>
+                            <option value="quantum">Quantum-Safe</option>
+                        </select>
+                    </div>
+                    <button onclick="runAdvancedCrypto()">Execute</button>
+                </div>
+
+                <div class="card">
+                    <h3>Stealth Engine</h3>
+                    <div class="form-group">
+                        <label>Target</label>
+                        <input type="text" id="stealthTarget" placeholder="file or process" />
+                    </div>
+                    <div class="form-group">
+                        <label>Stealth Level</label>
+                        <select id="stealthLevel">
+                            <option value="basic">Basic</option>
+                            <option value="advanced">Advanced</option>
+                            <option value="maximum">Maximum</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <button onclick="runStealthMode()">Enable Stealth</button>
+                        <button onclick="runAntiDetection()">Anti-Detection</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Polymorphic Engine</h3>
+                    <div class="form-group">
+                        <label>Code Input</label>
+                        <textarea id="polyInput" rows="3" placeholder="Enter code to polymorph"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Polymorphic Level</label>
+                        <select id="polyLevel">
+                            <option value="basic">Basic</option>
+                            <option value="advanced">Advanced</option>
+                            <option value="extreme">Extreme</option>
+                        </select>
+                    </div>
+                    <button onclick="runPolymorphic()">Generate Polymorphic Code</button>
+                </div>
+
+                <div class="card">
+                    <h3>Hot Patching</h3>
+                    <div class="form-group">
+                        <label>Target Process</label>
+                        <input type="text" id="patchTarget" placeholder="process name or PID" />
+                    </div>
+                    <div class="form-group">
+                        <label>Patch Code</label>
+                        <textarea id="patchCode" rows="3" placeholder="Enter patch code"></textarea>
+                    </div>
+                    <div class="row">
+                        <button onclick="runHotPatch()">Apply Hot Patch</button>
+                        <button onclick="runPatchRollback()">Rollback Patch</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Mobile Security Tools</h3>
+                    <div class="form-group">
+                        <label>Mobile Target</label>
+                        <input type="text" id="mobileTarget" placeholder="APK, IPA, or device" />
+                    </div>
+                    <div class="row">
+                        <button onclick="runMobileScan()">Mobile Scan</button>
+                        <button onclick="runAppAnalysis()">App Analysis</button>
+                        <button onclick="runDeviceForensics()">Device Forensics</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>API Status Monitor</h3>
+                    <div class="row">
+                        <button onclick="runAPIStatus()">Check API Status</button>
+                        <button onclick="runHealthCheck()">Health Check</button>
+                        <button onclick="runPerformanceMonitor()">Performance Monitor</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Output Section -->
+        <div class="card">
+            <h3>Output</h3>
+            <div id="output" class="output">Ready. Select a feature and click a button to get started.</div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let authToken = localStorage.getItem('authToken') || '';
+        
+        // API helper function
+        async function api(endpoint, method = 'GET', body = null) {
+            const headers = { 'Content-Type': 'application/json' };
+            if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+            
+            try {
+                const response = await fetch(endpoint, {
+                    method,
+                    headers,
+                    body: body ? JSON.stringify(body) : undefined
+                });
+                
+                const text = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch {
+                    data = { text };
+                }
+                
+                return { status: response.status, data };
+            } catch (error) {
+                return { status: 0, data: { error: error.message } };
+            }
+        }
+        
+        // Utility functions
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('connectionStatus');
+            status.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        function showOutput(data) {
+            const output = document.getElementById('output');
+            output.textContent = JSON.stringify(data, null, 2);
+        }
+        
+        function showLoading(button) {
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.innerHTML = '<span class="loading"></span> Processing...';
+            return () => {
+                button.disabled = false;
+                button.textContent = originalText;
+            };
+        }
+        
+        // Tab management
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        // Authentication
+        function saveToken() {
+            authToken = document.getElementById('authToken').value.trim();
+            localStorage.setItem('authToken', authToken);
+            showStatus('Token saved successfully', 'success');
+        }
+        
+        async function checkHealth() {
+            const stopLoading = showLoading(event.target);
+            const result = await api('/health');
+            stopLoading();
+            
+            if (result.status === 200) {
+                showStatus('Connection successful! RawrZ API is running.', 'success');
+                showOutput(result.data);
+            } else {
+                showStatus('Connection failed. Check your token or server status.', 'error');
+                showOutput(result.data);
+            }
+        }
+        
+        // Cryptography functions
+        async function runEncrypt() {
+            const stopLoading = showLoading(event.target);
+            const algorithm = document.getElementById('encAlgo').value;
+            const input = document.getElementById('encInput').value;
+            const extension = document.getElementById('encExtension').value;
+            
+            if (!input) {
+                showStatus('Please enter text to encrypt', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const result = await api('/encrypt', 'POST', { algorithm, input, extension });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        async function runDecrypt() {
+            const stopLoading = showLoading(event.target);
+            const algorithm = document.getElementById('decAlgo').value;
+            const input = document.getElementById('decInput').value;
+            const key = document.getElementById('decKey').value;
+            const iv = document.getElementById('decIv').value;
+            
+            if (!input) {
+                showStatus('Please enter encrypted data', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const result = await api('/decrypt', 'POST', { algorithm, input, key, iv });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        async function runKeygen() {
+            const stopLoading = showLoading(event.target);
+            const algorithm = document.getElementById('keyAlgo').value;
+            const length = parseInt(document.getElementById('keyLength').value);
+            
+            const result = await api('/keygen', 'POST', { algorithm, length, save: true });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        async function runHash() {
+            const stopLoading = showLoading(event.target);
+            const algorithm = document.getElementById('hashAlgo').value;
+            const input = document.getElementById('hashInput').value;
+            
+            if (!input) {
+                showStatus('Please enter text to hash', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const result = await api('/hash', 'POST', { input, algorithm });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        async function runRandom() {
+            const stopLoading = showLoading(event.target);
+            const length = parseInt(document.getElementById('keyLength').value);
+            
+            const result = await api('/random', 'POST', { length });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        async function runUUID() {
+            const stopLoading = showLoading(event.target);
+            const result = await api('/uuid');
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        async function runPassword() {
+            const stopLoading = showLoading(event.target);
+            const result = await api('/password', 'POST', { length: 16, includeSpecial: true });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        // Encoding functions
+        async function runBase64Encode() {
+            const stopLoading = showLoading(event.target);
+            const input = document.getElementById('encodeInput').value;
+            
+            if (!input) {
+                showStatus('Please enter text to encode', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const result = await api('/base64encode', 'POST', { input });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        async function runBase64Decode() {
+            const stopLoading = showLoading(event.target);
+            const input = document.getElementById('encodeInput').value;
+            
+            if (!input) {
+                showStatus('Please enter text to decode', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const result = await api('/base64decode', 'POST', { input });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        async function runHexEncode() {
+            const stopLoading = showLoading(event.target);
+            const input = document.getElementById('encodeInput').value;
+            
+            if (!input) {
+                showStatus('Please enter text to encode', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const result = await api('/hexencode', 'POST', { input });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        async function runHexDecode() {
+            const stopLoading = showLoading(event.target);
+            const input = document.getElementById('encodeInput').value;
+            
+            if (!input) {
+                showStatus('Please enter text to decode', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const result = await api('/hexdecode', 'POST', { input });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        async function runUrlEncode() {
+            const stopLoading = showLoading(event.target);
+            const input = document.getElementById('encodeInput').value;
+            
+            if (!input) {
+                showStatus('Please enter text to encode', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const result = await api('/urlencode', 'POST', { input });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        async function runUrlDecode() {
+            const stopLoading = showLoading(event.target);
+            const input = document.getElementById('encodeInput').value;
+            
+            if (!input) {
+                showStatus('Please enter text to decode', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const result = await api('/urldecode', 'POST', { input });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        // Digital signatures
+        async function runSign() {
+            const stopLoading = showLoading(event.target);
+            const input = document.getElementById('signInput').value;
+            const privateKey = document.getElementById('signPrivateKey').value;
+            
+            if (!input) {
+                showStatus('Please enter data to sign', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const result = await api('/sign', 'POST', { input, privateKey });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        async function runVerify() {
+            const stopLoading = showLoading(event.target);
+            const input = document.getElementById('signInput').value;
+            const signature = prompt('Enter signature to verify:');
+            const publicKey = prompt('Enter public key:');
+            
+            if (!input || !signature || !publicKey) {
+                showStatus('Please provide input, signature, and public key', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const result = await api('/verify', 'POST', { input, signature, publicKey });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        // Stub generation
+        async function runStub() {
+            const stopLoading = showLoading(event.target);
+            const target = document.getElementById('stubTarget').value;
+            const type = document.getElementById('stubType').value;
+            const framework = document.getElementById('stubFramework').value;
+            const encryption = document.getElementById('stubEncryption').value;
+            const output = document.getElementById('stubOutput').value;
+            const attach = document.getElementById('stubAttach').value;
+            const antiDebug = document.getElementById('stubAntiDebug').checked;
+            const antiVM = document.getElementById('stubAntiVM').checked;
+            const antiSandbox = document.getElementById('stubAntiSandbox').checked;
+            
+            if (!target) {
+                showStatus('Please enter target file', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const options = {
+                type,
+                framework,
+                encryption,
+                antiDebug,
+                antiVM,
+                antiSandbox
+            };
+            
+            if (output) options.output = output;
+            if (attach) options.attach = attach;
+            
+            const result = await api('/stub', 'POST', { target, options });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        async function runAdvancedStub() {
+            const stopLoading = showLoading(event.target);
+            const target = document.getElementById('stubTarget').value;
+            const type = document.getElementById('stubType').value;
+            const framework = document.getElementById('stubFramework').value;
+            const encryption = document.getElementById('stubEncryption').value;
+            const polymorphic = document.getElementById('stubPolymorphic').value;
+            const stealth = document.getElementById('stubStealth').value;
+            const compression = document.getElementById('stubCompression').value;
+            const hotPatch = document.getElementById('stubHotPatch').checked;
+            const memoryProtect = document.getElementById('stubMemoryProtect').checked;
+            const obfuscation = document.getElementById('stubObfuscation').checked;
+            const packing = document.getElementById('stubPacking').checked;
+            
+            if (!target) {
+                showStatus('Please enter target file', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const options = {
+                type,
+                framework,
+                encryption,
+                polymorphic,
+                stealth,
+                compression,
+                hotPatch,
+                memoryProtect,
+                obfuscation,
+                packing
+            };
+            
+            const result = await api('/stub', 'POST', { target, options });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        // Network functions
+        async function runPing() {
+            const stopLoading = showLoading(event.target);
+            const host = document.getElementById('networkHost').value;
+            
+            if (!host) {
+                showStatus('Please enter host to ping', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const result = await api(`/ping?host=${encodeURIComponent(host)}`);
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        async function runDns() {
+            const stopLoading = showLoading(event.target);
+            const hostname = document.getElementById('networkHost').value;
+            
+            if (!hostname) {
+                showStatus('Please enter hostname to lookup', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const result = await api(`/dns?hostname=${encodeURIComponent(hostname)}`);
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        async function runTraceroute() {
+            const stopLoading = showLoading(event.target);
+            const host = document.getElementById('networkHost').value;
+            
+            if (!host) {
+                showStatus('Please enter host for traceroute', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const result = await api('/traceroute', 'POST', { host });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        async function runWhois() {
+            const stopLoading = showLoading(event.target);
+            const domain = document.getElementById('networkHost').value;
+            
+            if (!domain) {
+                showStatus('Please enter domain for WHOIS', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const result = await api('/whois', 'POST', { domain });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        async function runPortScan() {
+            const stopLoading = showLoading(event.target);
+            const host = document.getElementById('scanHost').value;
+            const startPort = parseInt(document.getElementById('scanStartPort').value);
+            const endPort = parseInt(document.getElementById('scanEndPort').value);
+            const scanType = document.getElementById('scanType').value;
+            
+            if (!host) {
+                showStatus('Please enter host to scan', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const result = await api('/portscan', 'POST', { host, startPort, endPort, scanType });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        // System functions
+        async function runSysInfo() {
+            const stopLoading = showLoading(event.target);
+            const result = await api('/sysinfo');
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        async function runProcesses() {
+            const stopLoading = showLoading(event.target);
+            const result = await api('/processes');
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        async function runTime() {
+            const stopLoading = showLoading(event.target);
+            const result = await api('/time');
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        // File operations
+        async function runFileOps() {
+            const stopLoading = showLoading(event.target);
+            const operation = document.getElementById('fileOp').value;
+            const input = document.getElementById('fileInput').value;
+            const output = document.getElementById('fileOutput').value;
+            const content = document.getElementById('fileContent').value;
+            
+            if (!input) {
+                showStatus('Please enter input file', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const body = { operation, input };
+            if (output) body.output = output;
+            if (content) body.content = content;
+            
+            const result = await api('/fileops', 'POST', body);
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        async function listFiles() {
+            const stopLoading = showLoading(event.target);
+            const result = await api('/files');
+            stopLoading();
+            
+            if (result.status === 200 && result.data.success) {
+                const fileList = document.getElementById('fileList');
+                fileList.innerHTML = '';
+                
+                result.data.files.forEach(file => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.innerHTML = `
+                        <span class="file-name">${file.name}</span>
+                        <span class="file-size">${file.size} bytes</span>
+                    `;
+                    fileList.appendChild(fileItem);
+                });
+            }
+            
+            showOutput(result.data);
+        }
+        
+        // Analysis functions
+        async function runAnalyze() {
+            const stopLoading = showLoading(event.target);
+            const input = document.getElementById('analyzeFile').value;
+            const analysisType = document.getElementById('analysisType').value;
+            
+            if (!input) {
+                showStatus('Please enter file to analyze', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const result = await api('/analyze', 'POST', { input, analysisType });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        async function runValidate() {
+            const stopLoading = showLoading(event.target);
+            const input = document.getElementById('validateInput').value;
+            const type = document.getElementById('validateType').value;
+            
+            if (!input) {
+                showStatus('Please enter data to validate', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const result = await api('/validate', 'POST', { input, type });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        // Utility functions
+        async function runTextOps() {
+            const stopLoading = showLoading(event.target);
+            const operation = document.getElementById('textOp').value;
+            const input = document.getElementById('textInput').value;
+            
+            if (!input) {
+                showStatus('Please enter text to process', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const result = await api('/textops', 'POST', { operation, input });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        async function runMath() {
+            const stopLoading = showLoading(event.target);
+            const expression = document.getElementById('mathExpression').value;
+            
+            if (!expression) {
+                showStatus('Please enter mathematical expression', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const result = await api('/math', 'POST', { expression });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        async function runCLI() {
+            const stopLoading = showLoading(event.target);
+            const command = document.getElementById('cliCommand').value;
+            
+            if (!command) {
+                showStatus('Please enter CLI command', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const args = command.split(' ').slice(1);
+            const cmd = command.split(' ')[0];
+            
+            const result = await api('/cli', 'POST', { command: cmd, args });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        // Advanced functions (these will use CLI for now)
+        async function runAdvancedCrypto() {
+            const stopLoading = showLoading(event.target);
+            const input = document.getElementById('advancedCryptoInput').value;
+            const operation = document.getElementById('advancedCryptoOp').value;
+            
+            if (!input) {
+                showStatus('Please enter input data', 'error');
+                stopLoading();
+                return;
+            }
+            
+            const result = await api('/advancedcrypto', 'POST', { input, operation });
+            stopLoading();
+            showOutput(result.data);
+        }
+        
+        // Placeholder functions for advanced features
+        async function runStealthMode() { showOutput({ message: 'Stealth mode functionality - use CLI for full features' }); }
+        async function runAntiDetection() { showOutput({ message: 'Anti-detection functionality - use CLI for full features' }); }
+        async function runPolymorphic() { showOutput({ message: 'Polymorphic engine functionality - use CLI for full features' }); }
+        async function runHotPatch() { showOutput({ message: 'Hot patching functionality - use CLI for full features' }); }
+        async function runPatchRollback() { showOutput({ message: 'Patch rollback functionality - use CLI for full features' }); }
+        async function runMobileScan() { showOutput({ message: 'Mobile scanning functionality - use CLI for full features' }); }
+        async function runAppAnalysis() { showOutput({ message: 'App analysis functionality - use CLI for full features' }); }
+        async function runDeviceForensics() { showOutput({ message: 'Device forensics functionality - use CLI for full features' }); }
+        async function runAPIStatus() { showOutput({ message: 'API status monitoring - use CLI for full features' }); }
+        async function runHealthCheck() { checkHealth(); }
+        async function runPerformanceMonitor() { showOutput({ message: 'Performance monitoring - use CLI for full features' }); }
+        
+        // Additional placeholder functions
+        async function runMemoryInfo() { showOutput({ message: 'Memory info functionality - use CLI for full features' }); }
+        async function runGarbageCollect() { showOutput({ message: 'Garbage collection - use CLI for full features' }); }
+        async function runMemoryCleanup() { showOutput({ message: 'Memory cleanup - use CLI for full features' }); }
+        async function runCpuUsage() { showOutput({ message: 'CPU usage monitoring - use CLI for full features' }); }
+        async function runDiskUsage() { showOutput({ message: 'Disk usage monitoring - use CLI for full features' }); }
+        async function runNetworkStats() { showOutput({ message: 'Network statistics - use CLI for full features' }); }
+        async function runSecurityScan() { showOutput({ message: 'Security scanning - use CLI for full features' }); }
+        async function runThreatDetection() { showOutput({ message: 'Threat detection - use CLI for full features' }); }
+        async function runVulnerabilityCheck() { showOutput({ message: 'Vulnerability checking - use CLI for full features' }); }
+        async function runFileAnalysis() { showOutput({ message: 'File analysis - use CLI for full features' }); }
+        async function runFileHash() { showOutput({ message: 'File hashing - use CLI for full features' }); }
+        async function runFileSignature() { showOutput({ message: 'File signature checking - use CLI for full features' }); }
+        async function runBackup() { showOutput({ message: 'Backup functionality - use CLI for full features' }); }
+        async function runRestore() { showOutput({ message: 'Restore functionality - use CLI for full features' }); }
+        async function runBackupList() { showOutput({ message: 'Backup listing - use CLI for full features' }); }
+        async function runMalwareScan() { showOutput({ message: 'Malware scanning - use CLI for full features' }); }
+        async function runBehaviorAnalysis() { showOutput({ message: 'Behavior analysis - use CLI for full features' }); }
+        async function runSignatureCheck() { showOutput({ message: 'Signature checking - use CLI for full features' }); }
+        async function runForensicsScan() { showOutput({ message: 'Forensics scanning - use CLI for full features' }); }
+        async function runDataRecovery() { showOutput({ message: 'Data recovery - use CLI for full features' }); }
+        async function runTimelineAnalysis() { showOutput({ message: 'Timeline analysis - use CLI for full features' }); }
+        async function runDisassembly() { showOutput({ message: 'Disassembly - use CLI for full features' }); }
+        async function runDecompilation() { showOutput({ message: 'Decompilation - use CLI for full features' }); }
+        async function runStringExtraction() { showOutput({ message: 'String extraction - use CLI for full features' }); }
+        async function runMemoryAnalysis() { showOutput({ message: 'Memory analysis - use CLI for full features' }); }
+        async function runProcessDump() { showOutput({ message: 'Process dumping - use CLI for full features' }); }
+        async function runHeapAnalysis() { showOutput({ message: 'Heap analysis - use CLI for full features' }); }
+        async function runRandomMath() { showOutput({ message: 'Random math - use CLI for full features' }); }
+        async function runDataConversion() { showOutput({ message: 'Data conversion - use CLI for full features' }); }
+        async function runCompress() { showOutput({ message: 'Compression - use CLI for full features' }); }
+        async function runDecompress() { showOutput({ message: 'Decompression - use CLI for full features' }); }
+        async function runQRGenerate() { showOutput({ message: 'QR code generation - use CLI for full features' }); }
+        async function runBarcodeGenerate() { showOutput({ message: 'Barcode generation - use CLI for full features' }); }
+        async function runNetworkScan() { showOutput({ message: 'Network scanning - use CLI for full features' }); }
+        async function runServiceDetection() { showOutput({ message: 'Service detection - use CLI for full features' }); }
+        async function runVulnerabilityScan() { showOutput({ message: 'Vulnerability scanning - use CLI for full features' }); }
+        async function runPacketCapture() { showOutput({ message: 'Packet capture - use CLI for full features' }); }
+        async function runTrafficAnalysis() { showOutput({ message: 'Traffic analysis - use CLI for full features' }); }
+        async function runProtocolAnalysis() { showOutput({ message: 'Protocol analysis - use CLI for full features' }); }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('authToken').value = authToken;
+            checkHealth();
+        });
+    </script>
+</body>
+</html>
