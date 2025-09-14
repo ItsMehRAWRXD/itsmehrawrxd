@@ -1,0 +1,30 @@
+﻿<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>RawrZ Panel</title>
+<style>body{font-family:system-ui,Segoe UI,Arial;margin:0;background:#0b1020;color:#e6e9ef}header{padding:16px 20px;background:#11162a;border-bottom:1px solid #222a45}.container{max-width:960px;margin:0 auto;padding:20px}.card{background:#12192f;border:1px solid #20284a;border-radius:10px;padding:16px;margin:12px 0}.row{display:flex;gap:8px;flex-wrap:wrap}input,select,button{background:#0f1530;color:#e6e9ef;border:1px solid #263056;border-radius:8px;padding:10px 12px}pre{background:#0a0f24;border:1px solid #1d2444;padding:12px;border-radius:8px;overflow:auto;max-height:360px}</style>
+<script>
+async function api(p,m='GET',b){const t=localStorage.getItem('authToken')||'';const h={'Content-Type':'application/json'};if(t)h.Authorization='Bearer '+t;const r=await fetch(p,{method:m,headers:h,body:b?JSON.stringify(b):undefined});const x=await r.text();try{return{status:r.status,json:JSON.parse(x)}}catch{return{status:r.status,text:x}}}
+async function checkHealth(){render('out',await api('/health'))}
+async function runHash(){const input=document.getElementById('hashInput').value;const algorithm=document.getElementById('hashAlgo').value;render('out',await api('/hash','POST',{input,algorithm}))}
+async function runEncrypt(){const algorithm=document.getElementById('encAlgo').value;const input=document.getElementById('encInput').value;render('out',await api('/encrypt','POST',{algorithm,input}))}
+async function runDecrypt(){const algorithm=document.getElementById('encAlgo').value;const input=document.getElementById('encInput').value;render('out',await api('/decrypt','POST',{algorithm,input}))}
+function saveToken(){localStorage.setItem('authToken',document.getElementById('authToken').value.trim())}
+function render(id,obj){document.getElementById(id).textContent=JSON.stringify(obj,null,2)}
+window.addEventListener('DOMContentLoaded',checkHealth);
+</script></head><body>
+<header><div class='container'><h3>RawrZ Security Platform Panel</h3></div></header>
+<div class='container'>
+  <div class='card'><div class='row'>
+    <input id='authToken' placeholder='Auth token (optional)' /><button onclick='saveToken()'>Save Token</button>
+    <button onclick='checkHealth()'>Health</button>
+  </div></div>
+  <div class='card'><div class='row'>
+    <input id='hashInput' placeholder='hash input'/><select id='hashAlgo'><option>sha256</option><option>md5</option><option>sha1</option><option>sha512</option></select>
+    <button onclick='runHash()'>Hash</button>
+  </div></div>
+  <div class='card'><div class='row'>
+    <select id='encAlgo'><option>aes256</option><option>aes192</option><option>aes128</option><option>blowfish</option></select>
+    <input id='encInput' placeholder='text or file:filename or /abs/path'/>
+    <button onclick='runEncrypt()'>Encrypt</button>
+    <button onclick='runDecrypt()'>Decrypt (auto-metadata)</button>
+  </div></div>
+  <pre id='out'></pre>
+</div></body></html>
