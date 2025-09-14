@@ -884,6 +884,10 @@ class RawrZStandalone {
                 key = crypto.randomBytes(16); // 128-bit key for Blowfish
                 iv = crypto.randomBytes(8); // 8-byte IV for Blowfish
                 break;
+            case 'cam':
+                key = crypto.randomBytes(32); // 256-bit key for CAM
+                iv = crypto.randomBytes(16);
+                break;
             case 'aes256':
             case 'aes-256':
             default:
@@ -909,6 +913,24 @@ class RawrZStandalone {
             case 'blowfish':
                 // Use custom Blowfish implementation to avoid OpenSSL compatibility issues
                 return this.customBlowfishEncrypt(data, key, iv);
+            case 'cam':
+                // CAM encryption using AES-256-CBC with custom MAC
+                cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+                let encrypted = cipher.update(data);
+                encrypted = Buffer.concat([encrypted, cipher.final()]);
+                
+                // Generate CAM (Cipher-based Message Authentication Code)
+                const mac = crypto.createHmac('sha256', key);
+                mac.update(encrypted);
+                mac.update(iv);
+                const cam = mac.digest();
+                
+                return {
+                    key: key.toString('base64'),
+                    iv: iv.toString('base64'),
+                    cam: cam.toString('base64'),
+                    data: encrypted.toString('base64')
+                };
             default:
                 cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
         }
@@ -1050,7 +1072,7 @@ class RawrZStandalone {
             case 'encrypt':
                 if (commandArgs.length < 2) {
                     console.log('[ERROR] Usage: encrypt <algorithm> <input> [extension]');
-                    console.log('[INFO] Algorithms: aes256, aes192, aes128, blowfish, rsa2048, rsa4096');
+                    console.log('[INFO] Algorithms: aes256, aes192, aes128, blowfish, rsa2048, rsa4096, cam');
                     console.log('[INFO] Input: text, file:filename, C:\\path\\file, https://url');
                     console.log('[INFO] Extension: .exe, .enc, .bin, .dat (default: .enc)');
                     return;
@@ -1079,7 +1101,7 @@ class RawrZStandalone {
             case 'keygen':
                 if (commandArgs.length < 1) {
                     console.log('[ERROR] Usage: keygen <algorithm> [length] [save] [extension]');
-                    console.log('[INFO] Algorithms: aes256, aes192, aes128, rsa2048, rsa4096');
+                    console.log('[INFO] Algorithms: aes256, aes192, aes128, rsa2048, rsa4096, cam');
                     console.log('[INFO] Save: true/false (default: false)');
                     console.log('[INFO] Extension: .key, .pem, .txt (default: .key)');
                     return;
@@ -1265,7 +1287,7 @@ class RawrZStandalone {
                 if (commandArgs.length < 1) {
                     console.log('[ERROR] Usage: stub <target> [options]');
                     console.log('[INFO] Target: file path or URL to create stub for');
-                    console.log('[INFO] Options: --type=native|dotnet, --framework=cpp|asm|csharp, --encryption=aes256|aes128|chacha20');
+                    console.log('[INFO] Options: --type=native|dotnet, --framework=cpp|asm|csharp, --encryption=aes256|aes128|chacha20|cam');
                     console.log('[INFO] Output: --output=filename.ext (direct executable generation)');
                     console.log('[INFO] Attach: --attach=target.ext (attach stub to existing file)');
                     console.log('[INFO] Supported Extensions: .exe, .dll, .sys, .scr, .com, .bat, .cmd, .ps1, .vbs, .js');
@@ -1457,6 +1479,8 @@ class RawrZStandalone {
                 return await this.encryptAES256CBC(data);
             case 'chacha20':
                 return await this.encryptChaCha20(data);
+            case 'cam':
+                return await this.encryptCAM(data);
             default:
                 return await this.encryptAES256GCM(data);
         }
@@ -1510,6 +1534,30 @@ class RawrZStandalone {
             key: key.toString('base64'),
             iv: iv.toString('base64'),
             authTag: authTag.toString('base64'),
+            data: encrypted.toString('base64')
+        };
+    }
+
+    async encryptCAM(data) {
+        const key = crypto.randomBytes(32);
+        const iv = crypto.randomBytes(16);
+        
+        // CAM encryption using AES-256-CBC with custom MAC
+        const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+        let encrypted = cipher.update(data);
+        encrypted = Buffer.concat([encrypted, cipher.final()]);
+        
+        // Generate CAM (Cipher-based Message Authentication Code)
+        const mac = crypto.createHmac('sha256', key);
+        mac.update(encrypted);
+        mac.update(iv);
+        const cam = mac.digest();
+        
+        return {
+            method: 'cam-aes256',
+            key: key.toString('base64'),
+            iv: iv.toString('base64'),
+            cam: cam.toString('base64'),
             data: encrypted.toString('base64')
         };
     }
@@ -1940,7 +1988,7 @@ namespace RawrZStub
         console.log('[STUB GENERATION]');
         console.log('  stub <target> [options] - Generate executable stub');
         console.log('    Options: --type=native|dotnet, --framework=cpp|asm|csharp');
-        console.log('    Encryption: --encryption=aes256|aes128|chacha20');
+        console.log('    Encryption: --encryption=aes256|aes128|chacha20|cam');
         console.log('    Anti-analysis: --antiDebug, --antiVM, --antiSandbox');
         console.log('    Output: --output=filename.ext (direct generation)');
         console.log('    Attach: --attach=target.ext (attach to existing file)');
