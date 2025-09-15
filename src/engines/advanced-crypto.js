@@ -711,9 +711,9 @@ class AdvancedCrypto {
                 const cipher = crypto.createCipheriv(algorithm, key, iv);
                 encrypted = cipher.update(processedData);
                 encrypted = Buffer.concat([encrypted, cipher.final()]);
-            } else if (algorithm === 'chacha20') {
+            } else if (algorithm === 'chacha20' || algorithm === 'chacha20-poly1305') {
                 const cipher = crypto.createCipheriv('chacha20-poly1305', key, iv);
-                encrypted = cipher.update(processedData);
+                encrypted = cipher.update(processedData, 'utf8');
                 encrypted = Buffer.concat([encrypted, cipher.final()]);
                 authTag = cipher.getAuthTag();
             } else {
@@ -815,8 +815,8 @@ class AdvancedCrypto {
                 const decipher = crypto.createDecipher(algorithm, key, iv);
                 decrypted = decipher.update(encrypted);
                 decrypted = Buffer.concat([decrypted, decipher.final()]);
-            } else if (algorithm === 'chacha20') {
-                const decipher = crypto.createDecipher('chacha20-poly1305', key, iv);
+            } else if (algorithm === 'chacha20' || algorithm === 'chacha20-poly1305') {
+                const decipher = crypto.createDecipheriv('chacha20-poly1305', key, iv);
                 if (authTag) decipher.setAuthTag(authTag);
                 decrypted = decipher.update(encrypted);
                 decrypted = Buffer.concat([decrypted, decipher.final()]);
