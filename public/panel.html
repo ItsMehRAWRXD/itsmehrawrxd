@@ -1564,7 +1564,7 @@
                                 <span>32768</span>
                                 <span>49152</span>
                                 <span>65535</span>
-                            </div>
+                    </div>
                             <span id="startPortValue" class="slider-value">1</span>
                         </div>
                         <div class="slider-container">
@@ -1600,7 +1600,7 @@
                                 <input type="radio" name="scanType" value="ack">
                                 <span class="scan-label">ACK</span>
                             </label>
-                        </div>
+                    </div>
                     </div>
                     
                     <!-- Scan Options with Checkboxes -->
@@ -3285,7 +3285,7 @@ Results: ${JSON.stringify(result.result, null, 2)}`, 'success');
                 const userUrl = prompt('Please enter a valid URL:');
                 if (!userUrl) {
                     showStatus('URL is required for download', 'error');
-                    return;
+                return;
                 }
                 url = userUrl;
             }
@@ -3642,7 +3642,7 @@ Examples:
                 const userFileName = prompt('Please enter a filename:');
                 if (!userFileName) {
                     showStatus('Filename is required for saving', 'error');
-                    return;
+                return;
                 }
                 fileName = userFileName;
             }
@@ -3823,28 +3823,28 @@ Examples:
             console.log('API Call:', endpoint, method, body, headers);
             
             for (let attempt = 1; attempt <= retries; attempt++) {
+            try {
+                // Add timeout to prevent hanging requests
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+                
+                const response = await fetch(endpoint, {
+                    method,
+                    headers,
+                    body: body ? JSON.stringify(body) : undefined,
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                const text = await response.text();
+                let data;
                 try {
-                    // Add timeout to prevent hanging requests
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-                    
-                    const response = await fetch(endpoint, {
-                        method,
-                        headers,
-                        body: body ? JSON.stringify(body) : undefined,
-                        signal: controller.signal
-                    });
-                    
-                    clearTimeout(timeoutId);
-                    
-                    const text = await response.text();
-                    let data;
-                    try {
-                        data = JSON.parse(text);
-                    } catch {
-                        data = { text };
-                    }
-                    
+                    data = JSON.parse(text);
+                } catch {
+                    data = { text };
+                }
+                
                     console.log('API Response:', response.status, JSON.stringify(data, null, 2));
                     
                     // Update connection status on success
@@ -3854,8 +3854,8 @@ Examples:
                         updateConnectionStatus();
                     }
                     
-                    return { status: response.status, data };
-                } catch (error) {
+                return { status: response.status, data };
+            } catch (error) {
                     console.error(`API Error (attempt ${attempt}/${retries}):`, error);
                     
                     // Update connection status on error
@@ -3864,10 +3864,10 @@ Examples:
                     
                     // If this is the last attempt, return the error
                     if (attempt === retries) {
-                        // Provide more specific error messages
-                        let errorMessage = error.message;
-                        if (error.name === 'AbortError') {
-                            errorMessage = 'Request timed out. Please try again.';
+                // Provide more specific error messages
+                let errorMessage = error.message;
+                if (error.name === 'AbortError') {
+                    errorMessage = 'Request timed out. Please try again.';
                         } else if (error.message.includes('fetch') || error.message.includes('Failed to fetch')) {
                             errorMessage = 'Cannot connect to server. Please ensure the RawrZ server is running on port 8080.';
                         } else if (error.message.includes('CORS')) {
@@ -3876,9 +3876,9 @@ Examples:
                             errorMessage = 'Network error. Please check your internet connection.';
                         } else if (error.message.includes('TypeError')) {
                             errorMessage = 'Connection error. Server may be down or unreachable.';
-                        }
-                        
-                        return { status: 0, data: { error: errorMessage } };
+                }
+                
+                return { status: 0, data: { error: errorMessage } };
                     }
                     
                     // Wait before retrying (exponential backoff)
@@ -4074,8 +4074,8 @@ Examples:
                 const userInput = prompt('Please enter text to encrypt:');
                 if (!userInput) {
                     showStatus('Input is required for encryption', 'error');
-                    stopLoading();
-                    return;
+                stopLoading();
+                return;
                 }
                 input = userInput;
             }
@@ -4109,8 +4109,8 @@ Examples:
                 const userInput = prompt('Please enter encrypted data to decrypt:');
                 if (!userInput) {
                     showStatus('Encrypted data is required for decryption', 'error');
-                    stopLoading();
-                    return;
+                stopLoading();
+                return;
                 }
                 input = userInput;
             }
@@ -4140,8 +4140,8 @@ Examples:
                 const userInput = prompt('Please enter text to hash:');
                 if (!userInput) {
                     showStatus('Input is required for hashing', 'error');
-                    stopLoading();
-                    return;
+                stopLoading();
+                return;
                 }
                 input = userInput;
             }
@@ -4184,8 +4184,8 @@ Examples:
                 const userInput = prompt('Please enter text to encode:');
                 if (!userInput) {
                     showStatus('Input is required for encoding', 'error');
-                    stopLoading();
-                    return;
+                stopLoading();
+                return;
                 }
                 input = userInput;
             }
@@ -4218,8 +4218,8 @@ Examples:
                 const userInput = prompt('Please enter text to decode:');
                 if (!userInput) {
                     showStatus('Input is required for decoding', 'error');
-                    stopLoading();
-                    return;
+                stopLoading();
+                return;
                 }
                 input = userInput;
             }
@@ -4252,8 +4252,8 @@ Examples:
                 const userInput = prompt('Please enter text to encode:');
                 if (!userInput) {
                     showStatus('Input is required for encoding', 'error');
-                    stopLoading();
-                    return;
+                stopLoading();
+                return;
                 }
                 input = userInput;
             }
@@ -4286,8 +4286,8 @@ Examples:
                 const userInput = prompt('Please enter text to decode:');
                 if (!userInput) {
                     showStatus('Input is required for decoding', 'error');
-                    stopLoading();
-                    return;
+                stopLoading();
+                return;
                 }
                 input = userInput;
             }
@@ -4320,8 +4320,8 @@ Examples:
                 const userInput = prompt('Please enter text to encode:');
                 if (!userInput) {
                     showStatus('Input is required for encoding', 'error');
-                    stopLoading();
-                    return;
+                stopLoading();
+                return;
                 }
                 input = userInput;
             }
@@ -4340,8 +4340,8 @@ Examples:
                 const userInput = prompt('Please enter text to decode:');
                 if (!userInput) {
                     showStatus('Input is required for decoding', 'error');
-                    stopLoading();
-                    return;
+                stopLoading();
+                return;
                 }
                 input = userInput;
             }
@@ -4362,8 +4362,8 @@ Examples:
                 const userInput = prompt('Please enter data to sign:');
                 if (!userInput) {
                     showStatus('Input is required for signing', 'error');
-                    stopLoading();
-                    return;
+                stopLoading();
+                return;
                 }
                 input = userInput;
             }
@@ -4436,8 +4436,8 @@ Examples:
                 const userTarget = prompt('Please enter target file:');
                 if (!userTarget) {
                     showStatus('Target file is required for stub generation', 'error');
-                    stopLoading();
-                    return;
+                stopLoading();
+                return;
                 }
                 target = userTarget;
             }
@@ -4518,8 +4518,8 @@ Examples:
                 const userHost = prompt('Please enter host to ping:');
                 if (!userHost) {
                     showStatus('Host is required for ping', 'error');
-                    stopLoading();
-                    return;
+                stopLoading();
+                return;
                 }
                 host = userHost;
             }
@@ -4538,8 +4538,8 @@ Examples:
                 const userHostname = prompt('Please enter hostname to lookup:');
                 if (!userHostname) {
                     showStatus('Hostname is required for DNS lookup', 'error');
-                    stopLoading();
-                    return;
+                stopLoading();
+                return;
                 }
                 hostname = userHostname;
             }
@@ -4558,8 +4558,8 @@ Examples:
                 const userHost = prompt('Please enter host for traceroute:');
                 if (!userHost) {
                     showStatus('Host is required for traceroute', 'error');
-                    stopLoading();
-                    return;
+                stopLoading();
+                return;
                 }
                 host = userHost;
             }
@@ -4596,8 +4596,8 @@ Examples:
                 const userHost = prompt('Please enter host to scan:');
                 if (!userHost) {
                     showStatus('Host is required for port scan', 'error');
-                    stopLoading();
-                    return;
+                stopLoading();
+                return;
                 }
                 host = userHost;
             }
@@ -4642,8 +4642,8 @@ Examples:
                 const userInput = prompt('Please enter input file:');
                 if (!userInput) {
                     showStatus('Input file is required for file operations', 'error');
-                    stopLoading();
-                    return;
+                stopLoading();
+                return;
                 }
                 input = userInput;
             }
@@ -4707,8 +4707,8 @@ Examples:
                 const userInput = prompt('Please enter data to validate:');
                 if (!userInput) {
                     showStatus('Input is required for validation', 'error');
-                    stopLoading();
-                    return;
+                stopLoading();
+                return;
                 }
                 input = userInput;
             }
@@ -4729,8 +4729,8 @@ Examples:
                 const userInput = prompt('Please enter text to process:');
                 if (!userInput) {
                     showStatus('Input is required for text processing', 'error');
-                    stopLoading();
-                    return;
+                stopLoading();
+                return;
                 }
                 input = userInput;
             }
@@ -4749,8 +4749,8 @@ Examples:
                 const userExpression = prompt('Please enter mathematical expression:');
                 if (!userExpression) {
                     showStatus('Expression is required for math calculation', 'error');
-                    stopLoading();
-                    return;
+                stopLoading();
+                return;
                 }
                 expression = userExpression;
             }
@@ -4769,8 +4769,8 @@ Examples:
                 const userCommand = prompt('Please enter CLI command:');
                 if (!userCommand) {
                     showStatus('Command is required for CLI execution', 'error');
-                    stopLoading();
-                    return;
+                stopLoading();
+                return;
                 }
                 command = userCommand;
             }
@@ -4992,7 +4992,7 @@ Examples:
                 stopLoading();
             }
         }
-
+        
         // Advanced functions (these will use CLI for now)
         async function runAdvancedCrypto(button = null) {
             const stopLoading = button ? showLoading(button) : () => {};
@@ -5004,8 +5004,8 @@ Examples:
                 const userInput = prompt('Please enter input data:');
                 if (!userInput) {
                     showStatus('Input is required for advanced crypto operations', 'error');
-                    stopLoading();
-                    return;
+                stopLoading();
+                return;
                 }
                 input = userInput;
             }
@@ -5453,23 +5453,23 @@ Examples:
         async function runAppAnalysis(button = null) {
             const stopLoading = button ? showLoading(button) : () => {};
             
-            try {
+                try {
                 const target = document.getElementById('mobileTarget')?.value || 'test';
                 const result = await api('/app-analysis', 'POST', { target });
-                stopLoading();
-                if (result.status === 200) {
-                    showStatus('App analysis completed', 'success');
-                    showOutput(result.data);
-                    setLastResult(result.data, 'app_analysis');
-                } else {
-                    showStatus('App analysis failed', 'error');
-                    showOutput(result.data);
-                    setLastResult(result.data, 'app_analysis_failed');
-                }
-            } catch (error) {
-                stopLoading();
-                showStatus(`App analysis error: ${error.message}`, 'error');
-                setLastResult({ error: error.message }, 'app_analysis_error');
+                    stopLoading();
+                    if (result.status === 200) {
+                        showStatus('App analysis completed', 'success');
+                        showOutput(result.data);
+                        setLastResult(result.data, 'app_analysis');
+                    } else {
+                        showStatus('App analysis failed', 'error');
+                        showOutput(result.data);
+                        setLastResult(result.data, 'app_analysis_failed');
+                    }
+                } catch (error) {
+                    stopLoading();
+                    showStatus(`App analysis error: ${error.message}`, 'error');
+                    setLastResult({ error: error.message }, 'app_analysis_error');
             }
         }
         async function runDeviceForensics(button = null) {
@@ -6324,7 +6324,7 @@ Examples:
                 const userFile = prompt('Please enter file to analyze:');
                 if (!userFile) {
                     showStatus('File is required for analysis', 'error');
-                    stopLoading();
+                stopLoading();
                     return;
                 }
                 
@@ -6373,7 +6373,7 @@ Examples:
                 const userFile = prompt('Please enter file to hash:');
                 if (!userFile) {
                     showStatus('File is required for hashing', 'error');
-                    stopLoading();
+                stopLoading();
                     return;
                 }
                 
@@ -6422,7 +6422,7 @@ Examples:
                 const userFile = prompt('Please enter file to check signature:');
                 if (!userFile) {
                     showStatus('File is required for signature check', 'error');
-                    stopLoading();
+                stopLoading();
                     return;
                 }
                 
