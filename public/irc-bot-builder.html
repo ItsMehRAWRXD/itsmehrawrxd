@@ -1,0 +1,1731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RawrZ IRC Bot Builder - Advanced Bot Generation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c0f1a 0%, #1a1f2e 100%);
+            color: #e6e9ef; 
+            min-height: 100vh;
+        }
+        .header {
+            background: linear-gradient(90deg, #1a1f2e 0%, #2d3748 100%);
+            padding: 1rem 2rem; 
+            border-bottom: 2px solid #4a5568;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .header h1 {
+            color: #68d391; 
+            font-size: 1.8rem; 
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(104, 211, 145, 0.3);
+        }
+        .header .subtitle { 
+            color: #a0aec0; 
+            font-size: 0.9rem; 
+            margin-top: 0.25rem;
+        }
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            padding: 2rem; 
+        }
+        .grid { 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); 
+            gap: 1.5rem; 
+            margin-bottom: 2rem;
+        }
+        .card { 
+            background: linear-gradient(145deg, #1a202c 0%, #2d3748 100%);
+            border: 1px solid #4a5568; 
+            border-radius: 12px; 
+            padding: 1.5rem; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        .card h3 { 
+            color: #68d391; 
+            margin-bottom: 1rem; 
+            font-size: 1.1rem;
+            border-bottom: 1px solid #4a5568;
+            padding-bottom: 0.5rem;
+        }
+        .form-group {
+            margin-bottom: 1rem; 
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem; 
+            color: #cbd5e0; 
+            font-weight: 500;
+        }
+        input, select, textarea, button { 
+            width: 100%;
+            padding: 0.75rem; 
+            border: 1px solid #4a5568; 
+            border-radius: 8px;
+            background: #2d3748; 
+            color: #e6e9ef; 
+            font-size: 0.9rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input:focus, select:focus, textarea:focus { 
+            outline: none;
+            border-color: #68d391; 
+            box-shadow: 0 0 0 3px rgba(104, 211, 145, 0.1);
+        }
+        button { 
+            background: linear-gradient(135deg, #68d391 0%, #48bb78 100%);
+            border: none; 
+            color: #1a202c; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.2s;
+            margin-top: 0.5rem;
+        }
+        button:hover { 
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(104, 211, 145, 0.3);
+        }
+        button:disabled { 
+            background: #4a5568; 
+            cursor: not-allowed; 
+            transform: none;
+        }
+        .row { 
+            display: flex; 
+            gap: 0.5rem; 
+            flex-wrap: wrap; 
+        }
+        .row input, .row select, .row button { 
+            flex: 1; 
+            min-width: 120px; 
+        }
+        .output { 
+            background: #0c0f1a; 
+            border: 1px solid #2d3748; 
+            border-radius: 8px; 
+            padding: 1rem; 
+            margin-top: 1rem; 
+            max-height: 400px; 
+            overflow-y: auto; 
+            font-family: 'Courier New', monospace; 
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .status { 
+            padding: 0.5rem 1rem; 
+            border-radius: 6px; 
+            margin: 0.5rem 0; 
+            font-weight: 500;
+        }
+        .status.success { background: rgba(104, 211, 145, 0.2); color: #68d391; border: 1px solid #68d391; }
+        .status.error { background: rgba(245, 101, 101, 0.2); color: #f56565; border: 1px solid #f56565; }
+        .status.info { background: rgba(66, 153, 225, 0.2); color: #4299e1; border: 1px solid #4299e1; }
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #4a5568;
+            border-radius: 50%;
+            border-top-color: #68d391;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            color: #68d391;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .back-link:hover {
+            color: #48bb78;
+        }
+        
+        /* Download section styles */
+        .download-section {
+            background: linear-gradient(145deg, #2d3748 0%, #4a5568 100%);
+            border: 1px solid #68d391;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .download-section h4 {
+            color: #68d391;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .download-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .download-buttons .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .download-buttons .btn-primary {
+            background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
+            color: white;
+        }
+        
+        .download-buttons .btn-success {
+            background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+            color: white;
+        }
+        
+        .download-buttons .btn-warning {
+            background: linear-gradient(135deg, #d69e2e 0%, #b7791f 100%);
+            color: white;
+        }
+        
+        .download-buttons .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .tab {
+            padding: 0.5rem 1rem;
+            background: #2d3748;
+            border: 1px solid #4a5568;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab.active {
+            background: #68d391;
+            color: #1a202c;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .channel-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .channel-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            border: 1px solid #4a5568;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            background: #2d3748;
+        }
+        .channel-info {
+            flex: 1;
+        }
+        .channel-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .chat-container {
+            background: #000;
+            border: 2px solid #4a5568;
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            height: 300px;
+            overflow-y: auto;
+        }
+        .chat-line {
+            margin-bottom: 0.25rem;
+        }
+        .chat-timestamp {
+            color: #68d391;
+        }
+        .chat-user {
+            color: #4299e1;
+        }
+        .chat-message {
+            color: #e6e9ef;
+        }
+        .connection-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            border: 1px solid #4a5568;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            background: #2d3748;
+        }
+        .connection-info {
+            flex: 1;
+        }
+        .connection-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .connection-status.online {
+            background: rgba(104, 211, 145, 0.2);
+            color: #68d391;
+        }
+        .connection-status.offline {
+            background: rgba(245, 101, 101, 0.2);
+            color: #f56565;
+        }
+        .bot-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .bot-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            border: 1px solid #4a5568;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            background: #2d3748;
+        }
+        .bot-info {
+            flex: 1;
+        }
+        .bot-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .bot-status.online {
+            background: rgba(104, 211, 145, 0.2);
+            color: #68d391;
+        }
+        .bot-status.offline {
+            background: rgba(245, 101, 101, 0.2);
+            color: #f56565;
+        }
+    </style>
+</head>
+<body>
+        <div class="header">
+        <h1>RawrZ IRC Bot Builder</h1>
+        <div class="subtitle">Advanced IRC Bot Generation & Management Platform</div>
+        </div>
+
+    <div class="container">
+        <a href="/panel" class="back-link">← Back to Main Panel</a>
+
+        <!-- Main Tabs -->
+        <div class="tabs">
+            <div class="tab active" onclick="showMainTab('builder', this)">Bot Builder</div>
+            <div class="tab" onclick="showMainTab('channels', this)">Channel Manager</div>
+            <div class="tab" onclick="showMainTab('connections', this)">Connections</div>
+            <div class="tab" onclick="showMainTab('monitor', this)">Bot Monitor</div>
+        </div>
+
+        <!-- Bot Builder Tab -->
+        <div id="builder" class="tab-content active">
+        <div class="grid">
+            <!-- Bot Configuration -->
+            <div class="card">
+                <h3>Bot Configuration</h3>
+                <div class="form-group">
+                    <label>Bot Name</label>
+                    <input type="text" id="botName" placeholder="MyRawrZBot" value="RawrZBot">
+                </div>
+                <div class="form-group">
+                    <label>IRC Server</label>
+                    <input type="text" id="ircServer" placeholder="irc.rizon.net" value="irc.rizon.net">
+                </div>
+                <div class="form-group">
+                    <label>Port</label>
+                    <input type="number" id="ircPort" placeholder="6667" value="6667">
+                </div>
+                <div class="form-group">
+                    <label>Channels (comma-separated)</label>
+                    <input type="text" id="ircChannels" placeholder="#rawr,#test" value="#rawr,#test">
+                </div>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="botUsername" placeholder="rawrzuser" value="rawrzuser">
+                </div>
+                <div class="form-group">
+                    <label>Real Name</label>
+                    <input type="text" id="botRealname" placeholder="RawrZ Security Bot" value="RawrZ Security Bot">
+                </div>
+                </div>
+
+            <!-- Language Selection -->
+            <div class="card">
+                <h3>Programming Language</h3>
+                <div class="form-group">
+                    <label>Select Language</label>
+                    <select id="botLanguage">
+                        <option value="cpp">C++</option>
+                        <option value="python">Python</option>
+                        <option value="javascript">JavaScript</option>
+                        <option value="go">Go</option>
+                        <option value="rust">Rust</option>
+                        <option value="csharp">C#</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Target OS</label>
+                    <select id="targetOS">
+                        <option value="windows">Windows</option>
+                        <option value="linux">Linux</option>
+                        <option value="macos">macOS</option>
+                        <option value="cross">Cross-Platform</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Architecture</label>
+                    <select id="architecture">
+                        <option value="x64">x64</option>
+                        <option value="x86">x86</option>
+                        <option value="arm64">ARM64</option>
+                        <option value="arm32">ARM32</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Encryption Options -->
+            <div class="card">
+                <h3>Encryption Options</h3>
+                <div class="form-group">
+                    <label>Encryption Algorithm</label>
+                    <select id="encryptionAlgorithm">
+                        <option value="none">No Encryption</option>
+                        <option value="aes256">AES-256-CBC</option>
+                        <option value="aes128">AES-128-CBC</option>
+                        <option value="chacha20">ChaCha20-Poly1305</option>
+                        <option value="camellia">Camellia-256-CBC</option>
+                        <option value="aria">ARIA-256-CBC</option>
+                        <option value="serpent">Serpent-CBC</option>
+                        <option value="twofish">Twofish-CBC</option>
+                        <option value="blowfish">Blowfish-CBC</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Encryption Key</label>
+                    <input type="text" id="encryptionKey" placeholder="Enter encryption key (or leave blank for auto-generated)">
+                </div>
+                <div class="form-group">
+                    <label>FUD Features</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="antiDebug" checked>
+                            <label for="antiDebug">Anti-Debugging</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="antiVM" checked>
+                            <label for="antiVM">Anti-VM Detection</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="antiSandbox" checked>
+                            <label for="antiSandbox">Anti-Sandbox</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="stealthMode" checked>
+                            <label for="stealthMode">Stealth Mode</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="polymorphic" checked>
+                            <label for="polymorphic">Polymorphic Code</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="stringObfuscation" checked>
+                            <label for="stringObfuscation">String Obfuscation</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="controlFlowObfuscation" checked>
+                            <label for="controlFlowObfuscation">Control Flow Obfuscation</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="deadCodeInjection" checked>
+                            <label for="deadCodeInjection">Dead Code Injection</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="timingEvasion" checked>
+                            <label for="timingEvasion">Timing Evasion</label>
+                    </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="memoryProtection" checked>
+                            <label for="memoryProtection">Memory Protection</label>
+                </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="behavioralEvasion" checked>
+                            <label for="behavioralEvasion">Behavioral Evasion</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="fudPadding" checked>
+                            <label for="fudPadding">FUD Padding</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="fudNoise" checked>
+                            <label for="fudNoise">FUD Noise Injection</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="fudSteganography">
+                            <label for="fudSteganography">Steganographic Hiding</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="fudTiming" checked>
+                            <label for="fudTiming">Timing Obfuscation</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="metamorphicCode" checked>
+                            <label for="metamorphicCode">Metamorphic Code</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="advancedObfuscation" checked>
+                            <label for="advancedObfuscation">Advanced Obfuscation</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="mutexProtection" checked>
+                            <label for="mutexProtection">Mutex Protection</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="upxPacking" checked>
+                            <label for="upxPacking">UPX Packing</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Output Format</label>
+                    <select id="outputFormat">
+                        <option value="source">Source Code</option>
+                        <option value="encrypted">Encrypted File</option>
+                        <option value="stub">Stub Executable</option>
+                        <option value="all">All Formats</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button type="button" onclick="testAlgorithmLoading()" class="btn btn-secondary">
+                        Test Algorithm Loading
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bot Features -->
+            <div class="card">
+                <h3>Bot Features</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                        <input type="checkbox" id="featureFileManager" checked>
+                        <label for="featureFileManager">File Manager</label>
+                        </div>
+                        <div class="checkbox-item">
+                        <input type="checkbox" id="featureProcessManager" checked>
+                        <label for="featureProcessManager">Process Manager</label>
+                        </div>
+                        <div class="checkbox-item">
+                        <input type="checkbox" id="featureSystemInfo" checked>
+                        <label for="featureSystemInfo">System Info</label>
+                        </div>
+                        <div class="checkbox-item">
+                        <input type="checkbox" id="featureNetworkTools" checked>
+                        <label for="featureNetworkTools">Network Tools</label>
+                        </div>
+                        <div class="checkbox-item">
+                        <input type="checkbox" id="featureKeylogger">
+                        <label for="featureKeylogger">Keylogger</label>
+                        </div>
+                        <div class="checkbox-item">
+                        <input type="checkbox" id="featureScreenCapture">
+                        <label for="featureScreenCapture">Screen Capture</label>
+                        </div>
+                        <div class="checkbox-item">
+                        <input type="checkbox" id="featureFormGrabber">
+                        <label for="featureFormGrabber">Form Grabber</label>
+                        </div>
+                        <div class="checkbox-item">
+                        <input type="checkbox" id="featureLoader">
+                        <label for="featureLoader">Loader</label>
+                        </div>
+                        <div class="checkbox-item">
+                        <input type="checkbox" id="featureWebcamCapture">
+                        <label for="featureWebcamCapture">Webcam Capture</label>
+                        </div>
+                        <div class="checkbox-item">
+                        <input type="checkbox" id="featureAudioCapture">
+                        <label for="featureAudioCapture">Audio Capture</label>
+                        </div>
+                        <div class="checkbox-item">
+                        <input type="checkbox" id="featureBrowserStealer">
+                        <label for="featureBrowserStealer">Browser Stealer</label>
+                        </div>
+                        <div class="checkbox-item">
+                        <input type="checkbox" id="featureCryptoStealer">
+                        <label for="featureCryptoStealer">Crypto Stealer</label>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- Custom Features -->
+            <div class="card">
+                <h3>Custom Features</h3>
+                <div class="form-group">
+                    <label>Feature Name</label>
+                    <input type="text" id="customFeatureName" placeholder="myCustomFeature">
+                        </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" id="customFeatureDesc" placeholder="Custom feature description">
+                        </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="customFeatureCategory">
+                        <option value="custom">Custom</option>
+                        <option value="stealth">Stealth</option>
+                        <option value="network">Network</option>
+                        <option value="system">System</option>
+                        <option value="security">Security</option>
+                    </select>
+                        </div>
+                <div class="form-group">
+                    <label>Supported Languages</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="customLangCpp" checked>
+                            <label for="customLangCpp">C++</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="customLangPython" checked>
+                            <label for="customLangPython">Python</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="customLangJavaScript" checked>
+                            <label for="customLangJavaScript">JavaScript</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>C++ Code</label>
+                    <textarea id="customFeatureCpp" placeholder="// C++ implementation code" rows="4"></textarea>
+            </div>
+                <div class="form-group">
+                    <label>Python Code</label>
+                    <textarea id="customFeaturePython" placeholder="# Python implementation code" rows="4"></textarea>
+        </div>
+            <div class="form-group">
+                    <label>JavaScript Code</label>
+                    <textarea id="customFeatureJavaScript" placeholder="// JavaScript implementation code" rows="4"></textarea>
+                    </div>
+                <div class="form-group">
+                    <button onclick="addCustomFeature()">Add Custom Feature</button>
+                    </div>
+                <div class="form-group">
+                    <button onclick="listCustomFeatures()">List Custom Features</button>
+                    </div>
+                    </div>
+
+            <!-- Feature Templates -->
+            <div class="card">
+                <h3>Feature Templates</h3>
+                <div class="form-group">
+                    <label>Template Name</label>
+                    <input type="text" id="templateName" placeholder="myTemplate">
+                    </div>
+                <div class="form-group">
+                    <label>Template Description</label>
+                    <input type="text" id="templateDesc" placeholder="Template description">
+                    </div>
+                <div class="form-group">
+                    <label>Features (comma-separated)</label>
+                    <input type="text" id="templateFeatures" placeholder="fileManager,processManager,formGrabber">
+                    </div>
+                <div class="form-group">
+                    <button onclick="createFeatureTemplate()">Create Template</button>
+                    </div>
+                <div class="form-group">
+                    <button onclick="listFeatureTemplates()">List Templates</button>
+                </div>
+            </div>
+
+            <!-- Bot Actions -->
+            <div class="card">
+                <h3>Bot Actions</h3>
+            <div class="form-group">
+                    <button onclick="generateBot()">Generate Bot Code</button>
+            </div>
+            <div class="form-group">
+                    <button onclick="generateBotStub()">Generate Encrypted Stub</button>
+            </div>
+            <div class="form-group">
+                    <button onclick="encryptStub()">Encrypt Stub File</button>
+            </div>
+            <div class="form-group">
+                    <button onclick="testBot()">Test Bot Connection</button>
+            </div>
+            <div class="form-group">
+                    <button onclick="compileBot()">Compile Bot</button>
+            </div>
+            <div class="form-group">
+                    <button onclick="getTemplates()">Load Templates</button>
+            </div>
+            <div class="form-group">
+                    <button onclick="getFeatures()">Get Available Features</button>
+            </div>
+            </div>
+            </div>
+
+        <!-- Output Section -->
+        <div class="card">
+            <h3>Output</h3>
+            <div id="output" class="output">Ready to generate IRC bots...</div>
+        </div>
+        </div>
+        </div>
+
+        <!-- Channel Manager Tab -->
+        <div id="channels" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>Joined Channels</h3>
+                    <div id="joinedChannels" class="channel-list">
+                        <div class="channel-item">
+                            <div class="channel-info">
+                                <strong>#rawrz</strong>
+                                <br><small>Users: 15 | Topic: RawrZ Security Discussion</small>
+                            </div>
+                            <div class="channel-actions">
+                                <button onclick="joinChannel('#rawrz')">Join</button>
+                                <button onclick="leaveChannel('#rawrz')" style="background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);">Leave</button>
+                            </div>
+                        </div>
+                        <div class="channel-item">
+                            <div class="channel-info">
+                                <strong>#test</strong>
+                                <br><small>Users: 3 | Topic: Testing Channel</small>
+                            </div>
+                            <div class="channel-actions">
+                                <button onclick="joinChannel('#test')">Join</button>
+                                <button onclick="leaveChannel('#test')" style="background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);">Leave</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Join New Channel</label>
+                        <input type="text" id="newChannel" placeholder="#channelname">
+                        <button onclick="joinNewChannel()">Join Channel</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Channel Chat</h3>
+                    <div class="form-group">
+                        <label>Select Channel</label>
+                        <select id="channelSelect">
+                            <option value="#rawrz">#rawrz</option>
+                            <option value="#test">#test</option>
+                        </select>
+                    </div>
+                    <div id="channelChat" class="chat-container">
+                        <div class="chat-line">
+                            <span class="chat-timestamp">[12:34:56]</span>
+                            <span class="chat-user">RawrZBot:</span>
+                            <span class="chat-message">Connected to channel</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="channelMessage" placeholder="Type message here...">
+                        <button onclick="sendChannelMessage()">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Connections Tab -->
+        <div id="connections" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>IRC Connections</h3>
+                    <div id="ircConnections">
+                        <div class="connection-item">
+                            <div class="connection-info">
+                                <strong>irc.rizon.net:6667</strong>
+                                <br><small>Status: Connected | Nick: RawrZBot</small>
+                            </div>
+                            <div class="connection-status online">Online</div>
+                        </div>
+                    </div>
+                    <button onclick="refreshConnections()">Refresh Connections</button>
+                </div>
+
+                <div class="card">
+                    <h3>Connection Settings</h3>
+                    <div class="form-group">
+                        <label>IRC Server</label>
+                        <input type="text" id="connectionServer" placeholder="irc.rizon.net" value="irc.rizon.net">
+                    </div>
+                    <div class="form-group">
+                        <label>Port</label>
+                        <input type="number" id="connectionPort" placeholder="6667" value="6667">
+                    </div>
+                    <div class="form-group">
+                        <label>Nickname</label>
+                        <input type="text" id="connectionNick" placeholder="RawrZBot" value="RawrZBot">
+                    </div>
+                    <div class="form-group">
+                        <button onclick="connectToIRC()">Connect</button>
+                        <button onclick="disconnectFromIRC()" style="background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);">Disconnect</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bot Monitor Tab -->
+        <div id="monitor" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>Active Bots</h3>
+                    <div id="activeBots" class="bot-list">
+                        <div class="bot-item">
+                            <div class="bot-info">
+                                <strong>RawrZBot</strong>
+                                <br><small>Type: IRC | Server: irc.rizon.net | Status: Running</small>
+                            </div>
+                            <div class="bot-status online">Online</div>
+                        </div>
+                    </div>
+                    <button onclick="refreshBots()">Refresh Bots</button>
+                </div>
+
+                <div class="card">
+                    <h3>Bot Statistics</h3>
+                    <div id="botStats">
+                        <p><strong>Total Bots:</strong> <span id="totalBots">1</span></p>
+                        <p><strong>Active Bots:</strong> <span id="activeBots">1</span></p>
+                        <p><strong>IRC Bots:</strong> <span id="ircBots">1</span></p>
+                        <p><strong>HTTP Bots:</strong> <span id="httpBots">0</span></p>
+                    </div>
+                    <button onclick="updateBotStats()">Update Statistics</button>
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <h3>Bot Activity Log</h3>
+                <div id="botActivityLog" class="output">Bot activity will appear here...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let authToken = localStorage.getItem('authToken') || '';
+        
+        // API helper function
+        async function api(endpoint, method = 'GET', data = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            };
+            
+            // Add authentication header if token exists
+            if (authToken) {
+                options.headers['Authorization'] = `Bearer ${authToken}`;
+            }
+            
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            
+            console.log('API Call:', endpoint, method, options.headers);
+            
+            const response = await fetch(endpoint, options);
+            const result = await response.json();
+            
+            console.log('API Response:', response.status, JSON.stringify(result, null, 2));
+            
+            return {
+                status: response.status,
+                data: result
+            };
+        }
+
+        // Show loading state
+        function showLoading(button) {
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.innerHTML = '<span class="loading"></span> Loading...';
+            
+            return () => {
+                button.disabled = false;
+                button.textContent = originalText;
+            };
+        }
+
+        // Show status message
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            
+            const output = document.getElementById('output');
+            output.appendChild(statusDiv);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        // Show output
+        function showOutput(data) {
+            const output = document.getElementById('output');
+            const pre = document.createElement('pre');
+            pre.textContent = JSON.stringify(data, null, 2);
+            output.appendChild(pre);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        // Get bot configuration
+        function getBotConfig() {
+            return {
+                name: document.getElementById('botName').value,
+                server: document.getElementById('ircServer').value,
+                port: parseInt(document.getElementById('ircPort').value),
+                channels: document.getElementById('ircChannels').value.split(',').map(c => c.trim()),
+                username: document.getElementById('botUsername').value,
+                realname: document.getElementById('botRealname').value,
+                targetOS: document.getElementById('targetOS').value,
+                architecture: document.getElementById('architecture').value
+            };
+        }
+
+        // Get selected features
+        function getSelectedFeatures() {
+            const features = [];
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            checkboxes.forEach(checkbox => {
+                const featureName = checkbox.id.replace('feature', '');
+                // Convert camelCase to lowercase with proper mapping
+                const featureMap = {
+                    'FileManager': 'fileManager',
+                    'ProcessManager': 'processManager',
+                    'SystemInfo': 'systemInfo',
+                    'NetworkTools': 'networkTools',
+                    'Keylogger': 'keylogger',
+                    'ScreenCapture': 'screenCapture',
+                    'FormGrabber': 'formGrabber',
+                    'Loader': 'loader',
+                    'WebcamCapture': 'webcamCapture',
+                    'AudioCapture': 'audioCapture',
+                    'BrowserStealer': 'browserStealer',
+                    'CryptoStealer': 'cryptoStealer'
+                };
+                features.push(featureMap[featureName] || featureName.toLowerCase());
+            });
+            return features;
+        }
+
+        // Generate bot
+        async function generateBot() {
+            const button = event.target;
+            const stopLoading = showLoading(button);
+            
+            try {
+                const config = getBotConfig();
+                const features = getSelectedFeatures();
+                const language = document.getElementById('botLanguage').value;
+                
+                showStatus('Generating IRC bot...', 'info');
+                
+                const result = await api('/irc-bot/generate', 'POST', {
+                    config,
+                    features,
+                    extensions: [language]
+                });
+                
+                stopLoading();
+                
+                if (result.status === 200) {
+                    showStatus('Bot generated successfully!', 'success');
+                    showOutput(result.data);
+                } else {
+                    showStatus('Bot generation failed', 'error');
+                    showOutput(result.data);
+                }
+            } catch (error) {
+                stopLoading();
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Generate bot as encrypted stub
+        async function generateBotStub() {
+            const button = event.target;
+            const stopLoading = showLoading(button);
+            
+            try {
+                const config = getBotConfig();
+                const features = getSelectedFeatures();
+                const language = document.getElementById('botLanguage').value;
+                const encryptionOptions = getEncryptionOptions();
+                
+                showStatus('Generating encrypted IRC bot stub...', 'info');
+                
+                const result = await api('/irc-bot/generate-stub', 'POST', {
+                    config,
+                    features,
+                    extensions: [language],
+                    encryptionOptions
+                });
+                
+                stopLoading();
+                
+                if (result.status === 200) {
+                    showStatus('Encrypted bot stub generated successfully!', 'success');
+                    showOutput(result.data);
+                    
+                    // Show download options
+                    showStubDownloadOptions(result.data);
+                } else {
+                    showStatus('Bot stub generation failed', 'error');
+                    showOutput(result.data);
+                }
+            } catch (error) {
+                stopLoading();
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Encrypt existing stub
+        async function encryptStub() {
+            const button = event.target;
+            const stopLoading = showLoading(button);
+            
+            try {
+                const stubCode = document.getElementById('output').value;
+                if (!stubCode) {
+                    showStatus('Please generate a bot stub first', 'error');
+                    stopLoading();
+                    return;
+                }
+                
+                const encryptionOptions = getEncryptionOptions();
+                
+                showStatus('Encrypting stub...', 'info');
+                
+                const result = await api('/irc-bot/encrypt-stub', 'POST', {
+                    stubCode,
+                    algorithm: encryptionOptions.algorithm,
+                    key: encryptionOptions.key
+                });
+                
+                stopLoading();
+                
+                if (result.status === 200) {
+                    showStatus('Stub encrypted successfully!', 'success');
+                    showOutput(result.data);
+                } else {
+                    showStatus('Stub encryption failed', 'error');
+                    showOutput(result.data);
+                }
+            } catch (error) {
+                stopLoading();
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Get encryption options from form
+        function getEncryptionOptions() {
+            return {
+                algorithm: document.getElementById('encryptionAlgorithm').value,
+                key: document.getElementById('encryptionKey').value || null,
+                antiDebug: document.getElementById('antiDebug').checked,
+                antiVM: document.getElementById('antiVM').checked,
+                antiSandbox: document.getElementById('antiSandbox').checked,
+                stealthMode: document.getElementById('stealthMode').checked,
+                polymorphic: document.getElementById('polymorphic').checked,
+                stringObfuscation: document.getElementById('stringObfuscation').checked,
+                controlFlowObfuscation: document.getElementById('controlFlowObfuscation').checked,
+                deadCodeInjection: document.getElementById('deadCodeInjection').checked,
+                timingEvasion: document.getElementById('timingEvasion').checked,
+                memoryProtection: document.getElementById('memoryProtection').checked,
+                behavioralEvasion: document.getElementById('behavioralEvasion').checked,
+                fudPadding: document.getElementById('fudPadding').checked,
+                fudNoise: document.getElementById('fudNoise').checked,
+                fudSteganography: document.getElementById('fudSteganography').checked,
+                fudTiming: document.getElementById('fudTiming').checked,
+                metamorphicCode: document.getElementById('metamorphicCode').checked,
+                advancedObfuscation: document.getElementById('advancedObfuscation').checked,
+                mutexProtection: document.getElementById('mutexProtection').checked,
+                upxPacking: document.getElementById('upxPacking').checked
+            };
+        }
+
+        // Show stub download options
+        function showStubDownloadOptions(data) {
+            const outputDiv = document.getElementById('output');
+            const downloadSection = document.createElement('div');
+            downloadSection.innerHTML = `
+                <div class="download-section">
+                    <h4>Download Options</h4>
+                    <div class="download-buttons">
+                        <button onclick="downloadStub('source')" class="btn btn-primary">Download Source</button>
+                        <button onclick="downloadStub('encrypted')" class="btn btn-success">Download Encrypted</button>
+                        <button onclick="saveEncryptedStub()" class="btn btn-warning">Save Encrypted File</button>
+                    </div>
+                </div>
+            `;
+            outputDiv.appendChild(downloadSection);
+        }
+
+        // Download stub in different formats
+        async function downloadStub(format) {
+            try {
+                const output = document.getElementById('output').value;
+                if (!output) {
+                    showStatus('No stub to download', 'error');
+                    return;
+                }
+                
+                const language = document.getElementById('botLanguage').value;
+                const botName = document.getElementById('botName').value || 'rawrz_bot';
+                const encryptionOptions = getEncryptionOptions();
+                
+                let filename, content;
+                
+                if (format === 'source') {
+                    filename = `${botName}_stub.${getFileExtension(language)}`;
+                    content = output;
+                } else if (format === 'encrypted') {
+                    const result = await api('/irc-bot/encrypt-stub', 'POST', {
+                        stubCode: output,
+                        algorithm: encryptionOptions.algorithm,
+                        key: encryptionOptions.key
+                    });
+                    
+                    if (result.status === 200) {
+                        filename = `${botName}_stub_encrypted.enc`;
+                        content = result.data.result.encrypted;
+                    } else {
+                        showStatus('Encryption failed', 'error');
+                        return;
+                    }
+                }
+                
+                downloadFile(filename, content);
+                showStatus(`${format} stub downloaded successfully!`, 'success');
+            } catch (error) {
+                showStatus(`Download error: ${error.message}`, 'error');
+            }
+        }
+
+        // Save encrypted stub to server
+        async function saveEncryptedStub() {
+            try {
+                const output = document.getElementById('output').value;
+                if (!output) {
+                    showStatus('No stub to save', 'error');
+                    return;
+                }
+                
+                const language = document.getElementById('botLanguage').value;
+                const botName = document.getElementById('botName').value || 'rawrz_bot';
+                const encryptionOptions = getEncryptionOptions();
+                
+                const filename = `${botName}_stub_encrypted.${getFileExtension(language)}.enc`;
+                
+                const result = await api('/irc-bot/save-encrypted-stub', 'POST', {
+                    stubCode: output,
+                    algorithm: encryptionOptions.algorithm,
+                    filename: filename,
+                    key: encryptionOptions.key
+                });
+                
+                if (result.status === 200) {
+                    showStatus(`Encrypted stub saved as ${filename}`, 'success');
+                    showOutput(result.data);
+                } else {
+                    showStatus('Failed to save encrypted stub', 'error');
+                    showOutput(result.data);
+                }
+            } catch (error) {
+                showStatus(`Save error: ${error.message}`, 'error');
+            }
+        }
+
+        // Get file extension for language
+        function getFileExtension(language) {
+            const extensions = {
+                'cpp': 'cpp',
+                'python': 'py',
+                'javascript': 'js',
+                'go': 'go',
+                'rust': 'rs',
+                'csharp': 'cs'
+            };
+            return extensions[language] || 'txt';
+        }
+
+        // Download file helper
+        function downloadFile(filename, content) {
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Test bot
+        async function testBot() {
+            const button = event.target;
+            const stopLoading = showLoading(button);
+            
+            try {
+                const config = getBotConfig();
+                
+                showStatus('Testing bot connection...', 'info');
+                
+                const result = await api('/irc-bot/test', 'POST', { config });
+                
+                stopLoading();
+                
+                if (result.status === 200) {
+                    showStatus('Bot test completed!', 'success');
+                    showOutput(result.data);
+                } else {
+                    showStatus('Bot test failed', 'error');
+                    showOutput(result.data);
+                }
+            } catch (error) {
+                stopLoading();
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Compile bot
+        async function compileBot() {
+            const button = event.target;
+            const stopLoading = showLoading(button);
+            
+            try {
+                const language = document.getElementById('botLanguage').value;
+                const config = getBotConfig();
+                
+                // Generate code first
+                const features = getSelectedFeatures();
+                const generateResult = await api('/irc-bot/generate', 'POST', {
+                    config,
+                    features,
+                    extensions: [language]
+                });
+                
+                if (generateResult.status !== 200) {
+                    throw new Error('Failed to generate bot code');
+                }
+                
+                const botCode = generateResult.data.result.bots[language].code;
+                
+                showStatus('Compiling bot...', 'info');
+                
+                const result = await api('/irc-bot/compile', 'POST', {
+                    code: botCode,
+                    language,
+                    config
+                });
+                
+                stopLoading();
+                
+                if (result.status === 200) {
+                    showStatus('Bot compiled successfully!', 'success');
+                    showOutput(result.data);
+                } else {
+                    showStatus('Bot compilation failed', 'error');
+                    showOutput(result.data);
+                }
+            } catch (error) {
+                stopLoading();
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Get templates
+        async function getTemplates() {
+            const button = event.target;
+            const stopLoading = showLoading(button);
+            
+            try {
+                showStatus('Loading templates...', 'info');
+                
+                const result = await api('/irc-bot/templates', 'GET');
+                
+                stopLoading();
+                
+                if (result.status === 200) {
+                    showStatus('Templates loaded!', 'success');
+                    showOutput(result.data);
+                } else {
+                    showStatus('Failed to load templates', 'error');
+                    showOutput(result.data);
+                }
+            } catch (error) {
+                stopLoading();
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Get features
+        async function getFeatures() {
+            const button = event.target;
+            const stopLoading = showLoading(button);
+            
+            try {
+                showStatus('Loading features...', 'info');
+                
+                const result = await api('/irc-bot/features', 'GET');
+                
+                stopLoading();
+                
+                if (result.status === 200) {
+                    showStatus('Features loaded!', 'success');
+                    showOutput(result.data);
+                } else {
+                    showStatus('Failed to load features', 'error');
+                    showOutput(result.data);
+                }
+            } catch (error) {
+                stopLoading();
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Custom Feature Management
+        async function addCustomFeature() {
+            const button = event.target;
+            const stopLoading = showLoading(button);
+            
+            try {
+                const featureName = document.getElementById('customFeatureName').value;
+                const description = document.getElementById('customFeatureDesc').value;
+                const category = document.getElementById('customFeatureCategory').value;
+                
+                if (!featureName) {
+                    showStatus('Feature name is required', 'error');
+                    stopLoading();
+                    return;
+                }
+
+                // Get supported languages
+                const languages = [];
+                if (document.getElementById('customLangCpp').checked) languages.push('cpp');
+                if (document.getElementById('customLangPython').checked) languages.push('python');
+                if (document.getElementById('customLangJavaScript').checked) languages.push('javascript');
+
+                // Get code for each language
+                const code = {};
+                if (languages.includes('cpp')) {
+                    const cppCode = document.getElementById('customFeatureCpp').value;
+                    if (cppCode) {
+                        code.cpp = {
+                            method: cppCode,
+                            init: `// Initialize ${featureName}`
+                        };
+                    }
+                }
+                if (languages.includes('python')) {
+                    const pythonCode = document.getElementById('customFeaturePython').value;
+                    if (pythonCode) {
+                        code.python = {
+                            method: pythonCode,
+                            init: `# Initialize ${featureName}`
+                        };
+                    }
+                }
+                if (languages.includes('javascript')) {
+                    const jsCode = document.getElementById('customFeatureJavaScript').value;
+                    if (jsCode) {
+                        code.javascript = {
+                            method: jsCode,
+                            init: `// Initialize ${featureName}`
+                        };
+                    }
+                }
+
+                const featureConfig = {
+                    description,
+                    languages,
+                    code,
+                    category,
+                    author: 'User',
+                    version: '1.0.0'
+                };
+
+                showStatus('Adding custom feature...', 'info');
+                
+                const result = await api('/irc-bot/custom-features/add', 'POST', {
+                    featureName,
+                    featureConfig
+                });
+                
+                stopLoading();
+                
+                if (result.status === 200) {
+                    showStatus('Custom feature added successfully!', 'success');
+                    showOutput(result.data);
+                    // Clear form
+                    document.getElementById('customFeatureName').value = '';
+                    document.getElementById('customFeatureDesc').value = '';
+                    document.getElementById('customFeatureCpp').value = '';
+                    document.getElementById('customFeaturePython').value = '';
+                    document.getElementById('customFeatureJavaScript').value = '';
+                } else {
+                    showStatus('Failed to add custom feature', 'error');
+                }
+            } catch (error) {
+                stopLoading();
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function listCustomFeatures() {
+            const button = event.target;
+            const stopLoading = showLoading(button);
+            
+            try {
+                showStatus('Getting custom features...', 'info');
+                
+                const result = await api('/irc-bot/custom-features', 'GET');
+                
+                stopLoading();
+                
+                if (result.status === 200) {
+                    showStatus('Custom features retrieved successfully!', 'success');
+                    showOutput(result.data);
+                } else {
+                    showStatus('Failed to get custom features', 'error');
+                }
+            } catch (error) {
+                stopLoading();
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Feature Template Management
+        async function createFeatureTemplate() {
+            const button = event.target;
+            const stopLoading = showLoading(button);
+            
+            try {
+                const templateName = document.getElementById('templateName').value;
+                const description = document.getElementById('templateDesc').value;
+                const features = document.getElementById('templateFeatures').value.split(',').map(f => f.trim());
+                
+                if (!templateName) {
+                    showStatus('Template name is required', 'error');
+                    stopLoading();
+                    return;
+                }
+
+                const templateConfig = {
+                    description,
+                    features,
+                    languages: ['cpp', 'python', 'javascript'],
+                    category: 'template',
+                    author: 'User',
+                    version: '1.0.0'
+                };
+
+                showStatus('Creating feature template...', 'info');
+                
+                const result = await api('/irc-bot/feature-templates/create', 'POST', {
+                    templateName,
+                    templateConfig
+                });
+                
+                stopLoading();
+                
+                if (result.status === 200) {
+                    showStatus('Feature template created successfully!', 'success');
+                    showOutput(result.data);
+                    // Clear form
+                    document.getElementById('templateName').value = '';
+                    document.getElementById('templateDesc').value = '';
+                    document.getElementById('templateFeatures').value = '';
+                } else {
+                    showStatus('Failed to create feature template', 'error');
+                }
+            } catch (error) {
+                stopLoading();
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function listFeatureTemplates() {
+            const button = event.target;
+            const stopLoading = showLoading(button);
+            
+            try {
+                showStatus('Getting feature templates...', 'info');
+                
+                const result = await api('/irc-bot/feature-templates', 'GET');
+                
+                stopLoading();
+                
+                if (result.status === 200) {
+                    showStatus('Feature templates retrieved successfully!', 'success');
+                    showOutput(result.data);
+                } else {
+                    showStatus('Failed to get feature templates', 'error');
+                }
+            } catch (error) {
+                stopLoading();
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Tab switching functions
+        function showMainTab(tabName, button) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            button.classList.add('active');
+        }
+
+        // Channel management functions
+        function joinChannel(channel) {
+            showStatus(`Joining channel ${channel}...`, 'info');
+            // Simulate joining channel
+            setTimeout(() => {
+                showStatus(`Joined channel ${channel}`, 'success');
+                addToChannelChat(channel, `*** Joined ${channel}`);
+            }, 1000);
+        }
+
+        function leaveChannel(channel) {
+            showStatus(`Leaving channel ${channel}...`, 'info');
+            // Simulate leaving channel
+            setTimeout(() => {
+                showStatus(`Left channel ${channel}`, 'success');
+                addToChannelChat(channel, `*** Left ${channel}`);
+            }, 1000);
+        }
+
+        function joinNewChannel() {
+            const channel = document.getElementById('newChannel').value;
+            if (channel) {
+                joinChannel(channel);
+                document.getElementById('newChannel').value = '';
+            }
+        }
+
+        function sendChannelMessage() {
+            const message = document.getElementById('channelMessage').value;
+            const channel = document.getElementById('channelSelect').value;
+            if (message) {
+                addToChannelChat(channel, `<RawrZBot> ${message}`);
+                document.getElementById('channelMessage').value = '';
+            }
+        }
+
+        function addToChannelChat(channel, message) {
+            const chat = document.getElementById('channelChat');
+            const line = document.createElement('div');
+            line.className = 'chat-line';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            line.innerHTML = `<span class="chat-timestamp">[${timestamp}]</span> ${message}`;
+            
+            chat.appendChild(line);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        // Connection management functions
+        function connectToIRC() {
+            const server = document.getElementById('connectionServer').value;
+            const port = document.getElementById('connectionPort').value;
+            const nick = document.getElementById('connectionNick').value;
+            
+            showStatus(`Connecting to ${server}:${port} as ${nick}...`, 'info');
+            // Simulate connection
+            setTimeout(() => {
+                showStatus(`Connected to ${server}:${port}`, 'success');
+                updateConnectionStatus(true);
+            }, 2000);
+        }
+
+        function disconnectFromIRC() {
+            showStatus('Disconnecting from IRC...', 'info');
+            // Simulate disconnection
+            setTimeout(() => {
+                showStatus('Disconnected from IRC', 'success');
+                updateConnectionStatus(false);
+            }, 1000);
+        }
+
+        function updateConnectionStatus(connected) {
+            const statusElement = document.querySelector('.connection-status');
+            if (connected) {
+                statusElement.textContent = 'Online';
+                statusElement.className = 'connection-status online';
+            } else {
+                statusElement.textContent = 'Offline';
+                statusElement.className = 'connection-status offline';
+            }
+        }
+
+        function refreshConnections() {
+            showStatus('Refreshing connections...', 'info');
+            // Simulate refresh
+            setTimeout(() => {
+                showStatus('Connections refreshed', 'success');
+            }, 1000);
+        }
+
+        // Bot monitoring functions
+        function refreshBots() {
+            showStatus('Refreshing bot list...', 'info');
+            // Simulate refresh
+            setTimeout(() => {
+                showStatus('Bot list refreshed', 'success');
+            }, 1000);
+        }
+
+        function updateBotStats() {
+            showStatus('Updating bot statistics...', 'info');
+            // Simulate update
+            setTimeout(() => {
+                showStatus('Bot statistics updated', 'success');
+            }, 1000);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            showStatus('IRC Bot Builder ready!', 'success');
+            loadEncryptionAlgorithms();
+            
+            // Add Enter key support for channel messages
+            document.getElementById('channelMessage').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendChannelMessage();
+                }
+            });
+        });
+
+        // Load encryption algorithms from API
+        async function loadEncryptionAlgorithms() {
+            try {
+                console.log('Loading encryption algorithms...');
+                const response = await api('/openssl/algorithms', 'GET');
+                console.log('API Response:', JSON.stringify(response, null, 2));
+                
+                if (response.data && response.data.success && response.data.result) {
+                    console.log('Successfully loaded algorithms:', response.data.result.length);
+                    updateEncryptionAlgorithmDropdown(response.data.result);
+                } else {
+                    console.log('API response failed, using fallback algorithms');
+                    loadFallbackAlgorithms();
+                }
+            } catch (error) {
+                console.error('Error loading encryption algorithms:', error);
+                console.log('Using fallback algorithms due to error');
+                loadFallbackAlgorithms();
+            }
+        }
+
+        // Load fallback algorithms if API fails
+        function loadFallbackAlgorithms() {
+            const fallbackAlgorithms = [
+                'aes-128-cbc', 'aes-256-cbc', 'aes-256-gcm',
+                'chacha20-poly1305', 'camellia-256-cbc', 'aria-256-cbc',
+                'serpent-cbc', 'twofish-cbc', 'blowfish-cbc'
+            ];
+            updateEncryptionAlgorithmDropdown(fallbackAlgorithms);
+        }
+
+        // Update encryption algorithm dropdown
+        function updateEncryptionAlgorithmDropdown(algorithms) {
+            const algorithmSelect = document.getElementById('encryptionAlgorithm');
+            if (!algorithmSelect) {
+                console.error('Algorithm select element not found!');
+                return;
+            }
+            
+            console.log('Updating algorithm dropdown with:', algorithms.length, 'algorithms');
+            
+            // Clear existing options except the first one
+            algorithmSelect.innerHTML = '<option value="none">No Encryption</option>';
+            
+            // Add algorithms from API
+            algorithms.forEach(algorithm => {
+                const option = document.createElement('option');
+                option.value = algorithm.toLowerCase().replace(/-/g, '');
+                option.textContent = algorithm.toUpperCase().replace(/-/g, ' ');
+                algorithmSelect.appendChild(option);
+            });
+            
+            console.log('Algorithm dropdown updated with', algorithmSelect.options.length, 'options');
+        }
+
+        // Test algorithm loading function
+        async function testAlgorithmLoading() {
+            console.log('=== TESTING ALGORITHM LOADING ===');
+            console.log('Auth Token:', authToken ? 'Present' : 'Missing');
+            console.log('Current dropdown options:', document.getElementById('encryptionAlgorithm').options.length);
+            
+            try {
+                await loadEncryptionAlgorithms();
+                console.log('Algorithm loading test completed');
+            } catch (error) {
+                console.error('Algorithm loading test failed:', error);
+            }
+        }
+    </script>
+</body>
+</html>

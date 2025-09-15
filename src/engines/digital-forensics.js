@@ -723,6 +723,154 @@ class DigitalForensics extends EventEmitter {
         return recommendations;
     }
 
+    // Analyze method for compatibility with main engine
+    async analyze(target, options = {}) {
+        try {
+            const analysisId = this.generateAnalysisId();
+            const startTime = Date.now();
+
+            this.emit('analysisStarted', { analysisId, target });
+
+            const analysis = {
+                id: analysisId,
+                target: target,
+                timestamp: Date.now(),
+                results: {
+                    fileSystemAnalysis: null,
+                    memoryAnalysis: null,
+                    evidenceChain: null,
+                    timeline: [],
+                    recommendations: []
+                }
+            };
+
+            // Perform file system analysis if target is a directory
+            if (typeof target === 'string' && target.includes('/')) {
+                try {
+                    const fsAnalysis = await this.analyzeFileSystem(target, options);
+                    analysis.results.fileSystemAnalysis = fsAnalysis.results;
+                    analysis.results.timeline = fsAnalysis.results.timeline;
+                } catch (error) {
+                    analysis.results.fileSystemAnalysis = { error: error.message };
+                }
+            }
+
+            // Perform memory analysis
+            try {
+                const memoryAnalysis = await this.analyzeMemory(options);
+                analysis.results.memoryAnalysis = memoryAnalysis.results;
+            } catch (error) {
+                analysis.results.memoryAnalysis = { error: error.message };
+            }
+
+            // Create evidence chain
+            try {
+                const evidence = {
+                    target: target,
+                    timestamp: Date.now(),
+                    analysisId: analysisId,
+                    fileSystemResults: analysis.results.fileSystemAnalysis,
+                    memoryResults: analysis.results.memoryAnalysis
+                };
+                const evidenceChain = await this.createEvidenceChain(evidence);
+                analysis.results.evidenceChain = evidenceChain.chain;
+            } catch (error) {
+                analysis.results.evidenceChain = { error: error.message };
+            }
+
+            // Generate recommendations
+            analysis.results.recommendations = this.generateAnalysisRecommendations(analysis.results);
+
+            const duration = Date.now() - startTime;
+            analysis.duration = duration;
+
+            this.emit('analysisCompleted', { analysisId, results: analysis.results, duration });
+            return { success: true, analysisId, results: analysis.results, duration };
+        } catch (error) {
+            this.emit('error', { engine: this.name, error: error.message });
+            throw error;
+        }
+    }
+
+    // Extract evidence method for compatibility
+    async extractEvidence(target, options = {}) {
+        try {
+            const evidenceId = this.generateAnalysisId();
+            const evidence = {
+                id: evidenceId,
+                target: target,
+                timestamp: Date.now(),
+                type: 'evidence_extraction',
+                results: {
+                    files: [],
+                    metadata: [],
+                    hashes: [],
+                    timeline: []
+                }
+            };
+
+            // Extract file system evidence
+            if (typeof target === 'string') {
+                try {
+                    const files = await this.scanDirectory(target);
+                    evidence.results.files = files;
+
+                    for (const file of files) {
+                        const metadata = await this.extractMetadata(file.path);
+                        evidence.results.metadata.push(metadata);
+
+                        const hashes = await this.calculateHashes(file.path);
+                        evidence.results.hashes.push(hashes);
+                    }
+
+                    evidence.results.timeline = await this.generateTimeline(evidence.results.metadata);
+                } catch (error) {
+                    evidence.results.error = error.message;
+                }
+            }
+
+            // Create evidence chain
+            const evidenceChain = await this.createEvidenceChain(evidence);
+            evidence.evidenceChain = evidenceChain.chain;
+
+            return { success: true, evidenceId, evidence };
+        } catch (error) {
+            this.emit('error', { engine: this.name, error: error.message });
+            throw error;
+        }
+    }
+
+    // Generate analysis recommendations
+    generateAnalysisRecommendations(results) {
+        const recommendations = [];
+
+        if (results.fileSystemAnalysis) {
+            if (results.fileSystemAnalysis.suspiciousFiles && results.fileSystemAnalysis.suspiciousFiles.length > 0) {
+                recommendations.push('Suspicious files detected. Review and investigate further.');
+            }
+            if (results.fileSystemAnalysis.timeline && results.fileSystemAnalysis.timeline.length > 0) {
+                recommendations.push('Timeline analysis completed. Review chronological events.');
+            }
+        }
+
+        if (results.memoryAnalysis) {
+            if (results.memoryAnalysis.suspiciousActivity && results.memoryAnalysis.suspiciousActivity.length > 0) {
+                recommendations.push('Suspicious memory activity detected. Investigate processes and connections.');
+            }
+        }
+
+        if (results.evidenceChain) {
+            recommendations.push('Evidence chain created. Maintain chain of custody.');
+        }
+
+        // Add general forensics recommendations
+        recommendations.push('Document all findings and maintain detailed logs.');
+        recommendations.push('Use multiple analysis tools to verify findings.');
+        recommendations.push('Ensure proper handling and storage of digital evidence.');
+
+        return recommendations;
+    }
+
     // Cleanup and shutdown
     async shutdown() {
         try {

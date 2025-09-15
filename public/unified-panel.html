@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RawrZ Security Platform - Unified Control Center</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #0c0f1a 0%, #1a1f2e 100%);
+            color: #e6e9ef; 
+            min-height: 100vh;
+        }
+        .header { 
+            background: linear-gradient(90deg, #1a1f2e 0%, #2d3748 100%);
+            padding: 1rem 2rem; 
+            border-bottom: 2px solid #4a5568;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .header h1 { 
+            color: #68d391; 
+            font-size: 2rem; 
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(104, 211, 145, 0.3);
+        }
+        .header .subtitle { 
+            color: #a0aec0; 
+            font-size: 1rem; 
+            margin-top: 0.25rem;
+        }
+        .container { 
+            max-width: 1800px; 
+            margin: 0 auto; 
+            padding: 2rem; 
+        }
+        .main-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            background: #1a202c;
+            padding: 0.5rem;
+            border-radius: 12px;
+            border: 1px solid #4a5568;
+        }
+        .main-tab {
+            padding: 1rem 2rem;
+            background: #2d3748;
+            border: 1px solid #4a5568;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            text-align: center;
+            flex: 1;
+        }
+        .main-tab.active {
+            background: linear-gradient(135deg, #68d391 0%, #48bb78 100%);
+            color: #1a202c;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(104, 211, 145, 0.3);
+        }
+        .main-tab:hover:not(.active) {
+            background: #4a5568;
+            transform: translateY(-1px);
+        }
+        .main-tab-content {
+            display: none;
+        }
+        .main-tab-content.active {
+            display: block;
+        }
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); 
+            gap: 1.5rem; 
+            margin-bottom: 2rem;
+        }
+        .full-width { 
+            grid-column: 1 / -1; 
+        }
+        .card { 
+            background: linear-gradient(145deg, #1a202c 0%, #2d3748 100%);
+            border: 1px solid #4a5568; 
+            border-radius: 12px; 
+            padding: 1.5rem; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        .card h3 { 
+            color: #68d391; 
+            margin-bottom: 1rem; 
+            font-size: 1.2rem;
+            border-bottom: 1px solid #4a5568;
+            padding-bottom: 0.5rem;
+        }
+        .form-group { 
+            margin-bottom: 1rem; 
+        }
+        .form-group label { 
+            display: block; 
+            margin-bottom: 0.5rem; 
+            color: #cbd5e0; 
+            font-weight: 500;
+        }
+        input, select, textarea, button { 
+            width: 100%; 
+            padding: 0.75rem; 
+            border: 1px solid #4a5568; 
+            border-radius: 8px; 
+            background: #2d3748; 
+            color: #e6e9ef; 
+            font-size: 0.9rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input:focus, select:focus, textarea:focus { 
+            outline: none; 
+            border-color: #68d391; 
+            box-shadow: 0 0 0 3px rgba(104, 211, 145, 0.1);
+        }
+        button { 
+            background: linear-gradient(135deg, #68d391 0%, #48bb78 100%);
+            border: none; 
+            color: #1a202c; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.2s;
+            margin-top: 0.5rem;
+        }
+        button:hover { 
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(104, 211, 145, 0.3);
+        }
+        button:disabled { 
+            background: #4a5568; 
+            cursor: not-allowed; 
+            transform: none;
+        }
+        .status { 
+            padding: 0.5rem 1rem; 
+            border-radius: 6px; 
+            margin: 0.5rem 0; 
+            font-weight: 500;
+        }
+        .status.success { background: rgba(104, 211, 145, 0.2); color: #68d391; border: 1px solid #68d391; }
+        .status.error { background: rgba(245, 101, 101, 0.2); color: #f56565; border: 1px solid #f56565; }
+        .status.info { background: rgba(66, 153, 225, 0.2); color: #4299e1; border: 1px solid #4299e1; }
+        .status.warning { background: rgba(237, 137, 54, 0.2); color: #ed8936; border: 1px solid #ed8936; }
+        .output { 
+            background: #0c0f1a; 
+            border: 1px solid #2d3748; 
+            border-radius: 8px; 
+            padding: 1rem; 
+            margin-top: 1rem; 
+            max-height: 400px; 
+            overflow-y: auto; 
+            font-family: 'Courier New', monospace; 
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #4a5568;
+            border-radius: 50%;
+            border-top-color: #68d391;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: linear-gradient(145deg, #1a202c 0%, #2d3748 100%);
+            border: 1px solid #4a5568;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #68d391;
+        }
+        .stat-label {
+            color: #a0aec0;
+            font-size: 0.9rem;
+        }
+        .bot-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .bot-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            border: 1px solid #4a5568;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            background: #2d3748;
+        }
+        .bot-info {
+            flex: 1;
+        }
+        .bot-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .bot-status.online {
+            background: rgba(104, 211, 145, 0.2);
+            color: #68d391;
+        }
+        .bot-status.offline {
+            background: rgba(245, 101, 101, 0.2);
+            color: #f56565;
+        }
+        .channel-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .channel-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            border: 1px solid #4a5568;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            background: #2d3748;
+        }
+        .channel-info {
+            flex: 1;
+        }
+        .channel-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .chat-container {
+            background: #000;
+            border: 2px solid #4a5568;
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            height: 300px;
+            overflow-y: auto;
+        }
+        .chat-line {
+            margin-bottom: 0.25rem;
+        }
+        .chat-timestamp {
+            color: #68d391;
+        }
+        .chat-user {
+            color: #4299e1;
+        }
+        .chat-message {
+            color: #e6e9ef;
+        }
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .quick-action {
+            background: linear-gradient(145deg, #1a202c 0%, #2d3748 100%);
+            border: 1px solid #4a5568;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .quick-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border-color: #68d391;
+        }
+        .quick-action-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .quick-action-label {
+            font-weight: 600;
+            color: #68d391;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>RawrZ Security Platform</h1>
+        <div class="subtitle">Unified Control Center - Advanced Security & Bot Management</div>
+    </div>
+
+    <div class="container">
+        <!-- Main Navigation Tabs -->
+        <div class="main-tabs">
+            <div class="main-tab active" onclick="showMainTab('dashboard', this)">
+                📊 Dashboard
+            </div>
+            <div class="main-tab" onclick="showMainTab('bots', this)">
+                🤖 Bot Management
+            </div>
+            <div class="main-tab" onclick="showMainTab('irc', this)">
+                💬 IRC Control
+            </div>
+            <div class="main-tab" onclick="showMainTab('security', this)">
+                🔒 Security Tools
+            </div>
+            <div class="main-tab" onclick="showMainTab('crypto', this)">
+                🔐 Cryptography
+            </div>
+            <div class="main-tab" onclick="showMainTab('analysis', this)">
+                🔍 Analysis
+            </div>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="main-tab-content active">
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalBots">0</div>
+                    <div class="stat-label">Total Bots</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="activeBots">0</div>
+                    <div class="stat-label">Active Bots</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="ircBots">0</div>
+                    <div class="stat-label">IRC Bots</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="httpBots">0</div>
+                    <div class="stat-label">HTTP Bots</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="connectedChannels">0</div>
+                    <div class="stat-label">IRC Channels</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="securityScore">100</div>
+                    <div class="stat-label">Security Score</div>
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <div class="quick-action" onclick="quickGenerateBot('irc')">
+                    <div class="quick-action-icon">🤖</div>
+                    <div class="quick-action-label">Generate IRC Bot</div>
+                </div>
+                <div class="quick-action" onclick="quickGenerateBot('http')">
+                    <div class="quick-action-icon">🌐</div>
+                    <div class="quick-action-label">Generate HTTP Bot</div>
+                </div>
+                <div class="quick-action" onclick="connectToIRC()">
+                    <div class="quick-action-icon">💬</div>
+                    <div class="quick-action-label">Connect to IRC</div>
+                </div>
+                <div class="quick-action" onclick="runSecurityScan()">
+                    <div class="quick-action-icon">🔍</div>
+                    <div class="quick-action-label">Security Scan</div>
+                </div>
+                <div class="quick-action" onclick="runFudAnalysis()">
+                    <div class="quick-action-icon">🛡️</div>
+                    <div class="quick-action-label">FUD Analysis</div>
+                </div>
+                <div class="quick-action" onclick="openBotManager()">
+                    <div class="quick-action-icon">⚙️</div>
+                    <div class="quick-action-label">Bot Manager</div>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="card">
+                    <h3>Recent Activity</h3>
+                    <div id="recentActivity" class="output">Loading recent activity...</div>
+                </div>
+                <div class="card">
+                    <h3>System Status</h3>
+                    <div id="systemStatus">
+                        <div class="status success">✅ RawrZ Engine: Online</div>
+                        <div class="status success">✅ API Server: Running</div>
+                        <div class="status info">ℹ️ OpenSSL: Available</div>
+                        <div class="status info">ℹ️ Bot Generator: Ready</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bot Management Tab -->
+        <div id="bots" class="main-tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>Active Bots</h3>
+                    <div id="activeBotsList" class="bot-list">
+                        <div class="bot-item">
+                            <div class="bot-info">
+                                <strong>RawrZBot</strong>
+                                <br><small>Type: IRC | Server: irc.rizon.net | Status: Running</small>
+                            </div>
+                            <div class="bot-status online">Online</div>
+                        </div>
+                    </div>
+                    <button onclick="refreshBots()">Refresh Bots</button>
+                </div>
+
+                <div class="card">
+                    <h3>Bot Generation</h3>
+                    <div class="form-group">
+                        <label>Bot Type</label>
+                        <select id="botType">
+                            <option value="irc">IRC Bot</option>
+                            <option value="http">HTTP Bot</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Bot Name</label>
+                        <input type="text" id="botName" placeholder="MyBot" value="QuickBot">
+                    </div>
+                    <div class="form-group">
+                        <label>Language</label>
+                        <select id="botLanguage">
+                            <option value="cpp">C++</option>
+                            <option value="python">Python</option>
+                            <option value="javascript">JavaScript</option>
+                            <option value="swift">Swift (iOS)</option>
+                            <option value="kotlin">Kotlin (Android)</option>
+                            <option value="java">Java (Cross-platform)</option>
+                        </select>
+                    </div>
+                    <button onclick="generateBot()">Generate Bot</button>
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <h3>Bot Output</h3>
+                <div id="botOutput" class="output">Ready to generate bots...</div>
+            </div>
+        </div>
+
+        <!-- IRC Control Tab -->
+        <div id="irc" class="main-tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>IRC Connection</h3>
+                    <div class="form-group">
+                        <label>IRC Server</label>
+                        <input type="text" id="ircServer" placeholder="irc.rizon.net" value="irc.rizon.net">
+                    </div>
+                    <div class="form-group">
+                        <label>Port</label>
+                        <input type="number" id="ircPort" placeholder="6667" value="6667">
+                    </div>
+                    <div class="form-group">
+                        <label>Nickname</label>
+                        <input type="text" id="ircNick" placeholder="RawrZBot" value="RawrZBot">
+                    </div>
+                    <div class="form-group">
+                        <label>Channels</label>
+                        <input type="text" id="ircChannels" placeholder="#rawrz,#test" value="#rawrz,#test">
+                    </div>
+                    <div class="form-group">
+                        <button onclick="connectToIRC()">Connect to IRC</button>
+                        <button onclick="disconnectFromIRC()" style="background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);">Disconnect</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Joined Channels</h3>
+                    <div id="joinedChannels" class="channel-list">
+                        <div class="channel-item">
+                            <div class="channel-info">
+                                <strong>#rawrz</strong>
+                                <br><small>Users: 15 | Topic: RawrZ Security Discussion</small>
+                            </div>
+                            <div class="channel-actions">
+                                <button onclick="joinChannel('#rawrz')">Join</button>
+                                <button onclick="leaveChannel('#rawrz')" style="background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);">Leave</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <h3>IRC Chat</h3>
+                <div id="ircChat" class="chat-container">
+                    <div class="chat-line">
+                        <span class="chat-timestamp">[12:34:56]</span>
+                        <span class="chat-user">RawrZBot:</span>
+                        <span class="chat-message">Connected to IRC</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="ircMessage" placeholder="Type message here...">
+                    <button onclick="sendIRCMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Tools Tab -->
+        <div id="security" class="main-tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>Security Scanning</h3>
+                    <div class="form-group">
+                        <label>Target</label>
+                        <input type="text" id="securityTarget" placeholder="Enter target IP or domain">
+                    </div>
+                    <div class="form-group">
+                        <button onclick="runSecurityScan()">Run Security Scan</button>
+                        <button onclick="runVulnerabilityCheck()">Vulnerability Check</button>
+                        <button onclick="runThreatDetection()">Threat Detection</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>FUD Analysis</h3>
+                    <div class="form-group">
+                        <button onclick="runFudAnalysis()">Run FUD Analysis</button>
+                        <button onclick="runStealthMode()">Stealth Mode</button>
+                        <button onclick="runAntiDetection()">Anti-Detection</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>CLI Scan Methods</h3>
+                    <div class="form-group">
+                        <label>Scan Type</label>
+                        <select id="unifiedCliScanType">
+                            <option value="analyze">File Analysis</option>
+                            <option value="portscan">Port Scan</option>
+                            <option value="netscan">Network Scan</option>
+                            <option value="vulnscan">Vulnerability Scan</option>
+                            <option value="sigcheck">Signature Check</option>
+                            <option value="forensics">Forensics Scan</option>
+                            <option value="malware">Malware Scan</option>
+                            <option value="vulncheck">Vulnerability Check</option>
+                            <option value="behavior">Behavior Analysis</option>
+                            <option value="threat">Threat Detection</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Target</label>
+                        <input type="text" id="unifiedCliScanTarget" placeholder="Enter target (file, host, IP, etc.)" />
+                    </div>
+                    <div class="button-group">
+                        <button onclick="runUnifiedCliScan(this)">Run CLI Scan</button>
+                        <button onclick="getUnifiedCliScanHelp(this)">Get Help</button>
+                    </div>
+                    <div id="unifiedCliScanResults" class="results-section" style="display: none;">
+                        <h4>CLI Scan Results</h4>
+                        <div id="unifiedCliScanResultsContent"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <h3>Security Output</h3>
+                <div id="securityOutput" class="output">Ready for security operations...</div>
+            </div>
+        </div>
+
+        <!-- Cryptography Tab -->
+        <div id="crypto" class="main-tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>OpenSSL Management</h3>
+                    <div class="form-group">
+                        <label>OpenSSL Mode</label>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <input type="checkbox" id="opensslToggle" checked>
+                            <span id="opensslStatus">OpenSSL Mode: Enabled</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Custom Algorithms</label>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <input type="checkbox" id="customAlgorithmsToggle">
+                            <span id="customAlgorithmsStatus">Custom Algorithms: Disabled</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Algorithm Filter</label>
+                        <select id="algorithmFilter">
+                            <option value="all">All Algorithms</option>
+                            <option value="openssl">OpenSSL Only</option>
+                            <option value="custom">Custom Only</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Algorithm</label>
+                        <select id="algorithmSelect">
+                            <option value="">Select Algorithm</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Crypto Operations</h3>
+                    <div class="form-group">
+                        <button onclick="testAlgorithm()">Test Algorithm</button>
+                        <button onclick="generateReport()">Generate Report</button>
+                        <button onclick="loadAlgorithms()">Load Algorithms</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <h3>Crypto Output</h3>
+                <div id="cryptoOutput" class="output">Ready for cryptographic operations...</div>
+            </div>
+        </div>
+
+        <!-- Analysis Tab -->
+        <div id="analysis" class="main-tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>Malware Analysis</h3>
+                    <div class="form-group">
+                        <label>Target File</label>
+                        <input type="file" id="malwareFile">
+                    </div>
+                    <div class="form-group">
+                        <button onclick="analyzeMalware()">Analyze Malware</button>
+                        <button onclick="runDigitalForensics()">Digital Forensics</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Network Analysis</h3>
+                    <div class="form-group">
+                        <label>Target</label>
+                        <input type="text" id="networkTarget" placeholder="Enter IP or domain">
+                    </div>
+                    <div class="form-group">
+                        <button onclick="analyzeNetwork()">Analyze Network</button>
+                        <button onclick="runReverseEngineering()">Reverse Engineering</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <h3>Analysis Output</h3>
+                <div id="analysisOutput" class="output">Ready for analysis operations...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let ircConnected = false;
+        let botConnections = new Map();
+        let currentTab = 'dashboard';
+        let updateInterval = null;
+        let ircChatHistory = [];
+        let botActivityLog = [];
+        let securityScanResults = [];
+        let cryptoTestResults = [];
+        let analysisResults = [];
+
+        // API helper function
+        async function api(endpoint, method = 'GET', data = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            };
+            
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            
+            const response = await fetch(endpoint, options);
+            const result = await response.json();
+            
+            return {
+                status: response.status,
+                data: result
+            };
+        }
+
+        // Show loading state
+        function showLoading(button) {
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.innerHTML = '<span class="loading"></span> Loading...';
+            
+            return () => {
+                button.disabled = false;
+                button.textContent = originalText;
+            };
+        }
+
+        // Show status message
+        function showStatus(message, type = 'info', container = 'output') {
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            
+            const output = document.getElementById(container);
+            output.appendChild(statusDiv);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        // Show output
+        function showOutput(data, container = 'output') {
+            const output = document.getElementById(container);
+            const pre = document.createElement('pre');
+            pre.textContent = JSON.stringify(data, null, 2);
+            output.appendChild(pre);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        // Tab switching
+        function showMainTab(tabName, button) {
+            // Hide all tab contents
+            document.querySelectorAll('.main-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.main-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            button.classList.add('active');
+            currentTab = tabName;
+        }
+
+        // Dashboard functions
+        async function updateDashboard() {
+            try {
+                const response = await api('/api/dashboard/stats', 'GET');
+                if (response.status === 200 && response.data.success) {
+                    const stats = response.data.result;
+                    document.getElementById('totalBots').textContent = stats.totalBots || 0;
+                    document.getElementById('activeBots').textContent = stats.activeBots || 0;
+                    document.getElementById('ircBots').textContent = stats.ircBots || 0;
+                    document.getElementById('httpBots').textContent = stats.httpBots || 0;
+                    document.getElementById('connectedChannels').textContent = stats.connectedChannels || 0;
+                    document.getElementById('securityScore').textContent = stats.securityScore || 100;
+                }
+                
+                // Update recent activity
+                await updateRecentActivity();
+                
+                // Update bot list if on bots tab
+                if (currentTab === 'bots') {
+                    await updateBotList();
+                }
+                
+                // Update IRC channels if on IRC tab
+                if (currentTab === 'irc') {
+                    await updateIRCChannels();
+                }
+            } catch (error) {
+                console.error('Failed to update dashboard:', error);
+            }
+        }
+
+        async function updateRecentActivity() {
+            const activity = document.getElementById('recentActivity');
+            const now = new Date();
+            const activities = [
+                `[${now.toLocaleTimeString()}] System initialized`,
+                `[${now.toLocaleTimeString()}] Bot manager ready`,
+                `[${now.toLocaleTimeString()}] IRC client available`,
+                `[${now.toLocaleTimeString()}] Security tools loaded`,
+                `[${now.toLocaleTimeString()}] Dashboard updated`
+            ];
+            
+            // Add recent bot activity
+            if (botActivityLog.length > 0) {
+                const recentActivity = botActivityLog.slice(-3);
+                recentActivity.forEach(activity => {
+                    activities.push(`[${activity.timestamp}] ${activity.message}`);
+                });
+            }
+            
+            activity.innerHTML = activities.join('\n');
+        }
+
+        async function updateBotList() {
+            try {
+                const response = await api('/api/bots/status', 'GET');
+                if (response.status === 200 && response.data.success) {
+                    const botData = response.data.result;
+                    const botList = document.getElementById('activeBotsList');
+                    
+                    if (botData.bots && botData.bots.length > 0) {
+                        botList.innerHTML = botData.bots.map(bot => `
+                            <div class="bot-item">
+                                <div class="bot-info">
+                                    <strong>${bot.name || 'Unknown Bot'}</strong>
+                                    <br><small>Type: ${bot.type} | Server: ${bot.server || 'N/A'} | Status: ${bot.status || 'Unknown'}</small>
+                                </div>
+                                <div class="bot-status ${bot.status === 'online' ? 'online' : 'offline'}">${bot.status || 'Unknown'}</div>
+                            </div>
+                        `).join('');
+                    } else {
+                        botList.innerHTML = '<div class="bot-item"><div class="bot-info">No active bots</div></div>';
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to update bot list:', error);
+            }
+        }
+
+        async function updateIRCChannels() {
+            try {
+                const response = await api('/api/irc/channels', 'GET');
+                if (response.status === 200 && response.data.success) {
+                    const channels = response.data.result;
+                    const channelList = document.getElementById('joinedChannels');
+                    
+                    if (channels && channels.length > 0) {
+                        channelList.innerHTML = channels.map(channel => `
+                            <div class="channel-item">
+                                <div class="channel-info">
+                                    <strong>${channel.name}</strong>
+                                    <br><small>Users: ${channel.users} | Topic: ${channel.topic}</small>
+                                </div>
+                                <div class="channel-actions">
+                                    <button onclick="joinChannel('${channel.name}')">Join</button>
+                                    <button onclick="leaveChannel('${channel.name}')" style="background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);">Leave</button>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to update IRC channels:', error);
+            }
+        }
+
+        // Quick actions
+        function quickGenerateBot(type) {
+            showMainTab('bots', document.querySelector('.main-tab[onclick*="bots"]'));
+            document.getElementById('botType').value = type;
+        }
+
+        function openBotManager() {
+            window.open('/bot-manager', '_blank');
+        }
+
+        // Bot management functions
+        async function generateBot() {
+            const button = event.target;
+            const stopLoading = showLoading(button);
+            
+            try {
+                const botType = document.getElementById('botType').value;
+                const config = {
+                    name: document.getElementById('botName').value,
+                    server: botType === 'http' ? 'http://localhost:8080' : 'irc.rizon.net',
+                    port: botType === 'http' ? 8080 : 6667,
+                    channels: ['#test'],
+                    username: 'rawrzuser',
+                    realname: 'RawrZ Bot',
+                    targetOS: 'windows',
+                    architecture: 'x64'
+                };
+                
+                const features = ['fileManager', 'systemInfo', 'httpComm'];
+                const language = document.getElementById('botLanguage').value;
+                
+                showStatus(`Generating ${botType.toUpperCase()} bot...`, 'info', 'botOutput');
+                
+                const endpoint = botType === 'http' ? '/http-bot/generate' : '/irc-bot/generate';
+                const result = await api(endpoint, 'POST', {
+                    config,
+                    features,
+                    extensions: [language]
+                });
+                
+                stopLoading();
+                
+                if (result.status === 200) {
+                    showStatus(`${botType.toUpperCase()} bot generated successfully!`, 'success', 'botOutput');
+                    showOutput(result.data, 'botOutput');
+                } else {
+                    showStatus(`${botType.toUpperCase()} bot generation failed`, 'error', 'botOutput');
+                    showOutput(result.data, 'botOutput');
+                }
+            } catch (error) {
+                stopLoading();
+                showStatus(`Error: ${error.message}`, 'error', 'botOutput');
+            }
+        }
+
+        async function refreshBots() {
+            try {
+                const result = await api('/bot/status', 'GET');
+                if (result.status === 200) {
+                    updateDashboard();
+                    showStatus('Bot list refreshed', 'success', 'botOutput');
+                }
+            } catch (error) {
+                showStatus(`Error refreshing bots: ${error.message}`, 'error', 'botOutput');
+            }
+        }
+
+        // IRC functions
+        async function connectToIRC() {
+            const server = document.getElementById('ircServer').value;
+            const port = document.getElementById('ircPort').value;
+            const nick = document.getElementById('ircNick').value;
+            const channels = document.getElementById('ircChannels').value;
+            
+            addToIRCChat(`*** Connecting to ${server}:${port} as ${nick}`);
+            addToIRCChat(`*** Joining channels: ${channels}`);
+            
+            try {
+                const response = await api('/api/irc/connect', 'POST', {
+                    server,
+                    port: parseInt(port),
+                    nick,
+                    channels: channels.split(',').map(c => c.trim())
+                });
+                
+                if (response.status === 200 && response.data.success) {
+                    ircConnected = true;
+                    addToIRCChat(`*** Connected to ${server}`);
+                    addToIRCChat(`*** Joining ${channels.split(',')[0]}`);
+                    addToIRCChat(`*** Joined ${channels.split(',')[0]}`);
+                    showStatus('IRC connection established', 'success', 'securityOutput');
+                } else {
+                    addToIRCChat(`*** Connection failed: ${response.data.error || 'Unknown error'}`);
+                    showStatus('IRC connection failed', 'error', 'securityOutput');
+                }
+            } catch (error) {
+                addToIRCChat(`*** Connection error: ${error.message}`);
+                showStatus(`IRC connection error: ${error.message}`, 'error', 'securityOutput');
+            }
+        }
+
+        async function disconnectFromIRC() {
+            addToIRCChat('*** Disconnecting from IRC');
+            
+            try {
+                const response = await api('/api/irc/disconnect', 'POST');
+                if (response.status === 200 && response.data.success) {
+                    ircConnected = false;
+                    addToIRCChat('*** Disconnected from IRC');
+                    showStatus('IRC disconnected', 'success', 'securityOutput');
+                }
+            } catch (error) {
+                addToIRCChat(`*** Disconnect error: ${error.message}`);
+                showStatus(`IRC disconnect error: ${error.message}`, 'error', 'securityOutput');
+            }
+        }
+
+        async function sendIRCMessage() {
+            const message = document.getElementById('ircMessage').value;
+            const channel = document.getElementById('ircChannels').value.split(',')[0];
+            
+            if (message && ircConnected) {
+                try {
+                    const response = await api('/api/irc/message', 'POST', {
+                        channel,
+                        message
+                    });
+                    
+                    if (response.status === 200 && response.data.success) {
+                        addToIRCChat(`<${document.getElementById('ircNick').value}> ${message}`);
+                        document.getElementById('ircMessage').value = '';
+                    } else {
+                        showStatus('Failed to send IRC message', 'error', 'securityOutput');
+                    }
+                } catch (error) {
+                    showStatus(`IRC message error: ${error.message}`, 'error', 'securityOutput');
+                }
+            }
+        }
+
+        async function joinChannel(channel) {
+            addToIRCChat(`*** Joining ${channel}`);
+            
+            try {
+                const response = await api('/api/irc/join', 'POST', { channel });
+                if (response.status === 200 && response.data.success) {
+                    addToIRCChat(`*** Joined ${channel}`);
+                    showStatus(`Joined channel ${channel}`, 'success', 'securityOutput');
+                } else {
+                    addToIRCChat(`*** Failed to join ${channel}`);
+                    showStatus(`Failed to join ${channel}`, 'error', 'securityOutput');
+                }
+            } catch (error) {
+                addToIRCChat(`*** Join error: ${error.message}`);
+                showStatus(`Join error: ${error.message}`, 'error', 'securityOutput');
+            }
+        }
+
+        async function leaveChannel(channel) {
+            addToIRCChat(`*** Leaving ${channel}`);
+            
+            try {
+                const response = await api('/api/irc/leave', 'POST', { channel });
+                if (response.status === 200 && response.data.success) {
+                    addToIRCChat(`*** Left ${channel}`);
+                    showStatus(`Left channel ${channel}`, 'success', 'securityOutput');
+                } else {
+                    addToIRCChat(`*** Failed to leave ${channel}`);
+                    showStatus(`Failed to leave ${channel}`, 'error', 'securityOutput');
+                }
+            } catch (error) {
+                addToIRCChat(`*** Leave error: ${error.message}`);
+                showStatus(`Leave error: ${error.message}`, 'error', 'securityOutput');
+            }
+        }
+
+        function addToIRCChat(message) {
+            const chat = document.getElementById('ircChat');
+            const line = document.createElement('div');
+            line.className = 'chat-line';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            line.innerHTML = `<span class="chat-timestamp">[${timestamp}]</span> ${message}`;
+            
+            chat.appendChild(line);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function joinChannel(channel) {
+            addToIRCChat(`*** Joining ${channel}`);
+            setTimeout(() => {
+                addToIRCChat(`*** Joined ${channel}`);
+            }, 1000);
+        }
+
+        function leaveChannel(channel) {
+            addToIRCChat(`*** Leaving ${channel}`);
+            setTimeout(() => {
+                addToIRCChat(`*** Left ${channel}`);
+            }, 1000);
+        }
+
+        // Security functions
+        async function runSecurityScan() {
+            const target = document.getElementById('securityTarget').value || 'localhost';
+            showStatus(`Running security scan on ${target}...`, 'info', 'securityOutput');
+            
+            try {
+                const response = await api('/api/security/scan', 'POST', { target });
+                if (response.status === 200 && response.data.success) {
+                    const result = response.data.result;
+                    securityScanResults.push(result);
+                    showStatus(`Security scan completed on ${target}!`, 'success', 'securityOutput');
+                    showOutput(result, 'securityOutput');
+                    
+                    // Update security score
+                    const securityScore = document.getElementById('securityScore');
+                    if (result.vulnerabilities && result.vulnerabilities.length === 0) {
+                        securityScore.textContent = '100';
+                    } else {
+                        securityScore.textContent = Math.max(50, 100 - (result.vulnerabilities.length * 10));
+                    }
+                } else {
+                    showStatus('Security scan failed', 'error', 'securityOutput');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error', 'securityOutput');
+            }
+        }
+
+        async function runFudAnalysis() {
+            showStatus('Running FUD analysis...', 'info', 'securityOutput');
+            
+            try {
+                const response = await api('/api/security/fud-analysis', 'POST', {});
+                if (response.status === 200 && response.data.success) {
+                    const result = response.data.result;
+                    showStatus(`FUD analysis completed! Score: ${result.score}/100`, 'success', 'securityOutput');
+                    showOutput(result, 'securityOutput');
+                    
+                    // Update security score
+                    const securityScore = document.getElementById('securityScore');
+                    securityScore.textContent = result.score;
+                } else {
+                    showStatus('FUD analysis failed', 'error', 'securityOutput');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error', 'securityOutput');
+            }
+        }
+
+        async function runVulnerabilityCheck() {
+            const target = document.getElementById('securityTarget').value || 'localhost';
+            showStatus(`Running vulnerability check on ${target}...`, 'info', 'securityOutput');
+            
+            try {
+                const response = await api('/api/security/vulnerability-check', 'POST', { target });
+                if (response.status === 200 && response.data.success) {
+                    const result = response.data.result;
+                    showStatus(`Vulnerability check completed on ${target}!`, 'success', 'securityOutput');
+                    showOutput(result, 'securityOutput');
+                } else {
+                    showStatus('Vulnerability check failed', 'error', 'securityOutput');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error', 'securityOutput');
+            }
+        }
+
+        async function runThreatDetection() {
+            const target = document.getElementById('securityTarget').value || 'localhost';
+            showStatus(`Running threat detection on ${target}...`, 'info', 'securityOutput');
+            
+            try {
+                const response = await api('/api/security/threat-detection', 'POST', { target });
+                if (response.status === 200 && response.data.success) {
+                    const result = response.data.result;
+                    showStatus(`Threat detection completed on ${target}!`, 'success', 'securityOutput');
+                    showOutput(result, 'securityOutput');
+                } else {
+                    showStatus('Threat detection failed', 'error', 'securityOutput');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error', 'securityOutput');
+            }
+        }
+
+        async function runStealthMode() {
+            showStatus('Enabling stealth mode...', 'info', 'securityOutput');
+            
+            try {
+                const response = await api('/api/security/stealth-mode', 'POST', {});
+                if (response.status === 200 && response.data.success) {
+                    const result = response.data.result;
+                    showStatus('Stealth mode enabled!', 'success', 'securityOutput');
+                    showOutput(result, 'securityOutput');
+                } else {
+                    showStatus('Failed to enable stealth mode', 'error', 'securityOutput');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error', 'securityOutput');
+            }
+        }
+
+        async function runAntiDetection() {
+            showStatus('Enabling anti-detection...', 'info', 'securityOutput');
+            
+            try {
+                const response = await api('/api/security/anti-detection', 'POST', {});
+                if (response.status === 200 && response.data.success) {
+                    const result = response.data.result;
+                    showStatus('Anti-detection enabled!', 'success', 'securityOutput');
+                    showOutput(result, 'securityOutput');
+                } else {
+                    showStatus('Failed to enable anti-detection', 'error', 'securityOutput');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error', 'securityOutput');
+            }
+        }
+
+        // Crypto functions
+        async function loadAlgorithms() {
+            try {
+                const response = await api('/openssl/openssl-algorithms', 'GET');
+                if (response.status === 200 && response.data.success) {
+                    const select = document.getElementById('algorithmSelect');
+                    select.innerHTML = '<option value="">Select Algorithm</option>';
+                    response.data.result.forEach(alg => {
+                        const option = document.createElement('option');
+                        option.value = alg;
+                        option.textContent = alg;
+                        select.appendChild(option);
+                    });
+                    showStatus('Algorithms loaded!', 'success', 'cryptoOutput');
+                }
+            } catch (error) {
+                showStatus(`Error loading algorithms: ${error.message}`, 'error', 'cryptoOutput');
+            }
+        }
+
+        async function testAlgorithm() {
+            const algorithm = document.getElementById('algorithmSelect').value;
+            if (!algorithm) {
+                showStatus('Please select an algorithm first', 'error', 'cryptoOutput');
+                return;
+            }
+            
+            showStatus(`Testing algorithm: ${algorithm}...`, 'info', 'cryptoOutput');
+            
+            try {
+                const response = await api('/api/crypto/test-algorithm', 'POST', { algorithm });
+                if (response.status === 200 && response.data.success) {
+                    const result = response.data.result;
+                    cryptoTestResults.push(result);
+                    showStatus(`Algorithm ${algorithm} tested successfully!`, 'success', 'cryptoOutput');
+                    showOutput(result, 'cryptoOutput');
+                } else {
+                    showStatus('Algorithm test failed', 'error', 'cryptoOutput');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error', 'cryptoOutput');
+            }
+        }
+
+        async function generateReport() {
+            showStatus('Generating crypto report...', 'info', 'cryptoOutput');
+            
+            try {
+                const response = await api('/api/crypto/generate-report', 'POST', {});
+                if (response.status === 200 && response.data.success) {
+                    const result = response.data.result;
+                    showStatus('Crypto report generated!', 'success', 'cryptoOutput');
+                    showOutput(result, 'cryptoOutput');
+                } else {
+                    showStatus('Failed to generate crypto report', 'error', 'cryptoOutput');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error', 'cryptoOutput');
+            }
+        }
+
+        // Analysis functions
+        async function analyzeMalware() {
+            const fileInput = document.getElementById('malwareFile');
+            const file = fileInput.files[0];
+            
+            showStatus('Analyzing malware...', 'info', 'analysisOutput');
+            
+            try {
+                // Use the full path if available, otherwise use the name
+                const filePath = file ? (file.path || file.webkitRelativePath || file.name) : 'sample.exe';
+                const response = await api('/api/analysis/malware', 'POST', { 
+                    file: filePath 
+                });
+                if (response.status === 200 && response.data.success) {
+                    const result = response.data.result;
+                    analysisResults.push(result);
+                    showStatus(`Malware analysis completed for ${result.file}!`, 'success', 'analysisOutput');
+                    showOutput(result, 'analysisOutput');
+                } else {
+                    showStatus('Malware analysis failed', 'error', 'analysisOutput');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error', 'analysisOutput');
+            }
+        }
+
+        async function runDigitalForensics() {
+            showStatus('Running digital forensics...', 'info', 'analysisOutput');
+            
+            try {
+                const response = await api('/api/analysis/digital-forensics', 'POST', {});
+                if (response.status === 200 && response.data.success) {
+                    const result = response.data.result;
+                    showStatus('Digital forensics completed!', 'success', 'analysisOutput');
+                    showOutput(result, 'analysisOutput');
+                } else {
+                    showStatus('Digital forensics failed', 'error', 'analysisOutput');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error', 'analysisOutput');
+            }
+        }
+
+        async function analyzeNetwork() {
+            const target = document.getElementById('networkTarget').value || 'localhost';
+            showStatus(`Analyzing network: ${target}...`, 'info', 'analysisOutput');
+            
+            try {
+                const response = await api('/api/analysis/network', 'POST', { target });
+                if (response.status === 200 && response.data.success) {
+                    const result = response.data.result;
+                    showStatus(`Network analysis completed for ${target}!`, 'success', 'analysisOutput');
+                    showOutput(result, 'analysisOutput');
+                } else {
+                    showStatus('Network analysis failed', 'error', 'analysisOutput');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error', 'analysisOutput');
+            }
+        }
+
+        async function runReverseEngineering() {
+            showStatus('Running reverse engineering...', 'info', 'analysisOutput');
+            
+            try {
+                const response = await api('/api/analysis/reverse-engineering', 'POST', {});
+                if (response.status === 200 && response.data.success) {
+                    const result = response.data.result;
+                    showStatus('Reverse engineering completed!', 'success', 'analysisOutput');
+                    showOutput(result, 'analysisOutput');
+                } else {
+                    showStatus('Reverse engineering failed', 'error', 'analysisOutput');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error', 'analysisOutput');
+            }
+        }
+
+        // CLI Scan Methods for Unified Panel
+        async function runUnifiedCliScan(button = null) {
+            const stopLoading = button ? showLoading(button) : () => {};
+            
+            try {
+                const scanType = document.getElementById('unifiedCliScanType').value;
+                const target = document.getElementById('unifiedCliScanTarget').value;
+                
+                if (!target) {
+                    showStatus('Please enter a target for the scan', 'error', 'securityOutput');
+                    stopLoading();
+                    return;
+                }
+                
+                showStatus(`Running ${scanType} scan on ${target}...`, 'info', 'securityOutput');
+                
+                const result = await api('/cli', 'POST', { 
+                    command: scanType, 
+                    args: [target] 
+                });
+                
+                stopLoading();
+                displayUnifiedCliScanResults(result.data, scanType, target);
+                showStatus(`${scanType} scan completed successfully`, 'success', 'securityOutput');
+                
+            } catch (error) {
+                stopLoading();
+                showStatus(`CLI scan error: ${error.message}`, 'error', 'securityOutput');
+            }
+        }
+        
+        async function getUnifiedCliScanHelp(button = null) {
+            const stopLoading = button ? showLoading(button) : () => {};
+            
+            try {
+                const scanType = document.getElementById('unifiedCliScanType').value;
+                
+                const helpText = getCliScanHelpText(scanType);
+                stopLoading();
+                
+                const resultsDiv = document.getElementById('unifiedCliScanResults');
+                const contentDiv = document.getElementById('unifiedCliScanResultsContent');
+                
+                contentDiv.innerHTML = `
+                    <div class="result-item">
+                        <h5>CLI Scan Help: ${scanType}</h5>
+                        <pre>${helpText}</pre>
+                    </div>
+                `;
+                
+                resultsDiv.style.display = 'block';
+                showStatus(`Help for ${scanType} displayed`, 'info', 'securityOutput');
+                
+            } catch (error) {
+                stopLoading();
+                showStatus(`Help error: ${error.message}`, 'error', 'securityOutput');
+            }
+        }
+        
+        function getCliScanHelpText(scanType) {
+            const helpTexts = {
+                'analyze': 'Usage: analyze <input>\nAnalyzes a file for malware, signatures, and behavior patterns.',
+                'portscan': 'Usage: portscan <host> [startport] [endport]\nScans ports on a target host.',
+                'netscan': 'Usage: netscan <network> [subnet]\nScans a network for active hosts.',
+                'vulnscan': 'Usage: vulnscan <target>\nScans for vulnerabilities on a target.',
+                'sigcheck': 'Usage: sigcheck <target>\nChecks digital signatures and certificates.',
+                'forensics': 'Usage: forensics <target>\nPerforms comprehensive forensics analysis.',
+                'malware': 'Usage: malware <target>\nScans for malware and suspicious behavior.',
+                'vulncheck': 'Usage: vulncheck <target>\nChecks for known vulnerabilities (CVEs).',
+                'behavior': 'Usage: behavior <target>\nAnalyzes behavioral patterns and API calls.',
+                'threat': 'Usage: threat <target>\nDetects threats and malicious indicators.'
+            };
+            
+            return helpTexts[scanType] || 'No help available for this scan type.';
+        }
+        
+        function displayUnifiedCliScanResults(data, scanType, target) {
+            const resultsDiv = document.getElementById('unifiedCliScanResults');
+            const contentDiv = document.getElementById('unifiedCliScanResultsContent');
+            
+            if (data && typeof data === 'object') {
+                contentDiv.innerHTML = `
+                    <div class="result-item">
+                        <h5>CLI Scan Results: ${scanType} on ${target}</h5>
+                        <div class="scan-info">
+                            <p><strong>Scan Type:</strong> ${scanType}</p>
+                            <p><strong>Target:</strong> ${target}</p>
+                            <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
+                        </div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } else {
+                contentDiv.innerHTML = `
+                    <div class="result-item">
+                        <h5>CLI Scan Results: ${scanType} on ${target}</h5>
+                        <div class="scan-info">
+                            <p><strong>Scan Type:</strong> ${scanType}</p>
+                            <p><strong>Target:</strong> ${target}</p>
+                            <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
+                        </div>
+                        <pre>${data || 'No results available'}</pre>
+                    </div>
+                `;
+            }
+            
+            resultsDiv.style.display = 'block';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            showStatus('RawrZ Security Platform initialized!', 'success', 'botOutput');
+            showStatus('RawrZ Security Platform initialized!', 'success', 'securityOutput');
+            showStatus('RawrZ Security Platform initialized!', 'success', 'cryptoOutput');
+            showStatus('RawrZ Security Platform initialized!', 'success', 'analysisOutput');
+            
+            // Update dashboard
+            updateDashboard();
+            
+            // Load algorithms
+            loadAlgorithms();
+            
+            // Add Enter key support for IRC messages
+            document.getElementById('ircMessage').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendIRCMessage();
+                }
+            });
+            
+            // Periodic updates
+            setInterval(updateDashboard, 30000);
+        });
+    </script>
+</body>
+</html>

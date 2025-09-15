@@ -117,6 +117,28 @@ class ReverseEngineering extends EventEmitter {
         }
     }
 
+    // Analyze - main entry point for reverse engineering analysis
+    async analyze(target, options = {}) {
+        const analysisTypes = {
+            'binary': () => this.analyzeBinary(target, options),
+            'strings': () => this.analyzeStrings(target, options),
+            'functions': () => this.analyzeFunctions(target, options),
+            'imports': () => this.analyzeImports(target, options),
+            'exports': () => this.analyzeExports(target, options),
+            'sections': () => this.analyzeSections(target, options),
+            'full': () => this.analyzeBinary(target, { ...options, analyzeSections: true, analyzeImports: true, analyzeExports: true, analyzeFunctions: true })
+        };
+        
+        const analysisType = options.type || 'full';
+        const analysisFunc = analysisTypes[analysisType];
+        
+        if (!analysisFunc) {
+            throw new Error(`Unknown reverse engineering analysis type: ${analysisType}`);
+        }
+        
+        return await analysisFunc();
+    }
+
     // Analyze binary file
     async analyzeBinary(filePath, options = {}) {
         try {

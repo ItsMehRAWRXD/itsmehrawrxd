@@ -51,6 +51,11 @@ class PolymorphicEngine {
         logger.info('Polymorphic Engine initialized');
     }
 
+    // Transform - main entry point for polymorphic transformation
+    async transform(target, options = {}) {
+        return await this.polymorphize(target, options);
+    }
+
     // Polymorphize code
     async polymorphize(code, options = {}) {
         const mutationId = crypto.randomUUID();

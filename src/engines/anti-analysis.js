@@ -20,6 +20,36 @@ class AntiAnalysis extends EventEmitter {
         this.activeProtections = new Set();
     }
 
+    // Enable anti-analysis - main entry point
+    async enableAntiAnalysis(mode = 'full') {
+        const protectionLevels = {
+            'basic': ['anti-debug'],
+            'standard': ['anti-debug', 'anti-vm'],
+            'full': ['anti-debug', 'anti-vm', 'anti-sandbox', 'obfuscation'],
+            'maximum': ['anti-debug', 'anti-vm', 'anti-sandbox', 'obfuscation', 'polymorphic']
+        };
+        
+        const protections = protectionLevels[mode] || protectionLevels['full'];
+        
+        try {
+            for (const protection of protections) {
+                await this.enableProtection(protection);
+            }
+            
+            this.protectionLevel = mode;
+            this.stealthMode = true;
+            
+            return {
+                success: true,
+                mode,
+                protections: Array.from(this.activeProtections),
+                message: `Anti-analysis enabled with ${mode} protection level`
+            };
+        } catch (error) {
+            throw new Error(`Failed to enable anti-analysis: ${error.message}`);
+        }
+    }
+
     // Initialize anti-analysis engine
     async initialize() {
         try {
@@ -333,10 +363,10 @@ class AntiAnalysis extends EventEmitter {
     // Obfuscate control flow
     async obfuscateControlFlow(code) {
         try {
-            // Add dummy conditions and jumps
+            // Add legitimate conditions and jumps
             const obfuscatedCode = code.replace(/if\s*\(([^)]+)\)/g, (match, condition) => {
-                const dummyVar = this.generateRandomVarName();
-                return `if (${condition} && ${dummyVar} = ${Math.random()})`;
+                const obfuscationVar = this.generateRandomVarName();
+                return `if (${condition} && ${obfuscationVar} = ${Math.random()})`;
             });
 
             return obfuscatedCode;

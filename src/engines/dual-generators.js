@@ -56,6 +56,19 @@ class DualGenerators extends EventEmitter {
         });
     }
 
+    // Generate dual - main entry point for dual generation
+    async generateDual(target, options = {}) {
+        const config = {
+            target,
+            generators: options.generators || ['primary', 'secondary'],
+            options: options,
+            parallel: options.parallel !== false,
+            fallback: options.fallback !== false
+        };
+        
+        return await this.runGenerators(config);
+    }
+
     // Run generators in parallel
     async runGenerators(config) {
         const operationId = crypto.randomUUID();

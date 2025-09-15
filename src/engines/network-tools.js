@@ -21,6 +21,29 @@ class NetworkTools extends EventEmitter {
         this.bandwidthMonitoring = new Map();
     }
 
+    // Analyze network - main entry point for network analysis
+    async analyzeNetwork(target, options = {}) {
+        const analysisTypes = {
+            'port-scan': () => this.portScan(target, options.ports || [80, 443, 22, 21], options),
+            'dns-lookup': () => this.dnsLookup(target, options),
+            'traceroute': () => this.traceroute(target, options),
+            'ping': () => this.ping(target, options),
+            'traffic': () => this.analyzeTraffic(target, options),
+            'security': () => this.performSecurityScan(target, options),
+            'topology': () => this.analyzeTopology(target, options),
+            'full': () => this.performFullNetworkAnalysis(target, options)
+        };
+        
+        const analysisType = options.type || 'full';
+        const analysisFunc = analysisTypes[analysisType];
+        
+        if (!analysisFunc) {
+            throw new Error(`Unknown network analysis type: ${analysisType}`);
+        }
+        
+        return await analysisFunc();
+    }
+
     // Initialize network tools
     async initialize() {
         try {
@@ -540,6 +563,131 @@ class NetworkTools extends EventEmitter {
         recommendations.push('Use intrusion detection systems (IDS) for real-time threat detection.');
         recommendations.push('Regularly update network device firmware and security patches.');
         recommendations.push('Implement strong authentication for network access.');
+
+        return recommendations;
+    }
+
+    // Analyze method for compatibility with main engine
+    async analyze(target, options = {}) {
+        try {
+            const analysisId = this.generateAnalysisId();
+            const startTime = Date.now();
+
+            this.emit('analysisStarted', { analysisId, target });
+
+            const analysis = {
+                id: analysisId,
+                target: target,
+                timestamp: Date.now(),
+                results: {
+                    connectivity: null,
+                    portScan: null,
+                    dnsLookup: null,
+                    trafficAnalysis: null,
+                    threats: [],
+                    recommendations: []
+                }
+            };
+
+            // Perform connectivity test
+            try {
+                const connectivityResult = await this.connectivityTest(target, options);
+                analysis.results.connectivity = connectivityResult.results;
+            } catch (error) {
+                analysis.results.connectivity = { error: error.message };
+            }
+
+            // Perform port scan if specified
+            if (options.ports) {
+                try {
+                    const portScanResult = await this.portScan(target, options.ports, options);
+                    analysis.results.portScan = portScanResult.results;
+                } catch (error) {
+                    analysis.results.portScan = { error: error.message };
+                }
+            }
+
+            // Perform DNS lookup
+            try {
+                const dnsResult = await this.dnsLookup(target);
+                analysis.results.dnsLookup = dnsResult.results;
+            } catch (error) {
+                analysis.results.dnsLookup = { error: error.message };
+            }
+
+            // Perform traffic analysis
+            try {
+                const trafficResult = await this.analyzeTraffic(options);
+                analysis.results.trafficAnalysis = trafficResult.analysis;
+                analysis.results.threats = trafficResult.analysis.threats;
+            } catch (error) {
+                analysis.results.trafficAnalysis = { error: error.message };
+            }
+
+            // Generate recommendations
+            analysis.results.recommendations = this.generateAnalysisRecommendations(analysis.results);
+
+            const duration = Date.now() - startTime;
+            analysis.duration = duration;
+
+            this.emit('analysisCompleted', { analysisId, results: analysis.results, duration });
+            return { success: true, analysisId, results: analysis.results, duration };
+        } catch (error) {
+            this.emit('error', { engine: this.name, error: error.message });
+            throw error;
+        }
+    }
+
+    // Scan ports method for compatibility
+    async scanPorts(target, port, options = {}) {
+        try {
+            const ports = Array.isArray(port) ? port : [port];
+            const result = await this.portScan(target, ports, options);
+            return result;
+        } catch (error) {
+            this.emit('error', { engine: this.name, error: error.message });
+            throw error;
+        }
+    }
+
+    // Detect threats method for compatibility
+    async detectThreats(target, options = {}) {
+        try {
+            const analysis = await this.analyzeTraffic(options);
+            return analysis.analysis.threats;
+        } catch (error) {
+            this.emit('error', { engine: this.name, error: error.message });
+            throw error;
+        }
+    }
+
+    // Generate analysis recommendations
+    generateAnalysisRecommendations(results) {
+        const recommendations = [];
+
+        if (results.connectivity) {
+            if (results.connectivity.dns === 'failed') {
+                recommendations.push('DNS resolution failed. Check DNS configuration.');
+            }
+            if (results.connectivity.tcp === 'failed') {
+                recommendations.push('TCP connectivity failed. Check firewall and network configuration.');
+            }
+            if (results.connectivity.ping === 'failed') {
+                recommendations.push('Ping test failed. Check network connectivity.');
+            }
+        }
+
+        if (results.portScan) {
+            const openPorts = results.portScan.filter(port => port.status === 'open');
+            if (openPorts.length > 0) {
+                recommendations.push(`Open ports detected: ${openPorts.map(p => p.port).join(', ')}. Review and close unnecessary services.`);
+            }
+        }
+
+        if (results.threats && results.threats.length > 0) {
+            recommendations.push('Network threats detected. Implement additional security measures.');
+            recommendations.push('Consider using intrusion detection systems (IDS).');
+        }
 
         return recommendations;
     }

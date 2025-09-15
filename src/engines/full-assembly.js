@@ -51,6 +51,24 @@ class FullAssembly {
         logger.info('Full Assembly initialized');
     }
 
+    // Compile assembly - main entry point for assembly compilation
+    async compileAssembly(asmCode, options = {}) {
+        const {
+            architecture = 'x64',
+            outputFormat = 'binary',
+            optimization = 'none',
+            includeDebugInfo = false,
+            targetOS = 'windows'
+        } = options;
+        
+        return await this.assemble(asmCode, architecture, {
+            outputFormat,
+            optimization,
+            includeDebugInfo,
+            targetOS
+        });
+    }
+
     // Assemble code for specific architecture
     async assemble(code, architecture = 'x64', options = {}) {
         const assemblyId = crypto.randomUUID();
@@ -133,6 +151,9 @@ class FullAssembly {
 
     // Parse assembly code
     async parseAssemblyCode(code, architecture) {
+        if (!code || typeof code !== 'string') {
+            throw new Error('Invalid assembly code provided');
+        }
         const arch = this.architectures[architecture];
         const lines = code.split('\n');
         const parsedInstructions = [];
@@ -376,7 +397,7 @@ class FullAssembly {
 
     // Generate machine code
     async generateMachineCode(parsedCode, architecture, targetOS) {
-        const machineCode = Buffer.alloc(0);
+        let machineCode = Buffer.alloc(0);
         const arch = this.architectures[architecture];
 
         for (const instruction of parsedCode.instructions) {

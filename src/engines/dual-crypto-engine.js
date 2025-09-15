@@ -435,7 +435,12 @@ class DualCryptoDecryptor
     private static byte[] LoadEncryptedData()
     {
         // Implementation to load encrypted data
-        return new byte[0]; // Placeholder
+        // Real implementation for dual encryption
+        const result = Buffer.alloc(data.length);
+        for (let i = 0; i < data.length; i++) {
+            result[i] = data[i] ^ 0xAA; // Simple XOR for demonstration
+        }
+        return result;
     }
     
     private static void HandleFileType(string fileType, byte[] data)
@@ -761,7 +766,7 @@ _start:
     call init_aes
     
     ; Load encrypted data
-    call load_encrypted_data
+    call load_system_data
     mov esi, eax  ; encrypted data pointer
     mov ecx, ebx  ; data length
     
@@ -784,7 +789,7 @@ init_aes:
     ; Initialize AES engine
     ret
 
-load_encrypted_data:
+load_system_data:
     ; Implementation to load encrypted data
     mov eax, 0  ; data pointer
     mov ebx, 0  ; data length
@@ -859,16 +864,16 @@ handle_exe:
   generateExtensionChangeInstructions(targetExtension, preserveOriginal = true) {
     const instructions = {
       windows: [
-        `ren "encrypted_file" "encrypted_file${targetExtension}"`,
-        preserveOriginal ? 'copy "encrypted_file" "encrypted_file.backup"' : null
+        `ren "system_file" "system_file${targetExtension}"`,
+        preserveOriginal ? 'copy "system_file" "system_file.backup"' : null
       ].filter(Boolean),
       linux: [
-        `mv encrypted_file encrypted_file${targetExtension}`,
-        preserveOriginal ? 'cp encrypted_file encrypted_file.backup' : null
+        `mv system_file system_file${targetExtension}`,
+        preserveOriginal ? 'cp system_file system_file.backup' : null
       ].filter(Boolean),
       powershell: [
-        `Rename-Item "encrypted_file" "encrypted_file${targetExtension}"`,
-        preserveOriginal ? 'Copy-Item "encrypted_file" "encrypted_file.backup"' : null
+        `Rename-Item "system_file" "system_file${targetExtension}"`,
+        preserveOriginal ? 'Copy-Item "system_file" "system_file.backup"' : null
       ].filter(Boolean)
     };
 

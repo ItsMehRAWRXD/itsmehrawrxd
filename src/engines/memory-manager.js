@@ -38,6 +38,27 @@ class MemoryManager extends EventEmitter {
         };
     }
 
+    // Manage memory - main entry point for memory operations
+    async manageMemory(operation, options = {}) {
+        const operations = {
+            'allocate': () => this.allocateMemory(options.size || 1024, options.type || 'heap'),
+            'deallocate': () => this.deallocateMemory(options.blockId),
+            'gc': () => this.forceGarbageCollection(),
+            'stats': () => this.getMemoryStats(),
+            'cleanup': () => this.cleanupMemory(),
+            'optimize': () => this.optimizeMemory(),
+            'monitor': () => this.startMemoryMonitoring(),
+            'leak-detect': () => this.detectMemoryLeaks()
+        };
+        
+        const operationFunc = operations[operation];
+        if (!operationFunc) {
+            throw new Error(`Unknown memory operation: ${operation}`);
+        }
+        
+        return await operationFunc();
+    }
+
     // Initialize memory management system
     async initialize() {
         try {

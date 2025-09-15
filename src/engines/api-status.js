@@ -337,7 +337,7 @@ class APIStatus extends EventEmitter {
         const checkId = crypto.randomUUID();
 
         try {
-            // Real API check - no more simulation
+            // Real API check implementation
             const response = await this.checkAPIService(api);
             
             const responseTime = Date.now() - startTime;

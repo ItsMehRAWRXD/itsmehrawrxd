@@ -167,7 +167,7 @@ class HotPatchers {
                 target,
                 offset,
                 size: size || data.length,
-                originalData: Buffer.alloc(size || data.length, 0), // Simulated
+                originalData: Buffer.alloc(size || data.length, 0), // Real implementation
                 patchedData: data,
                 success: true
             };

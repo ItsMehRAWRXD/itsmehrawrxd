@@ -32,7 +32,7 @@ class CompressionEngine {
         };
     }
 
-    async initialize(config) {
+    async initialize(config = {}) {
         this.config = config.compression || {};
         logger.info('Compression Engine initialized');
     }

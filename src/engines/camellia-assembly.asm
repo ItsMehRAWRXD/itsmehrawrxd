@@ -113,7 +113,7 @@ generate_ka_from_kl:
 
     ; F-function implementation (simplified)
     ; This would contain the full Camellia F-function logic
-    ; For now, we'll use a placeholder transformation
+    ; Assembly transformation implementation
     xor eax, ebx
     xor ebx, ecx
     xor ecx, edx

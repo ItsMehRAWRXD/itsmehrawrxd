@@ -54,7 +54,7 @@ class StealthEngine {
         };
     }
 
-    async initialize(config) {
+    async initialize(config = {}) {
         this.config = config.stealth || {};
         logger.info('Stealth Engine initialized');
     }

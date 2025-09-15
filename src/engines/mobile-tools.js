@@ -28,6 +28,27 @@ class MobileTools extends EventEmitter {
         this.vulnerabilityDatabase = new Map();
     }
 
+    // Analyze mobile - main entry point for mobile analysis
+    async analyzeMobile(target, options = {}) {
+        const analysisTypes = {
+            'device': () => this.analyzeDevice(target, options),
+            'app': () => this.analyzeApp(target, options),
+            'security': () => this.performSecurityScan(target, options),
+            'malware': () => this.scanForMalware(target, options),
+            'vulnerability': () => this.scanVulnerabilities(target, options),
+            'full': () => this.performFullAnalysis(target, options)
+        };
+        
+        const analysisType = options.type || 'full';
+        const analysisFunc = analysisTypes[analysisType];
+        
+        if (!analysisFunc) {
+            throw new Error(`Unknown mobile analysis type: ${analysisType}`);
+        }
+        
+        return await analysisFunc();
+    }
+
     // Initialize mobile tools
     async initialize() {
         try {
@@ -48,10 +69,10 @@ class MobileTools extends EventEmitter {
         try {
             const signatures = [
                 {
-                    name: 'Android.Trojan.FakeApp',
-                    pattern: /fake.*app/i,
+                    name: 'Android.Trojan.MaliciousApp',
+                    pattern: /malicious.*app/i,
                     severity: 'high',
-                    description: 'Fake application trojan'
+                    description: 'Malicious application trojan'
                 },
                 {
                     name: 'iOS.Spyware.Keylogger',
@@ -522,6 +543,92 @@ class MobileTools extends EventEmitter {
         recommendations.push('Install apps only from official app stores.');
         recommendations.push('Use a mobile security solution for additional protection.');
         recommendations.push('Enable device encryption for data protection.');
+
+        return recommendations;
+    }
+
+    // Analyze method for compatibility with main engine
+    async analyze(target, options = {}) {
+        try {
+            const analysisId = this.generateAnalysisId();
+            const startTime = Date.now();
+
+            this.emit('analysisStarted', { analysisId, target });
+
+            const analysis = {
+                id: analysisId,
+                target: target,
+                timestamp: Date.now(),
+                results: {
+                    deviceInfo: this.deviceInfo,
+                    appAnalysis: null,
+                    securityScan: null,
+                    threats: [],
+                    recommendations: []
+                }
+            };
+
+            // If target is an app path, analyze it
+            if (typeof target === 'string' && (target.includes('.apk') || target.includes('.ipa'))) {
+                const platform = target.includes('.apk') ? 'Android' : 'iOS';
+                const appAnalysis = await this.analyzeApp(target, platform);
+                analysis.results.appAnalysis = appAnalysis.analysis;
+            }
+
+            // Perform device security scan
+            const securityScan = await this.deviceSecurityScan();
+            analysis.results.securityScan = securityScan.scan;
+
+            // Detect threats
+            const threatDetection = await this.detectThreats();
+            analysis.results.threats = threatDetection.threats.detectedThreats;
+
+            // Generate recommendations
+            analysis.results.recommendations = this.generateAnalysisRecommendations(analysis.results);
+
+            const duration = Date.now() - startTime;
+            analysis.duration = duration;
+
+            this.emit('analysisCompleted', { analysisId, results: analysis.results, duration });
+            return { success: true, analysisId, results: analysis.results, duration };
+        } catch (error) {
+            this.emit('error', { engine: this.name, error: error.message });
+            throw error;
+        }
+    }
+
+    // Scan device method for compatibility
+    async scanDevice(target, options = {}) {
+        try {
+            const scanResult = await this.deviceSecurityScan();
+            return scanResult;
+        } catch (error) {
+            this.emit('error', { engine: this.name, error: error.message });
+            throw error;
+        }
+    }
+
+    // Generate analysis recommendations
+    generateAnalysisRecommendations(results) {
+        const recommendations = [];
+
+        if (results.appAnalysis) {
+            recommendations.push(...results.appAnalysis.recommendations);
+        }
+
+        if (results.securityScan) {
+            recommendations.push(...results.securityScan.recommendations);
+        }
+
+        if (results.threats && results.threats.length > 0) {
+            recommendations.push('Mobile threats detected. Review device security settings.');
+            recommendations.push('Consider installing a mobile security solution.');
+        }
+
+        // Add general mobile security recommendations
+        recommendations.push('Keep mobile operating system updated.');
+        recommendations.push('Use strong authentication methods (biometrics, PIN).');
+        recommendations.push('Be cautious when downloading apps from third-party sources.');
 
         return recommendations;
     }

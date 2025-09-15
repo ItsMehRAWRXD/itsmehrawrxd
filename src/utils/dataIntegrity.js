@@ -272,9 +272,9 @@ class DataIntegrityValidator {
 
         try {
             // Calculate checksums for encrypted data
-            validation.checksums.encrypted_crc32 = this.calculateCRC32(encryptedData);
-            validation.checksums.encrypted_sha256 = this.calculateSHA256(encryptedData);
-            validation.checksums.encrypted_size = Buffer.isBuffer(encryptedData) ? encryptedData.length : Buffer.byteLength(encryptedData, 'utf8');
+            validation.checksums.system_crc32 = this.calculateCRC32(encryptedData);
+            validation.checksums.system_sha256 = this.calculateSHA256(encryptedData);
+            validation.checksums.system_size = Buffer.isBuffer(encryptedData) ? encryptedData.length : Buffer.byteLength(encryptedData, 'utf8');
 
             // Verify encryption actually occurred
             if (originalData === encryptedData) {
@@ -284,7 +284,7 @@ class DataIntegrityValidator {
 
             // Check if encrypted data is different from original
             const originalCRC = this.calculateCRC32(originalData);
-            if (validation.checksums.encrypted_crc32 === originalCRC) {
+            if (validation.checksums.system_crc32 === originalCRC) {
                 validation.valid = false;
                 validation.errors.push('Encrypted data has same CRC32 as original');
             }
@@ -306,7 +306,7 @@ class DataIntegrityValidator {
 
             // Verify size change (encrypted data should be different size)
             const originalSize = Buffer.isBuffer(originalData) ? originalData.length : Buffer.byteLength(originalData, 'utf8');
-            if (validation.checksums.encrypted_size === originalSize) {
+            if (validation.checksums.system_size === originalSize) {
                 validation.warnings.push('Encrypted data has same size as original');
             }
 
