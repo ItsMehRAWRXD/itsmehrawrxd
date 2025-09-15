@@ -5,6 +5,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
+const { getMemoryManager } = require('../utils/memory-manager');
 const os = require('os');
 const http = require('http');
 const https = require('https');
@@ -14,17 +15,31 @@ const { logger } = require('../utils/logger');
 const execAsync = promisify(exec);
 
 class HealthMonitor extends EventEmitter {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         super();
         this.name = 'HealthMonitor';
         this.version = '1.0.0';
-        this.monitors = new Map();
-        this.alerts = new Map();
-        this.healthMetrics = new Map();
-        this.alertRules = new Map();
-        this.notificationChannels = new Map();
+        this.memoryManager = getMemoryManager();
+        this.monitors = this.memoryManager.createManagedCollection('monitors', 'Map', 100);
+        this.alerts = this.memoryManager.createManagedCollection('alerts', 'Map', 100);
+        this.healthMetrics = this.memoryManager.createManagedCollection('healthMetrics', 'Map', 100);
+        this.alertRules = this.memoryManager.createManagedCollection('alertRules', 'Map', 100);
+        this.notificationChannels = this.memoryManager.createManagedCollection('notificationChannels', 'Map', 100);
         this.monitoringInterval = null;
-        this.alertCooldown = new Map();
+        this.alertCooldown = this.memoryManager.createManagedCollection('alertCooldown', 'Map', 100);
         this.initialized = false;
         
         // Default monitoring intervals
@@ -141,7 +156,7 @@ class HealthMonitor extends EventEmitter {
             });
         }
 
-        logger.info(`Setup ${monitors.length} default monitors`);
+        logger.info("Setup " + monitors.length + " default monitors");
     }
 
     // Setup alert rules
@@ -209,7 +224,7 @@ class HealthMonitor extends EventEmitter {
             this.alertRules.set(rule.id, rule);
         }
 
-        logger.info(`Setup ${rules.length} alert rules`);
+        logger.info("Setup " + rules.length + " alert rules");
     }
 
     // Setup notification channels
@@ -243,7 +258,7 @@ class HealthMonitor extends EventEmitter {
             this.notificationChannels.set(channel.id, channel);
         }
 
-        logger.info(`Setup ${channels.length} notification channels`);
+        logger.info("Setup " + channels.length + " notification channels");
     }
 
     // Start monitoring
@@ -313,7 +328,7 @@ class HealthMonitor extends EventEmitter {
 
             this.emit('monitorFailed', { monitorId, error: error.message });
 
-            logger.error(`Monitor ${monitorId} failed:`, error.message);
+            logger.error("Monitor " + monitorId + " failed:", error.message);
         }
     }
 
@@ -502,7 +517,7 @@ class HealthMonitor extends EventEmitter {
                 return await this.checkDnsEndpoint(endpoint);
             }
         } catch (error) {
-            logger.warn(`Endpoint check failed for ${endpoint}:`, error.message);
+            logger.warn("Endpoint check failed for " + endpoint + ":", error.message);
             return false;
         }
     }
@@ -590,7 +605,7 @@ class HealthMonitor extends EventEmitter {
                     }
             }
         } catch (error) {
-            logger.warn(`Service check failed for ${service.name}:`, error.message);
+            logger.warn("Service check failed for " + service.name + ":", error.message);
             return false;
         }
     }
@@ -658,7 +673,7 @@ class HealthMonitor extends EventEmitter {
     async checkMongodbConnection(service) {
         try {
             const { MongoClient } = require('mongodb');
-            const uri = `mongodb://${service.host}:${service.port || 27017}/${service.database || 'admin'}`;
+            const uri = `mongodb://${service.host}:${service.port || 27017}/service.database || 'admin'`;
             const client = new MongoClient(uri, { serverSelectionTimeoutMS: 5000 });
             await client.connect();
             await client.db().admin().ping();
@@ -673,10 +688,10 @@ class HealthMonitor extends EventEmitter {
     async checkProcessService(service) {
         try {
             if (os.platform() === 'win32') {
-                const { stdout } = await execAsync(`tasklist /FI "IMAGENAME eq ${service.processName}"`);
+                const { stdout } = await execAsync("tasklist /FI `IMAGENAME eq ${service.processName}`");
                 return stdout.includes(service.processName);
             } else {
-                const { stdout } = await execAsync(`ps aux | grep "${service.processName}" | grep -v grep`);
+                const { stdout } = await execAsync("ps aux | grep `${service.processName}` | grep -v grep");
                 return stdout.trim().length > 0;
             }
         } catch (error) {
@@ -901,7 +916,7 @@ class HealthMonitor extends EventEmitter {
             
             return false;
         } catch (error) {
-            logger.error(`Error evaluating rule ${rule.id}:`, error);
+            logger.error("Error evaluating rule " + rule.id + ":", error);
             return false;
         }
     }
@@ -926,26 +941,26 @@ class HealthMonitor extends EventEmitter {
                 try {
                     await channel.send(alert);
                 } catch (error) {
-                    logger.error(`Failed to send alert via ${channelId}:`, error);
+                    logger.error("Failed to send alert via " + channelId + ":", error);
                 }
             }
         }
         
         this.emit('alertTriggered', alert);
-        logger.warn(`Alert triggered: ${rule.name} - ${alert.message}`);
+        logger.warn(`Alert triggered: ${rule.name} - alert.message`);
     }
 
     // Generate alert message
     generateAlertMessage(rule, metrics) {
         switch (rule.id) {
             case 'health-score-critical':
-                return `System health score is critically low: ${metrics.healthScore || 0}%`;
+                return "System health score is critically low: " + metrics.healthScore || 0 + "%";
             case 'health-score-warning':
-                return `System health score is below optimal: ${metrics.healthScore || 0}%`;
+                return "System health score is below optimal: " + metrics.healthScore || 0 + "%";
             case 'memory-usage-high':
-                return `Memory usage is high: ${metrics.memoryUsage || 0}%`;
+                return "Memory usage is high: " + metrics.memoryUsage || 0 + "%";
             case 'disk-usage-high':
-                return `Disk usage is high: ${metrics.diskUsage || 0}%`;
+                return "Disk usage is high: " + metrics.diskUsage || 0 + "%";
             case 'module-failures':
                 return `${metrics.moduleFailures || 0} modules have implementation issues`;
             case 'api-endpoint-down':
@@ -960,7 +975,7 @@ class HealthMonitor extends EventEmitter {
     // Send console alert
     async sendConsoleAlert(alert) {
         const timestamp = new Date(alert.timestamp).toISOString();
-        const message = `[${timestamp}] [${alert.severity.toUpperCase()}] ${alert.ruleName}: ${alert.message}`;
+        const message = `[${timestamp}] [${alert.severity.toUpperCase()}] ${alert.ruleName}: alert.message`;
         
         if (alert.severity === 'critical') {
             console.error(message);
@@ -977,9 +992,9 @@ class HealthMonitor extends EventEmitter {
             const logDir = './logs';
             await fs.mkdir(logDir, { recursive: true });
             
-            const logFile = path.join(logDir, `health-alerts-${new Date().toISOString().split('T')[0]}.log`);
+            const logFile = path.join(logDir, "health-alerts-" + new Date().toISOString().split('T')[0] + ".log");
             const timestamp = new Date(alert.timestamp).toISOString();
-            const logEntry = `[${timestamp}] [${alert.severity.toUpperCase()}] ${alert.ruleName}: ${alert.message}\n`;
+            const logEntry = "[${timestamp}] [${alert.severity.toUpperCase()}] ${alert.ruleName}: " + alert.message + "\n";
             
             await fs.writeFile(logFile, logEntry, { flag: 'a' });
         } catch (error) {
@@ -1127,7 +1142,7 @@ class HealthMonitor extends EventEmitter {
         const monitor = this.monitors.get(monitorId);
         if (monitor) {
             monitor.enabled = enabled;
-            logger.info(`Monitor ${monitorId} ${enabled ? 'enabled' : 'disabled'}`);
+            logger.info(`Monitor ${monitorId} enabled ? 'enabled' : 'disabled'`);
             return true;
         }
         return false;
@@ -1138,7 +1153,7 @@ class HealthMonitor extends EventEmitter {
         const monitor = this.monitors.get(monitorId);
         if (monitor) {
             monitor.interval = interval;
-            logger.info(`Monitor ${monitorId} interval updated to ${interval}ms`);
+            logger.info("Monitor ${monitorId} interval updated to " + interval + "ms");
             return true;
         }
         return false;
@@ -1162,7 +1177,7 @@ class HealthMonitor extends EventEmitter {
             // Real service status check would go here
             return await this.performActualServiceCheck(service);
         } catch (error) {
-            logger.error(`Failed to check service ${service}:`, error);
+            logger.error("Failed to check service " + service + ":", error);
             return false;
         }
     }
@@ -1172,7 +1187,7 @@ class HealthMonitor extends EventEmitter {
             // Real database connection check would go here
             return await this.performActualDatabaseCheck(db);
         } catch (error) {
-            logger.error(`Failed to check database ${db}:`, error);
+            logger.error("Failed to check database " + db + ":", error);
             return false;
         }
     }
@@ -1258,7 +1273,7 @@ class HealthMonitor extends EventEmitter {
             
             return true;
         } catch (error) {
-            logger.error(`Service check failed for ${service}:`, error);
+            logger.error("Service check failed for " + service + ":", error);
             return false;
         }
     }
@@ -1275,7 +1290,7 @@ class HealthMonitor extends EventEmitter {
             
             return true;
         } catch (error) {
-            logger.error(`Database check failed for ${db}:`, error);
+            logger.error("Database check failed for " + db + ":", error);
             return false;
         }
     }

@@ -56,7 +56,7 @@ class OpenSSLCli {
                 case 'resolve-algorithm':
                     const algToResolve = args[1];
                     if (!algToResolve) {
-                        console.error('❌ Algorithm name required');
+                        console.error('[ERROR] Algorithm name required');
                         process.exit(1);
                     }
                     await this.resolveAlgorithm(algToResolve);
@@ -70,13 +70,13 @@ class OpenSSLCli {
                     break;
             }
         } catch (error) {
-            console.error('❌ Error:', error.message);
+            console.error('[ERROR] Error:', error.message);
             process.exit(1);
         }
     }
 
     async showStatus() {
-        console.log('🔐 RawrZ OpenSSL Configuration Status\n');
+        console.log('[SECURE] RawrZ OpenSSL Configuration Status\n');
         
         const config = this.manager.getConfigSummary();
         console.log(`Mode: ${config.mode}`);
@@ -93,29 +93,29 @@ class OpenSSLCli {
     }
 
     async toggleOpenSSL(enabled) {
-        console.log(`🔄 Toggling OpenSSL mode to ${enabled ? 'enabled' : 'disabled'}...`);
+        console.log(`[REFRESH] Toggling OpenSSL mode to ${enabled ? 'enabled' : 'disabled'}...`);
         
         const success = await this.manager.toggleOpenSSLMode(enabled);
         if (success) {
-            console.log(`✅ OpenSSL mode ${enabled ? 'enabled' : 'disabled'} successfully`);
+            console.log(`[OK] OpenSSL mode ${enabled ? 'enabled' : 'disabled'} successfully`);
         } else {
-            console.log('❌ Failed to toggle OpenSSL mode');
+            console.log('[ERROR] Failed to toggle OpenSSL mode');
         }
     }
 
     async toggleCustom(enabled) {
-        console.log(`🔄 Toggling custom algorithms to ${enabled ? 'enabled' : 'disabled'}...`);
+        console.log(`[REFRESH] Toggling custom algorithms to ${enabled ? 'enabled' : 'disabled'}...`);
         
         const success = await this.manager.toggleCustomAlgorithms(enabled);
         if (success) {
-            console.log(`✅ Custom algorithms ${enabled ? 'enabled' : 'disabled'} successfully`);
+            console.log(`[OK] Custom algorithms ${enabled ? 'enabled' : 'disabled'} successfully`);
         } else {
-            console.log('❌ Failed to toggle custom algorithms');
+            console.log('[ERROR] Failed to toggle custom algorithms');
         }
     }
 
     async listAlgorithms(filter) {
-        console.log(`📋 Available Algorithms (${filter}):\n`);
+        console.log(`[INFO] Available Algorithms (${filter}):\n`);
         
         let algorithms = [];
         switch (filter) {
@@ -139,16 +139,16 @@ class OpenSSLCli {
             const isCustom = this.manager.getCustomAlgorithms().includes(algorithm);
             
             let type = '';
-            if (isOpenSSL) type = '🔒 OpenSSL';
-            else if (isCustom) type = '⚠️  Custom';
-            else type = '❓ Unknown';
+            if (isOpenSSL) type = '[LOCK] OpenSSL';
+            else if (isCustom) type = '[WARN]  Custom';
+            else type = '[INFO] Unknown';
             
             console.log(`${(index + 1).toString().padStart(3)}. ${algorithm.padEnd(25)} ${type}`);
         });
     }
 
     async testEncryption(algorithm, data) {
-        console.log(`🔐 Testing encryption with ${algorithm}...\n`);
+        console.log(`[SECURE] Testing encryption with ${algorithm}...\n`);
         
         const crypto = new AdvancedCrypto({
             useOpenSSL: this.manager.isInitialized ? this.manager.config.isOpenSSLMode() : true,
@@ -157,44 +157,44 @@ class OpenSSLCli {
         
         try {
             const result = await crypto.encrypt(data, { algorithm });
-            console.log(`✅ Encryption successful`);
+            console.log(`[OK] Encryption successful`);
             console.log(`Algorithm used: ${result.algorithm}`);
             console.log(`Encrypted data: ${result.encrypted.substring(0, 50)}...`);
             console.log(`Key size: ${result.key.length * 2} bits`);
             console.log(`IV size: ${result.iv.length * 2} bits`);
         } catch (error) {
-            console.log(`❌ Encryption failed: ${error.message}`);
+            console.log(`[ERROR] Encryption failed: ${error.message}`);
         }
     }
 
     async resolveAlgorithm(algorithm) {
-        console.log(`🔄 Resolving algorithm: ${algorithm}\n`);
+        console.log(`[REFRESH] Resolving algorithm: ${algorithm}\n`);
         
         const resolved = this.manager.resolveAlgorithm(algorithm);
         console.log(`Original: ${algorithm}`);
         console.log(`Resolved: ${resolved}`);
         
         if (resolved !== algorithm) {
-            console.log(`⚠️  Algorithm was changed due to current configuration`);
+            console.log(`[WARN]  Algorithm was changed due to current configuration`);
         } else {
-            console.log(`✅ Algorithm unchanged`);
+            console.log(`[OK] Algorithm unchanged`);
         }
     }
 
     async resetToDefaults() {
-        console.log('🔄 Resetting configuration to defaults...');
+        console.log('[REFRESH] Resetting configuration to defaults...');
         
         const success = await this.manager.resetToDefaults();
         if (success) {
-            console.log('✅ Configuration reset to defaults successfully');
+            console.log('[OK] Configuration reset to defaults successfully');
         } else {
-            console.log('❌ Failed to reset configuration');
+            console.log('[ERROR] Failed to reset configuration');
         }
     }
 
     showHelp() {
         console.log(`
-🔐 RawrZ OpenSSL CLI Tool
+[SECURE] RawrZ OpenSSL CLI Tool
 
 Usage: node openssl-cli-example.js [command] [options]
 
@@ -223,7 +223,7 @@ Examples:
 if (require.main === module) {
     const cli = new OpenSSLCli();
     cli.run().catch(error => {
-        console.error('❌ CLI Error:', error.message);
+        console.error('[ERROR] CLI Error:', error.message);
         process.exit(1);
     });
 }

@@ -189,7 +189,7 @@ class OpenSSLCli {
             console.log(enginesTable.toString());
 
             // Algorithms info
-            console.log(chalk.blue.bold('\n🔢 Algorithms\n'));
+            console.log(chalk.blue.bold('\n[INFO] Algorithms\n'));
             const algorithmsTable = new Table({
                 head: ['Type', 'Count'],
                 style: { head: ['cyan'] }
@@ -291,7 +291,7 @@ class OpenSSLCli {
                 );
             }
 
-            console.log(chalk.blue.bold(`\n🔢 Available Algorithms (${filter})\n`));
+            console.log(chalk.blue.bold(`\n[INFO] Available Algorithms (${filter})\n`));
 
             if (algorithms.length === 0) {
                 console.log(chalk.yellow('No algorithms found'));
@@ -336,7 +336,7 @@ class OpenSSLCli {
             const result = await this.opensslManager.testAlgorithm(options.algorithm, options.data);
             spinner.succeed('Algorithm test completed');
 
-            console.log(chalk.blue.bold(`\n🧪 Algorithm Test Results: ${options.algorithm}\n`));
+            console.log(chalk.blue.bold(`\n[TEST] Algorithm Test Results: ${options.algorithm}\n`));
 
             const table = new Table({
                 head: ['Engine', 'Success', 'Duration (ms)', 'Key Size (bits)', 'IV Size (bits)'],
@@ -538,7 +538,7 @@ class OpenSSLCli {
                     console.log(output);
                 }
             } else {
-                console.log(chalk.blue.bold('\n📋 RawrZ OpenSSL Management Report\n'));
+                console.log(chalk.blue.bold('\n[REPORT] RawrZ OpenSSL Management Report\n'));
                 console.log(`Generated: ${report.timestamp}`);
                 console.log(`Engine: ${report.engine} v${report.version}`);
                 console.log(`Total Algorithms: ${report.summary.totalAlgorithms}`);
@@ -568,7 +568,7 @@ class OpenSSLCli {
             const result = await this.opensslManager.resolveAlgorithm(options.algorithm);
             spinner.succeed('Algorithm resolved');
 
-            console.log(chalk.blue.bold(`\n🔄 Algorithm Resolution: ${options.algorithm}\n`));
+            console.log(chalk.blue.bold(`\n[RESOLVE] Algorithm Resolution: ${options.algorithm}\n`));
 
             const table = new Table({
                 head: ['Context', 'Resolved Algorithm'],

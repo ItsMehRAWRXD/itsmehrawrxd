@@ -4,10 +4,23 @@ const crypto = require('crypto');
 const { logger } = require('../utils/logger');
 
 class APIStatus extends EventEmitter {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         super();
-        this.apis = new Map();
-        this.statusChecks = new Map();
+        this.apis = this.memoryManager.createManagedCollection('apis', 'Map', 100);
+        this.statusChecks = this.memoryManager.createManagedCollection('statusChecks', 'Map', 100);
         this.healthMetrics = {
             totalChecks: 0,
             successfulChecks: 0,
@@ -303,7 +316,7 @@ class APIStatus extends EventEmitter {
 
         const results = await Promise.allSettled(checkPromises);
         
-        logger.info(`API status check completed: ${results.length} APIs checked`);
+        logger.info("API status check completed: " + results.length + " APIs checked");
         this.emit('status-check-complete', results);
     }
 
@@ -322,7 +335,7 @@ class APIStatus extends EventEmitter {
 
         const results = await Promise.allSettled(checkPromises);
         
-        logger.debug(`Critical API status check completed: ${results.length} APIs checked`);
+        logger.debug("Critical API status check completed: " + results.length + " APIs checked");
         this.emit('critical-status-check-complete', results);
     }
 

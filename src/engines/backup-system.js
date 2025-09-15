@@ -5,14 +5,29 @@ const path = require('path');
 const crypto = require('crypto');
 const zlib = require('zlib');
 const { promisify } = require('util');
+const { getMemoryManager } = require('../utils/memory-manager');
 
 class BackupSystem extends EventEmitter {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         super();
         this.name = 'BackupSystem';
         this.version = '2.0.0';
-        this.backups = new Map();
-        this.backupPolicies = new Map();
+        this.memoryManager = getMemoryManager();
+        this.backups = this.memoryManager.createManagedCollection('backups', 'Map', 100);
+        this.backupPolicies = this.memoryManager.createManagedCollection('backupPolicies', 'Map', 100);
         this.compressionSettings = {
             enabled: true,
             algorithm: 'gzip',
@@ -22,11 +37,11 @@ class BackupSystem extends EventEmitter {
             enabled: true,
             algorithm: 'aes-256-gcm'
         };
-        this.storageLocations = new Map();
+        this.storageLocations = this.memoryManager.createManagedCollection('storageLocations', 'Map', 100);
         this.backupHistory = [];
-        this.retentionPolicies = new Map();
-        this.incrementalBackups = new Map();
-        this.backupSchedules = new Map();
+        this.retentionPolicies = this.memoryManager.createManagedCollection('retentionPolicies', 'Map', 100);
+        this.incrementalBackups = this.memoryManager.createManagedCollection('incrementalBackups', 'Map', 100);
+        this.backupSchedules = this.memoryManager.createManagedCollection('backupSchedules', 'Map', 100);
     }
 
     // Initialize backup system
@@ -603,7 +618,7 @@ class BackupSystem extends EventEmitter {
 
     // Generate backup ID
     generateBackupId() {
-        return `backup_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        return `backup_${Date.now()}_Math.random().toString(36).substr(2, 9)`;
     }
 
     // Get backup report

@@ -3,6 +3,7 @@ const os = require('os');
 const fs = require('fs').promises;
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
+const { getMemoryManager } = require('../utils/memory-manager');
 const crypto = require('crypto');
 const path = require('path');
 const { logger } = require('../utils/logger');
@@ -22,6 +23,19 @@ try {
 const execAsync = promisify(exec);
 
 class StealthEngine {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         this.stealthModes = {
             basic: ['anti-debug', 'anti-vm'],
@@ -78,7 +92,7 @@ class StealthEngine {
         
         try {
             if (!this.stealthModes[mode]) {
-                throw new Error(`Invalid stealth mode: ${mode}. Available modes: ${Object.keys(this.stealthModes).join(', ')}`);
+                throw new Error(`Invalid stealth mode: ${mode}. Available modes: Object.keys(this.stealthModes).join(', ')`);
             }
             
             const modesToEnable = this.stealthModes[mode];
@@ -93,7 +107,7 @@ class StealthEngine {
                     results[stealthMode] = result;
                     logger.info(`Stealth capability enabled: ${stealthMode}`);
                 } catch (error) {
-                    logger.warn(`Failed to enable stealth capability ${stealthMode}:`, error.message);
+                    logger.warn("Failed to enable stealth capability " + stealthMode + ":", error.message);
                     results[stealthMode] = { enabled: false, error: error.message };
                 }
             }
@@ -105,7 +119,7 @@ class StealthEngine {
                 lastCheck: new Date().toISOString()
             };
             
-            logger.info(`Stealth mode ${mode} enabled successfully`, {
+            logger.info("Stealth mode " + mode + " enabled successfully", {
                 duration: Date.now() - startTime,
                 enabledCapabilities: Object.keys(results).filter(k => results[k].enabled).length,
                 totalCapabilities: modesToEnable.length
@@ -188,7 +202,7 @@ class StealthEngine {
                     return { detected: false, confidence: 0.50 };
             }
         } catch (error) {
-            logger.warn(`Anti-debug check failed for ${method}:`, error.message);
+            logger.warn("Anti-debug check failed for " + method + ":", error.message);
             return { detected: false, confidence: 0.30, error: error.message };
         }
     }
@@ -206,7 +220,7 @@ class StealthEngine {
                 const debuggerProcesses = ['windbg.exe', 'ollydbg.exe', 'x64dbg.exe', 'ida.exe', 'ghidra.exe'];
                 for (const process of debuggerProcesses) {
                     try {
-                        await execAsync(`tasklist /FI "IMAGENAME eq ${process}"`);
+                        await execAsync("tasklist /FI `IMAGENAME eq ${process}`");
                         return { detected: true, confidence: 0.95 };
                     } catch (e) {
                         // Process not found
@@ -316,7 +330,7 @@ class StealthEngine {
             const duration = Number(endTime - startTime) / 1000000; // Convert to milliseconds
             
             // If execution is too slow, might be under debugger
-            const detected = duration > 10; // Threshold of 10ms
+            const detected = duration >` 10; // Threshold of 10ms
             return { detected, confidence: detected ? 0.75 : 0.70, duration };
         } catch (error) {
             return { detected: false, confidence: 0.65 };
@@ -406,7 +420,7 @@ class StealthEngine {
             let detected = false;
             for (const key of vmKeys) {
                 try {
-                    const { stdout } = await execAsync(`reg query "${key}" 2>nul`);
+                    const { stdout } = await execAsync("reg query `${key}` 2>nul");
                     if (stdout) {
                         detected = true;
                         break;
@@ -705,7 +719,7 @@ class StealthEngine {
                 try {
                     // Check for active network connections
                     const { stdout: netstat } = await execAsync('netstat -an | findstr ESTABLISHED');
-                    const activeConnections = netstat.split('\n').filter(line => line.trim().length > 0).length;
+                    const activeConnections = netstat.split('\n').filter(line =>` line.trim().length > 0).length;
                     
                     // Check for DNS activity
                     const { stdout: dnsCache } = await execAsync('ipconfig /displaydns | findstr "Record Name"');

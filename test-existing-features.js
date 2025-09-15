@@ -9,20 +9,20 @@ async function testExistingFeatures() {
         console.log('Test 1: Hot Patchers DLL Injection');
         const hotPatchers = require('./src/engines/hot-patchers');
         await hotPatchers.initialize();
-        console.log('✓ Hot Patchers engine initialized');
+        console.log('[INFO] Hot Patchers engine initialized');
         
         // Test DLL injection method exists
         if (typeof hotPatchers.injectDllIntoProcess === 'function') {
-            console.log('✓ DLL injection method available');
+            console.log('[INFO] DLL injection method available');
         } else {
-            console.log('✗ DLL injection method missing');
+            console.log('[INFO] DLL injection method missing');
         }
         
         // Test API hooking method exists
         if (typeof hotPatchers.hookProcessApi === 'function') {
-            console.log('✓ API hooking method available');
+            console.log('[INFO] API hooking method available');
         } else {
-            console.log('✗ API hooking method missing');
+            console.log('[INFO] API hooking method missing');
         }
         console.log('');
 
@@ -30,7 +30,7 @@ async function testExistingFeatures() {
         console.log('Test 2: Advanced Crypto DLL Stub Generation');
         const advancedCrypto = require('./src/engines/advanced-crypto');
         await advancedCrypto.initialize();
-        console.log('✓ Advanced Crypto engine initialized');
+        console.log('[INFO] Advanced Crypto engine initialized');
         
         // Test DLL stub generation
         const testData = Buffer.from('test payload data');
@@ -43,9 +43,9 @@ async function testExistingFeatures() {
         
         const dllStub = advancedCrypto.generateDLLStub(testData, options);
         if (dllStub && dllStub.includes('DllMain') && dllStub.includes('DecryptAndExecute')) {
-            console.log('✓ DLL stub generation working');
+            console.log('[INFO] DLL stub generation working');
         } else {
-            console.log('✗ DLL stub generation failed');
+            console.log('[INFO] DLL stub generation failed');
         }
         console.log('');
 
@@ -53,21 +53,21 @@ async function testExistingFeatures() {
         console.log('Test 3: Advanced FUD Engine');
         const advancedFUD = require('./src/engines/advanced-fud-engine');
         await advancedFUD.initialize();
-        console.log('✓ Advanced FUD engine initialized');
+        console.log('[INFO] Advanced FUD engine initialized');
         
         // Test FUD techniques
         const fudTechniques = advancedFUD.fudTechniques;
         if (fudTechniques && fudTechniques.length > 0) {
-            console.log(`✓ FUD techniques available: ${fudTechniques.length}`);
+            console.log(`[INFO] FUD techniques available: ${fudTechniques.length}`);
         } else {
-            console.log('✗ FUD techniques missing');
+            console.log('[INFO] FUD techniques missing');
         }
         
         // Test obfuscation levels
         if (advancedFUD.obfuscationLevels && advancedFUD.obfuscationLevels.length > 0) {
-            console.log(`✓ Obfuscation levels available: ${advancedFUD.obfuscationLevels.length}`);
+            console.log(`[INFO] Obfuscation levels available: ${advancedFUD.obfuscationLevels.length}`);
         } else {
-            console.log('✗ Obfuscation levels missing');
+            console.log('[INFO] Obfuscation levels missing');
         }
         console.log('');
 
@@ -75,7 +75,7 @@ async function testExistingFeatures() {
         console.log('Test 4: Advanced Anti-Analysis');
         const antiAnalysis = require('./src/engines/advanced-anti-analysis');
         await antiAnalysis.initialize();
-        console.log('✓ Advanced Anti-Analysis engine initialized');
+        console.log('[INFO] Advanced Anti-Analysis engine initialized');
         
         // Test detection methods
         const detectionMethods = [
@@ -87,9 +87,9 @@ async function testExistingFeatures() {
         
         for (const method of detectionMethods) {
             if (typeof antiAnalysis[method] === 'function') {
-                console.log(`✓ ${method} method available`);
+                console.log(`[INFO] ${method} method available`);
             } else {
-                console.log(`✗ ${method} method missing`);
+                console.log(`[INFO] ${method} method missing`);
             }
         }
         console.log('');
@@ -98,22 +98,22 @@ async function testExistingFeatures() {
         console.log('Test 5: Stub Generator');
         const stubGenerator = require('./src/engines/stub-generator');
         await stubGenerator.initialize();
-        console.log('✓ Stub Generator engine initialized');
+        console.log('[INFO] Stub Generator engine initialized');
         
         // Test stealth methods
         if (stubGenerator.stealthMethods) {
             const stealthCount = Object.keys(stubGenerator.stealthMethods).length;
-            console.log(`✓ Stealth methods available: ${stealthCount}`);
+            console.log(`[INFO] Stealth methods available: ${stealthCount}`);
         } else {
-            console.log('✗ Stealth methods missing');
+            console.log('[INFO] Stealth methods missing');
         }
         
         // Test anti-analysis methods
         if (stubGenerator.antiAnalysisMethods) {
             const antiAnalysisCount = Object.keys(stubGenerator.antiAnalysisMethods).length;
-            console.log(`✓ Anti-analysis methods available: ${antiAnalysisCount}`);
+            console.log(`[INFO] Anti-analysis methods available: ${antiAnalysisCount}`);
         } else {
-            console.log('✗ Anti-analysis methods missing');
+            console.log('[INFO] Anti-analysis methods missing');
         }
         console.log('');
 
@@ -121,7 +121,7 @@ async function testExistingFeatures() {
         console.log('Test 6: Dual Crypto Engine');
         const dualCrypto = require('./src/engines/dual-crypto-engine');
         await dualCrypto.initialize();
-        console.log('✓ Dual Crypto engine initialized');
+        console.log('[INFO] Dual Crypto engine initialized');
         
         // Test C# dual stub generation
         const testKeys = {
@@ -135,9 +135,9 @@ async function testExistingFeatures() {
         
         const csharpStub = dualCrypto.generateCSharpDualStub('aes-camellia', testKeys, testIVs, 'exe');
         if (csharpStub && csharpStub.includes('DecryptDual') && csharpStub.includes('HandleFileType')) {
-            console.log('✓ C# dual stub generation working');
+            console.log('[INFO] C# dual stub generation working');
         } else {
-            console.log('✗ C# dual stub generation failed');
+            console.log('[INFO] C# dual stub generation failed');
         }
         console.log('');
 
@@ -145,14 +145,14 @@ async function testExistingFeatures() {
         console.log('Test 7: IRC Bot Generator Process Injection');
         const ircBot = require('./src/engines/irc-bot-generator');
         await ircBot.initialize();
-        console.log('✓ IRC Bot Generator engine initialized');
+        console.log('[INFO] IRC Bot Generator engine initialized');
         
         // Test form grabber code (contains DLL injection)
         const formGrabberCode = ircBot.getCPPFormGrabberCode();
         if (formGrabberCode && formGrabberCode.includes('LoadLibraryA') && formGrabberCode.includes('CreateRemoteThread')) {
-            console.log('✓ Form grabber DLL injection code available');
+            console.log('[INFO] Form grabber DLL injection code available');
         } else {
-            console.log('✗ Form grabber DLL injection code missing');
+            console.log('[INFO] Form grabber DLL injection code missing');
         }
         console.log('');
 
@@ -160,13 +160,13 @@ async function testExistingFeatures() {
         console.log('Test 8: Red Killer AV/EDR Detection');
         const redKiller = require('./src/engines/red-killer');
         await redKiller.initialize();
-        console.log('✓ Red Killer engine initialized');
+        console.log('[INFO] Red Killer engine initialized');
         
         // Test AV patterns
         if (redKiller.avPatterns && Object.keys(redKiller.avPatterns).length > 0) {
-            console.log(`✓ AV patterns available: ${Object.keys(redKiller.avPatterns).length}`);
+            console.log(`[INFO] AV patterns available: ${Object.keys(redKiller.avPatterns).length}`);
         } else {
-            console.log('✗ AV patterns missing');
+            console.log('[INFO] AV patterns missing');
         }
         console.log('');
 
@@ -174,20 +174,20 @@ async function testExistingFeatures() {
         console.log('Test 9: Native Compiler');
         const nativeCompiler = require('./src/engines/native-compiler');
         await nativeCompiler.initialize();
-        console.log('✓ Native Compiler engine initialized');
+        console.log('[INFO] Native Compiler engine initialized');
         
         // Test compilation methods
         if (typeof nativeCompiler.compileSource === 'function') {
-            console.log('✓ Source compilation method available');
+            console.log('[INFO] Source compilation method available');
         } else {
-            console.log('✗ Source compilation method missing');
+            console.log('[INFO] Source compilation method missing');
         }
         
         // Test .NET workaround integration
         if (typeof nativeCompiler.compileWithWorkaround === 'function') {
-            console.log('✓ .NET workaround method available');
+            console.log('[INFO] .NET workaround method available');
         } else {
-            console.log('✗ .NET workaround method missing');
+            console.log('[INFO] .NET workaround method missing');
         }
         console.log('');
 
@@ -195,7 +195,7 @@ async function testExistingFeatures() {
         console.log('Test 10: CLI Integration');
         const rawrzStandalone = require('./rawrz-standalone');
         const instance = await rawrzStandalone.getInstanceAsync();
-        console.log('✓ RawrZ Standalone CLI initialized');
+        console.log('[INFO] RawrZ Standalone CLI initialized');
         
         // Test if engines are in available list
         const availableEngines = instance.availableEngines;
@@ -213,25 +213,25 @@ async function testExistingFeatures() {
         
         for (const engine of requiredEngines) {
             if (availableEngines[engine]) {
-                console.log(`✓ ${engine} available in CLI`);
+                console.log(`[INFO] ${engine} available in CLI`);
             } else {
-                console.log(`✗ ${engine} missing from CLI`);
+                console.log(`[INFO] ${engine} missing from CLI`);
             }
         }
         console.log('');
 
         console.log('All existing related features tested successfully!');
         console.log('\nSummary of Available Features:');
-        console.log('✓ DLL Injection (Hot Patchers)');
-        console.log('✓ DLL Stub Generation (Advanced Crypto)');
-        console.log('✓ FUD Techniques (Advanced FUD Engine)');
-        console.log('✓ Anti-Analysis Detection (Advanced Anti-Analysis)');
-        console.log('✓ Stealth Methods (Stub Generator)');
-        console.log('✓ Dual Encryption (Dual Crypto Engine)');
-        console.log('✓ Process Injection (IRC Bot Generator)');
-        console.log('✓ AV/EDR Detection (Red Killer)');
-        console.log('✓ Native Compilation (Native Compiler)');
-        console.log('✓ CLI Integration (RawrZ Standalone)');
+        console.log('[INFO] DLL Injection (Hot Patchers)');
+        console.log('[INFO] DLL Stub Generation (Advanced Crypto)');
+        console.log('[INFO] FUD Techniques (Advanced FUD Engine)');
+        console.log('[INFO] Anti-Analysis Detection (Advanced Anti-Analysis)');
+        console.log('[INFO] Stealth Methods (Stub Generator)');
+        console.log('[INFO] Dual Encryption (Dual Crypto Engine)');
+        console.log('[INFO] Process Injection (IRC Bot Generator)');
+        console.log('[INFO] AV/EDR Detection (Red Killer)');
+        console.log('[INFO] Native Compilation (Native Compiler)');
+        console.log('[INFO] CLI Integration (RawrZ Standalone)');
 
     } catch (error) {
         console.error('Test failed:', error.message);

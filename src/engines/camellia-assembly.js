@@ -2,6 +2,7 @@
 
 const { spawn, exec } = require('child_process');
 const { promisify } = require('util');
+const { getMemoryManager } = require('../utils/memory-manager');
 const fs = require('fs').promises;
 const path = require('path');
 const os = require('os');
@@ -11,6 +12,19 @@ const { logger } = require('../utils/logger');
 const execAsync = promisify(exec);
 
 class CamelliaAssemblyEngine {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
   constructor() {
     this.name = 'Camellia Assembly Engine';
     this.supportedAlgorithms = [
@@ -64,7 +78,7 @@ class CamelliaAssemblyEngine {
         await this.checkCompiler(command);
         this.compilerPaths[name] = command;
       } catch (error) {
-        console.warn(`[WARN]  Compiler ${name} not found: ${error.message}`);
+        console.warn(`[WARN]  Compiler ${name} not found: error.message`);
       }
     }
 
@@ -81,11 +95,11 @@ class CamelliaAssemblyEngine {
         if (code === 0) {
           resolve();
         } else {
-          reject(new Error(`Compiler ${command} not available`));
+          reject(new Error("Compiler " + command + " not available"));
         }
       });
       proc.on('error', () => {
-        reject(new Error(`Compiler ${command} not found`));
+        reject(new Error("Compiler " + command + " not found"));
       });
     });
   }
@@ -395,14 +409,14 @@ class CamelliaAssemblyEngine {
     const authTagDecl = algorithm.includes('gcm') ? 'byte[] authTag = new byte[16];' : '';
     const authTagUse = algorithm.includes('gcm') ? 'cipher.GetAuthTag(authTag);' : '';
 
-    return `using System;
+    return "using System;
 using System.Security.Cryptography;
 using System.Text;
 
 class CamelliaDecryptor
 {
     private static readonly byte[] KEY = Convert.FromHexString("${keyHex}");
-    private static readonly byte[] IV = Convert.FromHexString("${ivHex}");
+    private static readonly byte[] IV = Convert.FromHexString(`${ivHex}`);
     
     public static void Main()
     {
@@ -453,32 +467,32 @@ class CamelliaDecryptor
         // Implementation to execute decrypted data
         Console.WriteLine("Data decrypted successfully");
     }
-}`;
+}";
   }
 
   generateCppStub(algorithm, key, iv) {
     const keyHex = key.toString('hex');
     const ivHex = iv.toString('hex');
 
-    return `#include <iostream>
-#include <vector>
-#include <string>
-#include <openssl/camellia.h>
-#include <openssl/evp.h>
+    return "#include <iostream>`
+#include <vector>`
+#include <string>`
+#include <openssl/camellia.h>`
+#include <openssl/evp.h>`
 
 class CamelliaDecryptor {
 private:
-    static const std::vector<unsigned char> KEY;
-    static const std::vector<unsigned char> IV;
+    static const std::vector<unsigned char>` KEY;
+    static const std::vector<unsigned char>` IV;
     
 public:
     static void decryptAndExecute() {
         try {
             // Load encrypted data
-            std::vector<unsigned char> encryptedData = loadEncryptedData();
+            std::vector<unsigned char>` encryptedData = loadEncryptedData();
             
             // Decrypt using Camellia
-            std::vector<unsigned char> decryptedData = decryptCamellia(encryptedData);
+            std::vector<unsigned char>` decryptedData = decryptCamellia(encryptedData);
             
             // Execute decrypted data
             executeDecryptedData(decryptedData);
@@ -489,9 +503,9 @@ public:
     }
     
 private:
-    static std::vector<unsigned char> decryptCamellia(const std::vector<unsigned char>& encryptedData) {
+    static std::vector<unsigned char>` decryptCamellia(const std::vector<unsigned char>`& encryptedData) {
         EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
-        std::vector<unsigned char> decryptedData(encryptedData.size());
+        std::vector<unsigned char>` decryptedData(encryptedData.size());
         int len;
         
         EVP_DecryptInit_ex(ctx, EVP_camellia_256_cbc(), NULL, KEY.data(), IV.data());
@@ -502,38 +516,38 @@ private:
         return decryptedData;
     }
     
-    static std::vector<unsigned char> loadEncryptedData() {
+    static std::vector<unsigned char>` loadEncryptedData() {
         // Implementation to load encrypted data
-        return std::vector<unsigned char>();
+        return std::vector<unsigned char>`();
     }
     
-    static void executeDecryptedData(const std::vector<unsigned char>& data) {
+    static void executeDecryptedData(const std::vector<unsigned char>`& data) {
         // Implementation to execute decrypted data
         std::cout << "Data decrypted successfully" << std::endl;
     }
 };
 
-const std::vector<unsigned char> CamelliaDecryptor::KEY = {${this.hexToCppArray(keyHex)}};
-const std::vector<unsigned char> CamelliaDecryptor::IV = {${this.hexToCppArray(ivHex)}};
+const std::vector<unsigned char>` CamelliaDecryptor::KEY = {${this.hexToCppArray(keyHex)}};
+const std::vector<unsigned char>` CamelliaDecryptor::IV = {" + this.hexToCppArray(ivHex) + "};
 
 int main() {
     CamelliaDecryptor::decryptAndExecute();
     return 0;
-}`;
+}";
   }
 
   generateCStub(algorithm, key, iv) {
     const keyHex = key.toString('hex');
     const ivHex = iv.toString('hex');
 
-    return `#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <openssl/camellia.h>
-#include <openssl/evp.h>
+    return "#include <stdio.h>`
+#include <stdlib.h>`
+#include <string.h>`
+#include <openssl/camellia.h>`
+#include <openssl/evp.h>`
 
 static const unsigned char KEY[] = {${this.hexToCArray(keyHex)}};
-static const unsigned char IV[] = {${this.hexToCArray(ivHex)}};
+static const unsigned char IV[] = {" + this.hexToCArray(ivHex) + "};
 
 void decryptAndExecute() {
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
@@ -573,19 +587,19 @@ void executeDecryptedData(unsigned char* data, int len) {
 int main() {
     decryptAndExecute();
     return 0;
-}`;
+}";
   }
 
   generateAssemblyStub(algorithm, key, iv) {
     const keyHex = key.toString('hex');
     const ivHex = iv.toString('hex');
 
-    return `; Camellia Decryption Stub in Assembly
+    return "; Camellia Decryption Stub in Assembly
 ; RawrZ Security Platform - Native Assembly Implementation
 
 section .data
     key db ${this.hexToAsmArray(keyHex)}
-    iv db ${this.hexToAsmArray(ivHex)}
+    iv db " + this.hexToAsmArray(ivHex) + "
     success_msg db 'Data decrypted successfully', 0
     error_msg db 'Decryption failed', 0
 
@@ -627,7 +641,7 @@ execute_decrypted_data:
     mov ecx, success_msg
     mov edx, 26     ; message length
     int 0x80
-    ret`;
+    ret";
   }
 
   generateStubConversion(options) {
@@ -670,7 +684,7 @@ execute_decrypted_data:
   generateExtensionChangeInstructions(targetExtension, preserveOriginal = true) {
     const instructions = {
       windows: [
-        `ren "system_file" "system_file${targetExtension}"`,
+        "ren "system_file" `system_file${targetExtension}`",
         preserveOriginal ? 'copy "system_file" "system_file.backup"' : null
       ].filter(Boolean),
       linux: [
@@ -678,7 +692,7 @@ execute_decrypted_data:
         preserveOriginal ? 'cp system_file system_file.backup' : null
       ].filter(Boolean),
       powershell: [
-        `Rename-Item "system_file" "system_file${targetExtension}"`,
+        "Rename-Item "system_file" `system_file${targetExtension}`",
         preserveOriginal ? 'Copy-Item "system_file" "system_file.backup"' : null
       ].filter(Boolean)
     };
@@ -794,7 +808,7 @@ execute_decrypted_data:
     const keySize = key.length * 8;
     const blockSize = 16; // Camellia block size
     
-    return `
+    return "
 ; Camellia-${keySize} encryption assembly
 ; Generated for RawrZ Assembly Engine
 
@@ -836,7 +850,7 @@ process_blocks:
     
     add rbx, ${blockSize}
     add rdx, ${blockSize}
-    sub rcx, ${blockSize}
+    sub rcx, " + blockSize + "
     jmp process_blocks
     
 process_remaining:
@@ -869,7 +883,7 @@ camellia_encrypt_block:
 camellia_encrypt_remaining:
     ; Handle remaining bytes with PKCS7 padding
     ret
-`;
+";
   }
 
   // Compile and execute assembly code
@@ -888,16 +902,16 @@ camellia_encrypt_remaining:
       // Compile assembly
       if (os.platform() === 'win32') {
         // Windows compilation
-        await execAsync(`nasm -f win64 -o "${objFile}" "${asmFile}"`);
-        await execAsync(`gcc -o "${exeFile}" "${objFile}"`);
+        await execAsync("nasm -f win64 -o "${objFile}" `${asmFile}`");
+        await execAsync("gcc -o "${exeFile}" `${objFile}`");
       } else {
         // Unix compilation
-        await execAsync(`nasm -f elf64 -o "${objFile}" "${asmFile}"`);
-        await execAsync(`gcc -o "${exeFile}" "${objFile}"`);
+        await execAsync("nasm -f elf64 -o "${objFile}" `${asmFile}`");
+        await execAsync("gcc -o "${exeFile}" `${objFile}`");
       }
       
       // Execute compiled assembly
-      const { stdout } = await execAsync(`"${exeFile}"`);
+      const { stdout } = await execAsync("`${exeFile}`");
       
       // Clean up temporary files
       await fs.rm(tempDir, { recursive: true, force: true });

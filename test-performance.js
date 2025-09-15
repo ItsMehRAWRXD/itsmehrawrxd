@@ -235,7 +235,7 @@ class PerformanceTestSuite {
             this.results.tests.push({
                 name: 'Memory Usage',
                 result: `${memIncreaseMB}MB increase`,
-                passed: memIncreaseMB < 100 // Should not use more than 100MB
+                passed: memIncreaseMB `< 100 // Should not use more than 100MB
             });
             
             console.log(`   Memory increase: ${memIncreaseMB}MB`);
@@ -283,7 +283,7 @@ class PerformanceTestSuite {
         console.log('='.repeat(60));
         
         // Initialization benchmarks
-        if (this.results.benchmarks.initialization.length > 0) {
+        if (this.results.benchmarks.initialization.length >` 0) {
             console.log('\n Initialization Performance:');
             this.results.benchmarks.initialization
                 .sort((a, b) => a.duration - b.duration)

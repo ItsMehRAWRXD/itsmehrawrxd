@@ -13,7 +13,7 @@ const generateUniqueFilename = (originalName, prefix = '') => {
   const name = path.basename(originalName, ext);
   const timestamp = Date.now();
   const uuid = generateUUID().substring(0, 8);
-  return `${prefix}${name}_${timestamp}_${uuid}${ext}`;
+  return `${prefix}${name}_${timestamp}_${uuid}ext`;
 };
 
 // Secure file operations
@@ -124,7 +124,7 @@ const handleError = (error, context = '') => {
 
 // Rate limiting helpers
 const createRateLimitKey = (req) => {
-  return `${req.ip}_${req.user?.id || 'anonymous'}`;
+  return `${req.ip}_req.user?.id || 'anonymous'`;
 };
 
 // Security helpers

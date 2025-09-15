@@ -59,7 +59,7 @@ async function demonstrateOpenSSLToggle() {
     // Show some examples
     console.log('OpenSSL Algorithms (first 10):');
     opensslAlgorithms.slice(0, 10).forEach(alg => {
-        console.log(`  ✓ ${alg}`);
+        console.log(`  [INFO] ${alg}`);
     });
     console.log();
     
@@ -84,15 +84,15 @@ async function demonstrateOpenSSLToggle() {
         
         // Test with OpenSSL-only mode
         const opensslResolved = opensslCrypto.resolveAlgorithm(algorithm);
-        console.log(`  OpenSSL mode: ${algorithm} → ${opensslResolved}`);
+        console.log(`  OpenSSL mode: ${algorithm} [INFO] ${opensslResolved}`);
         
         // Test with custom mode
         const customResolved = customCrypto.resolveAlgorithm(algorithm);
-        console.log(`  Custom mode: ${algorithm} → ${customResolved}`);
+        console.log(`  Custom mode: ${algorithm} [INFO] ${customResolved}`);
         
         // Test with mixed mode
         const mixedResolved = mixedCrypto.resolveAlgorithm(algorithm);
-        console.log(`  Mixed mode: ${algorithm} → ${mixedResolved}`);
+        console.log(`  Mixed mode: ${algorithm} [INFO] ${mixedResolved}`);
         console.log();
     }
     
@@ -108,15 +108,15 @@ async function demonstrateOpenSSLToggle() {
         const opensslResult = await opensslCrypto.encrypt(testData, {
             algorithm: 'aes-256-gcm'
         });
-        console.log(`  ✓ OpenSSL AES-256-GCM: ${opensslResult.encrypted.substring(0, 50)}...`);
+        console.log(`  [INFO] OpenSSL AES-256-GCM: ${opensslResult.encrypted.substring(0, 50)}...`);
         
         // Try to use custom algorithm (should fallback)
         const opensslCustomResult = await opensslCrypto.encrypt(testData, {
             algorithm: 'serpent-256-cbc'
         });
-        console.log(`  ✓ Serpent fallback: ${opensslCustomResult.encrypted.substring(0, 50)}...`);
+        console.log(`  [INFO] Serpent fallback: ${opensslCustomResult.encrypted.substring(0, 50)}...`);
     } catch (error) {
-        console.log(`  ✗ Error: ${error.message}`);
+        console.log(`  [INFO] Error: ${error.message}`);
     }
     console.log();
     
@@ -126,14 +126,14 @@ async function demonstrateOpenSSLToggle() {
         const customResult = await customCrypto.encrypt(testData, {
             algorithm: 'quantum-resistant'
         });
-        console.log(`  ✓ Quantum-resistant: ${customResult.encrypted.substring(0, 50)}...`);
+        console.log(`  [INFO] Quantum-resistant: ${customResult.encrypted.substring(0, 50)}...`);
         
         const customResult2 = await customCrypto.encrypt(testData, {
             algorithm: 'serpent-256-cbc'
         });
-        console.log(`  ✓ Serpent-256-CBC: ${customResult2.encrypted.substring(0, 50)}...`);
+        console.log(`  [INFO] Serpent-256-CBC: ${customResult2.encrypted.substring(0, 50)}...`);
     } catch (error) {
-        console.log(`  ✗ Error: ${error.message}`);
+        console.log(`  [INFO] Error: ${error.message}`);
     }
     console.log();
     
@@ -179,7 +179,7 @@ async function demonstrateOpenSSLToggle() {
     console.log(`Stub generator algorithms: ${stubAlgorithms.length}`);
     console.log('First 10 stub algorithms:');
     stubAlgorithms.slice(0, 10).forEach(alg => {
-        console.log(`  ✓ ${alg}`);
+        console.log(`  [INFO] ${alg}`);
     });
     console.log();
     
@@ -211,7 +211,7 @@ async function demonstrateOpenSSLToggle() {
     console.log(`Valid: ${validation.valid}`);
     if (validation.errors.length > 0) {
         console.log('Errors:');
-        validation.errors.forEach(error => console.log(`  ✗ ${error}`));
+        validation.errors.forEach(error => console.log(`  [INFO] ${error}`));
     }
     if (validation.warnings.length > 0) {
         console.log('Warnings:');
@@ -221,14 +221,14 @@ async function demonstrateOpenSSLToggle() {
     
     console.log('OpenSSL Toggle demonstration completed successfully!');
     console.log('\nKey Features Demonstrated:');
-    console.log('  ✓ OpenSSL-only mode');
-    console.log('  ✓ Custom algorithms mode');
-    console.log('  ✓ Mixed mode');
-    console.log('  ✓ Algorithm resolution and fallback');
-    console.log('  ✓ Runtime configuration changes');
-    console.log('  ✓ Engine registration and management');
-    console.log('  ✓ Algorithm preference updates');
-    console.log('  ✓ Engine validation');
+    console.log('  [INFO] OpenSSL-only mode');
+    console.log('  [INFO] Custom algorithms mode');
+    console.log('  [INFO] Mixed mode');
+    console.log('  [INFO] Algorithm resolution and fallback');
+    console.log('  [INFO] Runtime configuration changes');
+    console.log('  [INFO] Engine registration and management');
+    console.log('  [INFO] Algorithm preference updates');
+    console.log('  [INFO] Engine validation');
 }
 
 // Run the demonstration

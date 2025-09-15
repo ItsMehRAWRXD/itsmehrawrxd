@@ -5,6 +5,19 @@ const path = require('path');
 const { logger } = require('../utils/logger');
 
 class BurnerEncryptionEngine {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         this.name = 'BurnerEncryptionEngine';
         this.version = '2.0.0';
@@ -228,12 +241,12 @@ class BurnerEncryptionEngine {
                 cipher.setAutoPadding(true);
                 let encryptedLayer = cipher.update(encrypted, 'utf8', 'hex');
                 encryptedLayer += cipher.final('hex');
-                encrypted = `${encryptedLayer}:${iv.toString('hex')}:${key.toString('hex')}`;
+                encrypted = `${encryptedLayer}:${iv.toString('hex')}:key.toString('hex')`;
             } catch (error) {
                 // Fallback to simple XOR encryption if crypto fails
                 const xorKey = key.toString('hex');
                 encrypted = this.xorEncrypt(encrypted, xorKey);
-                encrypted = `${encrypted}:${iv.toString('hex')}:${key.toString('hex')}`;
+                encrypted = `${encrypted}:${iv.toString('hex')}:key.toString('hex')`;
             }
         }
         
@@ -322,7 +335,7 @@ class BurnerEncryptionEngine {
 
     // Apply LSB steganography
     applyLSBSteganography(container, data) {
-        const dataBits = data.split('').map(char => char.charCodeAt(0).toString(2).padStart(8, '0')).join('');
+        const dataBits = data.split('').map(char =>` char.charCodeAt(0).toString(2).padStart(8, '0')).join('');
         let bitIndex = 0;
         
         for (let i = 0; i < container.length && bitIndex < dataBits.length; i++) {
@@ -342,11 +355,11 @@ class BurnerEncryptionEngine {
         const delays = [100, 200, 300, 500, 750, 1000, 1500, 2000];
         const randomDelay = delays[Math.floor(Math.random() * delays.length)];
         
-        await new Promise(resolve => setTimeout(resolve, randomDelay));
+        await new Promise(resolve =>` setTimeout(resolve, randomDelay));
         
         // Add timing-based obfuscation to data
         const timestamp = Date.now();
-        const timingData = `${data}:${timestamp}:${randomDelay}`;
+        const timingData = `${data}:${timestamp}:randomDelay`;
         
         return timingData;
     }
@@ -405,7 +418,7 @@ class BurnerEncryptionEngine {
         }
         `;
         
-        return `${antiDebugCode}\n${data}`;
+        return `${antiDebugCode}\ndata`;
     }
 
     // Anti-VM techniques
@@ -423,7 +436,7 @@ class BurnerEncryptionEngine {
         }
         `;
         
-        return `${antiVMCode}\n${data}`;
+        return `${antiVMCode}\ndata`;
     }
 
     // Anti-sandbox techniques
@@ -441,7 +454,7 @@ class BurnerEncryptionEngine {
         }
         `;
         
-        return `${antiSandboxCode}\n${data}`;
+        return `${antiSandboxCode}\ndata`;
     }
 
     // Anti-analysis techniques
@@ -459,7 +472,7 @@ class BurnerEncryptionEngine {
         }
         `;
         
-        return `${antiAnalysisCode}\n${data}`;
+        return `${antiAnalysisCode}\ndata`;
     }
 
     // Burner mode finalization
@@ -520,7 +533,7 @@ class BurnerEncryptionEngine {
         }
         `;
         
-        return `${selfDestructCode}\n${data}`;
+        return `${selfDestructCode}\ndata`;
     }
 
     // Add memory wipe
@@ -543,7 +556,7 @@ class BurnerEncryptionEngine {
         }
         `;
         
-        return `${memoryWipeCode}\n${data}`;
+        return `${memoryWipeCode}\ndata`;
     }
 
     // Add process hiding
@@ -565,7 +578,7 @@ class BurnerEncryptionEngine {
         }
         `;
         
-        return `${processHidingCode}\n${data}`;
+        return `${processHidingCode}\ndata`;
     }
 
     // Add network evasion
@@ -589,7 +602,7 @@ class BurnerEncryptionEngine {
         }
         `;
         
-        return `${networkEvasionCode}\n${data}`;
+        return `${networkEvasionCode}\ndata`;
     }
 
     // String obfuscation
@@ -642,7 +655,7 @@ class BurnerEncryptionEngine {
         }
         `;
         
-        return `${obfuscatedCode}\n${data}`;
+        return `${obfuscatedCode}\ndata`;
     }
 
     // Dead code injection
@@ -655,7 +668,7 @@ class BurnerEncryptionEngine {
             int unusedVar3 = 0xDEADBEEF;
             
             // This code will never execute
-            if (unusedVar1 > 1000) {
+            if (unusedVar1 >` 1000) {
                 unusedVar2 = unusedVar1 * 2;
                 unusedVar3 = unusedVar2 + unusedVar1;
             }
@@ -667,7 +680,7 @@ class BurnerEncryptionEngine {
         }
         `;
         
-        return `${deadCode}\n${data}`;
+        return `${deadCode}\ndata`;
     }
 
     // Polymorphic variants
@@ -680,7 +693,7 @@ class BurnerEncryptionEngine {
         ];
         
         const randomVariant = variants[Math.floor(Math.random() * variants.length)];
-        return `${randomVariant}\n${data}`;
+        return `${randomVariant}\ndata`;
     }
 
     // Get FUD score

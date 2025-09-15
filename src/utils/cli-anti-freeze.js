@@ -3,8 +3,22 @@
 const { EventEmitter } = require('events');
 const { spawn } = require('child_process');
 const { promisify } = require('util');
+const { getMemoryManager } = require('../utils/memory-manager');
 
 class CLIAntiFreeze extends EventEmitter {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor(options = {}) {
         super();
         this.name = 'CLI Anti-Freeze Manager';
@@ -24,7 +38,7 @@ class CLIAntiFreeze extends EventEmitter {
         };
         
         // State tracking
-        this.activeOperations = new Map();
+        this.activeOperations = this.memoryManager.createManagedCollection('activeOperations', 'Map', 100);
         this.operationCount = 0;
         this.timeoutCount = 0;
         this.retryCount = 0;
@@ -42,7 +56,7 @@ class CLIAntiFreeze extends EventEmitter {
         const id = operationId || this.generateOperationId();
         
         if (actualTimeout > this.config.maxTimeout) {
-            throw new Error(`Timeout ${actualTimeout}ms exceeds maximum allowed ${this.config.maxTimeout}ms`);
+            throw new Error("Timeout ${actualTimeout}ms exceeds maximum allowed " + this.config.maxTimeout + "ms");
         }
 
         // Create timeout promise
@@ -50,7 +64,7 @@ class CLIAntiFreeze extends EventEmitter {
             const timer = setTimeout(() => {
                 this.timeoutCount++;
                 this.emit('timeout', { id, timeout: actualTimeout });
-                reject(new Error(`Operation ${id} timed out after ${actualTimeout}ms`));
+                reject(new Error("Operation ${id} timed out after " + actualTimeout + "ms"));
             }, actualTimeout);
             
             // Store timer for potential cleanup
@@ -137,11 +151,11 @@ class CLIAntiFreeze extends EventEmitter {
                         killSignal,
                         maxBuffer
                     });
-                }, timeout, `${operationId}-attempt-${attempt}`);
+                }, timeout, `${operationId}-attempt-attempt`);
             } catch (error) {
                 if (attempt === retries) {
                     this.retryCount++;
-                    throw new Error(`Command failed after ${retries} attempts: ${error.message}`);
+                    throw new Error(`Command failed after ${retries} attempts: error.message`);
                 }
                 
                 // Wait before retry
@@ -188,7 +202,7 @@ class CLIAntiFreeze extends EventEmitter {
                 } else if (code === 0) {
                     resolve({ stdout, stderr, code, signal });
                 } else {
-                    reject(new Error(`Process exited with code ${code}: ${stderr || stdout}`));
+                    reject(new Error(`Process exited with code ${code}: stderr || stdout`));
                 }
                 
                 this.emit('process-completed', { 
@@ -220,7 +234,7 @@ class CLIAntiFreeze extends EventEmitter {
                 if (!proc.killed) {
                     killed = true;
                     proc.kill(options.killSignal);
-                    reject(new Error(`Process timeout after ${options.timeout || this.config.defaultTimeout}ms`));
+                    reject(new Error("Process timeout after " + options.timeout || this.config.defaultTimeout + "ms"));
                 }
             }, options.timeout || this.config.defaultTimeout);
 
@@ -245,7 +259,7 @@ class CLIAntiFreeze extends EventEmitter {
 
         for (let attempt = 1; attempt <= retries; attempt++) {
             try {
-                return await this.withTimeout(operation, timeout, `${operationId}-retry-${attempt}`);
+                return await this.withTimeout(operation, timeout, `${operationId}-retry-attempt`);
             } catch (error) {
                 lastError = error;
                 
@@ -261,7 +275,7 @@ class CLIAntiFreeze extends EventEmitter {
             }
         }
 
-        throw new Error(`Operation failed after ${retries} attempts: ${lastError.message}`);
+        throw new Error(`Operation failed after ${retries} attempts: lastError.message`);
     }
 
     // Monitor long-running operations
@@ -367,7 +381,7 @@ class CLIAntiFreeze extends EventEmitter {
 
     // Generate unique operation ID
     generateOperationId() {
-        return `op-${++this.operationCount}-${Date.now()}`;
+        return `op-${++this.operationCount}-Date.now()`;
     }
 
     // Utility delay function

@@ -1,10 +1,24 @@
 // RawrZ Compression Engine - Advanced compression with multiple algorithms
 const zlib = require('zlib');
 const { promisify } = require('util');
+const { getMemoryManager } = require('../utils/memory-manager');
 const crypto = require('crypto');
 const { logger } = require('../utils/logger');
 
 class CompressionEngine {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         this.algorithms = {
             gzip: {
@@ -157,7 +171,7 @@ class CompressionEngine {
                     const result = await this.compress(data, algorithm);
                     results.push(result);
                 } catch (error) {
-                    logger.warn(`Compression failed for ${algorithm}:`, error.message);
+                    logger.warn("Compression failed for " + algorithm + ":", error.message);
                 }
             }
             
@@ -207,12 +221,12 @@ class CompressionEngine {
             const compressed = await this.compress(fileData, algorithm);
             
             // Determine output path
-            const output = outputPath || `${filePath}.${algorithm}`;
+            const output = outputPath || `${filePath}.algorithm`;
             
             // Write compressed file
             await fs.writeFile(output, compressed.data);
             
-            logger.info(`File compressed: ${filePath} -> ${output}`, {
+            logger.info(`File compressed: ${filePath} -> output`, {
                 algorithm,
                 originalSize: compressed.originalSize,
                 compressedSize: compressed.compressedSize,
@@ -249,7 +263,7 @@ class CompressionEngine {
             // Write decompressed file
             await fs.writeFile(output, decompressed.data);
             
-            logger.info(`File decompressed: ${filePath} -> ${output}`, {
+            logger.info(`File decompressed: ${filePath} -> output`, {
                 algorithm,
                 compressedSize: decompressed.compressedSize,
                 originalSize: decompressed.originalSize

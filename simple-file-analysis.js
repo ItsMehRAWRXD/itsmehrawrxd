@@ -81,9 +81,9 @@ async function analyzeFiles() {
         const duplicates = Object.entries(hashGroups).filter(([hash, files]) => files.length > 1);
         
         if (duplicates.length === 0) {
-            console.log('✓ ALL FILES ARE UNIQUE - No duplicate hashes found!');
+            console.log('[INFO] ALL FILES ARE UNIQUE - No duplicate hashes found!');
         } else {
-            console.log(`✗ Found ${duplicates.length} groups of duplicate files:`);
+            console.log(`[INFO] Found ${duplicates.length} groups of duplicate files:`);
             duplicates.forEach(([hash, files]) => {
                 console.log(`\nHash: ${hash} (${files.length} files)`);
                 files.forEach(file => {
@@ -145,10 +145,10 @@ async function analyzeFiles() {
         console.log(`Size range: ${Math.min(...fileData.map(f => f.size))} - ${Math.max(...fileData.map(f => f.size))} bytes`);
         
         if (duplicates.length === 0) {
-            console.log('\n🎉 SUCCESS: All encrypted files are completely distinct!');
+            console.log('\n[INFO][INFO] SUCCESS: All encrypted files are completely distinct!');
             console.log('   Each file has a unique MD5 hash, proving they are different.');
         } else {
-            console.log('\n⚠️  WARNING: Some files are identical (same hash)');
+            console.log('\n[INFO][INFO]  WARNING: Some files are identical (same hash)');
         }
         
     } catch (error) {

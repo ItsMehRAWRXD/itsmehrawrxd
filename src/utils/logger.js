@@ -3,6 +3,19 @@ const fs = require('fs').promises;
 const path = require('path');
 
 class Logger {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         this.logLevel = process.env.LOG_LEVEL || 'info';
         this.logFile = path.join(__dirname, '../../logs/rawrz.log');
@@ -20,7 +33,7 @@ class Logger {
         }
 
         const timestamp = new Date().toISOString();
-        const logMessage = `[${timestamp}] [${level.toUpperCase()}] ${message} ${args.length ? args.join(' ') : ''}`;
+        const logMessage = `[${timestamp}] [${level.toUpperCase()}] ${message} args.length ? args.join(' ') : ''`;
         
         // Console output
         console.log(logMessage);

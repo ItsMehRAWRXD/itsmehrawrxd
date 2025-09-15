@@ -5,6 +5,19 @@ const fs = require('fs').promises;
 const path = require('path');
 
 class MemoryManager extends EventEmitter {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         super();
         this.name = 'MemoryManager';
@@ -193,7 +206,7 @@ class MemoryManager extends EventEmitter {
         try {
             const block = this.allocatedBlocks.get(blockId);
             if (!block) {
-                throw new Error(`Memory block ${blockId} not found`);
+                throw new Error("Memory block " + blockId + " not found");
             }
 
             this.allocatedBlocks.delete(blockId);
@@ -450,7 +463,7 @@ class MemoryManager extends EventEmitter {
 
     // Generate block ID
     generateBlockId() {
-        return `block_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        return `block_${Date.now()}_Math.random().toString(36).substr(2, 9)`;
     }
 
     // Cleanup and shutdown

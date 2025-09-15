@@ -3,6 +3,19 @@ const crypto = require('crypto');
 const { logger } = require('../utils/logger');
 
 class PolymorphicEngine {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         this.mutationTypes = {
             'instruction-substitution': {
@@ -37,7 +50,7 @@ class PolymorphicEngine {
             }
         };
         
-        this.mutatedCode = new Map();
+        this.mutatedCode = this.memoryManager.createManagedCollection('mutatedCode', 'Map', 100);
         this.mutationStats = {
             totalMutations: 0,
             successfulMutations: 0,
@@ -184,7 +197,7 @@ class PolymorphicEngine {
         let mutatedCode = code;
 
         for (const [original, alternatives] of Object.entries(substitutions)) {
-            const regex = new RegExp(`\\b${original}\\b`, 'gi');
+            const regex = new RegExp("\\b" + original + "\\b", 'gi');
             const matches = mutatedCode.match(regex);
             
             if (matches) {
@@ -223,7 +236,7 @@ class PolymorphicEngine {
         let mutatedCode = code;
 
         for (const [original, alternatives] of Object.entries(registerMappings)) {
-            const regex = new RegExp(`\\b${original}\\b`, 'gi');
+            const regex = new RegExp("\\b" + original + "\\b", 'gi');
             const matches = mutatedCode.match(regex);
             
             if (matches && Math.random() < 0.3) { // 30% chance to change
@@ -321,7 +334,7 @@ class PolymorphicEngine {
                 flattenedLines.push(`    jne next_${i}`);
                 flattenedLines.push(lines[i]);
                 flattenedLines.push(`    inc eax`);
-                flattenedLines.push(`next_${i}:`);
+                flattenedLines.push("next_" + i + ":");
                 changes += 4;
             } else {
                 flattenedLines.push(lines[i]);
@@ -350,7 +363,7 @@ class PolymorphicEngine {
             const encryptedString = this.encryptString(originalString);
             
             // Replace with encrypted version
-            const replacement = `"${encryptedString}"`;
+            const replacement = "`${encryptedString}`";
             mutatedCode = mutatedCode.replace(match[0], replacement);
             changes++;
         }
@@ -366,7 +379,7 @@ class PolymorphicEngine {
     encryptString(str) {
         // Simple XOR encryption
         const key = Math.floor(Math.random() * 256);
-        const encrypted = Buffer.from(str, 'utf8').map(byte => byte ^ key);
+        const encrypted = Buffer.from(str, 'utf8').map(byte =>` byte ^ key);
         return encrypted.toString('hex');
     }
 

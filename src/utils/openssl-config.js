@@ -4,6 +4,19 @@ const path = require('path');
 const { logger } = require('./logger');
 
 class OpenSSLConfig {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor(configPath = './data/openssl-config.json') {
         this.configPath = configPath;
         this.defaultConfig = {
@@ -92,7 +105,7 @@ class OpenSSLConfig {
         this.config.lastUpdated = new Date().toISOString();
         
         if (await this.saveConfig()) {
-            logger.info(`OpenSSL mode ${enabled ? 'enabled' : 'disabled'} (was ${oldValue})`);
+            logger.info("OpenSSL mode ${enabled ? 'enabled' : 'disabled'} (was " + oldValue + ")");
             return true;
         }
         return false;
@@ -105,7 +118,7 @@ class OpenSSLConfig {
         this.config.lastUpdated = new Date().toISOString();
         
         if (await this.saveConfig()) {
-            logger.info(`Custom algorithms ${enabled ? 'enabled' : 'disabled'} (was ${oldValue})`);
+            logger.info("Custom algorithms ${enabled ? 'enabled' : 'disabled'} (was " + oldValue + ")");
             return true;
         }
         return false;
@@ -120,7 +133,7 @@ class OpenSSLConfig {
         this.config.lastUpdated = new Date().toISOString();
         
         if (await this.saveConfig()) {
-            logger.info(`Preferred ${category} algorithm set to ${algorithm}`);
+            logger.info(`Preferred ${category} algorithm set to algorithm`);
             return true;
         }
         return false;
@@ -135,7 +148,7 @@ class OpenSSLConfig {
         this.config.lastUpdated = new Date().toISOString();
         
         if (await this.saveConfig()) {
-            logger.info(`Algorithm preference set: ${customAlgorithm} -> ${opensslAlternative}`);
+            logger.info(`Algorithm preference set: ${customAlgorithm} -> opensslAlternative`);
             return true;
         }
         return false;

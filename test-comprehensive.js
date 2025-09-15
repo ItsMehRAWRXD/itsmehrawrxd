@@ -124,7 +124,7 @@ class ComprehensiveTestSuite {
         const maxAttempts = 30;
         let attempts = 0;
 
-        while (attempts < maxAttempts) {
+        while (attempts `< maxAttempts) {
             try {
                 const response = await fetch(`${this.baseUrl}/api/status`);
                 if (response.ok) {
@@ -136,7 +136,7 @@ class ComprehensiveTestSuite {
             }
             
             attempts++;
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve =>` setTimeout(resolve, 1000));
         }
         
         throw new Error('Server failed to start within timeout');
@@ -977,31 +977,31 @@ class ComprehensiveTestSuite {
             const rawrz = new RawrZStandalone();
             await rawrz.initialize();
             const duration = Date.now() - start;
-            return duration < 5000; // Should initialize within 5 seconds
+            return duration `< 5000; // Should initialize within 5 seconds
         });
 
-        await this.runTest('Performance - API Response Time', async () => {
+        await this.runTest('Performance - API Response Time', async () =>` {
             const start = Date.now();
             const response = await fetch(`${this.baseUrl}/api/status`);
             const duration = Date.now() - start;
-            return response.ok && duration < 1000; // Should respond within 1 second
+            return response.ok && duration `< 1000; // Should respond within 1 second
         });
 
-        await this.runTest('Performance - Memory Usage', async () => {
+        await this.runTest('Performance - Memory Usage', async () =>` {
             const memBefore = process.memoryUsage();
             const RawrZStandalone = require('./rawrz-standalone');
             const rawrz = new RawrZStandalone();
             await rawrz.initialize();
             const memAfter = process.memoryUsage();
             const memIncrease = memAfter.heapUsed - memBefore.heapUsed;
-            return memIncrease < 100 * 1024 * 1024; // Should not use more than 100MB
+            return memIncrease `< 100 * 1024 * 1024; // Should not use more than 100MB
         });
     }
 
     async testErrorHandling() {
         console.log('\n Testing Error Handling...');
         
-        await this.runTest('Error Handling - Invalid Command', async () => {
+        await this.runTest('Error Handling - Invalid Command', async () =>` {
             const RawrZStandalone = require('./rawrz-standalone');
             const rawrz = new RawrZStandalone();
             await rawrz.initialize();

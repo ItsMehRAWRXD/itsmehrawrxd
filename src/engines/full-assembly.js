@@ -5,6 +5,19 @@ const crypto = require('crypto');
 const { logger } = require('../utils/logger');
 
 class FullAssembly {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         this.architectures = {
             'x86': {
@@ -37,7 +50,7 @@ class FullAssembly {
             }
         };
         
-        this.assembledCode = new Map();
+        this.assembledCode = this.memoryManager.createManagedCollection('assembledCode', 'Map', 100);
         this.assemblyStats = {
             totalAssembled: 0,
             successfulAssemblies: 0,
@@ -192,7 +205,7 @@ class FullAssembly {
 
         // Validate mnemonic
         if (!arch.instructions.includes(mnemonic)) {
-            logger.warn(`Unknown instruction: ${mnemonic} for architecture ${architecture}`);
+            logger.warn(`Unknown instruction: ${mnemonic} for architecture architecture`);
             return null;
         }
 
@@ -487,7 +500,7 @@ class FullAssembly {
                 const hexBytes = Array.from(machineCode).map(b => `0x${b.toString(16).padStart(2, '0')}`);
                 return {
                     format: 'c_array',
-                    data: `unsigned char code[] = {\n    ${hexBytes.join(',\n    ')}\n};`,
+                    data: "unsigned char code[] = {\n    " + hexBytes.join(',\n    ') + "\n};",
                     size: machineCode.length
                 };
 

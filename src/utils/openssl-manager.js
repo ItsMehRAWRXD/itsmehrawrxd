@@ -3,9 +3,22 @@ const { OpenSSLConfig } = require('./openssl-config');
 const { logger } = require('./logger');
 
 class OpenSSLManager {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         this.config = new OpenSSLConfig();
-        this.engines = new Map();
+        this.engines = this.memoryManager.createManagedCollection('engines', 'Map', 100);
         this.isInitialized = false;
     }
 
@@ -35,7 +48,7 @@ class OpenSSLManager {
         }
 
         this.engines.set(name, engine);
-        logger.info(`Engine '${name}' registered with OpenSSL Manager`);
+        logger.info("Engine '" + name + "' registered with OpenSSL Manager");
         return true;
     }
 
@@ -56,7 +69,7 @@ class OpenSSLManager {
             for (const [name, engine] of this.engines) {
                 if (engine.setOpenSSLMode) {
                     engine.setOpenSSLMode(enabled);
-                    logger.info(`Updated engine '${name}' OpenSSL mode to ${enabled}`);
+                    logger.info(`Updated engine '${name}' OpenSSL mode to enabled`);
                 }
             }
         }
@@ -75,7 +88,7 @@ class OpenSSLManager {
             for (const [name, engine] of this.engines) {
                 if (engine.setCustomAlgorithms) {
                     engine.setCustomAlgorithms(enabled);
-                    logger.info(`Updated engine '${name}' custom algorithms to ${enabled}`);
+                    logger.info(`Updated engine '${name}' custom algorithms to enabled`);
                 }
             }
         }
@@ -91,7 +104,7 @@ class OpenSSLManager {
         if (engineName) {
             const engine = this.engines.get(engineName);
             if (!engine) {
-                throw new Error(`Engine '${engineName}' not found`);
+                throw new Error("Engine '" + engineName + "' not found");
             }
             return engine.getSupportedAlgorithms ? engine.getSupportedAlgorithms() : [];
         }
@@ -116,7 +129,7 @@ class OpenSSLManager {
         if (engineName) {
             const engine = this.engines.get(engineName);
             if (!engine) {
-                throw new Error(`Engine '${engineName}' not found`);
+                throw new Error("Engine '" + engineName + "' not found");
             }
             return engine.getOpenSSLAlgorithms ? engine.getOpenSSLAlgorithms() : [];
         }
@@ -140,7 +153,7 @@ class OpenSSLManager {
         if (engineName) {
             const engine = this.engines.get(engineName);
             if (!engine) {
-                throw new Error(`Engine '${engineName}' not found`);
+                throw new Error("Engine '" + engineName + "' not found");
             }
             return engine.getCustomAlgorithms ? engine.getCustomAlgorithms() : [];
         }
@@ -164,7 +177,7 @@ class OpenSSLManager {
         if (engineName) {
             const engine = this.engines.get(engineName);
             if (!engine) {
-                throw new Error(`Engine '${engineName}' not found`);
+                throw new Error("Engine '" + engineName + "' not found");
             }
             return engine.resolveAlgorithm ? engine.resolveAlgorithm(algorithm) : algorithm;
         }
@@ -173,7 +186,7 @@ class OpenSSLManager {
         if (this.config.isOpenSSLMode() && !this.config.areCustomAlgorithmsAllowed()) {
             const alternative = this.config.getOpenSSLAlternative(algorithm);
             if (alternative !== algorithm && this.config.showWarnings) {
-                logger.warn(`Algorithm ${algorithm} not available in OpenSSL mode, using ${alternative} instead`);
+                logger.warn("Algorithm ${algorithm} not available in OpenSSL mode, using " + alternative + " instead");
             }
             return alternative;
         }
@@ -257,15 +270,15 @@ class OpenSSLManager {
 
         for (const [name, engine] of this.engines) {
             if (!engine.setOpenSSLMode || !engine.setCustomAlgorithms) {
-                validation.warnings.push(`Engine '${name}' missing OpenSSL toggle methods`);
+                validation.warnings.push("Engine '" + name + "' missing OpenSSL toggle methods");
             }
             
             if (!engine.getSupportedAlgorithms) {
-                validation.warnings.push(`Engine '${name}' missing getSupportedAlgorithms method`);
+                validation.warnings.push("Engine '" + name + "' missing getSupportedAlgorithms method");
             }
             
             if (!engine.resolveAlgorithm) {
-                validation.warnings.push(`Engine '${name}' missing resolveAlgorithm method`);
+                validation.warnings.push("Engine '" + name + "' missing resolveAlgorithm method");
             }
         }
 

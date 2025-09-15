@@ -20,38 +20,38 @@ This system completely removes all emojis from codebases to prevent ROE (Rate of
 
 | Original Emoji | Unicode | Replacement | Meaning |
 |----------------|---------|-------------|---------|
-| ✓ | `\u2713` | `[OK]` | Success/Working |
-| ✗ | `\u2717` | `[ERROR]` | Error/Failed |
-| ✅ | `\u2705` | `[OK]` | Success/Working |
-| ❌ | `\u274C` | `[ERROR]` | Error/Failed |
-| 🔐 | `\u1F510` | `[SECURE]` | Security/Encryption |
-| 🔒 | `\u1F512` | `[LOCK]` | Locked/Secure |
-| 🔓 | `\u1F513` | `[UNLOCK]` | Unlocked/Open |
-| 🔑 | `\u1F511` | `[KEY]` | Key/Access |
-| 🛡️ | `\u1F6E1` | `[SHIELD]` | Protection/Defense |
-| ⚡ | `\u26A1` | `[LIGHTNING]` | Fast/Powerful |
-| 🚀 | `\u1F680` | `[LAUNCH]` | Launch/Start |
-| 💾 | `\u1F4BE` | `[SAVE]` | Save/Storage |
-| 📁 | `\u1F4C1` | `[FILE]` | File/Folder |
-| 📄 | `\u1F4C4` | `[DOC]` | Document |
-| 🔍 | `\u1F50D` | `[SEARCH]` | Search/Check |
-| 📊 | `\u1F4CA` | `[CHART]` | Chart/Graph |
-| 📈 | `\u1F4C8` | `[UP]` | Increase/Up |
-| 📉 | `\u1F4C9` | `[DOWN]` | Decrease/Down |
-| 🎯 | `\u1F3AF` | `[TARGET]` | Target/Goal |
-| ⚙️ | `\u2699` | `[CONFIG]` | Configuration/Settings |
-| 🔧 | `\u1F527` | `[TOOL]` | Tool/Utility |
-| 🛠️ | `\u1F6E0` | `[TOOLS]` | Tools/Utilities |
-| 📋 | `\u1F4CB` | `[LOG]` | Log/List |
-| 📝 | `\u1F4DD` | `[NOTE]` | Note/Text |
-| 💡 | `\u1F4A1` | `[INFO]` | Information/Tip |
-| ⚠️ | `\u26A0` | `[WARNING]` | Warning/Alert |
-| 🔄 | `\u1F504` | `[REFRESH]` | Refresh/Reload |
+| [INFO] | `\u2713` | `[OK]` | Success/Working |
+| [INFO] | `\u2717` | `[ERROR]` | Error/Failed |
+| [INFO] | `\u2705` | `[OK]` | Success/Working |
+| [INFO] | `\u274C` | `[ERROR]` | Error/Failed |
+| [INFO][INFO] | `\u1F510` | `[SECURE]` | Security/Encryption |
+| [INFO][INFO] | `\u1F512` | `[LOCK]` | Locked/Secure |
+| [INFO][INFO] | `\u1F513` | `[UNLOCK]` | Unlocked/Open |
+| [INFO][INFO] | `\u1F511` | `[KEY]` | Key/Access |
+| [INFO][INFO][INFO] | `\u1F6E1` | `[SHIELD]` | Protection/Defense |
+| [INFO] | `\u26A1` | `[LIGHTNING]` | Fast/Powerful |
+| [INFO][INFO] | `\u1F680` | `[LAUNCH]` | Launch/Start |
+| [INFO]� | `\u1F4BE` | `[SAVE]` | Save/Storage |
+| [INFO]� | `\u1F4C1` | `[FILE]` | File/Folder |
+| [INFO]� | `\u1F4C4` | `[DOC]` | Document |
+| [INFO][INFO] | `\u1F50D` | `[SEARCH]` | Search/Check |
+| [INFO][INFO] | `\u1F4CA` | `[CHART]` | Chart/Graph |
+| [INFO][INFO] | `\u1F4C8` | `[UP]` | Increase/Up |
+| [INFO][INFO] | `\u1F4C9` | `[DOWN]` | Decrease/Down |
+| [INFO][INFO] | `\u1F3AF` | `[TARGET]` | Target/Goal |
+| [INFO][INFO] | `\u2699` | `[CONFIG]` | Configuration/Settings |
+| [INFO][INFO] | `\u1F527` | `[TOOL]` | Tool/Utility |
+| [INFO]�[INFO] | `\u1F6E0` | `[TOOLS]` | Tools/Utilities |
+| [INFO]� | `\u1F4CB` | `[LOG]` | Log/List |
+| [INFO][INFO] | `\u1F4DD` | `[NOTE]` | Note/Text |
+| [INFO][INFO] | `\u1F4A1` | `[INFO]` | Information/Tip |
+| [INFO][INFO] | `\u26A0` | `[WARNING]` | Warning/Alert |
+| [INFO][INFO] | `\u1F504` | `[REFRESH]` | Refresh/Reload |
 | ⏳ | `\u23F3` | `[WAIT]` | Wait/Processing |
-| 🎉 | `\u1F389` | `[SUCCESS]` | Success/Celebration |
-| 🔥 | `\u1F525` | `[HOT]` | Hot/Fast |
-| 💯 | `\u1F4AF` | `[PERFECT]` | Perfect/Complete |
-| 🌟 | `\u1F31F` | `[STAR]` | Star/Excellent |
+| [INFO][INFO] | `\u1F389` | `[SUCCESS]` | Success/Celebration |
+| [INFO]� | `\u1F525` | `[HOT]` | Hot/Fast |
+| [INFO]� | `\u1F4AF` | `[PERFECT]` | Perfect/Complete |
+| [INFO]� | `\u1F31F` | `[STAR]` | Star/Excellent |
 | ⭐ | `\u2B50` | `[STAR]` | Star/Excellent |
 
 ## Usage Instructions

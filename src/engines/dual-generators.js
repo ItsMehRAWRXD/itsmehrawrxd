@@ -5,6 +5,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
+const { getMemoryManager } = require('../utils/memory-manager');
 const os = require('os');
 const zlib = require('zlib');
 const { logger } = require('../utils/logger');
@@ -12,10 +13,23 @@ const { logger } = require('../utils/logger');
 const execAsync = promisify(exec);
 
 class DualGenerators extends EventEmitter {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         super();
-        this.generators = new Map();
-        this.activeOperations = new Map();
+        this.generators = this.memoryManager.createManagedCollection('generators', 'Map', 100);
+        this.activeOperations = this.memoryManager.createManagedCollection('activeOperations', 'Map', 100);
         this.generationStats = {
             totalGenerated: 0,
             successfulGenerations: 0,

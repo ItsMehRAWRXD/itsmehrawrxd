@@ -5,6 +5,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
+const { getMemoryManager } = require('../utils/memory-manager');
 const os = require('os');
 const net = require('net');
 const { logger } = require('../utils/logger');
@@ -12,35 +13,49 @@ const { logger } = require('../utils/logger');
 const execAsync = promisify(exec);
 
 class DigitalForensics extends EventEmitter {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         super();
         this.name = 'DigitalForensics';
         this.version = '2.0.0';
-        this.analysisTypes = new Map();
-        this.forensicTools = new Map();
-        this.evidenceChain = new Map();
-        this.timelineAnalysis = new Map();
-        this.fileSystemAnalysis = new Map();
-        this.memoryAnalysis = new Map();
-        this.networkAnalysis = new Map();
-        this.registryAnalysis = new Map();
-        this.metadataExtraction = new Map();
-        this.hashDatabase = new Map();
-        this.knownGoodHashes = new Set();
-        this.knownBadHashes = new Set();
+        this.memoryManager = getMemoryManager();
+        this.analysisTypes = this.memoryManager.createManagedCollection('analysisTypes', 'Map', 100);
+        this.forensicTools = this.memoryManager.createManagedCollection('forensicTools', 'Map', 100);
+        this.evidenceChain = this.memoryManager.createManagedCollection('evidenceChain', 'Map', 100);
+        this.timelineAnalysis = this.memoryManager.createManagedCollection('timelineAnalysis', 'Map', 100);
+        this.fileSystemAnalysis = this.memoryManager.createManagedCollection('fileSystemAnalysis', 'Map', 100);
+        this.memoryAnalysis = this.memoryManager.createManagedCollection('memoryAnalysis', 'Map', 100);
+        this.networkAnalysis = this.memoryManager.createManagedCollection('networkAnalysis', 'Map', 100);
+        this.registryAnalysis = this.memoryManager.createManagedCollection('registryAnalysis', 'Map', 100);
+        this.metadataExtraction = this.memoryManager.createManagedCollection('metadataExtraction', 'Map', 100);
+        this.hashDatabase = this.memoryManager.createManagedCollection('hashDatabase', 'Map', 100);
+        this.knownGoodHashes = this.memoryManager.createManagedCollection('knownGoodHashes', 'Set', 100);
+        this.knownBadHashes = this.memoryManager.createManagedCollection('knownBadHashes', 'Set', 100);
         
         // Performance optimizations
-        this.cache = new Map();
+        this.cache = this.memoryManager.createManagedCollection('cache', 'Map', 100);
         this.cacheTimeout = 600000; // 10 minutes
         this.analysisQueue = [];
         this.isProcessingAnalysis = false;
         this.maxConcurrentAnalysis = 3;
-        this.activeAnalysis = new Set();
+        this.activeAnalysis = this.memoryManager.createManagedCollection('activeAnalysis', 'Set', 100);
     }
 
     // Performance optimization methods
     getCacheKey(operation, target, options = {}) {
-        return `${operation}_${target}_${JSON.stringify(options)}`;
+        return `${operation}_${target}_JSON.stringify(options)`;
     }
     
     getFromCache(key) {
@@ -254,7 +269,7 @@ class DigitalForensics extends EventEmitter {
     // Setup evidence chain
     async setupEvidenceChain() {
         try {
-            this.evidenceChain = new Map();
+            this.evidenceChain = this.memoryManager.createManagedCollection('evidenceChain', 'Map', 100);
             this.emit('evidenceChainInitialized');
             return { success: true, message: 'Evidence chain initialized' };
         } catch (error) {
@@ -266,7 +281,7 @@ class DigitalForensics extends EventEmitter {
     // Initialize timeline analysis
     async initializeTimelineAnalysis() {
         try {
-            this.timelineAnalysis = new Map();
+            this.timelineAnalysis = this.memoryManager.createManagedCollection('timelineAnalysis', 'Map', 100);
             this.emit('timelineAnalysisInitialized');
             return { success: true, message: 'Timeline analysis initialized' };
         } catch (error) {
@@ -355,7 +370,7 @@ class DigitalForensics extends EventEmitter {
 
                 if (entry.isDirectory()) {
                     const subFiles = await this.scanDirectory(fullPath);
-                    files.push(...subFiles);
+                    files.concat(subFiles);
                 }
             }
 
@@ -779,7 +794,7 @@ class DigitalForensics extends EventEmitter {
     async getProcessNameByPid(pid) {
         try {
             if (pid === 0) return 'Unknown';
-            const { stdout } = await execAsync(`wmic process where "ProcessId=${pid}" get Name /value`);
+            const { stdout } = await execAsync("wmic process where `ProcessId=${pid}` get Name /value");
             const match = stdout.match(/Name=(.+)/);
             return match ? match[1].trim() : 'Unknown';
         } catch (error) {
@@ -969,12 +984,12 @@ class DigitalForensics extends EventEmitter {
 
     // Generate analysis ID
     generateAnalysisId() {
-        return `analysis_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        return `analysis_${Date.now()}_Math.random().toString(36).substr(2, 9)`;
     }
 
     // Generate chain ID
     generateChainId() {
-        return `chain_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        return `chain_${Date.now()}_Math.random().toString(36).substr(2, 9)`;
     }
 
     // Get forensics report

@@ -6,6 +6,19 @@ const crypto = require('crypto');
 const { logger } = require('../utils/logger');
 
 class RawrZEngine extends EventEmitter {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         super();
         
@@ -15,8 +28,8 @@ class RawrZEngine extends EventEmitter {
         }
         
         this.startTime = Date.now();
-        this.modules = new Map();
-        this.activeOperations = new Map();
+        this.modules = this.memoryManager.createManagedCollection('modules', 'Map', 100);
+        this.activeOperations = this.memoryManager.createManagedCollection('activeOperations', 'Map', 100);
         this.initialized = false;
         this.config = {
             compression: {
@@ -78,7 +91,7 @@ class RawrZEngine extends EventEmitter {
             this.modules.set('api-status', null);
 
             this.initialized = true;
-            logger.info(`RawrZ Engine initialized with ${this.modules.size} modules (lazy loading enabled)`);
+            logger.info("RawrZ Engine initialized with " + this.modules.size + " modules (lazy loading enabled)");
             this.emit('initialized', { modules: this.modules.size });
 
         } catch (error) {
@@ -96,7 +109,7 @@ class RawrZEngine extends EventEmitter {
         }
         
         try {
-            console.log(`[INFO] Loading ${moduleName} on demand...`);
+            console.log("[INFO] Loading " + moduleName + " on demand...");
             
             // Map module names to actual file names
             const moduleFileMap = {
@@ -129,21 +142,21 @@ class RawrZEngine extends EventEmitter {
             
             // Initialize the module if it has an initialize method
             if (module && typeof module.initialize === 'function') {
-                console.log(`[DEBUG] Initializing module ${moduleName}...`);
+                console.log("[DEBUG] Initializing module " + moduleName + "...");
                 try {
                     await module.initialize(this.config);
                 } catch (initError) {
-                    console.log(`[WARN] Module ${moduleName} initialization failed:`, initError.message);
+                    console.log("[WARN] Module " + moduleName + " initialization failed:", initError.message);
                     // Continue anyway - some modules might not need initialization
                 }
             }
             
             // Cache the loaded module
             this.modules.set(moduleName, module);
-            console.log(`[OK] Module ${moduleName} loaded successfully`);
+            console.log("[OK] Module " + moduleName + " loaded successfully");
             return module;
         } catch (error) {
-            console.log(`[WARN] Failed to load module ${moduleName}:`, error.message);
+            console.log("[WARN] Failed to load module " + moduleName + ":", error.message);
             console.log(`[DEBUG] Error stack:`, error.stack);
             // Set to null to prevent repeated attempts
             this.modules.set(moduleName, null);
@@ -155,17 +168,17 @@ class RawrZEngine extends EventEmitter {
     setupEventHandlers() {
         this.on('operation-start', (operation) => {
             this.activeOperations.set(operation.id, operation);
-            logger.info(`Operation started: ${operation.type} (${operation.id})`);
+            logger.info("Operation started: ${operation.type} (" + operation.id + ")");
         });
 
         this.on('operation-complete', (operation) => {
             this.activeOperations.delete(operation.id);
-            logger.info(`Operation completed: ${operation.type} (${operation.id})`);
+            logger.info("Operation completed: ${operation.type} (" + operation.id + ")");
         });
 
         this.on('operation-error', (operation, error) => {
             this.activeOperations.delete(operation.id);
-            logger.error(`Operation failed: ${operation.type} (${operation.id})`, error);
+            logger.error("Operation failed: ${operation.type} (" + operation.id + ")", error);
         });
     }
 
@@ -719,9 +732,9 @@ class RawrZEngine extends EventEmitter {
             if (module && module.cleanup) {
                 try {
                     await module.cleanup();
-                    logger.info(`Module ${name} cleaned up`);
+                    logger.info("Module " + name + " cleaned up");
                 } catch (error) {
-                    logger.error(`Error cleaning up module ${name}:`, error);
+                    logger.error("Error cleaning up module " + name + ":", error);
                 }
             }
         }

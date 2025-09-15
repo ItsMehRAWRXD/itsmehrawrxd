@@ -4,6 +4,19 @@ const { logger } = require('./logger');
 const { databaseIntegration } = require('./databaseIntegration');
 
 class IRCBot {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor(config = {}) {
         this.config = {
             server: config.server || 'irc.rizon.net',
@@ -39,22 +52,22 @@ class IRCBot {
 
     setupChatterboxListeners() {
         chatterbox.on('script_registered', (data) => {
-            this.sendToIRC(`[LOG] Script registered: ${data.scriptId} (${data.script.name})`);
+            this.sendToIRC("[LOG] Script registered: ${data.scriptId} (" + data.script.name + ")");
         });
 
         chatterbox.on('status_change', (data) => {
-            this.sendToIRC(`[INFO] ${data.script.name}: ${data.oldStatus} [CHAR] ${data.newStatus}`);
+            this.sendToIRC(`[INFO] ${data.script.name}: ${data.oldStatus} [CHAR] data.newStatus`);
         });
 
         chatterbox.on('script_error', (data) => {
-            this.sendToIRC(`[ERROR] ERROR in ${data.scriptName}: ${data.error}`);
+            this.sendToIRC(`[ERROR] ERROR in ${data.scriptName}: data.error`);
             if (data.requestId) {
                 this.sendToIRC(`[SEARCH] RequestID: ${data.requestId}`);
             }
         });
 
         chatterbox.on('heartbeat_overdue', (data) => {
-            this.sendToIRC(`[HEARTBEAT] Heartbeat overdue: ${data.scriptName} (${Math.round(data.timeSinceHeartbeat / 1000)}s)`);
+            this.sendToIRC("[HEARTBEAT] Heartbeat overdue: ${data.scriptName} (" + Math.round(data.timeSinceHeartbeat / 1000) + "s)");
         });
 
         // Start heartbeat monitoring if not already started
@@ -104,13 +117,13 @@ class IRCBot {
             this.socket = new net.Socket();
             
             this.socket.connect(this.config.port, this.config.server, () => {
-                logger.info(`[BOT] Connected to IRC server: ${this.config.server}:${this.config.port}`);
+                logger.info(`[BOT] Connected to IRC server: ${this.config.server}:this.config.port`);
                 this.connected = true;
                 this.reconnectAttempts = 0;
             
             // Send IRC registration
             this.sendRaw(`NICK ${this.config.nick}`);
-            this.sendRaw(`USER ${this.config.username} 0 * :${this.config.realname}`);
+            this.sendRaw(`USER ${this.config.username} 0 * :this.config.realname`);
             
             // Send queued messages
             while (this.messageQueue.length > 0) {
@@ -347,14 +360,14 @@ class IRCBot {
                 'error', 
                 error.message
             );
-            this.sendToIRC(`${nick}: Command execution failed: ${error.message}`);
+            this.sendToIRC(`${nick}: Command execution failed: error.message`);
         }
     }
 
     // Clean encryption handler
     async handleEncrypt(nick, channel, args) {
         if (args.length < 2) {
-            this.sendToIRC(`${nick}: Usage: !encrypt <algorithm> <file_url_or_text>`);
+            this.sendToIRC(`${nick}: Usage: !encrypt <algorithm>` <file_url_or_text>``);
             this.sendToIRC(`${nick}: Example: !encrypt aes-256-gcm https://example.com/file.txt`);
             return;
         }
@@ -408,7 +421,7 @@ class IRCBot {
 
         if (algorithmMap[algorithm.toLowerCase()]) {
             algorithm = algorithmMap[algorithm.toLowerCase()];
-            this.sendToIRC(`${nick}: Using algorithm: ${algorithm}`);
+            this.sendToIRC(`${nick}: Using algorithm: algorithm`);
         }
 
         try {
@@ -424,13 +437,13 @@ class IRCBot {
                 // Download from URL
                 dataToEncrypt = await this.downloadFile(input);
                 inputType = 'file';
-                this.sendToIRC(`${nick}: File downloaded (${dataToEncrypt.length} bytes)`);
+                this.sendToIRC("${nick}: File downloaded (" + dataToEncrypt.length + " bytes)");
             } else if (input.startsWith('file:')) {
                 // Read local file
                 const filename = input.slice(5);
                 dataToEncrypt = await this.readLocalFile(filename);
                 inputType = 'file';
-                this.sendToIRC(`${nick}: Local file read (${dataToEncrypt.length} bytes)`);
+                this.sendToIRC("${nick}: Local file read (" + dataToEncrypt.length + " bytes)");
             } else {
                 // Treat as text
                 dataToEncrypt = input;
@@ -447,21 +460,21 @@ class IRCBot {
             
             // Send results
             this.sendToIRC(`${nick}: Encryption successful!`);
-            this.sendToIRC(`${nick}: Type: ${inputType} | Algorithm: ${algorithm}`);
+            this.sendToIRC(`${nick}: Type: ${inputType} | Algorithm: algorithm`);
             
             // Handle different result structures
             const encryptedSize = result.metadata?.encryptedSize || result.data?.length || 'unknown';
-            this.sendToIRC(`${nick}: Original: ${dataToEncrypt.length} bytes | Encrypted: ${encryptedSize} bytes`);
-            this.sendToIRC(`${nick}: File: ${filename} (preserves original extension)`);
-            this.sendToIRC(`${nick}: Key: ${result.key || 'Generated'}`);
-            this.sendToIRC(`${nick}: IV: ${result.iv || 'Generated'}`);
+            this.sendToIRC("${nick}: Original: ${dataToEncrypt.length} bytes | Encrypted: " + encryptedSize + " bytes");
+            this.sendToIRC("${nick}: File: " + filename + " (preserves original extension)");
+            this.sendToIRC(`${nick}: Key: result.key || 'Generated'`);
+            this.sendToIRC(`${nick}: IV: result.iv || 'Generated'`);
             if (result.authTag) {
-                this.sendToIRC(`${nick}: Auth Tag: ${result.authTag}`);
+                this.sendToIRC(`${nick}: Auth Tag: result.authTag`);
             }
             
             // Provide download options
             this.sendToIRC(`${nick}: Download options:`);
-            this.sendToIRC(`${nick}: 1. File saved locally: ${filename}`);
+            this.sendToIRC(`${nick}: 1. File saved locally: filename`);
             this.sendToIRC(`${nick}: 2. Use !upload command to re-upload with custom name`);
             this.sendToIRC(`${nick}: 3. Access via API: POST /api/upload with filename and base64 data`);
             
@@ -470,23 +483,23 @@ class IRCBot {
                 try {
                     const base64Data = Buffer.from(result.data, 'hex').toString('base64');
                     if (base64Data.length > 200) {
-                        this.sendToIRC(`${nick}: Encrypted data (first 200 chars): ${base64Data.substring(0, 200)}...`);
+                        this.sendToIRC("${nick}: Encrypted data (first 200 chars): " + base64Data.substring(0, 200) + "...");
                         this.sendToIRC(`${nick}: Full data available via !upload command or API`);
                     } else {
-                        this.sendToIRC(`${nick}: Encrypted data (base64): ${base64Data}`);
+                        this.sendToIRC(`${nick}: Encrypted data (base64): base64Data`);
                     }
                 } catch (bufferError) {
-                    this.sendToIRC(`${nick}: Encrypted data saved to file: ${filename}`);
+                    this.sendToIRC(`${nick}: Encrypted data saved to file: filename`);
                     this.sendToIRC(`${nick}: Use !decrypt command with key/IV to decrypt`);
                 }
             } else {
-                this.sendToIRC(`${nick}: Encrypted data saved to file: ${filename}`);
+                this.sendToIRC(`${nick}: Encrypted data saved to file: filename`);
                 this.sendToIRC(`${nick}: Use !decrypt command with key/IV to decrypt`);
             }
 
         } catch (error) {
             logger.error('IRC Encryption error:', error);
-            this.sendToIRC(`${nick}: Encryption failed: ${error.message}`);
+            this.sendToIRC(`${nick}: Encryption failed: error.message`);
         }
     }
 
@@ -494,10 +507,10 @@ class IRCBot {
     // Decrypt handler - works with ALL encryption methods and converted files
     async handleDecrypt(nick, channel, args) {
         if (args.length < 4) {
-            this.sendToIRC(`${nick}: Usage: !decrypt <algorithm> <system_data_or_filename> <key> <iv> [auth_tag]`);
-            this.sendToIRC(`${nick}: Example: !decrypt aes-256-gcm <system_data> <key> <iv>`);
-            this.sendToIRC(`${nick}: Example: !decrypt cam-256-cbc system_file.enc <key> <iv>`);
-            this.sendToIRC(`${nick}: Example: !decrypt aria-256-gcm converted_file.pdf <key> <iv>`);
+            this.sendToIRC(`${nick}: Usage: !decrypt <algorithm>` <system_data_or_filename>` <key>` <iv>` [auth_tag]`);
+            this.sendToIRC(`${nick}: Example: !decrypt aes-256-gcm <system_data>` <key>` <iv>``);
+            this.sendToIRC(`${nick}: Example: !decrypt cam-256-cbc system_file.enc <key>` <iv>``);
+            this.sendToIRC(`${nick}: Example: !decrypt aria-256-gcm converted_file.pdf <key>` <iv>``);
             return;
         }
 
@@ -528,13 +541,13 @@ class IRCBot {
                     // Check if this is a converted file
                     if (parsedData.isConverted) {
                         isConvertedFile = true;
-                        this.sendToIRC(`${nick}: Detected converted file with extension: ${parsedData.convertedExtension}`);
-                        this.sendToIRC(`${nick}: Original encrypted file: ${parsedData.originalEncryptedFilename}`);
+                        this.sendToIRC(`${nick}: Detected converted file with extension: parsedData.convertedExtension`);
+                        this.sendToIRC(`${nick}: Original encrypted file: parsedData.originalEncryptedFilename`);
                     }
                     
                     encryptedData = parsedData;
                 } catch (error) {
-                    this.sendToIRC(`${nick}: File not found: ${encryptedInput}`);
+                    this.sendToIRC(`${nick}: File not found: encryptedInput`);
                     return;
                 }
             } else {
@@ -558,13 +571,13 @@ class IRCBot {
             });
             
             this.sendToIRC(`${nick}: Decryption successful!`);
-            this.sendToIRC(`${nick}: Algorithm: ${algorithm}`);
-            this.sendToIRC(`${nick}: Method: ${isFile ? (isConvertedFile ? 'Converted File' : 'Encrypted File') : 'Direct Data'}`);
+            this.sendToIRC(`${nick}: Algorithm: algorithm`);
+            this.sendToIRC(`${nick}: Method: isFile ? (isConvertedFile ? 'Converted File' : 'Encrypted File') : 'Direct Data'`);
             
             if (result.data && result.data.length > 0) {
                 const preview = result.data.substring(0, 200);
-                this.sendToIRC(`${nick}: Decrypted data: ${preview}${result.data.length > 200 ? '...' : ''}`);
-                this.sendToIRC(`${nick}: Data length: ${result.data.length} characters`);
+                this.sendToIRC(`${nick}: Decrypted data: ${preview}result.data.length > 200 ? '...' : ''`);
+                this.sendToIRC("${nick}: Data length: " + result.data.length + " characters");
             } else {
                 this.sendToIRC(`${nick}: Decrypted data is empty or invalid`);
             }
@@ -576,7 +589,7 @@ class IRCBot {
 
         } catch (error) {
             logger.error('IRC Decryption error:', error);
-            this.sendToIRC(`${nick}: Decryption failed: ${error.message}`);
+            this.sendToIRC(`${nick}: Decryption failed: error.message`);
             this.sendToIRC(`${nick}: Supported algorithms: AES, Camellia, ARIA, ChaCha20, RSA`);
         }
     }
@@ -592,13 +605,13 @@ class IRCBot {
             'chacha20', 'rsa-4096'
         ];
 
-        this.sendToIRC(`${nick}: Available algorithms (${algorithms.length}):`);
+        this.sendToIRC("${nick}: Available algorithms (" + algorithms.length + "):");
         
         // Split into chunks for IRC message limits
         const chunkSize = 5;
         for (let i = 0; i < algorithms.length; i += chunkSize) {
             const chunk = algorithms.slice(i, i + chunkSize);
-            this.sendToIRC(`${nick}: ${chunk.join(', ')}`);
+            this.sendToIRC(`${nick}: chunk.join(', ')`);
         }
         
         this.sendToIRC(`${nick}: Common shortcuts: cam-256-cbc, aes-256, aria-256, chacha, rsa`);
@@ -608,7 +621,7 @@ class IRCBot {
     // File upload handler
     async handleUpload(nick, channel, args) {
         if (args.length < 2) {
-            this.sendToIRC(`${nick}: Usage: !upload <filename> <base64_data>`);
+            this.sendToIRC(`${nick}: Usage: !upload <filename>` <base64_data>``);
             return;
         }
 
@@ -621,7 +634,7 @@ class IRCBot {
             // Check file size limit (100MB)
             const maxSize = 100 * 1024 * 1024;
             if (data.length > maxSize) {
-                throw new Error(`File too large: ${data.length} bytes (max: ${maxSize} bytes)`);
+                throw new Error("File too large: ${data.length} bytes (max: " + maxSize + " bytes)");
             }
             
             // Sanitize filename to prevent path traversal and invalid characters
@@ -643,23 +656,23 @@ class IRCBot {
             const downloadUrl = `http://localhost:3002/api/download/${filename}`;
             
             this.sendToIRC(`${nick}: File uploaded successfully!`);
-            this.sendToIRC(`${nick}: Original filename: ${filename}`);
-            this.sendToIRC(`${nick}: Sanitized filename: ${sanitizedFilename}`);
-            this.sendToIRC(`${nick}: Size: ${data.length} bytes`);
-            this.sendToIRC(`${nick}: File saved locally: ${sanitizedFilename}`);
-            this.sendToIRC(`${nick}: Ready for encryption: !encrypt <algorithm> file:${sanitizedFilename}`);
+            this.sendToIRC(`${nick}: Original filename: filename`);
+            this.sendToIRC(`${nick}: Sanitized filename: sanitizedFilename`);
+            this.sendToIRC("${nick}: Size: " + data.length + " bytes");
+            this.sendToIRC(`${nick}: File saved locally: sanitizedFilename`);
+            this.sendToIRC(`${nick}: Ready for encryption: !encrypt <algorithm>` file:sanitizedFilename`);
             this.sendToIRC(`${nick}: Note: Use !files to list all available files`);
 
         } catch (error) {
             logger.error('IRC Upload error:', error);
-            this.sendToIRC(`${nick}: Upload failed: ${error.message}`);
+            this.sendToIRC(`${nick}: Upload failed: error.message`);
         }
     }
 
     // Simple encryption with auto-conversion to user's chosen extension
     async handleSimpleEncrypt(nick, channel, args) {
         if (args.length < 3) {
-            this.sendToIRC(`${nick}: Usage: !simpleenc <algorithm> <file_url_or_text> <target_extension>`);
+            this.sendToIRC(`${nick}: Usage: !simpleenc <algorithm>` <file_url_or_text>` <target_extension>``);
             this.sendToIRC(`${nick}: Example: !simpleenc aes-256-gcm https://example.com/file.exe .pdf`);
             this.sendToIRC(`${nick}: Example: !simpleenc cam-256-cbc Hello World .txt`);
             this.sendToIRC(`${nick}: Example: !simpleenc aria-256-gcm file:document.pdf .dll`);
@@ -724,7 +737,7 @@ class IRCBot {
             let normalizedAlgorithm = algorithm;
             if (algorithmMap[algorithm.toLowerCase()]) {
                 normalizedAlgorithm = algorithmMap[algorithm.toLowerCase()];
-                this.sendToIRC(`${nick}: Using algorithm: ${normalizedAlgorithm}`);
+                this.sendToIRC(`${nick}: Using algorithm: normalizedAlgorithm`);
             }
 
             // Get RawrZ engine instance
@@ -739,7 +752,7 @@ class IRCBot {
                 // Download from URL
                 dataToEncrypt = await this.downloadFile(input);
                 inputType = 'file';
-                this.sendToIRC(`${nick}: File downloaded (${dataToEncrypt.length} bytes)`);
+                this.sendToIRC("${nick}: File downloaded (" + dataToEncrypt.length + " bytes)");
             } else if (input.startsWith('file:')) {
                 // Read local file
                 const filename = input.slice(5);
@@ -752,9 +765,9 @@ class IRCBot {
                 try {
                     dataToEncrypt = await fs.readFile(filePath);
                     inputType = 'file';
-                    this.sendToIRC(`${nick}: Local file read (${dataToEncrypt.length} bytes)`);
+                    this.sendToIRC("${nick}: Local file read (" + dataToEncrypt.length + " bytes)");
                 } catch (error) {
-                    this.sendToIRC(`${nick}: Local file not found: ${filename}`);
+                    this.sendToIRC(`${nick}: Local file not found: filename`);
             return;
                 }
             } else {
@@ -781,7 +794,7 @@ class IRCBot {
             
             // Create the encrypted file with .enc extension first
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const tempFilename = `SystemService${normalizedAlgorithm.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}.enc`;
+            const tempFilename = "SystemService${normalizedAlgorithm.replace(/[^a-zA-Z0-9]/g, '_')}_" + timestamp + ".enc";
             
             const fs = require('fs').promises;
             const path = require('path');
@@ -802,7 +815,7 @@ class IRCBot {
             await fs.writeFile(tempFilePath, encryptedContent, 'utf8');
             
             // Now automatically convert to the user's chosen extension
-            const finalFilename = `SystemService${normalizedAlgorithm.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}${cleanExtension}`;
+            const finalFilename = `SystemService${normalizedAlgorithm.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}cleanExtension`;
             const finalFilePath = path.join(uploadsDir, finalFilename);
             
             const convertedContent = JSON.stringify({
@@ -830,28 +843,28 @@ class IRCBot {
             
             // Send results
             this.sendToIRC(`${nick}: Simple encryption with auto-conversion completed!`);
-            this.sendToIRC(`${nick}: Type: ${inputType} | Algorithm: ${normalizedAlgorithm}`);
-            this.sendToIRC(`${nick}: Original: ${dataToEncrypt.length} bytes | Encrypted: ${result.data?.length || 'unknown'} bytes`);
-            this.sendToIRC(`${nick}: File: ${finalFilename} (appears as ${cleanExtension})`);
-            this.sendToIRC(`${nick}: Key: ${result.key || 'Generated'}`);
-            this.sendToIRC(`${nick}: IV: ${result.iv || 'Generated'}`);
+            this.sendToIRC(`${nick}: Type: ${inputType} | Algorithm: normalizedAlgorithm`);
+            this.sendToIRC("${nick}: Original: ${dataToEncrypt.length} bytes | Encrypted: " + result.data?.length || 'unknown' + " bytes");
+            this.sendToIRC("${nick}: File: ${finalFilename} (appears as " + cleanExtension + ")");
+            this.sendToIRC(`${nick}: Key: result.key || 'Generated'`);
+            this.sendToIRC(`${nick}: IV: result.iv || 'Generated'`);
             if (result.authTag) {
-                this.sendToIRC(`${nick}: Auth Tag: ${result.authTag}`);
+                this.sendToIRC(`${nick}: Auth Tag: result.authTag`);
             }
-            this.sendToIRC(`${nick}: Note: File appears as ${cleanExtension} but contains encrypted data`);
+            this.sendToIRC("${nick}: Note: File appears as " + cleanExtension + " but contains encrypted data");
             this.sendToIRC(`${nick}: Use !decrypt with the same key/IV to decrypt the file`);
             this.sendToIRC(`${nick}: Supported for ALL encryption methods: AES, Camellia, ARIA, ChaCha20, RSA`);
             
         } catch (error) {
             logger.error('IRC Simple encryption error:', error);
-            this.sendToIRC(`${nick}: Simple encryption failed: ${error.message}`);
+            this.sendToIRC(`${nick}: Simple encryption failed: error.message`);
         }
     }
 
     // Stub generation handler - full RawrZ Engine capabilities
     async handleStubGeneration(nick, channel, args) {
         if (args.length < 2) {
-            this.sendToIRC(`${nick}: Usage: !stub <algorithm> <target> [SystemMaintenancetype] [executable_type]`);
+            this.sendToIRC(`${nick}: Usage: !stub <algorithm>` <target>` [SystemMaintenancetype] [executable_type]`);
             this.sendToIRC(`${nick}: Example: !stub aes-256-gcm https://example.com/file.exe console`);
             this.sendToIRC(`${nick}: Example: !stub cam-256-cbc file:document.pdf gui`);
             this.sendToIRC(`${nick}: Example: !stub aria-256-gcm "Hello World" service`);
@@ -912,7 +925,7 @@ class IRCBot {
             let normalizedAlgorithm = algorithm;
             if (algorithmMap[algorithm.toLowerCase()]) {
                 normalizedAlgorithm = algorithmMap[algorithm.toLowerCase()];
-                this.sendToIRC(`${nick}: Using algorithm: ${normalizedAlgorithm}`);
+                this.sendToIRC(`${nick}: Using algorithm: normalizedAlgorithm`);
             }
 
             // Get RawrZ engine instance
@@ -930,7 +943,7 @@ class IRCBot {
             
             // Save the generated stub
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const filename = `SystemMaintenance${normalizedAlgorithm.replace(/[^a-zA-Z0-9]/g, '_')}_${executableType}_${timestamp}.exe`;
+            const filename = "SystemMaintenance${normalizedAlgorithm.replace(/[^a-zA-Z0-9]/g, '_')}_${executableType}_" + timestamp + ".exe";
             
             const fs = require('fs').promises;
             const path = require('path');
@@ -941,24 +954,24 @@ class IRCBot {
             await fs.writeFile(filePath, result.data, 'binary');
             
             this.sendToIRC(`${nick}: Stub generation completed!`);
-            this.sendToIRC(`${nick}: Algorithm: ${normalizedAlgorithm}`);
-            this.sendToIRC(`${nick}: Target: ${target}`);
-            this.sendToIRC(`${nick}: Executable Type: ${executableType}`);
-            this.sendToIRC(`${nick}: File: ${filename}`);
-            this.sendToIRC(`${nick}: Size: ${result.data.length} bytes`);
-            this.sendToIRC(`${nick}: Stub saved locally: ${filename}`);
-            this.sendToIRC(`${nick}: Note: Stub contains encrypted payload with ${normalizedAlgorithm}`);
+            this.sendToIRC(`${nick}: Algorithm: normalizedAlgorithm`);
+            this.sendToIRC(`${nick}: Target: target`);
+            this.sendToIRC(`${nick}: Executable Type: executableType`);
+            this.sendToIRC(`${nick}: File: filename`);
+            this.sendToIRC("${nick}: Size: " + result.data.length + " bytes");
+            this.sendToIRC(`${nick}: Stub saved locally: filename`);
+            this.sendToIRC(`${nick}: Note: Stub contains encrypted payload with normalizedAlgorithm`);
             
         } catch (error) {
             logger.error('IRC Stub generation error:', error);
-            this.sendToIRC(`${nick}: Stub generation failed: ${error.message}`);
+            this.sendToIRC(`${nick}: Stub generation failed: error.message`);
         }
     }
 
     // Compression handler - full RawrZ Engine capabilities
     async handleCompression(nick, channel, args) {
         if (args.length < 2) {
-            this.sendToIRC(`${nick}: Usage: !compress <algorithm> <data_or_url> [compression_level]`);
+            this.sendToIRC(`${nick}: Usage: !compress <algorithm>` <data_or_url>` [compression_level]`);
             this.sendToIRC(`${nick}: Example: !compress gzip https://example.com/file.txt`);
             this.sendToIRC(`${nick}: Example: !compress deflate "Hello World" 9`);
             this.sendToIRC(`${nick}: Example: !compress brotli file:document.pdf`);
@@ -984,7 +997,7 @@ class IRCBot {
                 // Download from URL
                 dataToCompress = await this.downloadFile(input);
                 inputType = 'file';
-                this.sendToIRC(`${nick}: File downloaded (${dataToCompress.length} bytes)`);
+                this.sendToIRC("${nick}: File downloaded (" + dataToCompress.length + " bytes)");
             } else if (input.startsWith('file:')) {
                 // Read local file
                 const filename = input.slice(5);
@@ -997,9 +1010,9 @@ class IRCBot {
                 try {
                     dataToCompress = await fs.readFile(filePath);
                     inputType = 'file';
-                    this.sendToIRC(`${nick}: Local file read (${dataToCompress.length} bytes)`);
+                    this.sendToIRC("${nick}: Local file read (" + dataToCompress.length + " bytes)");
                 } catch (error) {
-                    this.sendToIRC(`${nick}: Local file not found: ${filename}`);
+                    this.sendToIRC(`${nick}: Local file not found: filename`);
                     return;
                 }
             } else {
@@ -1018,7 +1031,7 @@ class IRCBot {
             
             // Save the compressed data
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const filename = `compressed_${algorithm}_${timestamp}.${algorithm}`;
+            const filename = `compressed_${algorithm}_${timestamp}.algorithm`;
             
             const fs = require('fs').promises;
             const path = require('path');
@@ -1029,24 +1042,24 @@ class IRCBot {
             await fs.writeFile(filePath, result.data, 'binary');
             
             this.sendToIRC(`${nick}: Compression completed!`);
-            this.sendToIRC(`${nick}: Algorithm: ${algorithm}`);
-            this.sendToIRC(`${nick}: Type: ${inputType}`);
-            this.sendToIRC(`${nick}: Original: ${dataToCompress.length} bytes`);
-            this.sendToIRC(`${nick}: Compressed: ${result.data.length} bytes`);
-            this.sendToIRC(`${nick}: Ratio: ${((1 - result.data.length / dataToCompress.length) * 100).toFixed(2)}%`);
-            this.sendToIRC(`${nick}: File: ${filename}`);
-            this.sendToIRC(`${nick}: Compressed file saved locally: ${filename}`);
+            this.sendToIRC(`${nick}: Algorithm: algorithm`);
+            this.sendToIRC(`${nick}: Type: inputType`);
+            this.sendToIRC("${nick}: Original: " + dataToCompress.length + " bytes");
+            this.sendToIRC("${nick}: Compressed: " + result.data.length + " bytes");
+            this.sendToIRC("${nick}: Ratio: " + ((1 - result.data.length / dataToCompress.length) * 100).toFixed(2) + "%");
+            this.sendToIRC(`${nick}: File: filename`);
+            this.sendToIRC(`${nick}: Compressed file saved locally: filename`);
             
         } catch (error) {
             logger.error('IRC Compression error:', error);
-            this.sendToIRC(`${nick}: Compression failed: ${error.message}`);
+            this.sendToIRC(`${nick}: Compression failed: error.message`);
         }
     }
 
     // Obfuscation handler - full RawrZ Engine capabilities
     async handleObfuscation(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !obfuscate <data_or_url> [obfuscation_type]`);
+            this.sendToIRC(`${nick}: Usage: !obfuscate <data_or_url>` [obfuscation_type]`);
             this.sendToIRC(`${nick}: Example: !obfuscate https://example.com/file.txt`);
             this.sendToIRC(`${nick}: Example: !obfuscate "Hello World" xor`);
             this.sendToIRC(`${nick}: Example: !obfuscate file:document.pdf base64`);
@@ -1067,7 +1080,7 @@ class IRCBot {
                 // Download from URL
                 dataToObfuscate = await this.downloadFile(input);
                 inputType = 'file';
-                this.sendToIRC(`${nick}: File downloaded (${dataToObfuscate.length} bytes)`);
+                this.sendToIRC("${nick}: File downloaded (" + dataToObfuscate.length + " bytes)");
             } else if (input.startsWith('file:')) {
                 // Read local file
                 const filename = input.slice(5);
@@ -1080,9 +1093,9 @@ class IRCBot {
                 try {
                     dataToObfuscate = await fs.readFile(filePath);
                     inputType = 'file';
-                    this.sendToIRC(`${nick}: Local file read (${dataToObfuscate.length} bytes)`);
+                    this.sendToIRC("${nick}: Local file read (" + dataToObfuscate.length + " bytes)");
                 } catch (error) {
-                    this.sendToIRC(`${nick}: Local file not found: ${filename}`);
+                    this.sendToIRC(`${nick}: Local file not found: filename`);
                     return;
                 }
             } else {
@@ -1100,7 +1113,7 @@ class IRCBot {
             
             // Save the obfuscated data
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const filename = `obfuscated_${obfuscationType}_${timestamp}.bin`;
+            const filename = "obfuscated_${obfuscationType}_" + timestamp + ".bin";
             
             const fs = require('fs').promises;
             const path = require('path');
@@ -1111,23 +1124,23 @@ class IRCBot {
             await fs.writeFile(filePath, obfuscatedData, 'binary');
             
             this.sendToIRC(`${nick}: Obfuscation completed!`);
-            this.sendToIRC(`${nick}: Type: ${obfuscationType}`);
-            this.sendToIRC(`${nick}: Input: ${inputType}`);
-            this.sendToIRC(`${nick}: Original: ${dataToObfuscate.length} bytes`);
-            this.sendToIRC(`${nick}: Obfuscated: ${obfuscatedData.length} bytes`);
-            this.sendToIRC(`${nick}: File: ${filename}`);
-            this.sendToIRC(`${nick}: Obfuscated file saved locally: ${filename}`);
+            this.sendToIRC(`${nick}: Type: obfuscationType`);
+            this.sendToIRC(`${nick}: Input: inputType`);
+            this.sendToIRC("${nick}: Original: " + dataToObfuscate.length + " bytes");
+            this.sendToIRC("${nick}: Obfuscated: " + obfuscatedData.length + " bytes");
+            this.sendToIRC(`${nick}: File: filename`);
+            this.sendToIRC(`${nick}: Obfuscated file saved locally: filename`);
             
         } catch (error) {
             logger.error('IRC Obfuscation error:', error);
-            this.sendToIRC(`${nick}: Obfuscation failed: ${error.message}`);
+            this.sendToIRC(`${nick}: Obfuscation failed: error.message`);
         }
     }
 
     // Convert file extension handler - works with ALL encryption methods
     async handleConvertFile(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !convert <system_filename> [new_extension]`);
+            this.sendToIRC(`${nick}: Usage: !convert <system_filename>` [new_extension]`);
             this.sendToIRC(`${nick}: Example: !convert SystemServiceaes_256_gcm_2025-09-09T06-18-35-124Z.pdf.enc`);
             this.sendToIRC(`${nick}: Example: !convert SystemServicecam_256_cbc_2025-09-09T06-18-35-124Z.exe.enc .pdf`);
             this.sendToIRC(`${nick}: Example: !convert SystemServicearia_256_gcm_2025-09-09T06-18-35-124Z.zip.enc .dll`);
@@ -1148,7 +1161,7 @@ class IRCBot {
             try {
                 await fs.access(encryptedFilePath);
             } catch (error) {
-                this.sendToIRC(`${nick}: Encrypted file not found: ${encryptedFilename}`);
+                this.sendToIRC(`${nick}: Encrypted file not found: encryptedFilename`);
                 return;
             }
             
@@ -1194,19 +1207,19 @@ class IRCBot {
             await fs.writeFile(newFilePath, convertedContent, 'utf8');
             
             this.sendToIRC(`${nick}: File converted successfully!`);
-            this.sendToIRC(`${nick}: Original: ${encryptedFilename}`);
-            this.sendToIRC(`${nick}: Converted: ${newFilename}`);
-            this.sendToIRC(`${nick}: Extension: ${targetExtension}`);
-            this.sendToIRC(`${nick}: Algorithm: ${encryptedData.algorithm}`);
-            this.sendToIRC(`${nick}: Key Length: ${encryptedData.key ? encryptedData.key.length : 'N/A'}`);
-            this.sendToIRC(`${nick}: IV Length: ${encryptedData.iv ? encryptedData.iv.length : 'N/A'}`);
-            this.sendToIRC(`${nick}: Note: File appears as ${targetExtension} but contains encrypted data`);
+            this.sendToIRC(`${nick}: Original: encryptedFilename`);
+            this.sendToIRC(`${nick}: Converted: newFilename`);
+            this.sendToIRC(`${nick}: Extension: targetExtension`);
+            this.sendToIRC(`${nick}: Algorithm: encryptedData.algorithm`);
+            this.sendToIRC(`${nick}: Key Length: encryptedData.key ? encryptedData.key.length : 'N/A'`);
+            this.sendToIRC(`${nick}: IV Length: encryptedData.iv ? encryptedData.iv.length : 'N/A'`);
+            this.sendToIRC("${nick}: Note: File appears as " + targetExtension + " but contains encrypted data");
             this.sendToIRC(`${nick}: Use !decrypt with the same key/IV to decrypt the converted file`);
             this.sendToIRC(`${nick}: Supported for ALL encryption methods: AES, Camellia, ARIA, ChaCha20, RSA`);
             
         } catch (error) {
             logger.error('IRC Convert file error:', error);
-            this.sendToIRC(`${nick}: Convert failed: ${error.message}`);
+            this.sendToIRC(`${nick}: Convert failed: error.message`);
         }
     }
 
@@ -1232,7 +1245,7 @@ class IRCBot {
                 return;
             }
             
-            this.sendToIRC(`${nick}: Available files (${files.length}):`);
+            this.sendToIRC("${nick}: Available files (" + files.length + "):");
             
             for (const file of files.slice(0, 10)) { // Limit to 10 files
                 const filePath = path.join(uploadsDir, file);
@@ -1240,24 +1253,24 @@ class IRCBot {
                 const size = stats.size;
                 const modified = stats.mtime.toISOString().split('T')[0];
                 
-                this.sendToIRC(`${nick}: ${file} (${size} bytes, ${modified})`);
-                this.sendToIRC(`${nick}: File available locally: ${file}`);
+                this.sendToIRC("${nick}: ${file} (${size} bytes, " + modified + ")");
+                this.sendToIRC(`${nick}: File available locally: file`);
             }
             
             if (files.length > 10) {
-                this.sendToIRC(`${nick}: ... and ${files.length - 10} more files`);
+                this.sendToIRC("${nick}: ... and " + files.length - 10 + " more files");
             }
 
         } catch (error) {
             logger.error('IRC List files error:', error);
-            this.sendToIRC(`${nick}: Failed to list files: ${error.message}`);
+            this.sendToIRC(`${nick}: Failed to list files: error.message`);
         }
     }
 
     // Hot Patch handler
     async handleHotPatch(nick, channel, args) {
         if (args.length < 2) {
-            this.sendToIRC(`${nick}: Usage: !hotpatch <target> <patch_data>`);
+            this.sendToIRC(`${nick}: Usage: !hotpatch <target>` <patch_data>``);
             this.sendToIRC(`${nick}: Example: !hotpatch process.exe "NOP 0x401000"`);
             this.sendToIRC(`${nick}: Example: !hotpatch memory 0x401000 "90 90 90"`);
             return;
@@ -1275,20 +1288,20 @@ class IRCBot {
             const result = await engine.applyHotPatch(target, patchData);
             
             this.sendToIRC(`${nick}: Hot patch applied successfully!`);
-            this.sendToIRC(`${nick}: Target: ${target}`);
-            this.sendToIRC(`${nick}: Patch: ${patchData}`);
-            this.sendToIRC(`${nick}: Result: ${result.status || 'Success'}`);
+            this.sendToIRC(`${nick}: Target: target`);
+            this.sendToIRC(`${nick}: Patch: patchData`);
+            this.sendToIRC(`${nick}: Result: result.status || 'Success'`);
             
         } catch (error) {
             logger.error('IRC Hot patch error:', error);
-            this.sendToIRC(`${nick}: Hot patch failed: ${error.message}`);
+            this.sendToIRC(`${nick}: Hot patch failed: error.message`);
         }
     }
 
     // Polymorphic Engine handler
     async handlePolymorph(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !polymorph <code_or_file> [mutation_type]`);
+            this.sendToIRC(`${nick}: Usage: !polymorph <code_or_file>` [mutation_type]`);
             this.sendToIRC(`${nick}: Example: !polymorph "mov eax, 1" instruction-substitution`);
             this.sendToIRC(`${nick}: Example: !polymorph file:code.asm junk-code-injection`);
             this.sendToIRC(`${nick}: Available types: instruction-substitution, register-reallocation, code-reordering, junk-code-injection, control-flow-flattening, string-encryption`);
@@ -1319,9 +1332,9 @@ class IRCBot {
                 try {
                     codeToTransform = await fs.readFile(filePath, 'utf8');
                     inputType = 'file';
-                    this.sendToIRC(`${nick}: File read (${codeToTransform.length} bytes)`);
+                    this.sendToIRC("${nick}: File read (" + codeToTransform.length + " bytes)");
                 } catch (error) {
-                    this.sendToIRC(`${nick}: File not found: ${filename}`);
+                    this.sendToIRC(`${nick}: File not found: filename`);
                     return;
                 }
             } else {
@@ -1333,7 +1346,7 @@ class IRCBot {
             
             // Save the polymorphic result
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const filename = `polymorphic_${mutationType}_${timestamp}.asm`;
+            const filename = "polymorphic_${mutationType}_" + timestamp + ".asm";
             
             const fs = require('fs').promises;
             const path = require('path');
@@ -1344,23 +1357,23 @@ class IRCBot {
             await fs.writeFile(filePath, result.code, 'utf8');
             
             this.sendToIRC(`${nick}: Polymorphic transformation completed!`);
-            this.sendToIRC(`${nick}: Type: ${mutationType}`);
-            this.sendToIRC(`${nick}: Input: ${inputType}`);
-            this.sendToIRC(`${nick}: Original: ${codeToTransform.length} bytes`);
-            this.sendToIRC(`${nick}: Transformed: ${result.code.length} bytes`);
-            this.sendToIRC(`${nick}: File: ${filename}`);
-            this.sendToIRC(`${nick}: Mutations applied: ${result.mutations || 'Unknown'}`);
+            this.sendToIRC(`${nick}: Type: mutationType`);
+            this.sendToIRC(`${nick}: Input: inputType`);
+            this.sendToIRC("${nick}: Original: " + codeToTransform.length + " bytes");
+            this.sendToIRC("${nick}: Transformed: " + result.code.length + " bytes");
+            this.sendToIRC(`${nick}: File: filename`);
+            this.sendToIRC(`${nick}: Mutations applied: result.mutations || 'Unknown'`);
             
         } catch (error) {
             logger.error('IRC Polymorphic error:', error);
-            this.sendToIRC(`${nick}: Polymorphic transformation failed: ${error.message}`);
+            this.sendToIRC(`${nick}: Polymorphic transformation failed: error.message`);
         }
     }
 
     // Anti-Analysis handler
     async handleAntiAnalysis(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !antianalysis <target>`);
+            this.sendToIRC(`${nick}: Usage: !antianalysis <target>``);
             this.sendToIRC(`${nick}: Example: !antianalysis process.exe`);
             this.sendToIRC(`${nick}: Example: !antianalysis file:malware.bin`);
             this.sendToIRC(`${nick}: Example: !antianalysis memory 0x401000`);
@@ -1378,28 +1391,28 @@ class IRCBot {
             const result = await engine.runAntiAnalysis(target);
             
             this.sendToIRC(`${nick}: Anti-analysis scan completed!`);
-            this.sendToIRC(`${nick}: Target: ${target}`);
-            this.sendToIRC(`${nick}: Analysis Type: ${result.type || 'General'}`);
-            this.sendToIRC(`${nick}: Threats Detected: ${result.threats || 0}`);
-            this.sendToIRC(`${nick}: Risk Level: ${result.riskLevel || 'Unknown'}`);
+            this.sendToIRC(`${nick}: Target: target`);
+            this.sendToIRC(`${nick}: Analysis Type: result.type || 'General'`);
+            this.sendToIRC(`${nick}: Threats Detected: result.threats || 0`);
+            this.sendToIRC(`${nick}: Risk Level: result.riskLevel || 'Unknown'`);
             
             if (result.detections && result.detections.length > 0) {
                 this.sendToIRC(`${nick}: Detections:`);
                 for (const detection of result.detections.slice(0, 3)) {
-                    this.sendToIRC(`${nick}: - ${detection.type}: ${detection.description}`);
+                    this.sendToIRC(`${nick}: - ${detection.type}: detection.description`);
                 }
             }
             
         } catch (error) {
             logger.error('IRC Anti-analysis error:', error);
-            this.sendToIRC(`${nick}: Anti-analysis failed: ${error.message}`);
+            this.sendToIRC(`${nick}: Anti-analysis failed: error.message`);
         }
     }
 
     // Reverse Engineering handler
     async handleReverseEngineering(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !reverse <target>`);
+            this.sendToIRC(`${nick}: Usage: !reverse <target>``);
             this.sendToIRC(`${nick}: Example: !reverse file:binary.exe`);
             this.sendToIRC(`${nick}: Example: !reverse process.exe`);
             this.sendToIRC(`${nick}: Example: !reverse memory 0x401000`);
@@ -1417,29 +1430,29 @@ class IRCBot {
             const result = await engine.reverseEngineer(target);
             
             this.sendToIRC(`${nick}: Reverse engineering completed!`);
-            this.sendToIRC(`${nick}: Target: ${target}`);
-            this.sendToIRC(`${nick}: Architecture: ${result.architecture || 'Unknown'}`);
-            this.sendToIRC(`${nick}: Entry Point: ${result.entryPoint || 'Unknown'}`);
-            this.sendToIRC(`${nick}: Functions Found: ${result.functions || 0}`);
-            this.sendToIRC(`${nick}: Strings Found: ${result.strings || 0}`);
+            this.sendToIRC(`${nick}: Target: target`);
+            this.sendToIRC(`${nick}: Architecture: result.architecture || 'Unknown'`);
+            this.sendToIRC(`${nick}: Entry Point: result.entryPoint || 'Unknown'`);
+            this.sendToIRC(`${nick}: Functions Found: result.functions || 0`);
+            this.sendToIRC(`${nick}: Strings Found: result.strings || 0`);
             
             if (result.imports && result.imports.length > 0) {
                 this.sendToIRC(`${nick}: Key Imports:`);
                 for (const imp of result.imports.slice(0, 3)) {
-                    this.sendToIRC(`${nick}: - ${imp}`);
+                    this.sendToIRC(`${nick}: - imp`);
                 }
             }
             
         } catch (error) {
             logger.error('IRC Reverse engineering error:', error);
-            this.sendToIRC(`${nick}: Reverse engineering failed: ${error.message}`);
+            this.sendToIRC(`${nick}: Reverse engineering failed: error.message`);
         }
     }
 
     // Mobile Analysis handler
     async handleMobileAnalysis(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !mobile <target>`);
+            this.sendToIRC(`${nick}: Usage: !mobile <target>``);
             this.sendToIRC(`${nick}: Example: !mobile file:app.apk`);
             this.sendToIRC(`${nick}: Example: !mobile file:app.ipa`);
             this.sendToIRC(`${nick}: Example: !mobile process:com.example.app`);
@@ -1457,29 +1470,29 @@ class IRCBot {
             const result = await engine.analyzeMobile(target);
             
             this.sendToIRC(`${nick}: Mobile analysis completed!`);
-            this.sendToIRC(`${nick}: Target: ${target}`);
-            this.sendToIRC(`${nick}: Platform: ${result.platform || 'Unknown'}`);
-            this.sendToIRC(`${nick}: Package: ${result.package || 'Unknown'}`);
-            this.sendToIRC(`${nick}: Version: ${result.version || 'Unknown'}`);
-            this.sendToIRC(`${nick}: Permissions: ${result.permissions || 0}`);
+            this.sendToIRC(`${nick}: Target: target`);
+            this.sendToIRC(`${nick}: Platform: result.platform || 'Unknown'`);
+            this.sendToIRC(`${nick}: Package: result.package || 'Unknown'`);
+            this.sendToIRC(`${nick}: Version: result.version || 'Unknown'`);
+            this.sendToIRC(`${nick}: Permissions: result.permissions || 0`);
             
             if (result.permissions && result.permissions.length > 0) {
                 this.sendToIRC(`${nick}: Key Permissions:`);
                 for (const perm of result.permissions.slice(0, 3)) {
-                    this.sendToIRC(`${nick}: - ${perm}`);
+                    this.sendToIRC(`${nick}: - perm`);
                 }
             }
             
         } catch (error) {
             logger.error('IRC Mobile analysis error:', error);
-            this.sendToIRC(`${nick}: Mobile analysis failed: ${error.message}`);
+            this.sendToIRC(`${nick}: Mobile analysis failed: error.message`);
         }
     }
 
     // Network Analysis handler
     async handleNetworkAnalysis(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !network <target>`);
+            this.sendToIRC(`${nick}: Usage: !network <target>``);
             this.sendToIRC(`${nick}: Example: !network 192.168.1.1`);
             this.sendToIRC(`${nick}: Example: !network example.com`);
             this.sendToIRC(`${nick}: Example: !network file:network.pcap`);
@@ -1497,29 +1510,29 @@ class IRCBot {
             const result = await engine.analyzeNetwork(target);
             
             this.sendToIRC(`${nick}: Network analysis completed!`);
-            this.sendToIRC(`${nick}: Target: ${target}`);
-            this.sendToIRC(`${nick}: Type: ${result.type || 'Unknown'}`);
-            this.sendToIRC(`${nick}: Status: ${result.status || 'Unknown'}`);
-            this.sendToIRC(`${nick}: Ports Open: ${result.openPorts || 0}`);
-            this.sendToIRC(`${nick}: Services: ${result.services || 0}`);
+            this.sendToIRC(`${nick}: Target: target`);
+            this.sendToIRC(`${nick}: Type: result.type || 'Unknown'`);
+            this.sendToIRC(`${nick}: Status: result.status || 'Unknown'`);
+            this.sendToIRC(`${nick}: Ports Open: result.openPorts || 0`);
+            this.sendToIRC(`${nick}: Services: result.services || 0`);
             
             if (result.services && result.services.length > 0) {
                 this.sendToIRC(`${nick}: Services Found:`);
                 for (const service of result.services.slice(0, 3)) {
-                    this.sendToIRC(`${nick}: - ${service.port}: ${service.name}`);
+                    this.sendToIRC(`${nick}: - ${service.port}: service.name`);
                 }
             }
             
         } catch (error) {
             logger.error('IRC Network analysis error:', error);
-            this.sendToIRC(`${nick}: Network analysis failed: ${error.message}`);
+            this.sendToIRC(`${nick}: Network analysis failed: error.message`);
         }
     }
 
     // Digital Forensics handler
     async handleDigitalForensics(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !forensics <target>`);
+            this.sendToIRC(`${nick}: Usage: !forensics <target>``);
             this.sendToIRC(`${nick}: Example: !forensics file:disk.img`);
             this.sendToIRC(`${nick}: Example: !forensics file:memory.dmp`);
             this.sendToIRC(`${nick}: Example: !forensics process:malware.exe`);
@@ -1537,29 +1550,29 @@ class IRCBot {
             const result = await engine.performForensics(target);
             
             this.sendToIRC(`${nick}: Digital forensics completed!`);
-            this.sendToIRC(`${nick}: Target: ${target}`);
-            this.sendToIRC(`${nick}: Type: ${result.type || 'Unknown'}`);
-            this.sendToIRC(`${nick}: Evidence Found: ${result.evidence || 0}`);
-            this.sendToIRC(`${nick}: Artifacts: ${result.artifacts || 0}`);
-            this.sendToIRC(`${nick}: Timeline: ${result.timeline || 'Unknown'}`);
+            this.sendToIRC(`${nick}: Target: target`);
+            this.sendToIRC(`${nick}: Type: result.type || 'Unknown'`);
+            this.sendToIRC(`${nick}: Evidence Found: result.evidence || 0`);
+            this.sendToIRC(`${nick}: Artifacts: result.artifacts || 0`);
+            this.sendToIRC(`${nick}: Timeline: result.timeline || 'Unknown'`);
             
             if (result.artifacts && result.artifacts.length > 0) {
                 this.sendToIRC(`${nick}: Key Artifacts:`);
                 for (const artifact of result.artifacts.slice(0, 3)) {
-                    this.sendToIRC(`${nick}: - ${artifact.type}: ${artifact.description}`);
+                    this.sendToIRC(`${nick}: - ${artifact.type}: artifact.description`);
                 }
             }
             
         } catch (error) {
             logger.error('IRC Digital forensics error:', error);
-            this.sendToIRC(`${nick}: Digital forensics failed: ${error.message}`);
+            this.sendToIRC(`${nick}: Digital forensics failed: error.message`);
         }
     }
 
     // Malware Analysis handler
     async handleMalwareAnalysis(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !malware <target>`);
+            this.sendToIRC(`${nick}: Usage: !malware <target>``);
             this.sendToIRC(`${nick}: Example: !malware file:suspicious.exe`);
             this.sendToIRC(`${nick}: Example: !malware file:malware.bin`);
             this.sendToIRC(`${nick}: Example: !malware process:malware.exe`);
@@ -1577,22 +1590,22 @@ class IRCBot {
             const result = await engine.analyzeMalware(target);
             
             this.sendToIRC(`${nick}: Malware analysis completed!`);
-            this.sendToIRC(`${nick}: Target: ${target}`);
-            this.sendToIRC(`${nick}: Family: ${result.family || 'Unknown'}`);
-            this.sendToIRC(`${nick}: Type: ${result.type || 'Unknown'}`);
-            this.sendToIRC(`${nick}: Risk Level: ${result.riskLevel || 'Unknown'}`);
-            this.sendToIRC(`${nick}: Behaviors: ${result.behaviors || 0}`);
+            this.sendToIRC(`${nick}: Target: target`);
+            this.sendToIRC(`${nick}: Family: result.family || 'Unknown'`);
+            this.sendToIRC(`${nick}: Type: result.type || 'Unknown'`);
+            this.sendToIRC(`${nick}: Risk Level: result.riskLevel || 'Unknown'`);
+            this.sendToIRC(`${nick}: Behaviors: result.behaviors || 0`);
             
             if (result.behaviors && result.behaviors.length > 0) {
                 this.sendToIRC(`${nick}: Key Behaviors:`);
                 for (const behavior of result.behaviors.slice(0, 3)) {
-                    this.sendToIRC(`${nick}: - ${behavior.type}: ${behavior.description}`);
+                    this.sendToIRC(`${nick}: - ${behavior.type}: behavior.description`);
                 }
             }
             
         } catch (error) {
             logger.error('IRC Malware analysis error:', error);
-            this.sendToIRC(`${nick}: Malware analysis failed: ${error.message}`);
+            this.sendToIRC(`${nick}: Malware analysis failed: error.message`);
         }
     }
 
@@ -1609,14 +1622,14 @@ class IRCBot {
             const result = await engine.enableStealth(mode);
             
             this.sendToIRC(`${nick}: Stealth mode enabled!`);
-            this.sendToIRC(`${nick}: Mode: ${mode}`);
-            this.sendToIRC(`${nick}: Status: ${result.status || 'Active'}`);
-            this.sendToIRC(`${nick}: Features: ${result.features || 'All enabled'}`);
+            this.sendToIRC(`${nick}: Mode: mode`);
+            this.sendToIRC(`${nick}: Status: result.status || 'Active'`);
+            this.sendToIRC(`${nick}: Features: result.features || 'All enabled'`);
             this.sendToIRC(`${nick}: Available modes: basic, standard, full, maximum`);
             
         } catch (error) {
             logger.error('IRC Stealth error:', error);
-            this.sendToIRC(`${nick}: Stealth activation failed: ${error.message}`);
+            this.sendToIRC(`${nick}: Stealth activation failed: error.message`);
         }
     }
 
@@ -1631,21 +1644,21 @@ class IRCBot {
             const result = await engine.optimizeMemory();
             
             this.sendToIRC(`${nick}: Memory optimization completed!`);
-            this.sendToIRC(`${nick}: Status: ${result.status || 'Optimized'}`);
-            this.sendToIRC(`${nick}: Memory freed: ${result.freed || 'Unknown'} bytes`);
-            this.sendToIRC(`${nick}: Heap size: ${result.heapSize || 'Unknown'}`);
-            this.sendToIRC(`${nick}: GC threshold: ${result.gcThreshold || 'Unknown'}%`);
+            this.sendToIRC(`${nick}: Status: result.status || 'Optimized'`);
+            this.sendToIRC("${nick}: Memory freed: " + result.freed || 'Unknown' + " bytes");
+            this.sendToIRC(`${nick}: Heap size: result.heapSize || 'Unknown'`);
+            this.sendToIRC("${nick}: GC threshold: " + result.gcThreshold || 'Unknown' + "%");
             
         } catch (error) {
             logger.error('IRC Memory optimization error:', error);
-            this.sendToIRC(`${nick}: Memory optimization failed: ${error.message}`);
+            this.sendToIRC(`${nick}: Memory optimization failed: error.message`);
         }
     }
 
     // Backup System handler
     async handleBackup(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !backup <target> [options]`);
+            this.sendToIRC(`${nick}: Usage: !backup <target>` [options]`);
             this.sendToIRC(`${nick}: Example: !backup file:important.txt`);
             this.sendToIRC(`${nick}: Example: !backup process:malware.exe`);
             this.sendToIRC(`${nick}: Example: !backup memory 0x401000`);
@@ -1663,21 +1676,21 @@ class IRCBot {
             const result = await engine.createBackup(target);
             
             this.sendToIRC(`${nick}: Backup created successfully!`);
-            this.sendToIRC(`${nick}: Target: ${target}`);
-            this.sendToIRC(`${nick}: Backup file: ${result.filename || 'Unknown'}`);
-            this.sendToIRC(`${nick}: Size: ${result.size || 'Unknown'} bytes`);
-            this.sendToIRC(`${nick}: Location: ${result.location || 'uploads/'}`);
+            this.sendToIRC(`${nick}: Target: target`);
+            this.sendToIRC(`${nick}: Backup file: result.filename || 'Unknown'`);
+            this.sendToIRC("${nick}: Size: " + result.size || 'Unknown' + " bytes");
+            this.sendToIRC(`${nick}: Location: result.location || 'uploads/'`);
             
         } catch (error) {
             logger.error('IRC Backup error:', error);
-            this.sendToIRC(`${nick}: Backup failed: ${error.message}`);
+            this.sendToIRC(`${nick}: Backup failed: error.message`);
         }
     }
 
     // Assembly handler
     async handleAssembly(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !assemble <code> [architecture]`);
+            this.sendToIRC(`${nick}: Usage: !assemble <code>` [architecture]`);
             this.sendToIRC(`${nick}: Example: !assemble "mov eax, 1" x64`);
             this.sendToIRC(`${nick}: Example: !assemble "push ebp; mov ebp, esp" x86`);
             this.sendToIRC(`${nick}: Available architectures: x86, x64, arm, arm64`);
@@ -1697,7 +1710,7 @@ class IRCBot {
             
             // Save the assembled code
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const filename = `assembled_${architecture}_${timestamp}.bin`;
+            const filename = "assembled_${architecture}_" + timestamp + ".bin";
             
             const fs = require('fs').promises;
             const path = require('path');
@@ -1708,22 +1721,22 @@ class IRCBot {
             await fs.writeFile(filePath, result.binary, 'binary');
             
             this.sendToIRC(`${nick}: Assembly completed!`);
-            this.sendToIRC(`${nick}: Architecture: ${architecture}`);
-            this.sendToIRC(`${nick}: Code length: ${code.length} characters`);
-            this.sendToIRC(`${nick}: Binary size: ${result.binary.length} bytes`);
-            this.sendToIRC(`${nick}: File: ${filename}`);
-            this.sendToIRC(`${nick}: Entry point: ${result.entryPoint || 'Unknown'}`);
+            this.sendToIRC(`${nick}: Architecture: architecture`);
+            this.sendToIRC("${nick}: Code length: " + code.length + " characters");
+            this.sendToIRC("${nick}: Binary size: " + result.binary.length + " bytes");
+            this.sendToIRC(`${nick}: File: filename`);
+            this.sendToIRC(`${nick}: Entry point: result.entryPoint || 'Unknown'`);
             
         } catch (error) {
             logger.error('IRC Assembly error:', error);
-            this.sendToIRC(`${nick}: Assembly failed: ${error.message}`);
+            this.sendToIRC(`${nick}: Assembly failed: error.message`);
         }
     }
 
     // Dual Generators handler
     async handleDualGenerators(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !dualgen <config>`);
+            this.sendToIRC(`${nick}: Usage: !dualgen <config>``);
             this.sendToIRC(`${nick}: Example: !dualgen "aes,camellia"`);
             this.sendToIRC(`${nick}: Example: !dualgen "chacha,rsa"`);
             this.sendToIRC(`${nick}: Available generators: aes, camellia, chacha, rsa, aria`);
@@ -1741,14 +1754,14 @@ class IRCBot {
             const result = await engine.runDualGenerators(config);
             
             this.sendToIRC(`${nick}: Dual generators completed!`);
-            this.sendToIRC(`${nick}: Configuration: ${config}`);
-            this.sendToIRC(`${nick}: Generators: ${result.generators || 'Unknown'}`);
-            this.sendToIRC(`${nick}: Keys generated: ${result.keys || 0}`);
-            this.sendToIRC(`${nick}: Status: ${result.status || 'Success'}`);
+            this.sendToIRC(`${nick}: Configuration: config`);
+            this.sendToIRC(`${nick}: Generators: result.generators || 'Unknown'`);
+            this.sendToIRC(`${nick}: Keys generated: result.keys || 0`);
+            this.sendToIRC(`${nick}: Status: result.status || 'Success'`);
             
         } catch (error) {
             logger.error('IRC Dual generators error:', error);
-            this.sendToIRC(`${nick}: Dual generators failed: ${error.message}`);
+            this.sendToIRC(`${nick}: Dual generators failed: error.message`);
         }
     }
 
@@ -1763,21 +1776,21 @@ class IRCBot {
             const result = await engine.getAPIStatus();
             
             this.sendToIRC(`${nick}: API Status Report:`);
-            this.sendToIRC(`${nick}: Overall: ${result.overall || 'Unknown'}`);
-            this.sendToIRC(`${nick}: APIs Active: ${result.active || 0}`);
-            this.sendToIRC(`${nick}: APIs Down: ${result.down || 0}`);
-            this.sendToIRC(`${nick}: Response Time: ${result.responseTime || 'Unknown'}ms`);
+            this.sendToIRC(`${nick}: Overall: result.overall || 'Unknown'`);
+            this.sendToIRC(`${nick}: APIs Active: result.active || 0`);
+            this.sendToIRC(`${nick}: APIs Down: result.down || 0`);
+            this.sendToIRC("${nick}: Response Time: " + result.responseTime || 'Unknown' + "ms");
             
             if (result.apis && result.apis.length > 0) {
                 this.sendToIRC(`${nick}: API Details:`);
                 for (const api of result.apis.slice(0, 3)) {
-                    this.sendToIRC(`${nick}: - ${api.name}: ${api.status}`);
+                    this.sendToIRC(`${nick}: - ${api.name}: api.status`);
                 }
             }
             
         } catch (error) {
             logger.error('IRC API status error:', error);
-            this.sendToIRC(`${nick}: API status check failed: ${error.message}`);
+            this.sendToIRC(`${nick}: API status check failed: error.message`);
         }
     }
 
@@ -1807,19 +1820,19 @@ class IRCBot {
                     }
                     
                     if (res.statusCode !== 200) {
-                        reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
+                        reject(new Error(`HTTP ${res.statusCode}: res.statusMessage`));
                         return;
                     }
                     
                     const chunks = [];
-                    res.on('data', chunk => chunks.push(chunk));
+                    res.on('data', chunk =>` chunks.push(chunk));
                     res.on('end', () => {
                         const buffer = Buffer.concat(chunks);
                         
                         // Check file size limit (100MB)
                         const maxSize = 100 * 1024 * 1024;
                         if (buffer.length > maxSize) {
-                            reject(new Error(`File too large: ${buffer.length} bytes (max: ${maxSize} bytes)`));
+                            reject(new Error("File too large: ${buffer.length} bytes (max: " + maxSize + " bytes)"));
                             return;
                         }
                         
@@ -1851,7 +1864,7 @@ class IRCBot {
         // Check file size limit (100MB)
         const maxSize = 100 * 1024 * 1024;
         if (data.length > maxSize) {
-            throw new Error(`File too large: ${data.length} bytes (max: ${maxSize} bytes)`);
+            throw new Error("File too large: ${data.length} bytes (max: " + maxSize + " bytes)");
         }
         
         return data;
@@ -1862,7 +1875,7 @@ class IRCBot {
         const path = require('path');
         
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const filename = `SystemService${algorithm.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}${fileExtension}`;
+        const filename = `SystemService${algorithm.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}fileExtension`;
         
         const uploadsDir = path.join(__dirname, '../../uploads');
         await fs.mkdir(uploadsDir, { recursive: true });
@@ -1889,25 +1902,25 @@ class IRCBot {
             
             if (!stats.enabled) {
                 this.sendToIRC(`${nick}: Database integration is disabled`);
-                this.sendToIRC(`${nick}: Connection Status: ${stats.connectionStatus}`);
+                this.sendToIRC(`${nick}: Connection Status: stats.connectionStatus`);
                 return;
             }
             
             this.sendToIRC(`${nick}: [DB] Database Integration: Active`);
-            this.sendToIRC(`${nick}: [DB] Connection: ${stats.connectionStatus}`);
-            this.sendToIRC(`${nick}: [DB] Total Operations: ${stats.stats.totalOperations}`);
-            this.sendToIRC(`${nick}: [DB] Successful: ${stats.stats.successfulOperations} | Failed: ${stats.stats.failedOperations}`);
+            this.sendToIRC(`${nick}: [DB] Connection: stats.connectionStatus`);
+            this.sendToIRC(`${nick}: [DB] Total Operations: stats.stats.totalOperations`);
+            this.sendToIRC(`${nick}: [DB] Successful: ${stats.stats.successfulOperations} | Failed: stats.stats.failedOperations`);
             
             if (stats.databaseStats) {
-                this.sendToIRC(`${nick}: [DB] Encryptions: ${stats.databaseStats.totalEncryptions}`);
-                this.sendToIRC(`${nick}: [DB] Stubs Generated: ${stats.databaseStats.totalStubs}`);
-                this.sendToIRC(`${nick}: [DB] Polymorphic Ops: ${stats.databaseStats.totalPolymorphic}`);
-                this.sendToIRC(`${nick}: [DB] Commands Logged: ${stats.databaseStats.totalCommands}`);
-                this.sendToIRC(`${nick}: [DB] Last 24h: ${stats.databaseStats.last24Hours.commands} commands`);
+                this.sendToIRC(`${nick}: [DB] Encryptions: stats.databaseStats.totalEncryptions`);
+                this.sendToIRC(`${nick}: [DB] Stubs Generated: stats.databaseStats.totalStubs`);
+                this.sendToIRC(`${nick}: [DB] Polymorphic Ops: stats.databaseStats.totalPolymorphic`);
+                this.sendToIRC(`${nick}: [DB] Commands Logged: stats.databaseStats.totalCommands`);
+                this.sendToIRC("${nick}: [DB] Last 24h: " + stats.databaseStats.last24Hours.commands + " commands");
             }
             
         } catch (error) {
-            this.sendToIRC(`${nick}: Failed to get database stats: ${error.message}`);
+            this.sendToIRC(`${nick}: Failed to get database stats: error.message`);
         }
     }
 
@@ -1915,41 +1928,41 @@ class IRCBot {
     sendSystemStatus() {
         const status = chatterbox.getStatusReport();
         this.sendToIRC(`[STATUS] System Health: ${status.health.status}`);
-        this.sendToIRC(`[STATUS] Active Scripts: ${status.activeScripts} | Errors: ${status.recentErrors.length} | Stuck: ${status.stuckScripts}`);
+        this.sendToIRC(`[STATUS] Active Scripts: ${status.activeScripts} | Errors: ${status.recentErrors.length} | Stuck: status.stuckScripts`);
         this.sendToIRC(`[HEARTBEAT] Monitoring: ${chatterbox.heartbeatInterval ? 'Active' : 'Inactive'}`);
     }
 
     sendScriptStatus() {
         const scripts = chatterbox.getAllScripts();
-        this.sendToIRC(`[SCRIPTS] Active Scripts (${scripts.length}):`);
+        this.sendToIRC("[SCRIPTS] Active Scripts (" + scripts.length + "):");
         for (const script of scripts.slice(0, 5)) {
-            this.sendToIRC(`  [CHAR] ${script.name}: ${script.status}`);
+            this.sendToIRC(`  [CHAR] ${script.name}: script.status`);
         }
     }
 
     sendRecentErrors() {
         const errors = chatterbox.getRecentErrors();
-        this.sendToIRC(`[ERRORS] Recent Errors (${errors.length}):`);
+        this.sendToIRC("[ERRORS] Recent Errors (" + errors.length + "):");
         for (const error of errors.slice(0, 3)) {
-            this.sendToIRC(`  [CHAR] ${error.scriptName}: ${error.error}`);
+            this.sendToIRC(`  [CHAR] ${error.scriptName}: error.error`);
         }
     }
 
     sendStuckScripts() {
         const stuck = chatterbox.getStuckScripts();
-        this.sendToIRC(`[STUCK] Stuck Scripts (${stuck.length}):`);
+        this.sendToIRC("[STUCK] Stuck Scripts (" + stuck.length + "):");
         for (const script of stuck.slice(0, 3)) {
-            this.sendToIRC(`  [CHAR] ${script.name}: ${script.status} (${Math.round((Date.now() - script.lastHeartbeat) / 1000)}s)`);
+            this.sendToIRC("  [CHAR] ${script.name}: ${script.status} (" + Math.round((Date.now() - script.lastHeartbeat) / 1000) + "s)");
         }
     }
 
     sendRequestIdErrors() {
         const requestIdErrors = chatterbox.getRequestIdErrors();
-        this.sendToIRC(`[ALERT] RequestID Errors (${requestIdErrors.length}):`);
+        this.sendToIRC("[ALERT] RequestID Errors (" + requestIdErrors.length + "):");
         for (const [requestId, errors] of requestIdErrors.slice(0, 3)) {
             const latestError = errors[errors.length - 1];
             const timeAgo = Math.round((Date.now() - latestError.timestamp) / 1000);
-            this.sendToIRC(`  [CHAR] ${requestId}: ${latestError.error} (${timeAgo}s ago)`);
+            this.sendToIRC("  [CHAR] ${requestId}: ${latestError.error} (" + timeAgo + "s ago)");
         }
     }
 
@@ -1961,7 +1974,7 @@ class IRCBot {
             this.sendToIRC('[ANALYSIS] !antianalysis !reverse !mobile !network !forensics !malware');
             this.sendToIRC('[SYSTEM] !stealth !memory !backup !assemble !dualgen !apistatus');
             this.sendToIRC('[MONITOR] !status !scripts !errors !stuck !requestid !dbstats');
-            this.sendToIRC('[HELP] Use !help <category> for details (core/advanced/analysis/system/monitor)');
+            this.sendToIRC('[HELP] Use !help <category>` for details (core/advanced/analysis/system/monitor)');
             return;
         }
 
@@ -1970,42 +1983,42 @@ class IRCBot {
         switch (cat) {
             case 'core':
                 this.sendToIRC('[CORE COMMANDS]');
-                this.sendToIRC('  !encrypt <alg> <data> - Encrypt files/text');
-                this.sendToIRC('  !decrypt <alg> <data> <key> <iv> - Decrypt data');
+                this.sendToIRC('  !encrypt <alg>` <data>` - Encrypt files/text');
+                this.sendToIRC('  !decrypt <alg>` <data>` <key>` <iv>` - Decrypt data');
                 this.sendToIRC('  !algorithms - List encryption algorithms');
-                this.sendToIRC('  !upload <file> <base64> - Upload files');
+                this.sendToIRC('  !upload <file>` <base64>` - Upload files');
                 this.sendToIRC('  !files - List available files');
-                this.sendToIRC('  !convert <file> [ext] - Convert file extensions');
-                this.sendToIRC('  !simpleenc <alg> <data> <ext> - Encrypt & convert');
+                this.sendToIRC('  !convert <file>` [ext] - Convert file extensions');
+                this.sendToIRC('  !simpleenc <alg>` <data>` <ext>` - Encrypt & convert');
                 break;
                 
             case 'advanced':
                 this.sendToIRC('[ADVANCED COMMANDS]');
-                this.sendToIRC('  !stub <alg> <target> <type> - Generate encrypted stubs');
-                this.sendToIRC('  !compile <cpp_file> - Compile C++ to executable');
-                this.sendToIRC('  !compress <alg> <data> - Compress files');
-                this.sendToIRC('  !obfuscate <data> [type] - Obfuscate data');
-                this.sendToIRC('  !hotpatch <target> <patch> - Apply hot patches');
-                this.sendToIRC('  !polymorph <code> [type] - Polymorphic transformation');
+                this.sendToIRC('  !stub <alg>` <target>` <type>` - Generate encrypted stubs');
+                this.sendToIRC('  !compile <cpp_file>` - Compile C++ to executable');
+                this.sendToIRC('  !compress <alg>` <data>` - Compress files');
+                this.sendToIRC('  !obfuscate <data>` [type] - Obfuscate data');
+                this.sendToIRC('  !hotpatch <target>` <patch>` - Apply hot patches');
+                this.sendToIRC('  !polymorph <code>` [type] - Polymorphic transformation');
                 break;
                 
             case 'analysis':
                 this.sendToIRC('[ANALYSIS COMMANDS]');
-                this.sendToIRC('  !antianalysis <target> - Anti-analysis detection');
-                this.sendToIRC('  !reverse <target> - Reverse engineering');
-                this.sendToIRC('  !mobile <target> - Mobile app analysis');
-                this.sendToIRC('  !network <target> - Network analysis');
-                this.sendToIRC('  !forensics <target> - Digital forensics');
-                this.sendToIRC('  !malware <target> - Malware analysis');
+                this.sendToIRC('  !antianalysis <target>` - Anti-analysis detection');
+                this.sendToIRC('  !reverse <target>` - Reverse engineering');
+                this.sendToIRC('  !mobile <target>` - Mobile app analysis');
+                this.sendToIRC('  !network <target>` - Network analysis');
+                this.sendToIRC('  !forensics <target>` - Digital forensics');
+                this.sendToIRC('  !malware <target>` - Malware analysis');
                 break;
                 
             case 'system':
                 this.sendToIRC('[SYSTEM COMMANDS]');
                 this.sendToIRC('  !stealth [mode] - Enable stealth modes');
                 this.sendToIRC('  !memory - Memory optimization');
-                this.sendToIRC('  !backup <target> - Create backups');
-                this.sendToIRC('  !assemble <code> [arch] - Assemble code');
-                this.sendToIRC('  !dualgen <config> - Dual crypto generators');
+                this.sendToIRC('  !backup <target>` - Create backups');
+                this.sendToIRC('  !assemble <code>` [arch] - Assemble code');
+                this.sendToIRC('  !dualgen <config>` - Dual crypto generators');
                 this.sendToIRC('  !apistatus - API status check');
                 break;
                 
@@ -2020,7 +2033,7 @@ class IRCBot {
                 break;
                 
             default:
-                this.sendToIRC(`Unknown category: ${cat}. Use: core, advanced, analysis, system, monitor`);
+                this.sendToIRC("Unknown category: " + cat + ". Use: core, advanced, analysis, system, monitor");
         }
     }
 
@@ -2036,13 +2049,13 @@ class IRCBot {
         
         if (timeSinceLastMessage < this.rateLimitDelay) {
             const delay = this.rateLimitDelay - timeSinceLastMessage;
-            await new Promise(resolve => setTimeout(resolve, delay));
+            await new Promise(resolve =>` setTimeout(resolve, delay));
         }
         
         this.lastMessageTime = Date.now();
 
         for (const channel of this.channels) {
-            this.sendRaw(`PRIVMSG ${channel} :${message}`);
+            this.sendRaw(`PRIVMSG ${channel} :message`);
         }
     }
 
@@ -2061,7 +2074,7 @@ class IRCBot {
         this.reconnectAttempts++;
         const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
         
-        logger.info(`[BOT] Reconnecting to IRC in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+        logger.info("[BOT] Reconnecting to IRC in ${delay}ms (attempt ${this.reconnectAttempts}/" + this.maxReconnectAttempts + ")");
         
         setTimeout(() => {
             this.connect();
@@ -2071,7 +2084,7 @@ class IRCBot {
     // Compile C++ stub to executable using native-roslyn
     async handleCompileStub(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !compile <cpp_filename>`);
+            this.sendToIRC(`${nick}: Usage: !compile <cpp_filename>``);
             this.sendToIRC(`${nick}: Example: !compile data_aes-256-gcm_stub.cpp`);
             this.sendToIRC(`${nick}: This compiles C++ stubs to native executables using Clang/LLVM`);
             return;
@@ -2084,6 +2097,7 @@ class IRCBot {
             const path = require('path');
             const { exec } = require('child_process');
             const { promisify } = require('util');
+const { getMemoryManager } = require('../utils/memory-manager');
             const execAsync = promisify(exec);
             
             const uploadsDir = path.join(__dirname, '../../uploads');
@@ -2093,11 +2107,11 @@ class IRCBot {
             try {
                 await fs.access(cppFilePath);
             } catch (error) {
-                this.sendToIRC(`${nick}: C++ file not found: ${cppFilename}`);
+                this.sendToIRC(`${nick}: C++ file not found: cppFilename`);
                 return;
             }
             
-            this.sendToIRC(`${nick}: Compiling ${cppFilename} to native executable...`);
+            this.sendToIRC("${nick}: Compiling " + cppFilename + " to native executable...");
             
             // Read the C++ source
             const cppSource = await fs.readFile(cppFilePath, 'utf8');
@@ -2116,7 +2130,7 @@ class IRCBot {
             const outputPath = path.join(uploadsDir, outputFilename);
             
             // Pipe C++ source to native-roslyn container and save executable
-            const compileCommand = `echo "${cppSource.replace(/"/g, '\\"')}" | docker exec -i native-build /usr/local/bin/compile.sh > "${outputPath}"`;
+            const compileCommand = "echo "${cppSource.replace(/"/g, '\\"')}" | docker exec -i native-build /usr/local/bin/compile.sh > `${outputPath}`";
             
             await execAsync(compileCommand);
             
@@ -2126,9 +2140,9 @@ class IRCBot {
                 const stats = await fs.stat(outputPath);
                 
                 this.sendToIRC(`${nick}: Compilation successful!`);
-                this.sendToIRC(`${nick}: Executable saved: ${outputFilename}`);
-                this.sendToIRC(`${nick}: Size: ${(stats.size / 1024).toFixed(2)} KB`);
-                this.sendToIRC(`${nick}: Ready to execute: ${outputFilename}`);
+                this.sendToIRC(`${nick}: Executable saved: outputFilename`);
+                this.sendToIRC("${nick}: Size: " + (stats.size / 1024).toFixed(2) + " KB");
+                this.sendToIRC(`${nick}: Ready to execute: outputFilename`);
                 
             } catch (error) {
                 this.sendToIRC(`${nick}: Compilation failed. Check C++ syntax and dependencies.`);
@@ -2136,7 +2150,7 @@ class IRCBot {
             }
             
         } catch (error) {
-            this.sendToIRC(`${nick}: Compilation error: ${error.message}`);
+            this.sendToIRC(`${nick}: Compilation error: error.message`);
             logger.error('Compilation error:', error);
         }
     }

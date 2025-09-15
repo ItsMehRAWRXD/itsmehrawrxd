@@ -12,7 +12,7 @@ async function testJottiScanner() {
         // Load the Jotti scanner directly
         console.log('Loading Jotti scanner...');
         const jottiScanner = require('./src/engines/jotti-scanner');
-        console.log('✓ Jotti scanner loaded\n');
+        console.log('[INFO] Jotti scanner loaded\n');
         
         // Get scanner info
         console.log('Scanner Info:');
@@ -62,10 +62,10 @@ async function testJottiScanner() {
             }
         }
         
-        console.log('\n✓ Test completed successfully!');
+        console.log('\n[INFO] Test completed successfully!');
         
     } catch (error) {
-        console.error('✗ Test failed:', error.message);
+        console.error('[INFO] Test failed:', error.message);
         console.error(error.stack);
     }
 }

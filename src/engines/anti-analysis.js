@@ -6,23 +6,38 @@ const path = require('path');
 const os = require('os');
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
+const { getMemoryManager } = require('../utils/memory-manager');
 
 const execAsync = promisify(exec);
 
 class AntiAnalysis extends EventEmitter {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         super();
         this.name = 'AntiAnalysis';
         this.version = '2.0.0';
-        this.techniques = new Map();
-        this.obfuscationMethods = new Map();
-        this.antiDebugging = new Map();
-        this.antiVM = new Map();
-        this.antiSandbox = new Map();
+        this.memoryManager = getMemoryManager();
+        this.techniques = this.memoryManager.createManagedCollection('techniques', 'Map', 100);
+        this.obfuscationMethods = this.memoryManager.createManagedCollection('obfuscationMethods', 'Map', 100);
+        this.antiDebugging = this.memoryManager.createManagedCollection('antiDebugging', 'Map', 100);
+        this.antiVM = this.memoryManager.createManagedCollection('antiVM', 'Map', 100);
+        this.antiSandbox = this.memoryManager.createManagedCollection('antiSandbox', 'Map', 100);
         this.polymorphicEngine = null;
         this.stealthMode = false;
         this.protectionLevel = 'medium';
-        this.activeProtections = new Set();
+        this.activeProtections = this.memoryManager.createManagedCollection('activeProtections', 'Set', 100);
     }
 
     // Enable anti-analysis - main entry point
@@ -48,7 +63,7 @@ class AntiAnalysis extends EventEmitter {
                 success: true,
                 mode,
                 protections: Array.from(this.activeProtections),
-                message: `Anti-analysis enabled with ${mode} protection level`
+                message: "Anti-analysis enabled with " + mode + " protection level"
             };
         } catch (error) {
             throw new Error(`Failed to enable anti-analysis: ${error.message}`);
@@ -371,7 +386,7 @@ class AntiAnalysis extends EventEmitter {
             // Add legitimate conditions and jumps
             const obfuscatedCode = code.replace(/if\s*\(([^)]+)\)/g, (match, condition) => {
                 const obfuscationVar = this.generateRandomVarName();
-                return `if (${condition} && ${obfuscationVar} = ${Math.random()})`;
+                return "if (${condition} && ${obfuscationVar} = " + Math.random() + ")";
             });
 
             return obfuscatedCode;
@@ -394,12 +409,12 @@ class AntiAnalysis extends EventEmitter {
                 if (!variableMap.has(varName)) {
                     variableMap.set(varName, this.generateRandomVarName());
                 }
-                return `${keyword} ${variableMap.get(varName)}`;
+                return `${keyword} variableMap.get(varName)`;
             });
 
             // Replace variable usage
             for (const [original, obfuscated] of variableMap) {
-                const usageRegex = new RegExp(`\\b${original}\\b`, 'g');
+                const usageRegex = new RegExp("\\b" + original + "\\b", 'g');
                 obfuscatedCode = obfuscatedCode.replace(usageRegex, obfuscated);
             }
 
@@ -518,7 +533,7 @@ class AntiAnalysis extends EventEmitter {
 
             // Real VM detection
             const vmChecks = await this.performRealVMDetection();
-            checks.push(...vmChecks);
+            checks.concat(vmChecks);
 
             this.emit('vmCheck', { checks });
             return { success: true, checks };
@@ -631,12 +646,12 @@ class AntiAnalysis extends EventEmitter {
 
     // Generate obfuscation ID
     generateObfuscationId() {
-        return `obf_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        return `obf_${Date.now()}_Math.random().toString(36).substr(2, 9)`;
     }
 
     // Generate protection ID
     generateProtectionId() {
-        return `prot_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        return `prot_${Date.now()}_Math.random().toString(36).substr(2, 9)`;
     }
 
     // Get anti-analysis report
@@ -827,7 +842,7 @@ class AntiAnalysis extends EventEmitter {
         try {
             for (const regPath of registryPaths) {
                 try {
-                    const { stdout } = await execAsync(`reg query "${regPath}" 2>nul`);
+                    const { stdout } = await execAsync("reg query `${regPath}` 2>nul");
                     if (stdout && !stdout.includes('ERROR')) {
                         vmRegistryKeys.push(regPath);
                     }
@@ -899,7 +914,7 @@ class AntiAnalysis extends EventEmitter {
             const totalMem = os.totalmem();
             const vmMemorySizes = [1073741824, 2147483648, 4294967296, 8589934592]; // Common VM memory sizes
             if (vmMemorySizes.includes(totalMem)) {
-                indicators.push(`Suspicious memory size: ${Math.round(totalMem / 1024 / 1024 / 1024)}GB`);
+                indicators.push("Suspicious memory size: " + Math.round(totalMem / 1024 / 1024 / 1024) + "GB");
                 isVM = true;
             }
 
@@ -1139,7 +1154,7 @@ class AntiAnalysis extends EventEmitter {
             
             for (const key of sandboxKeys) {
                 try {
-                    const { stdout } = await execAsync(`reg query "${key}"`);
+                    const { stdout } = await execAsync("reg query `${key}`");
                     if (stdout.includes('ERROR') === false) {
                         detected.push(key);
                     }

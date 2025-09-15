@@ -5,17 +5,17 @@ try {
     // Test 1: Basic require
     console.log('1. Testing basic require...');
     const RawrZStandalone = require('./rawrz-standalone.js');
-    console.log('✓ RawrZStandalone loaded');
+    console.log('[INFO] RawrZStandalone loaded');
     
     // Test 2: Create instance
     console.log('2. Testing instance creation...');
     const cli = new RawrZStandalone();
-    console.log('✓ CLI instance created');
+    console.log('[INFO] CLI instance created');
     
     // Test 3: Test redkill patterns directly
     console.log('3. Testing redkill patterns command...');
     const result = await cli.processCommand('redkill', ['patterns']);
-    console.log('✓ Redkill patterns command completed');
+    console.log('[INFO] Redkill patterns command completed');
     console.log('Result:', result);
     
 } catch (error) {

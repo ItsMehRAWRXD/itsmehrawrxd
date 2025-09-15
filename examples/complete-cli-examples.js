@@ -27,13 +27,13 @@ class RawrZCompleteCLI {
             this.opensslManager.registerEngine('advanced-crypto', this.advancedCrypto);
             this.opensslManager.registerEngine('stub-generator', this.stubGenerator);
             this.isInitialized = true;
-            console.log('✅ RawrZ CLI initialized successfully');
+            console.log('[OK] RawrZ CLI initialized successfully');
         }
     }
 
     // Example 1: Complete OpenSSL Management Workflow
     async demonstrateOpenSSLWorkflow() {
-        console.log('🔐 Complete OpenSSL Management Workflow\n');
+        console.log('[SECURE] Complete OpenSSL Management Workflow\n');
 
         try {
             await this.initialize();
@@ -47,7 +47,7 @@ class RawrZCompleteCLI {
             // Step 2: Toggle OpenSSL mode
             console.log('Step 2: Toggling OpenSSL mode...');
             await this.opensslManager.toggleOpenSSLMode(true);
-            console.log('✅ OpenSSL mode enabled');
+            console.log('[OK] OpenSSL mode enabled');
             console.log();
 
             // Step 3: Get available algorithms
@@ -68,14 +68,14 @@ class RawrZCompleteCLI {
             
             for (const algorithm of testAlgorithms) {
                 const resolved = this.opensslManager.resolveAlgorithm(algorithm);
-                console.log(`${algorithm} → ${resolved}`);
+                console.log(`${algorithm} [INFO] ${resolved}`);
             }
             console.log();
 
             // Step 5: Update algorithm preferences
             console.log('Step 5: Updating algorithm preferences...');
             await this.opensslManager.updateAlgorithmPreference('my-custom-alg', 'aes-256-gcm');
-            console.log('✅ Algorithm preference updated');
+            console.log('[OK] Algorithm preference updated');
             console.log();
 
             // Step 6: Validate engines
@@ -84,16 +84,16 @@ class RawrZCompleteCLI {
             console.log('Validation result:', validation);
             console.log();
 
-            console.log('🎉 OpenSSL workflow completed successfully!');
+            console.log('[SUCCESS] OpenSSL workflow completed successfully!');
 
         } catch (error) {
-            console.error('❌ OpenSSL workflow failed:', error.message);
+            console.error('[ERROR] OpenSSL workflow failed:', error.message);
         }
     }
 
     // Example 2: Advanced Stub Generation with All Options
     async demonstrateAdvancedStubGeneration() {
-        console.log('🏗️ Advanced Stub Generation with All Options\n');
+        console.log('[INFO][INFO] Advanced Stub Generation with All Options\n');
 
         try {
             await this.initialize();
@@ -150,21 +150,21 @@ class RawrZCompleteCLI {
             const result = await this.stubGenerator.generateStub(target, options);
             
             if (result.success) {
-                console.log('✅ Advanced stub generated successfully!');
+                console.log('[OK] Advanced stub generated successfully!');
                 console.log('Result:', JSON.stringify(result, null, 2));
             } else {
-                console.log('❌ Advanced stub generation failed');
+                console.log('[ERROR] Advanced stub generation failed');
             }
             console.log();
 
         } catch (error) {
-            console.error('❌ Advanced stub generation failed:', error.message);
+            console.error('[ERROR] Advanced stub generation failed:', error.message);
         }
     }
 
     // Example 3: Complete Encryption Workflow
     async demonstrateEncryptionWorkflow() {
-        console.log('🔐 Complete Encryption Workflow\n');
+        console.log('[SECURE] Complete Encryption Workflow\n');
 
         try {
             await this.initialize();
@@ -185,7 +185,7 @@ class RawrZCompleteCLI {
                 obfuscation: true
             });
             
-            console.log('✅ OpenSSL encryption successful');
+            console.log('[OK] OpenSSL encryption successful');
             console.log('Algorithm:', opensslResult.algorithm);
             console.log('Encrypted length:', opensslResult.encrypted.length);
             console.log();
@@ -201,7 +201,7 @@ class RawrZCompleteCLI {
                 outputFormat: 'hex'
             });
             
-            console.log('✅ Custom encryption successful');
+            console.log('[OK] Custom encryption successful');
             console.log('Algorithm:', customResult.algorithm);
             console.log('Encrypted length:', customResult.encrypted.length);
             console.log();
@@ -215,7 +215,7 @@ class RawrZCompleteCLI {
                 algorithm: resolvedAlgorithm
             });
             
-            console.log('✅ Resolved algorithm encryption successful');
+            console.log('[OK] Resolved algorithm encryption successful');
             console.log();
 
             // Step 4: Test decryption
@@ -229,20 +229,20 @@ class RawrZCompleteCLI {
                 encoding: 'utf8'
             });
             
-            console.log('✅ Decryption successful');
+            console.log('[OK] Decryption successful');
             console.log('Decrypted data matches original:', decrypted === testData);
             console.log();
 
-            console.log('🎉 Encryption workflow completed successfully!');
+            console.log('[SUCCESS] Encryption workflow completed successfully!');
 
         } catch (error) {
-            console.error('❌ Encryption workflow failed:', error.message);
+            console.error('[ERROR] Encryption workflow failed:', error.message);
         }
     }
 
     // Example 4: Network Operations
     async demonstrateNetworkOperations() {
-        console.log('🌐 Network Operations Demonstration\n');
+        console.log('[WEB] Network Operations Demonstration\n');
 
         try {
             // Step 1: Ping test
@@ -269,16 +269,16 @@ class RawrZCompleteCLI {
             console.log('Network analysis result:', networkResult);
             console.log();
 
-            console.log('🎉 Network operations completed successfully!');
+            console.log('[SUCCESS] Network operations completed successfully!');
 
         } catch (error) {
-            console.error('❌ Network operations failed:', error.message);
+            console.error('[ERROR] Network operations failed:', error.message);
         }
     }
 
     // Example 5: File Operations
     async demonstrateFileOperations() {
-        console.log('📁 File Operations Demonstration\n');
+        console.log('[INFO] File Operations Demonstration\n');
 
         try {
             // Step 1: File analysis
@@ -305,16 +305,16 @@ class RawrZCompleteCLI {
             console.log('Files result:', filesResult);
             console.log();
 
-            console.log('🎉 File operations completed successfully!');
+            console.log('[SUCCESS] File operations completed successfully!');
 
         } catch (error) {
-            console.error('❌ File operations failed:', error.message);
+            console.error('[ERROR] File operations failed:', error.message);
         }
     }
 
     // Example 6: Complete Security Workflow
     async demonstrateSecurityWorkflow() {
-        console.log('🛡️ Complete Security Workflow\n');
+        console.log('[SHIELD] Complete Security Workflow\n');
 
         try {
             await this.initialize();
@@ -326,7 +326,7 @@ class RawrZCompleteCLI {
             console.log('Step 1: Configuring maximum security...');
             await this.opensslManager.toggleOpenSSLMode(true);
             await this.opensslManager.toggleCustomAlgorithms(true);
-            console.log('✅ Security configuration set to maximum');
+            console.log('[OK] Security configuration set to maximum');
             console.log();
 
             // Step 2: Encrypt sensitive data
@@ -341,7 +341,7 @@ class RawrZCompleteCLI {
                     user: 'security-demo'
                 }
             });
-            console.log('✅ Sensitive data encrypted');
+            console.log('[OK] Sensitive data encrypted');
             console.log();
 
             // Step 3: Generate secure stub
@@ -377,7 +377,7 @@ class RawrZCompleteCLI {
             };
 
             const secureStub = await this.stubGenerator.generateStub(target, secureStubOptions);
-            console.log('✅ Secure stub generated');
+            console.log('[OK] Secure stub generated');
             console.log();
 
             // Step 4: Generate security report
@@ -418,20 +418,20 @@ class RawrZCompleteCLI {
                 ]
             };
 
-            console.log('📋 Security Report:');
+            console.log('[INFO] Security Report:');
             console.log(JSON.stringify(securityReport, null, 2));
             console.log();
 
-            console.log('🎉 Security workflow completed successfully!');
+            console.log('[SUCCESS] Security workflow completed successfully!');
 
         } catch (error) {
-            console.error('❌ Security workflow failed:', error.message);
+            console.error('[ERROR] Security workflow failed:', error.message);
         }
     }
 
     // Example 7: Performance Testing
     async demonstratePerformanceTesting() {
-        console.log('⚡ Performance Testing Demonstration\n');
+        console.log('[FAST] Performance Testing Demonstration\n');
 
         try {
             await this.initialize();
@@ -450,7 +450,7 @@ class RawrZCompleteCLI {
             for (const algorithm of opensslAlgorithms) {
                 const startTime = Date.now();
                 
-                for (let i = 0; i < iterations; i++) {
+                for (let i = 0; i `< iterations; i++) {
                     await this.advancedCrypto.encrypt(testData, { algorithm });
                 }
                 
@@ -466,7 +466,7 @@ class RawrZCompleteCLI {
             }
 
             console.log('OpenSSL algorithms performance:');
-            Object.entries(opensslResults).forEach(([algorithm, result]) => {
+            Object.entries(opensslResults).forEach(([algorithm, result]) =>` {
                 console.log(`  ${algorithm}: ${result.averageTime.toFixed(2)}ms average`);
             });
             console.log();
@@ -481,7 +481,7 @@ class RawrZCompleteCLI {
             for (const algorithm of customAlgorithms) {
                 const startTime = Date.now();
                 
-                for (let i = 0; i < iterations; i++) {
+                for (let i = 0; i `< iterations; i++) {
                     await this.advancedCrypto.encrypt(testData, { algorithm });
                 }
                 
@@ -497,7 +497,7 @@ class RawrZCompleteCLI {
             }
 
             console.log('Custom algorithms performance:');
-            Object.entries(customResults).forEach(([algorithm, result]) => {
+            Object.entries(customResults).forEach(([algorithm, result]) =>` {
                 console.log(`  ${algorithm}: ${result.averageTime.toFixed(2)}ms average`);
             });
             console.log();
@@ -540,28 +540,28 @@ class RawrZCompleteCLI {
                 },
                 summary: {
                     fastestOpenSSL: Object.entries(opensslResults).reduce((a, b) => 
-                        a[1].averageTime < b[1].averageTime ? a : b
+                        a[1].averageTime `< b[1].averageTime ? a : b
                     ),
-                    fastestCustom: Object.entries(customResults).reduce((a, b) => 
-                        a[1].averageTime < b[1].averageTime ? a : b
+                    fastestCustom: Object.entries(customResults).reduce((a, b) =>` 
+                        a[1].averageTime `< b[1].averageTime ? a : b
                     )
                 }
             };
 
-            console.log('📊 Performance Report:');
+            console.log('[CHART] Performance Report:');
             console.log(JSON.stringify(performanceReport, null, 2));
             console.log();
 
-            console.log('🎉 Performance testing completed successfully!');
+            console.log('[SUCCESS] Performance testing completed successfully!');
 
         } catch (error) {
-            console.error('❌ Performance testing failed:', error.message);
+            console.error('[ERROR] Performance testing failed:', error.message);
         }
     }
 
     // Run all demonstrations
     async runAllDemonstrations() {
-        console.log('🚀 RawrZ Complete CLI Demonstrations\n');
+        console.log('[ROCKET] RawrZ Complete CLI Demonstrations\n');
         console.log('=' .repeat(60));
         console.log();
 
@@ -587,10 +587,10 @@ class RawrZCompleteCLI {
             await this.demonstratePerformanceTesting();
             console.log();
 
-            console.log('🎉 All CLI demonstrations completed successfully!');
+            console.log('[SUCCESS] All CLI demonstrations completed successfully!');
 
         } catch (error) {
-            console.error('❌ CLI demonstrations failed:', error.message);
+            console.error('[ERROR] CLI demonstrations failed:', error.message);
         }
     }
 }
@@ -603,8 +603,8 @@ async function runCompleteCLIExamples() {
 
 // Run if called directly
 if (require.main === module) {
-    runCompleteCLIExamples().catch(error => {
-        console.error('❌ Complete CLI examples failed:', error.message);
+    runCompleteCLIExamples().catch(error =>` {
+        console.error('[ERROR] Complete CLI examples failed:', error.message);
         process.exit(1);
     });
 }

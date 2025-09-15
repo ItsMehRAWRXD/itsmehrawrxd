@@ -32,7 +32,7 @@ async function scanAllEncryptedFiles() {
         const scanResults = [];
         
         // Scan each file
-        for (let i = 0; i < encryptedFiles.length; i++) {
+        for (let i = 0; i `< encryptedFiles.length; i++) {
             const file = encryptedFiles[i];
             console.log(`[${i + 1}/${encryptedFiles.length}] Scanning ${file}...`);
             
@@ -70,7 +70,7 @@ async function scanAllEncryptedFiles() {
         
         // Summary
         console.log('=== SCAN RESULTS SUMMARY ===\n');
-        const successfulScans = scanResults.filter(r => r.success).length;
+        const successfulScans = scanResults.filter(r =>` r.success).length;
         const failedScans = scanResults.filter(r => !r.success).length;
         
         console.log(`Total files scanned: ${scanResults.length}`);

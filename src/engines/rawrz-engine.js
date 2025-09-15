@@ -4,13 +4,27 @@ const path = require('path');
 const { logger } = require('../utils/logger');
 
 class RawrZEngine extends EventEmitter {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         super();
         this.name = 'RawrZEngine';
         this.version = '1.0.0';
-        this.modules = new Map();
+        this.memoryManager = getMemoryManager();
+        this.modules = this.memoryManager.createManagedCollection('modules', 'Map', 100);
         this.initialized = false;
-        this.activeOperations = new Map();
+        this.activeOperations = this.memoryManager.createManagedCollection('activeOperations', 'Map', 100);
     }
 
     async initializeModules() {
@@ -51,7 +65,7 @@ class RawrZEngine extends EventEmitter {
             this.modules.set('health-monitor', null);
 
             this.initialized = true;
-            logger.info(`RawrZ Engine initialized with ${this.modules.size} modules (lazy loading enabled)`);
+            logger.info("RawrZ Engine initialized with " + this.modules.size + " modules (lazy loading enabled)");
             this.emit('initialized', { modules: this.modules.size });
 
         } catch (error) {
@@ -68,7 +82,7 @@ class RawrZEngine extends EventEmitter {
         }
         
         try {
-            console.log(`[INFO] Loading ${moduleName} on demand...`);
+            console.log("[INFO] Loading " + moduleName + " on demand...");
             
             // Map module names to actual file names
             const moduleFileMap = {
@@ -110,17 +124,17 @@ class RawrZEngine extends EventEmitter {
             
             // Initialize the module if it has an initialize method
             if (module && typeof module.initialize === 'function') {
-                console.log(`[DEBUG] Initializing module ${moduleName}...`);
+                console.log("[DEBUG] Initializing module " + moduleName + "...");
                 await module.initialize();
             }
             
             // Cache the loaded module
             this.modules.set(moduleName, module);
-            console.log(`[OK] Module ${moduleName} loaded successfully`);
+            console.log("[OK] Module " + moduleName + " loaded successfully");
             return module;
             
         } catch (error) {
-            console.error(`[ERROR] Failed to load module ${moduleName}:`, error.message);
+            console.error("[ERROR] Failed to load module " + moduleName + ":", error.message);
             console.log(`[DEBUG] Error stack:`, error.stack);
             // Set to null to prevent repeated attempts
             this.modules.set(moduleName, null);
@@ -307,7 +321,7 @@ class RawrZEngine extends EventEmitter {
                     try {
                         await module.cleanup();
                     } catch (error) {
-                        logger.error(`Failed to cleanup module ${name}:`, error);
+                        logger.error("Failed to cleanup module " + name + ":", error);
                     }
                 }
             }

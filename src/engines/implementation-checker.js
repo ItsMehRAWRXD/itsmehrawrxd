@@ -6,13 +6,27 @@ const crypto = require('crypto');
 const { logger } = require('../utils/logger');
 
 class ImplementationChecker extends EventEmitter {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         super();
         this.name = 'ImplementationChecker';
         this.version = '1.0.0';
-        this.checks = new Map();
-        this.healthStatus = new Map();
-        this.moduleRegistry = new Map();
+        this.memoryManager = getMemoryManager();
+        this.checks = this.memoryManager.createManagedCollection('checks', 'Map', 100);
+        this.healthStatus = this.memoryManager.createManagedCollection('healthStatus', 'Map', 100);
+        this.moduleRegistry = this.memoryManager.createManagedCollection('moduleRegistry', 'Map', 100);
         this.checkHistory = [];
         this.autoUpdateInterval = null;
         this.checkInterval = 30000; // 30 seconds
@@ -200,7 +214,7 @@ class ImplementationChecker extends EventEmitter {
                 }
             }
             
-            logger.info(`Loaded ${this.moduleRegistry.size} modules into registry`);
+            logger.info("Loaded " + this.moduleRegistry.size + " modules into registry");
             return { success: true, modules: this.moduleRegistry.size };
         } catch (error) {
             logger.error('Failed to load module registry:', error);
@@ -304,7 +318,7 @@ class ImplementationChecker extends EventEmitter {
             
             if (!moduleInfo || !moduleInfo.loaded) {
                 moduleCheck.status = 'failed';
-                moduleCheck.errors.push(`Module ${moduleName} not loaded`);
+                moduleCheck.errors.push("Module " + moduleName + " not loaded");
                 return moduleCheck;
             }
 
@@ -334,11 +348,11 @@ class ImplementationChecker extends EventEmitter {
                 moduleCheck.methods[methodName] = methodCheck;
                 
                 if (!methodCheck.exists) {
-                    moduleCheck.errors.push(`Required method ${methodName} not found`);
+                    moduleCheck.errors.push("Required method " + methodName + " not found");
                 } else if (!methodCheck.callable) {
-                    moduleCheck.errors.push(`Method ${methodName} is not callable`);
+                    moduleCheck.errors.push("Method " + methodName + " is not callable");
                 } else if (methodCheck.error) {
-                    moduleCheck.warnings.push(`Method ${methodName} error: ${methodCheck.error}`);
+                    moduleCheck.warnings.push(`Method ${methodName} error: methodCheck.error`);
                 }
             }
 
@@ -349,9 +363,9 @@ class ImplementationChecker extends EventEmitter {
                 moduleCheck.properties[propName] = propCheck;
                 
                 if (!propCheck.exists) {
-                    moduleCheck.errors.push(`Required property ${propName} not found`);
+                    moduleCheck.errors.push("Required property " + propName + " not found");
                 } else if (propCheck.empty) {
-                    moduleCheck.warnings.push(`Property ${propName} is empty`);
+                    moduleCheck.warnings.push("Property " + propName + " is empty");
                 }
             }
 
@@ -431,10 +445,10 @@ class ImplementationChecker extends EventEmitter {
                 
                 if (Array.isArray(instance[propName])) {
                     propCheck.empty = instance[propName].length === 0;
-                    propCheck.value = `Array(${instance[propName].length})`;
+                    propCheck.value = "Array(" + instance[propName].length + ")";
                 } else if (typeof instance[propName] === 'object' && instance[propName] !== null) {
                     propCheck.empty = Object.keys(instance[propName]).length === 0;
-                    propCheck.value = `Object(${Object.keys(instance[propName]).length} keys)`;
+                    propCheck.value = "Object(" + Object.keys(instance[propName]).length + " keys)";
                 } else {
                     propCheck.empty = !instance[propName];
                     propCheck.value = String(instance[propName]).substring(0, 100);
@@ -531,7 +545,7 @@ class ImplementationChecker extends EventEmitter {
         if (failedModules.length > 0) {
             recommendations.push({
                 type: 'critical',
-                message: `Critical: ${failedModules.length} modules failed implementation check`,
+                message: "Critical: " + failedModules.length + " modules failed implementation check",
                 modules: failedModules,
                 action: 'Fix failed modules immediately'
             });
@@ -545,7 +559,7 @@ class ImplementationChecker extends EventEmitter {
         if (warningModules.length > 0) {
             recommendations.push({
                 type: 'warning',
-                message: `Warning: ${warningModules.length} modules have implementation warnings`,
+                message: "Warning: " + warningModules.length + " modules have implementation warnings",
                 modules: warningModules,
                 action: 'Review and fix warnings'
             });
@@ -559,7 +573,7 @@ class ImplementationChecker extends EventEmitter {
         if (missingModules.length > 0) {
             recommendations.push({
                 type: 'info',
-                message: `Info: ${missingModules.length} expected modules not found`,
+                message: "Info: " + missingModules.length + " expected modules not found",
                 modules: missingModules,
                 action: 'Implement missing modules or update expectations'
             });
@@ -598,7 +612,7 @@ class ImplementationChecker extends EventEmitter {
             }
         }, this.checkInterval);
 
-        logger.info(`Auto-update started with ${this.checkInterval}ms interval`);
+        logger.info("Auto-update started with " + this.checkInterval + "ms interval");
     }
 
     // Update module registry
@@ -622,7 +636,7 @@ class ImplementationChecker extends EventEmitter {
                         });
                         logger.info(`New module discovered: ${moduleName}`);
                     } catch (error) {
-                        logger.warn(`Failed to load new module ${moduleName}:`, error.message);
+                        logger.warn("Failed to load new module " + moduleName + ":", error.message);
                     }
                 }
             }
@@ -744,7 +758,7 @@ class ImplementationChecker extends EventEmitter {
         if (this.autoUpdateInterval) {
             this.startAutoUpdate();
         }
-        logger.info(`Check interval updated to ${newInterval}ms`);
+        logger.info("Check interval updated to " + newInterval + "ms");
     }
 
     // Cleanup and shutdown

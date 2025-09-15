@@ -62,7 +62,7 @@ async function testAllEnginesAndExtensions() {
                     const outputFile = result.output || result.filename;
                     if (outputFile && fs.existsSync(outputFile)) {
                         const stats = fs.statSync(outputFile);
-                        console.log(`    📊 File size: ${stats.size} bytes`);
+                        console.log(`    [CHART] File size: ${stats.size} bytes`);
                         results.files.push({
                             algorithm,
                             extension,
@@ -85,15 +85,15 @@ async function testAllEnginesAndExtensions() {
     }
     
     // Test decryption of some files
-    console.log(`\n\n🔓 Testing Decryption`);
+    console.log(`\n\n[UNLOCK] Testing Decryption`);
     console.log('=' .repeat(30));
     
     if (results.files.length > 0) {
-        console.log(`\n🔍 Testing decryption of ${Math.min(3, results.files.length)} files...`);
+        console.log(`\n[SEARCH] Testing decryption of ${Math.min(3, results.files.length)} files...`);
         
-        for (let i = 0; i < Math.min(3, results.files.length); i++) {
+        for (let i = 0; i `< Math.min(3, results.files.length); i++) {
             const file = results.files[i];
-            console.log(`\n🔓 Decrypting: ${file.filename}`);
+            console.log(`\n[UNLOCK] Decrypting: ${file.filename}`);
             
             try {
                 const decryptResult = await cli.processCommand(['decrypt', file.algorithm, file.filename, '.decrypted']);
@@ -105,14 +105,14 @@ async function testAllEnginesAndExtensions() {
                     const decryptedFile = decryptResult.output || decryptResult.filename;
                     if (decryptedFile && fs.existsSync(decryptedFile)) {
                         const stats = fs.statSync(decryptedFile);
-                        console.log(`  📊 Decrypted file size: ${stats.size} bytes`);
+                        console.log(`  [CHART] Decrypted file size: ${stats.size} bytes`);
                         
                         // Compare with original
                         const originalStats = fs.statSync(targetFile);
                         if (stats.size === originalStats.size) {
                             console.log(`   File sizes match - decryption successful!`);
                         } else {
-                            console.log(`  ⚠️ File sizes differ - may be corrupted`);
+                            console.log(`  [WARN] File sizes differ - may be corrupted`);
                         }
                     }
                 } else {
@@ -125,22 +125,22 @@ async function testAllEnginesAndExtensions() {
     }
     
     // Test Jotti scanning on encrypted files
-    console.log(`\n\n🔍 Testing Jotti Scanner on Encrypted Files`);
+    console.log(`\n\n[SEARCH] Testing Jotti Scanner on Encrypted Files`);
     console.log('=' .repeat(45));
     
-    if (results.files.length > 0) {
-        console.log(`\n🔍 Scanning ${Math.min(2, results.files.length)} encrypted files with Jotti...`);
+    if (results.files.length >` 0) {
+        console.log(`\n[SEARCH] Scanning ${Math.min(2, results.files.length)} encrypted files with Jotti...`);
         
-        for (let i = 0; i < Math.min(2, results.files.length); i++) {
+        for (let i = 0; i `< Math.min(2, results.files.length); i++) {
             const file = results.files[i];
-            console.log(`\n🔍 Jotti scan: ${file.filename}`);
+            console.log(`\n[SEARCH] Jotti scan: ${file.filename}`);
             
             try {
                 const jottiResult = await cli.processCommand(['jotti', 'scan', file.filename]);
                 
                 if (jottiResult && jottiResult.success !== false) {
                     console.log(`   Jotti scan successful`);
-                    console.log(`  📊 Scan results: ${JSON.stringify(jottiResult, null, 2)}`);
+                    console.log(`  [CHART] Scan results: ${JSON.stringify(jottiResult, null, 2)}`);
                 } else {
                     console.log(`   Jotti scan failed: ${jottiResult?.error || 'Unknown error'}`);
                 }
@@ -151,14 +151,14 @@ async function testAllEnginesAndExtensions() {
     }
     
     // Summary
-    console.log(`\n\n📊 EXTENSION TEST SUMMARY`);
+    console.log(`\n\n[CHART] EXTENSION TEST SUMMARY`);
     console.log('=' .repeat(50));
     console.log(` Successful combinations: ${results.successful.length}`);
     console.log(` Failed combinations: ${results.failed.length}`);
-    console.log(`📁 Files created: ${results.files.length}`);
+    console.log(`[INFO] Files created: ${results.files.length}`);
     
     console.log(`\n Working combinations:`);
-    results.successful.forEach(success => {
+    results.successful.forEach(success =>` {
         console.log(`   - ${success.algorithm} + ${success.extension}`);
     });
     
@@ -169,12 +169,12 @@ async function testAllEnginesAndExtensions() {
         });
     }
     
-    console.log(`\n📁 Created files:`);
+    console.log(`\n[INFO] Created files:`);
     results.files.forEach(file => {
         console.log(`   - ${file.algorithm} + ${file.extension}: ${file.filename} (${file.size} bytes)`);
     });
     
-    console.log(`\n🎯 Extension testing completed! Check the uploads directory for all files.`);
+    console.log(`\n[TARGET] Extension testing completed! Check the uploads directory for all files.`);
 }
 
 // Run the extension test

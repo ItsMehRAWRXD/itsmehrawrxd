@@ -4,13 +4,26 @@ const path = require('path');
 const { spawn, exec } = require('child_process');
 
 class EVCertEncryptor {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         this.name = 'RawrZ EV Certificate Encryptor';
         this.version = '1.0.0';
         this.initialized = false;
-        this.certificates = new Map();
-        this.encryptedStubs = new Map();
-        this.trustedCAs = new Map();
+        this.certificates = this.memoryManager.createManagedCollection('certificates', 'Map', 100);
+        this.encryptedStubs = this.memoryManager.createManagedCollection('encryptedStubs', 'Map', 100);
+        this.trustedCAs = this.memoryManager.createManagedCollection('trustedCAs', 'Map', 100);
         
         // EV Certificate Templates
         this.evCertTemplates = {
@@ -179,7 +192,7 @@ class EVCertEncryptor {
 
     async initialize() {
         try {
-            console.log(`[EV Cert Encryptor] Initializing ${this.name} v${this.version}...`);
+            console.log("[EV Cert Encryptor] Initializing ${this.name} v" + this.version + "...");
             
             // Initialize certificate generation
             await this.initializeCertificateGeneration();
@@ -194,7 +207,7 @@ class EVCertEncryptor {
             await this.loadTrustedCAs();
             
             this.initialized = true;
-            console.log(`[EV Cert Encryptor] ${this.name} v${this.version} initialized successfully`);
+            console.log("[EV Cert Encryptor] ${this.name} v" + this.version + " initialized successfully");
             return true;
         } catch (error) {
             console.error(`[EV Cert Encryptor] Initialization failed:`, error);
@@ -241,12 +254,12 @@ class EVCertEncryptor {
 
     // Generate EV Certificate
     async generateEVCertificate(templateName = 'Microsoft Corporation', customOptions = {}) {
-        console.log(`[EV Cert Encryptor] Generating EV certificate using ${templateName} template...`);
+        console.log("[EV Cert Encryptor] Generating EV certificate using " + templateName + " template...");
         
         try {
             const template = this.evCertTemplates[templateName];
             if (!template) {
-                throw new Error(`Template ${templateName} not found`);
+                throw new Error("Template " + templateName + " not found");
             }
 
             // Generate key pair
@@ -317,23 +330,23 @@ class EVCertEncryptor {
         const footer = '-----END CERTIFICATE-----';
         const body = Buffer.from(JSON.stringify(certData)).toString('base64');
         
-        return `${header}\n${body}\n${footer}`;
+        return `${header}\n${body}\nfooter`;
     }
 
     // Encrypt Stub with EV Certificate
     async encryptStubWithEVCert(stubCode, language, certId, options = {}) {
-        console.log(`[EV Cert Encryptor] Encrypting ${language} stub with EV certificate ${certId}...`);
+        console.log("[EV Cert Encryptor] Encrypting ${language} stub with EV certificate " + certId + "...");
         
         try {
             const certificate = this.certificates.get(certId);
             if (!certificate) {
-                throw new Error(`Certificate ${certId} not found`);
+                throw new Error("Certificate " + certId + " not found");
             }
 
             // Get stub template
             const template = this.stubTemplates[language];
             if (!template) {
-                throw new Error(`Language ${language} not supported`);
+                throw new Error("Language " + language + " not supported");
             }
 
             // Encrypt the stub code
@@ -551,12 +564,12 @@ namespace RawrZStub
     }
 
     getCppStubTemplate() {
-        return `#include <iostream>
-#include <string>
-#include <vector>
-#include <windows.h>
-#include <wincrypt.h>
-#include <bcrypt.h>
+        return `#include <iostream>`
+#include <string>`
+#include <vector>`
+#include <windows.h>`
+#include <wincrypt.h>`
+#include <bcrypt.h>`
 
 #pragma comment(lib, "crypt32.lib")
 #pragma comment(lib, "bcrypt.lib")

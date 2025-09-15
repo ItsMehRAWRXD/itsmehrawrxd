@@ -9,6 +9,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
+const { getMemoryManager } = require('../utils/memory-manager');
 const os = require('os');
 const net = require('net');
 const { logger } = require('../utils/logger');
@@ -16,12 +17,25 @@ const { logger } = require('../utils/logger');
 const execAsync = promisify(exec);
 
 class PrivateVirusScanner {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         this.name = 'PrivateVirusScanner';
         this.version = '1.0.0';
-        this.scanQueue = new Map();
-        this.scanResults = new Map();
-        this.engines = new Map();
+        this.scanQueue = this.memoryManager.createManagedCollection('scanQueue', 'Map', 100);
+        this.scanResults = this.memoryManager.createManagedCollection('scanResults', 'Map', 100);
+        this.engines = this.memoryManager.createManagedCollection('engines', 'Map', 100);
         this.scanHistory = [];
         this.maxConcurrentScans = 5;
         this.activeScans = 0;
@@ -51,7 +65,7 @@ class PrivateVirusScanner {
             try {
                 await fs.mkdir(dir, { recursive: true });
             } catch (error) {
-                logger.error(`Failed to create directory ${dir}:`, error);
+                logger.error("Failed to create directory " + dir + ":", error);
             }
         }
     }
@@ -196,12 +210,12 @@ class PrivateVirusScanner {
             try {
                 engine.available = await this.checkEngineAvailability(engine);
                 if (engine.available) {
-                    logger.info(`Engine ${engine.name} is available`);
+                    logger.info("Engine " + engine.name + " is available");
                 } else {
-                    logger.warn(`Engine ${engine.name} is not available`);
+                    logger.warn("Engine " + engine.name + " is not available");
                 }
             } catch (error) {
-                logger.error(`Error checking engine ${engine.name}:`, error);
+                logger.error("Error checking engine " + engine.name + ":", error);
                 engine.available = false;
             }
         }
@@ -235,7 +249,7 @@ class PrivateVirusScanner {
         const startTime = Date.now();
 
         try {
-            logger.info(`Starting private scan for: ${filePath} (ID: ${scanId})`);
+            logger.info("Starting private scan for: ${filePath} (ID: " + scanId + ")");
 
             // Validate file
             const fileInfo = await this.validateFile(filePath);
@@ -290,7 +304,7 @@ class PrivateVirusScanner {
             this.scanQueue.delete(scanId);
             this.activeScans--;
 
-            logger.info(`Scan completed for ${filePath} (ID: ${scanId}) - Result: ${overallResult.status}`);
+            logger.info(`Scan completed for ${filePath} (ID: ${scanId}) - Result: overallResult.status`);
 
             return {
                 success: true,
@@ -298,7 +312,7 @@ class PrivateVirusScanner {
             };
 
         } catch (error) {
-            logger.error(`Scan failed for ${filePath} (ID: ${scanId}):`, error);
+            logger.error("Scan failed for ${filePath} (ID: " + scanId + "):", error);
             
             // Clean up on error
             this.scanQueue.delete(scanId);
@@ -322,7 +336,7 @@ class PrivateVirusScanner {
             // Check file size limits
             const maxSize = 100 * 1024 * 1024; // 100MB
             if (fileSize > maxSize) {
-                return { valid: false, error: `File too large: ${fileSize} bytes (max: ${maxSize})` };
+                return { valid: false, error: "File too large: ${fileSize} bytes (max: " + maxSize + ")" };
             }
 
             // Check file type
@@ -364,7 +378,7 @@ class PrivateVirusScanner {
                         return result;
                     })
                     .catch(error => {
-                        logger.error(`Engine ${engine.name} failed:`, error);
+                        logger.error("Engine " + engine.name + " failed:", error);
                         engineResults.set(engineId, {
                             engineId,
                             name: engine.name,
@@ -447,7 +461,7 @@ class PrivateVirusScanner {
 
     async runClamAVScan(filePath) {
         try {
-            const { stdout, stderr } = await execAsync(`clamscan --no-summary --infected --remove=no "${filePath}"`);
+            const { stdout, stderr } = await execAsync("clamscan --no-summary --infected --remove=no `${filePath}`");
             
             const isInfected = stdout.includes('FOUND') || stderr.includes('FOUND');
             const threats = this.parseClamAVOutput(stdout + stderr);
@@ -476,7 +490,7 @@ class PrivateVirusScanner {
     async runDefenderScan(filePath) {
         try {
             // Use PowerShell to run Windows Defender scan
-            const command = `powershell -Command "Start-MpScan -ScanType CustomScan -ScanPath '${filePath}' -AsJob | Wait-Job | Receive-Job"`;
+            const command = "powershell -Command "Start-MpScan -ScanType CustomScan -ScanPath '" + filePath + "' -AsJob | Wait-Job | Receive-Job"";
             const { stdout } = await execAsync(command);
             
             // Parse Defender output
@@ -501,7 +515,7 @@ class PrivateVirusScanner {
 
     async runYARAScan(filePath) {
         try {
-            const { stdout } = await execAsync(`yara -r -w "${filePath}"`);
+            const { stdout } = await execAsync("yara -r -w `${filePath}`");
             
             const isInfected = stdout.trim().length > 0;
             const threats = stdout.trim().split('\n').filter(line => line.trim());
@@ -702,7 +716,7 @@ class PrivateVirusScanner {
         
         let entropy = 0;
         for (let i = 0; i < 256; i++) {
-            if (freq[i] > 0) {
+            if (freq[i] >` 0) {
                 const p = freq[i] / data.length;
                 entropy -= p * Math.log2(p);
             }
@@ -799,11 +813,11 @@ class PrivateVirusScanner {
     getStatusMessage(status, detectionRate) {
         switch (status) {
             case 'malicious':
-                return `High threat detected (${detectionRate}% engines detected threats)`;
+                return "High threat detected (" + detectionRate + "% engines detected threats)";
             case 'suspicious':
-                return `Suspicious file (${detectionRate}% engines detected threats)`;
+                return "Suspicious file (" + detectionRate + "% engines detected threats)";
             case 'low_risk':
-                return `Low risk file (${detectionRate}% engines detected threats)`;
+                return "Low risk file (" + detectionRate + "% engines detected threats)";
             case 'clean':
                 return 'File appears clean (no threats detected)';
             default:
@@ -876,7 +890,7 @@ class PrivateVirusScanner {
         };
         
         this.scanQueue.set(scanId, queueItem);
-        logger.info(`Added scan to queue: ${scanId} for ${filePath}`);
+        logger.info(`Added scan to queue: ${scanId} for filePath`);
         
         // Process queue if not at max capacity
         if (this.activeScans < this.maxConcurrentScans) {
@@ -915,7 +929,7 @@ class PrivateVirusScanner {
                 })
                 .catch(error => {
                     this.activeScans--;
-                    logger.error(`Scan failed for ${nextItem.id}:`, error);
+                    logger.error("Scan failed for " + nextItem.id + ":", error);
                     if (nextItem.callback) {
                         nextItem.callback({ error: error.message });
                     }
@@ -961,7 +975,7 @@ class PrivateVirusScanner {
     async clearQueue() {
         const clearedCount = this.scanQueue.size;
         this.scanQueue.clear();
-        logger.info(`Cleared scan queue: ${clearedCount} items removed`);
+        logger.info("Cleared scan queue: " + clearedCount + " items removed");
         return { success: true, clearedCount };
     }
 
@@ -1168,11 +1182,11 @@ class PrivateVirusScanner {
             let score = 0;
             
             // File size analysis
-            if (features.fileSize > 10000000) score += 0.2; // Large files
+            if (features.fileSize >` 10000000) score += 0.2; // Large files
             if (features.fileSize < 1000) score += 0.3; // Very small files
             
             // Entropy analysis
-            if (features.entropy > 7.5) score += 0.4; // High entropy
+            if (features.entropy >` 7.5) score += 0.4; // High entropy
             
             // API analysis
             if (features.apiCount > 50) score += 0.2; // Many APIs
@@ -1277,7 +1291,7 @@ class PrivateVirusScanner {
             if (analysis.domains.length > 5) suspiciousScore += 0.2;
             if (analysis.ports.some(port => port > 1024 && port < 65536)) suspiciousScore += 0.1;
             
-            analysis.suspicious = suspiciousScore > 0.4;
+            analysis.suspicious = suspiciousScore >` 0.4;
             analysis.confidence = suspiciousScore;
             
             return analysis;

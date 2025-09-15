@@ -4,6 +4,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
+const { getMemoryManager } = require('../utils/memory-manager');
 const os = require('os');
 const { logger } = require('../utils/logger');
 
@@ -23,8 +24,21 @@ try {
 const execAsync = promisify(exec);
 
 class HotPatchers {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
-        this.patches = new Map();
+        this.patches = this.memoryManager.createManagedCollection('patches', 'Map', 100);
         this.patchTypes = {
             'memory': {
                 name: 'Memory Patch',
@@ -59,7 +73,7 @@ class HotPatchers {
         };
         
         this.patchHistory = [];
-        this.activePatches = new Map();
+        this.activePatches = this.memoryManager.createManagedCollection('activePatches', 'Map', 100);
     }
 
     async initialize(config) {
@@ -83,7 +97,7 @@ class HotPatchers {
                 validate = true
             } = patch;
 
-            logger.info(`Applying patch: ${type} to ${target}`, { patchId, operation });
+            logger.info(`Applying patch: ${type} to target`, { patchId, operation });
 
             // Validate patch type
             if (!this.patchTypes[type]) {
@@ -334,18 +348,18 @@ class HotPatchers {
     // Linux memory patching using /proc/[pid]/mem
     async applyLinuxMemoryPatch(pid, operation, data, offset, size) {
         try {
-            const memPath = `/proc/${pid}/mem`;
+            const memPath = "/proc/" + pid + "/mem";
             
             // Check if process exists and we have access
-            const statPath = `/proc/${pid}/stat`;
+            const statPath = "/proc/" + pid + "/stat";
             try {
                 await fs.access(statPath);
             } catch (error) {
-                throw new Error(`Process ${pid} not accessible`);
+                throw new Error("Process " + pid + " not accessible");
             }
 
             // Read original memory using dd command
-            const readCmd = `dd if=${memPath} bs=1 skip=${offset} count=${size || data.length} 2>/dev/null`;
+            const readCmd = "dd if=${memPath} bs=1 skip=${offset} count=" + size || data.length + " 2>`/dev/null";
             const { stdout: originalDataHex } = await execAsync(readCmd);
             const originalData = Buffer.from(originalDataHex.trim(), 'hex');
 
@@ -372,10 +386,10 @@ class HotPatchers {
             }
 
             // Write patched memory using dd command
-            const tempFile = `/tmp/rawrz_patch_${Date.now()}.bin`;
+            const tempFile = "/tmp/rawrz_patch_" + Date.now() + ".bin";
             await fs.writeFile(tempFile, patchedData);
             
-            const writeCmd = `dd if=${tempFile} of=${memPath} bs=1 seek=${offset} 2>/dev/null`;
+            const writeCmd = "dd if=${tempFile} of=${memPath} bs=1 seek=" + offset + " 2>`/dev/null";
             await execAsync(writeCmd);
             
             // Cleanup
@@ -402,11 +416,11 @@ class HotPatchers {
     async applyMacOSMemoryPatch(pid, operation, data, offset, size) {
         try {
             // Use ptrace to attach to process
-            const attachCmd = `sudo ptrace -p ${pid} -e`;
+            const attachCmd = "sudo ptrace -p " + pid + " -e";
             await execAsync(attachCmd);
 
             // Read memory using ptrace
-            const readCmd = `sudo ptrace -p ${pid} -r ${offset} -s ${size || data.length}`;
+            const readCmd = `sudo ptrace -p ${pid} -r ${offset} -s size || data.length`;
             const { stdout: originalDataHex } = await execAsync(readCmd);
             const originalData = Buffer.from(originalDataHex.trim(), 'hex');
 
@@ -433,11 +447,11 @@ class HotPatchers {
             }
 
             // Write memory using ptrace
-            const writeCmd = `sudo ptrace -p ${pid} -w ${offset} -d ${patchedData.toString('hex')}`;
+            const writeCmd = `sudo ptrace -p ${pid} -w ${offset} -d patchedData.toString('hex')`;
             await execAsync(writeCmd);
 
             // Detach from process
-            const detachCmd = `sudo ptrace -p ${pid} -d`;
+            const detachCmd = "sudo ptrace -p " + pid + " -d";
             await execAsync(detachCmd);
 
             return {
@@ -468,7 +482,7 @@ class HotPatchers {
             // Use system tools to read/write process memory
             if (os.platform() === 'win32') {
                 // Use PowerShell for Windows
-                const readCmd = `powershell -Command "Get-Process -Id ${pid} | Select-Object -ExpandProperty WorkingSet"`;
+                const readCmd = "powershell -Command "Get-Process -Id " + pid + " | Select-Object -ExpandProperty WorkingSet"";
                 const { stdout } = await execAsync(readCmd);
                 
                 // Real memory read/write implementation
@@ -488,7 +502,7 @@ class HotPatchers {
                 };
             } else {
                 // Use gdb for Unix systems
-                const readCmd = `gdb -batch -ex "attach ${pid}" -ex "x/${size || data.length}b ${offset}" -ex "detach" -ex "quit" 2>/dev/null`;
+                const readCmd = "gdb -batch -ex "attach ${pid}" -ex `x/${size || data.length}b offset` -ex "detach" -ex "quit" 2>`/dev/null";
                 const { stdout } = await execAsync(readCmd);
                 
                 // Parse gdb output and apply patch
@@ -540,14 +554,14 @@ class HotPatchers {
             } else {
                 // Fallback using system commands
                 if (os.platform() === 'win32') {
-                    const { stdout } = await execAsync(`tasklist /FI "IMAGENAME eq ${target}" /FO CSV | findstr /V "INFO:"`);
+                    const { stdout } = await execAsync("tasklist /FI `IMAGENAME eq ${target}` /FO CSV | findstr /V "INFO:"");
                     const lines = stdout.trim().split('\n');
                     if (lines.length > 0 && lines[0].includes(',')) {
                         const pid = lines[0].split(',')[1].replace(/"/g, '');
                         return parseInt(pid);
                     }
                 } else {
-                    const { stdout } = await execAsync(`pgrep -f "${target}"`);
+                    const { stdout } = await execAsync("pgrep -f `${target}`");
                     const pids = stdout.trim().split('\n');
                     if (pids.length > 0 && pids[0]) {
                         return parseInt(pids[0]);
@@ -572,7 +586,7 @@ class HotPatchers {
             
             // Create backup if requested
             if (backup) {
-                const backupPath = `${target}.backup.${Date.now()}`;
+                const backupPath = `${target}.backup.Date.now()`;
                 await fs.writeFile(backupPath, originalData);
                 logger.info(`Backup created: ${backupPath}`);
             }
@@ -785,21 +799,21 @@ class HotPatchers {
             switch (operation) {
                 case 'create':
                     // Create registry key using reg add
-                    const createCmd = `reg add "${target}" /f`;
+                    const createCmd = "reg add `${target}` /f";
                     await execAsync(createCmd);
                     result = { operation: 'create', key: target, success: true };
                     break;
 
                 case 'set':
                     // Set registry value using reg add
-                    const setCmd = `reg add "${target}" /v "${valueName}" /t ${valueType} /d "${valueData}" /f`;
+                    const setCmd = "reg add "${target}" /v "${valueName}" /t ${valueType} /d `${valueData}` /f";
                     await execAsync(setCmd);
                     result = { operation: 'set', key: target, value: valueName, data: valueData, success: true };
                     break;
 
                 case 'get':
                     // Get registry value using reg query
-                    const getCmd = `reg query "${target}" /v "${valueName}"`;
+                    const getCmd = "reg query "${target}" /v `${valueName}`";
                     const { stdout } = await execAsync(getCmd);
                     const lines = stdout.split('\n');
                     let foundValue = null;
@@ -817,14 +831,14 @@ class HotPatchers {
 
                 case 'delete':
                     // Delete registry value using reg delete
-                    const deleteCmd = `reg delete "${target}" /v "${valueName}" /f`;
+                    const deleteCmd = "reg delete "${target}" /v `${valueName}` /f";
                     await execAsync(deleteCmd);
                     result = { operation: 'delete', key: target, value: valueName, success: true };
                     break;
 
                 case 'list':
                     // List registry values using reg query
-                    const listCmd = `reg query "${target}"`;
+                    const listCmd = "reg query `${target}`";
                     const { stdout: listOutput } = await execAsync(listCmd);
                     const values = [];
                     const listLines = listOutput.split('\n');
@@ -931,14 +945,14 @@ class HotPatchers {
 
             for (let i = 0; i < lines.length; i++) {
                 if (lines[i].startsWith(`${key}=`)) {
-                    lines[i] = `${key}=${value}`;
+                    lines[i] = `${key}=value`;
                     found = true;
                     break;
                 }
             }
 
             if (!found) {
-                lines.push(`${key}=${value}`);
+                lines.push(`${key}=value`);
             }
 
             await fs.writeFile(file, lines.join('\n'));
@@ -968,7 +982,7 @@ class HotPatchers {
         try {
             const content = await fs.readFile(file, 'utf8');
             const lines = content.split('\n');
-            const filteredLines = lines.filter(line => !line.startsWith(`${key}=`));
+            const filteredLines = lines.filter(line =>` !line.startsWith(`${key}=`));
             await fs.writeFile(file, filteredLines.join('\n'));
         } catch (error) {
             throw new Error(`Failed to delete config value: ${error.message}`);
@@ -1037,21 +1051,21 @@ class HotPatchers {
             switch (operation) {
                 case 'suspend':
                     // Suspend process using PowerShell
-                    const suspendCmd = `powershell -Command "Suspend-Process -Id ${pid}"`;
+                    const suspendCmd = "powershell -Command `Suspend-Process -Id ${pid}`";
                     await execAsync(suspendCmd);
                     result = { operation: 'suspend', pid, success: true };
                     break;
 
                 case 'resume':
                     // Resume process using PowerShell
-                    const resumeCmd = `powershell -Command "Resume-Process -Id ${pid}"`;
+                    const resumeCmd = "powershell -Command `Resume-Process -Id ${pid}`";
                     await execAsync(resumeCmd);
                     result = { operation: 'resume', pid, success: true };
                     break;
 
                 case 'terminate':
                     // Terminate process
-                    const terminateCmd = `taskkill /PID ${pid} /F`;
+                    const terminateCmd = "taskkill /PID " + pid + " /F";
                     await execAsync(terminateCmd);
                     result = { operation: 'terminate', pid, success: true };
                     break;
@@ -1162,7 +1176,7 @@ class HotPatchers {
     async injectDllIntoProcess(pid, dllPath) {
         try {
             // Use PowerShell to inject DLL
-            const injectCmd = `powershell -Command "& { Add-Type -TypeDefinition 'using System; using System.Diagnostics; using System.Runtime.InteropServices; public class DllInjector { [DllImport(\"kernel32.dll\")] public static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId); [DllImport(\"kernel32.dll\", CharSet = CharSet.Auto)] public static extern IntPtr GetModuleHandle(string lpModuleName); [DllImport(\"kernel32\", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)] public static extern IntPtr GetProcAddress(IntPtr hModule, string procName); [DllImport(\"kernel32.dll\", SetLastError = true, ExactSpelling = true)] public static extern IntPtr VirtualAllocEx(IntPtr hProcess, IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect); [DllImport(\"kernel32.dll\", SetLastError = true)] public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, uint nSize, out UIntPtr lpNumberOfBytesWritten); [DllImport(\"kernel32.dll\")] public static extern IntPtr CreateRemoteThread(IntPtr hProcess, IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId); }'; $process = [System.Diagnostics.Process]::GetProcessById(${pid}); $handle = [DllInjector]::OpenProcess(0x1F0FFF, $false, ${pid}); $dllPathBytes = [System.Text.Encoding]::ASCII.GetBytes('${dllPath}'); $allocatedMemory = [DllInjector]::VirtualAllocEx($handle, [IntPtr]::Zero, [uint32]$dllPathBytes.Length, 0x1000, 0x40); [DllInjector]::WriteProcessMemory($handle, $allocatedMemory, $dllPathBytes, [uint32]$dllPathBytes.Length, [ref]0); $kernel32 = [DllInjector]::GetModuleHandle('kernel32.dll'); $loadLibrary = [DllInjector]::GetProcAddress($kernel32, 'LoadLibraryA'); [DllInjector]::CreateRemoteThread($handle, [IntPtr]::Zero, 0, $loadLibrary, $allocatedMemory, 0, [IntPtr]::Zero); }"`;
+            const injectCmd = "powershell -Command "& { Add-Type -TypeDefinition 'using System; using System.Diagnostics; using System.Runtime.InteropServices; public class DllInjector { [DllImport(\"kernel32.dll\")] public static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId); [DllImport(\"kernel32.dll\", CharSet = CharSet.Auto)] public static extern IntPtr GetModuleHandle(string lpModuleName); [DllImport(\"kernel32\", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)] public static extern IntPtr GetProcAddress(IntPtr hModule, string procName); [DllImport(\"kernel32.dll\", SetLastError = true, ExactSpelling = true)] public static extern IntPtr VirtualAllocEx(IntPtr hProcess, IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect); [DllImport(\"kernel32.dll\", SetLastError = true)] public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, uint nSize, out UIntPtr lpNumberOfBytesWritten); [DllImport(\"kernel32.dll\")] public static extern IntPtr CreateRemoteThread(IntPtr hProcess, IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId); }'; $process = [System.Diagnostics.Process]::GetProcessById(${pid}); $handle = [DllInjector]::OpenProcess(0x1F0FFF, $false, ${pid}); $dllPathBytes = [System.Text.Encoding]::ASCII.GetBytes('" + dllPath + "'); $allocatedMemory = [DllInjector]::VirtualAllocEx($handle, [IntPtr]::Zero, [uint32]$dllPathBytes.Length, 0x1000, 0x40); [DllInjector]::WriteProcessMemory($handle, $allocatedMemory, $dllPathBytes, [uint32]$dllPathBytes.Length, [ref]0); $kernel32 = [DllInjector]::GetModuleHandle('kernel32.dll'); $loadLibrary = [DllInjector]::GetProcAddress($kernel32, 'LoadLibraryA'); [DllInjector]::CreateRemoteThread($handle, [IntPtr]::Zero, 0, $loadLibrary, $allocatedMemory, 0, [IntPtr]::Zero); }"";
             
             await execAsync(injectCmd);
             
@@ -1183,7 +1197,7 @@ class HotPatchers {
     async hookProcessApi(pid, apiName, offset) {
         try {
             // Use PowerShell to hook API calls
-            const hookCmd = `powershell -Command "& { Add-Type -TypeDefinition 'using System; using System.Diagnostics; using System.Runtime.InteropServices; public class ApiHooker { [DllImport(\"kernel32.dll\")] public static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId); [DllImport(\"kernel32.dll\")] public static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int dwSize, out int lpNumberOfBytesRead); [DllImport(\"kernel32.dll\")] public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int dwSize, out int lpNumberOfBytesWritten); }'; $process = [System.Diagnostics.Process]::GetProcessById(${pid}); $handle = [ApiHooker]::OpenProcess(0x1F0FFF, $false, ${pid}); $originalBytes = New-Object byte[] 5; [ApiHooker]::ReadProcessMemory($handle, [IntPtr]${offset}, $originalBytes, 5, [ref]0); $hookBytes = [byte[]](0xE9, 0x00, 0x00, 0x00, 0x00); [ApiHooker]::WriteProcessMemory($handle, [IntPtr]${offset}, $hookBytes, 5, [ref]0); }"`;
+            const hookCmd = "powershell -Command "& { Add-Type -TypeDefinition 'using System; using System.Diagnostics; using System.Runtime.InteropServices; public class ApiHooker { [DllImport(\"kernel32.dll\")] public static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId); [DllImport(\"kernel32.dll\")] public static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int dwSize, out int lpNumberOfBytesRead); [DllImport(\"kernel32.dll\")] public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int dwSize, out int lpNumberOfBytesWritten); }'; $process = [System.Diagnostics.Process]::GetProcessById(${pid}); $handle = [ApiHooker]::OpenProcess(0x1F0FFF, $false, ${pid}); $originalBytes = New-Object byte[] 5; [ApiHooker]::ReadProcessMemory($handle, [IntPtr]${offset}, $originalBytes, 5, [ref]0); $hookBytes = [byte[]](0xE9, 0x00, 0x00, 0x00, 0x00); [ApiHooker]::WriteProcessMemory($handle, [IntPtr]" + offset + ", $hookBytes, 5, [ref]0); }"";
             
             await execAsync(hookCmd);
             
@@ -1205,7 +1219,7 @@ class HotPatchers {
     async modifyProcessMemory(pid, data, offset) {
         try {
             // Use PowerShell to modify process memory
-            const modifyCmd = `powershell -Command "& { Add-Type -TypeDefinition 'using System; using System.Diagnostics; using System.Runtime.InteropServices; public class MemoryModifier { [DllImport(\"kernel32.dll\")] public static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId); [DllImport(\"kernel32.dll\")] public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int dwSize, out int lpNumberOfBytesWritten); }'; $process = [System.Diagnostics.Process]::GetProcessById(${pid}); $handle = [MemoryModifier]::OpenProcess(0x1F0FFF, $false, ${pid}); $dataBytes = [byte[]]@(${data.map(b => `0x${b.toString(16).padStart(2, '0')}`).join(', ')}); [MemoryModifier]::WriteProcessMemory($handle, [IntPtr]${offset}, $dataBytes, $dataBytes.Length, [ref]0); }"`;
+            const modifyCmd = "powershell -Command "& { Add-Type -TypeDefinition 'using System; using System.Diagnostics; using System.Runtime.InteropServices; public class MemoryModifier { [DllImport(\"kernel32.dll\")] public static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId); [DllImport(\"kernel32.dll\`)] public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int dwSize, out int lpNumberOfBytesWritten); }'; $process = [System.Diagnostics.Process]::GetProcessById(${pid}); $handle = [MemoryModifier]::OpenProcess(0x1F0FFF, $false, ${pid}); $dataBytes = [byte[]]@(data.map(b => `0x${b.toString(16).padStart(2, '0')`).join(', ')}); [MemoryModifier]::WriteProcessMemory($handle, [IntPtr]${offset}, $dataBytes, $dataBytes.Length, [ref]0); }"`;
             
             await execAsync(modifyCmd);
             
@@ -1226,7 +1240,7 @@ class HotPatchers {
     // Get process information in Windows
     async getProcessInfo(pid) {
         try {
-            const infoCmd = `powershell -Command "Get-Process -Id ${pid} | Select-Object Id, ProcessName, CPU, WorkingSet, VirtualMemorySize, HandleCount, StartTime | ConvertTo-Json"`;
+            const infoCmd = "powershell -Command "Get-Process -Id " + pid + " | Select-Object Id, ProcessName, CPU, WorkingSet, VirtualMemorySize, HandleCount, StartTime | ConvertTo-Json"";
             const { stdout } = await execAsync(infoCmd);
             const processInfo = JSON.parse(stdout);
             
@@ -1247,7 +1261,7 @@ class HotPatchers {
     async injectLibraryIntoProcess(pid, libraryPath) {
         try {
             // Use LD_PRELOAD to inject library
-            const injectCmd = `echo '${libraryPath}' > /proc/${pid}/environ`;
+            const injectCmd = "echo '${libraryPath}' > /proc/" + pid + "/environ";
             await execAsync(injectCmd);
             
             return {
@@ -1267,7 +1281,7 @@ class HotPatchers {
     async hookProcessSyscalls(pid, syscallName, offset) {
         try {
             // Use ptrace to hook system calls
-            const hookCmd = `sudo ptrace -p ${pid} -s ${offset} -w ${offset} -d 0xcc`;
+            const hookCmd = "sudo ptrace -p ${pid} -s ${offset} -w " + offset + " -d 0xcc";
             await execAsync(hookCmd);
             
             return {
@@ -1288,11 +1302,11 @@ class HotPatchers {
     async modifyProcessMemoryUnix(pid, data, offset) {
         try {
             // Use /proc/[pid]/mem to modify memory
-            const memPath = `/proc/${pid}/mem`;
-            const tempFile = `/tmp/rawrz_mem_${Date.now()}.bin`;
+            const memPath = "/proc/" + pid + "/mem";
+            const tempFile = "/tmp/rawrz_mem_" + Date.now() + ".bin";
             
             await fs.writeFile(tempFile, Buffer.from(data));
-            const modifyCmd = `dd if=${tempFile} of=${memPath} bs=1 seek=${offset} 2>/dev/null`;
+            const modifyCmd = "dd if=${tempFile} of=${memPath} bs=1 seek=" + offset + " 2>/dev/null";
             await execAsync(modifyCmd);
             
             await fs.unlink(tempFile).catch(() => {});
@@ -1314,8 +1328,8 @@ class HotPatchers {
     // Get process information in Unix
     async getProcessInfoUnix(pid) {
         try {
-            const statPath = `/proc/${pid}/stat`;
-            const statusPath = `/proc/${pid}/status`;
+            const statPath = "/proc/" + pid + "/stat";
+            const statusPath = "/proc/" + pid + "/status";
             
             const statData = await fs.readFile(statPath, 'utf8');
             const statusData = await fs.readFile(statusPath, 'utf8');
@@ -1499,7 +1513,7 @@ class HotPatchers {
             const { ip, port, protocol = 'TCP' } = data;
             
             // Use netsh to block connection
-            const blockCmd = `netsh advfirewall firewall add rule name="RawrZ Block ${target}" dir=out action=block protocol=${protocol} remoteip=${ip} remoteport=${port}`;
+            const blockCmd = "netsh advfirewall firewall add rule name="RawrZ Block ${target}` dir=out action=block protocol=${protocol} remoteip=${ip} remoteport=port`;
             await execAsync(blockCmd);
             
             return {
@@ -1523,7 +1537,7 @@ class HotPatchers {
             const { fromPort, toPort, fromIP = '0.0.0.0', toIP = '127.0.0.1' } = data;
             
             // Use netsh to redirect traffic
-            const redirectCmd = `netsh interface portproxy add v4tov4 listenport=${fromPort} listenaddress=${fromIP} connectport=${toPort} connectaddress=${toIP}`;
+            const redirectCmd = `netsh interface portproxy add v4tov4 listenport=${fromPort} listenaddress=${fromIP} connectport=${toPort} connectaddress=toIP`;
             await execAsync(redirectCmd);
             
             return {
@@ -1548,7 +1562,7 @@ class HotPatchers {
             const { proxyServer, bypassList = '' } = data;
             
             // Use netsh to set proxy
-            const proxyCmd = `netsh winhttp set proxy proxy-server="${proxyServer}" bypass-list="${bypassList}"`;
+            const proxyCmd = "netsh winhttp set proxy proxy-server="${proxyServer}" bypass-list=`${bypassList}`";
             await execAsync(proxyCmd);
             
             return {
@@ -1571,11 +1585,11 @@ class HotPatchers {
             const { dnsServers } = data;
             
             // Use netsh to modify DNS
-            const dnsCmd = `netsh interface ip set dns "${target}" static ${dnsServers[0]}`;
+            const dnsCmd = "netsh interface ip set dns "${target}` static ${dnsServers[0]}`;
             await execAsync(dnsCmd);
             
             if (dnsServers.length > 1) {
-                const dnsCmd2 = `netsh interface ip add dns "${target}" ${dnsServers[1]} index=2`;
+                const dnsCmd2 = "netsh interface ip add dns "${target}" " + dnsServers[1] + " index=2";
                 await execAsync(dnsCmd2);
             }
             
@@ -1598,7 +1612,7 @@ class HotPatchers {
             const { destination, gateway, metric = 1 } = data;
             
             // Use route command to modify routing
-            const routeCmd = `route add ${destination} ${gateway} metric ${metric}`;
+            const routeCmd = `route add ${destination} ${gateway} metric metric`;
             await execAsync(routeCmd);
             
             return {
@@ -1622,7 +1636,7 @@ class HotPatchers {
             const { duration = 60, outputFile = '/tmp/rawrz_traffic.pcap' } = data;
             
             // Use netsh to capture traffic
-            const monitorCmd = `netsh trace start capture=yes tracefile="${outputFile}" maxsize=100 provider=Microsoft-Windows-TCPIP`;
+            const monitorCmd = "netsh trace start capture=yes tracefile=`${outputFile}` maxsize=100 provider=Microsoft-Windows-TCPIP";
             await execAsync(monitorCmd);
             
             // Wait for specified duration
@@ -1652,7 +1666,7 @@ class HotPatchers {
             const { ip, port, protocol = 'tcp' } = data;
             
             // Use iptables to block connection
-            const blockCmd = `sudo iptables -A OUTPUT -p ${protocol} -d ${ip} --dport ${port} -j DROP`;
+            const blockCmd = "sudo iptables -A OUTPUT -p ${protocol} -d ${ip} --dport " + port + " -j DROP";
             await execAsync(blockCmd);
             
             return {
@@ -1676,7 +1690,7 @@ class HotPatchers {
             const { fromPort, toPort, fromIP = '0.0.0.0', toIP = '127.0.0.1' } = data;
             
             // Use iptables to redirect traffic
-            const redirectCmd = `sudo iptables -t nat -A PREROUTING -p tcp --dport ${fromPort} -j DNAT --to-destination ${toIP}:${toPort}`;
+            const redirectCmd = `sudo iptables -t nat -A PREROUTING -p tcp --dport ${fromPort} -j DNAT --to-destination ${toIP}:toPort`;
             await execAsync(redirectCmd);
             
             return {
@@ -1701,7 +1715,7 @@ class HotPatchers {
             const { proxyServer, proxyPort } = data;
             
             // Set environment variables for proxy
-            const proxyUrl = `http://${proxyServer}:${proxyPort}`;
+            const proxyUrl = `http://${proxyServer}:proxyPort`;
             process.env.HTTP_PROXY = proxyUrl;
             process.env.HTTPS_PROXY = proxyUrl;
             process.env.http_proxy = proxyUrl;
@@ -1732,7 +1746,7 @@ class HotPatchers {
             // Create new resolv.conf
             let resolvContent = '';
             for (const dns of dnsServers) {
-                resolvContent += `nameserver ${dns}\n`;
+                resolvContent += "nameserver " + dns + "\n";
             }
             
             await fs.writeFile('/tmp/resolv.conf', resolvContent);
@@ -1757,7 +1771,7 @@ class HotPatchers {
             const { destination, gateway, interface: networkInterface = 'eth0' } = data;
             
             // Use ip route to modify routing
-            const routeCmd = `sudo ip route add ${destination} via ${gateway} dev ${networkInterface}`;
+            const routeCmd = `sudo ip route add ${destination} via ${gateway} dev networkInterface`;
             await execAsync(routeCmd);
             
             return {
@@ -1781,7 +1795,7 @@ class HotPatchers {
             const { duration = 60, outputFile = '/tmp/rawrz_traffic.pcap', interface: networkInterface = 'any' } = data;
             
             // Use tcpdump to capture traffic
-            const monitorCmd = `sudo tcpdump -i ${networkInterface} -w ${outputFile} -G ${duration}`;
+            const monitorCmd = `sudo tcpdump -i ${networkInterface} -w ${outputFile} -G duration`;
             await execAsync(monitorCmd);
             
             return {
@@ -2064,7 +2078,7 @@ class HotPatchers {
             this.patches.delete(patchId);
         }
         
-        logger.info(`Cleaned up ${patchesToRemove.length} old patches`);
+        logger.info("Cleaned up " + patchesToRemove.length + " old patches");
         return patchesToRemove.length;
     }
 
@@ -2073,12 +2087,12 @@ class HotPatchers {
         try {
             if (os.platform() === 'win32') {
                 // Windows memory reading using PowerShell
-                const cmd = `powershell -Command "Get-Process -Id ${pid} | Select-Object -ExpandProperty WorkingSet"`;
+                const cmd = "powershell -Command "Get-Process -Id " + pid + " | Select-Object -ExpandProperty WorkingSet"";
                 const { stdout } = await execAsync(cmd);
                 return Buffer.from(stdout.trim());
             } else {
                 // Unix memory reading using /proc/[pid]/mem
-                const memPath = `/proc/${pid}/mem`;
+                const memPath = "/proc/" + pid + "/mem";
                 const fd = await fs.open(memPath, 'r');
                 const buffer = Buffer.alloc(size);
                 await fd.read(buffer, 0, size, address);
@@ -2095,11 +2109,11 @@ class HotPatchers {
         try {
             if (os.platform() === 'win32') {
                 // Windows memory writing using PowerShell
-                const cmd = `powershell -Command "Set-ProcessMemory -Id ${pid} -Address ${address} -Data '${data.toString('hex')}'"`;
+                const cmd = "powershell -Command "Set-ProcessMemory -Id ${pid} -Address ${address} -Data '" + data.toString('hex') + "'"";
                 await execAsync(cmd);
             } else {
                 // Unix memory writing using /proc/[pid]/mem
-                const memPath = `/proc/${pid}/mem`;
+                const memPath = "/proc/" + pid + "/mem";
                 const fd = await fs.open(memPath, 'w');
                 await fd.write(data, 0, data.length, address);
                 await fd.close();
@@ -2113,7 +2127,7 @@ class HotPatchers {
     async restoreRegistryValue(key, value, originalData) {
         try {
             if (os.platform() === 'win32') {
-                const cmd = `reg add "${key}" /v "${value}" /t REG_SZ /d "${originalData}" /f`;
+                const cmd = "reg add "${key}" /v "${value}" /t REG_SZ /d `${originalData}` /f";
                 await execAsync(cmd);
             } else {
                 // Unix config file restoration
@@ -2131,13 +2145,13 @@ class HotPatchers {
             if (os.platform() === 'win32') {
                 switch (operation) {
                     case 'suspend':
-                        await execAsync(`powershell -Command "Resume-Process -Id ${pid}"`);
+                        await execAsync("powershell -Command `Resume-Process -Id ${pid}`");
                         break;
                     case 'resume':
-                        await execAsync(`powershell -Command "Suspend-Process -Id ${pid}"`);
+                        await execAsync("powershell -Command `Suspend-Process -Id ${pid}`");
                         break;
                     case 'terminate':
-                        await execAsync(`powershell -Command "Start-Process -Id ${pid}"`);
+                        await execAsync("powershell -Command `Start-Process -Id ${pid}`");
                         break;
                 }
             } else {
@@ -2164,19 +2178,19 @@ class HotPatchers {
             if (os.platform() === 'win32') {
                 switch (operation) {
                     case 'firewall':
-                        await execAsync(`netsh advfirewall firewall delete rule name="${originalConfig.ruleName}"`);
+                        await execAsync("netsh advfirewall firewall delete rule name=`${originalConfig.ruleName}`");
                         break;
                     case 'proxy':
                         await execAsync(`netsh winhttp reset proxy`);
                         break;
                     case 'dns':
-                        await execAsync(`netsh interface ip set dns "${originalConfig.interface}" static ${originalConfig.dns}`);
+                        await execAsync("netsh interface ip set dns "${originalConfig.interface}` static ${originalConfig.dns}`);
                         break;
                 }
             } else {
                 switch (operation) {
                     case 'firewall':
-                        await execAsync(`iptables -D INPUT -p tcp --dport ${originalConfig.port} -j DROP`);
+                        await execAsync("iptables -D INPUT -p tcp --dport " + originalConfig.port + " -j DROP");
                         break;
                     case 'proxy':
                         delete process.env.HTTP_PROXY;

@@ -20,7 +20,7 @@ class Program
     try {
         // Initialize the workaround engine
         await dotNetWorkaround.initialize();
-        console.log('✓ Workaround engine initialized successfully\n');
+        console.log('[INFO] Workaround engine initialized successfully\n');
 
         // Test 1: Source Generation with Instructions
         console.log('Test 1: Source Generation with Instructions');
@@ -30,8 +30,8 @@ class Program
             framework: 'net6.0',
             optimization: 'release'
         });
-        console.log(`✓ Generated: ${result1.outputPath}`);
-        console.log(`✓ Instructions: ${result1.instructionsFile}\n`);
+        console.log(`[INFO] Generated: ${result1.outputPath}`);
+        console.log(`[INFO] Instructions: ${result1.instructionsFile}\n`);
 
         // Test 2: Batch Compilation
         console.log('Test 2: Batch Compilation');
@@ -41,8 +41,8 @@ class Program
             framework: 'net6.0',
             optimization: 'release'
         });
-        console.log(`✓ Generated: ${result2.outputPath}`);
-        console.log(`✓ Batch file: ${result2.batchFile}\n`);
+        console.log(`[INFO] Generated: ${result2.outputPath}`);
+        console.log(`[INFO] Batch file: ${result2.batchFile}\n`);
 
         // Test 3: PowerShell Compilation
         console.log('Test 3: PowerShell Compilation');
@@ -52,8 +52,8 @@ class Program
             framework: 'net6.0',
             optimization: 'release'
         });
-        console.log(`✓ Generated: ${result3.outputPath}`);
-        console.log(`✓ PowerShell script: ${result3.psFile}\n`);
+        console.log(`[INFO] Generated: ${result3.outputPath}`);
+        console.log(`[INFO] PowerShell script: ${result3.psFile}\n`);
 
         // Test 4: Docker Compilation
         console.log('Test 4: Docker Compilation');
@@ -63,9 +63,9 @@ class Program
             framework: 'net6.0',
             optimization: 'release'
         });
-        console.log(`✓ Generated: ${result4.outputPath}`);
-        console.log(`✓ Dockerfile: ${result4.dockerFile}`);
-        console.log(`✓ Docker Compose: ${result4.dockerCompose}\n`);
+        console.log(`[INFO] Generated: ${result4.outputPath}`);
+        console.log(`[INFO] Dockerfile: ${result4.dockerFile}`);
+        console.log(`[INFO] Docker Compose: ${result4.dockerCompose}\n`);
 
         // Test 5: Online Compilation Instructions
         console.log('Test 5: Online Compilation Instructions');
@@ -75,8 +75,8 @@ class Program
             framework: 'net6.0',
             optimization: 'release'
         });
-        console.log(`✓ Generated: ${result5.outputPath}`);
-        console.log(`✓ Online instructions: ${result5.instructionsFile}\n`);
+        console.log(`[INFO] Generated: ${result5.outputPath}`);
+        console.log(`[INFO] Online instructions: ${result5.instructionsFile}\n`);
 
         // Test 6: Portable Compilation Package
         console.log('Test 6: Portable Compilation Package');
@@ -86,28 +86,28 @@ class Program
             framework: 'net6.0',
             optimization: 'release'
         });
-        console.log(`✓ Generated: ${result6.outputPath}`);
-        console.log(`✓ Portable directory: ${result6.portableDir}`);
-        console.log(`✓ README: ${result6.readmeFile}`);
-        console.log(`✓ Setup script: ${result6.setupFile}\n`);
+        console.log(`[INFO] Generated: ${result6.outputPath}`);
+        console.log(`[INFO] Portable directory: ${result6.portableDir}`);
+        console.log(`[INFO] README: ${result6.readmeFile}`);
+        console.log(`[INFO] Setup script: ${result6.setupFile}\n`);
 
         // Test 7: Get Available Methods
         console.log('Test 7: Available Methods');
         const methods = dotNetWorkaround.getAvailableMethods();
-        console.log(`✓ Direct methods: ${methods.direct.length}`);
-        console.log(`✓ Fallback methods: ${methods.fallback.length}`);
-        console.log(`✓ Total methods: ${methods.total}\n`);
+        console.log(`[INFO] Direct methods: ${methods.direct.length}`);
+        console.log(`[INFO] Fallback methods: ${methods.fallback.length}`);
+        console.log(`[INFO] Total methods: ${methods.total}\n`);
 
         // Test 8: Get Stats
         console.log('Test 8: Engine Statistics');
         const stats = dotNetWorkaround.getStats();
-        console.log(`✓ Engine: ${stats.name}`);
-        console.log(`✓ Version: ${stats.version}`);
-        console.log(`✓ Initialized: ${stats.initialized}`);
-        console.log(`✓ Available methods: ${stats.availableMethods}`);
-        console.log(`✓ Fallback methods: ${stats.fallbackMethods}\n`);
+        console.log(`[INFO] Engine: ${stats.name}`);
+        console.log(`[INFO] Version: ${stats.version}`);
+        console.log(`[INFO] Initialized: ${stats.initialized}`);
+        console.log(`[INFO] Available methods: ${stats.availableMethods}`);
+        console.log(`[INFO] Fallback methods: ${stats.fallbackMethods}\n`);
 
-        console.log('🎉 All workaround tests completed successfully!');
+        console.log('[SUCCESS] All workaround tests completed successfully!');
         console.log('\nGenerated files:');
         
         // List all generated files
@@ -130,14 +130,14 @@ class Program
         for (const file of files) {
             try {
                 const stats = await fs.stat(file);
-                console.log(`✓ ${file} (${stats.size} bytes)`);
+                console.log(`[INFO] ${file} (${stats.size} bytes)`);
             } catch (error) {
-                console.log(`✗ ${file} (not found)`);
+                console.log(`[INFO] ${file} (not found)`);
             }
         }
 
     } catch (error) {
-        console.error('❌ Test failed:', error.message);
+        console.error('[ERROR] Test failed:', error.message);
         console.error(error.stack);
     }
 }

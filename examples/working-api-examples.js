@@ -333,7 +333,7 @@ class RawrZAPIExamples {
 
     // Example 7: File Operations with Interactive Controls
     async demonstrateFileOperations() {
-        console.log('📁 File Operations Demonstration\n');
+        console.log('[INFO] File Operations Demonstration\n');
 
         try {
             // Upload a test file

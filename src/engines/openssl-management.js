@@ -19,7 +19,7 @@ try {
     OpenSSLManager = opensslManager.OpenSSLManager;
 } catch (e) {
     OpenSSLManager = class {
-        constructor() { this.algorithms = new Map(); }
+        constructor() { this.algorithms = this.memoryManager.createManagedCollection('algorithms', 'Map', 100); }
         async initialize() { return true; }
         getOpenSSLAlgorithms() { 
             return [
@@ -66,14 +66,28 @@ try {
 }
 
 class OpenSSLManagement extends EventEmitter {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
         super();
         this.name = 'OpenSSLManagement';
         this.version = '1.0.0';
+        this.memoryManager = getMemoryManager();
         this.manager = new OpenSSLManager();
-        this.engines = new Map();
-        this.algorithms = new Map();
-        this.configurations = new Map();
+        this.engines = this.memoryManager.createManagedCollection('engines', 'Map', 100);
+        this.algorithms = this.memoryManager.createManagedCollection('algorithms', 'Map', 100);
+        this.configurations = this.memoryManager.createManagedCollection('configurations', 'Map', 100);
         this.performance = {
             encryptionTimes: [],
             algorithmUsage: new Map(),
@@ -164,7 +178,7 @@ class OpenSSLManagement extends EventEmitter {
                 )
             });
 
-            logger.info(`Loaded ${allAlgorithms.length} algorithms across ${this.algorithms.get('categories').length} categories`);
+            logger.info("Loaded ${allAlgorithms.length} algorithms across " + this.algorithms.get('categories').length + " categories");
         } catch (error) {
             logger.error('Failed to load algorithms:', error);
             throw error;
@@ -187,7 +201,7 @@ class OpenSSLManagement extends EventEmitter {
                 this.manager.registerEngine(name, engine);
             });
 
-            logger.info(`Setup ${this.engines.size} crypto engines`);
+            logger.info("Setup " + this.engines.size + " crypto engines");
         } catch (error) {
             logger.error('Failed to setup engines:', error);
             throw error;
@@ -233,7 +247,7 @@ class OpenSSLManagement extends EventEmitter {
             };
 
             this.configurations.set('presets', presets);
-            logger.info(`Loaded ${Object.keys(presets).length} configuration presets`);
+            logger.info("Loaded " + Object.keys(presets).length + " configuration presets");
         } catch (error) {
             logger.error('Failed to load configurations:', error);
             throw error;
@@ -367,7 +381,7 @@ class OpenSSLManagement extends EventEmitter {
             logger.info(`Applied preset: ${presetName}`);
             return { success: true, preset: presetName, configuration: preset };
         } catch (error) {
-            logger.error(`Failed to apply preset ${presetName}:`, error);
+            logger.error("Failed to apply preset " + presetName + ":", error);
             throw error;
         }
     }
@@ -429,7 +443,7 @@ class OpenSSLManagement extends EventEmitter {
                 }
             };
         } catch (error) {
-            logger.error(`Failed to test algorithm ${algorithm}:`, error);
+            logger.error("Failed to test algorithm " + algorithm + ":", error);
             throw error;
         }
     }
@@ -454,7 +468,7 @@ class OpenSSLManagement extends EventEmitter {
                 consistent: Object.values(resolutions).every(res => res === managerResolution)
             };
         } catch (error) {
-            logger.error(`Failed to resolve algorithm ${algorithm}:`, error);
+            logger.error("Failed to resolve algorithm " + algorithm + ":", error);
             throw error;
         }
     }
@@ -551,7 +565,7 @@ class OpenSSLManagement extends EventEmitter {
                 total: Object.values(filteredRecommendations).flat().length
             };
         } catch (error) {
-            logger.error(`Failed to get recommendations for ${useCase}:`, error);
+            logger.error("Failed to get recommendations for " + useCase + ":", error);
             throw error;
         }
     }

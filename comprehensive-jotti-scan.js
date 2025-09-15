@@ -29,7 +29,7 @@ async function comprehensiveJottiScan() {
         let errorCount = 0;
         
         // Scan each file
-        for (let i = 0; i < encryptedFiles.length; i++) {
+        for (let i = 0; i `< encryptedFiles.length; i++) {
             const file = encryptedFiles[i];
             const filePath = path.join(uploadsDir, file);
             
@@ -91,7 +91,7 @@ async function comprehensiveJottiScan() {
         console.log(`  FUD (0% detection): ${fudCount} files`);
         console.log(`  Low Detection (<10%): ${lowDetectionCount} files`);
         console.log(`  Medium Detection (10-30%): ${mediumDetectionCount} files`);
-        console.log(`  High Detection (>30%): ${highDetectionCount} files`);
+        console.log(`  High Detection (>`30%): ${highDetectionCount} files`);
         console.log(`  Errors: ${errorCount} files`);
         console.log('');
         

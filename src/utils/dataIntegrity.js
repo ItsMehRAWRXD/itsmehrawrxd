@@ -4,14 +4,29 @@ const fs = require('fs');
 const path = require('path');
 const { logger } = require('./logger');
 const { reverseTracer } = require('./reverseTracer');
+const { getMemoryManager } = require('../utils/memory-manager');
 
 class DataIntegrityValidator {
+    // Performance monitoring
+    static performance = {
+        monitor: (fn) => {
+            const start = process.hrtime.bigint();
+            const result = fn();
+            const end = process.hrtime.bigint();
+            const duration = Number(end - start) / 1000000; // Convert to milliseconds
+            if (duration > 100) { // Log slow operations
+                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+        }
+    }
     constructor() {
-        this.checksums = new Map();
+        this.memoryManager = getMemoryManager();
+        this.checksums = this.memoryManager.createManagedCollection('checksums', 'Map', 100);
         this.validationLog = [];
-        this.preEncryptionSnapshots = new Map();
-        this.postEncryptionSnapshots = new Map();
-        this.malformityPatterns = new Map();
+        this.preEncryptionSnapshots = this.memoryManager.createManagedCollection('preEncryptionSnapshots', 'Map', 100);
+        this.postEncryptionSnapshots = this.memoryManager.createManagedCollection('postEncryptionSnapshots', 'Map', 100);
+        this.malformityPatterns = this.memoryManager.createManagedCollection('malformityPatterns', 'Map', 100);
         
         // Memory management (optimized for lower memory usage)
         this.maxSnapshots = 50; // Limit snapshots to prevent memory leaks
@@ -163,7 +178,7 @@ class DataIntegrityValidator {
         
         // Report violations to logger and reverse tracer
         if (violations.length > 0) {
-            logger.error(`[UTF8_ENFORCEMENT] ${violations.length} violations detected in ${source}`, {
+            logger.error(`[UTF8_ENFORCEMENT] ${violations.length} violations detected in source`, {
                 violations: violations,
                 service: 'rawrz-security-platform',
                 timestamp: new Date().toISOString()
@@ -807,7 +822,7 @@ class DataIntegrityValidator {
         const lengthRatio = postLength / preLength;
 
         if (lengthRatio < 0.1 || lengthRatio > 10.0) {
-            issues.push(`Suspicious length change: ${preLength} -> ${postLength} (ratio: ${lengthRatio.toFixed(2)})`);
+            issues.push("Suspicious length change: ${preLength} -> ${postLength} (ratio: " + lengthRatio.toFixed(2) + ")");
         }
 
         return { issues };

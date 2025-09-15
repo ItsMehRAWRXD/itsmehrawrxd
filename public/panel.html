@@ -1131,7 +1131,7 @@
             <h3>File Upload & Management</h3>
             <div class="upload-zone" id="uploadZone">
                 <div class="upload-content">
-                    <div class="upload-icon">📁</div>
+                    <div class="upload-icon">[INFO]</div>
                     <h4>Drag & Drop Files Here</h4>
                     <p>Or click to browse files</p>
                     <input type="file" id="fileInput" multiple style="display: none;" />
@@ -2753,7 +2753,7 @@
             
             let infoText = '';
             if (isOpenSSL) {
-                infoText = `✓ OpenSSL Compatible - Native support, high performance`;
+                infoText = `[INFO] OpenSSL Compatible - Native support, high performance`;
             } else if (isCustom) {
                 infoText = `Custom Implementation - May have compatibility limitations`;
             } else {
@@ -7065,11 +7065,11 @@ Examples:
             
             // Test tab switching
             showTab('crypto');
-            console.log('✓ Tab switching works');
+            console.log('[INFO] Tab switching works');
             
             // Test API function
             api('/health').then(result => {
-                console.log('✓ API function works:', result);
+                console.log('[INFO] API function works:', result);
                 if (result.status === 200) {
                     showStatus('Connection successful! RawrZ API is running.', 'success');
                 } else {
@@ -7079,11 +7079,11 @@ Examples:
             
             // Test status display
             showStatus('All handlers test completed!', 'success');
-            console.log('✓ Status display works');
+            console.log('[INFO] Status display works');
             
             // Test output display
             showOutput({test: 'All handlers working correctly'});
-            console.log('✓ Output display works');
+            console.log('[INFO] Output display works');
         }
         
         // Test function for all checkboxes and toggles
@@ -7095,7 +7095,7 @@ Examples:
             const includeMetadata = document.getElementById('includeMetadata');
             
             if (includeTimestamp && includeMetadata) {
-                console.log('✓ Save system checkboxes found');
+                console.log('[INFO] Save system checkboxes found');
                 console.log('  - Include timestamp:', includeTimestamp.checked);
                 console.log('  - Include metadata:', includeMetadata.checked);
             }
@@ -7109,16 +7109,16 @@ Examples:
             stubCheckboxes.forEach(id => {
                 const checkbox = document.getElementById(id);
                 if (checkbox) {
-                    console.log(`✓ ${id}:`, checkbox.checked);
+                    console.log(`[INFO] ${id}:`, checkbox.checked);
                 } else {
-                    console.log(`✗ ${id}: Not found`);
+                    console.log(`[INFO] ${id}: Not found`);
                 }
             });
             
             // Test CLI history toggle
             const cliHistory = document.getElementById('cliHistory');
             if (cliHistory) {
-                console.log('✓ CLI history toggle found');
+                console.log('[INFO] CLI history toggle found');
                 console.log('  - Current display:', cliHistory.style.display);
             }
             

@@ -8,7 +8,7 @@ try {
     // Test 1: Load the engine
     console.log('1. Loading Beaconism engine...');
     const beaconism = require('./src/engines/beaconism-dll-sideloading');
-    console.log('   ✓ Engine loaded successfully');
+    console.log('   [INFO] Engine loaded successfully');
     
     // Test 2: Check engine properties
     console.log('2. Checking engine properties...');
@@ -54,11 +54,11 @@ try {
     const injectionCount = Object.keys(beaconism.processInjectionMethods).length;
     console.log(`   - Total process injection methods: ${injectionCount}`);
     
-    console.log('\n✓ All tests completed successfully!');
-    console.log('✓ Beaconism DLL Sideloading System is working properly!');
+    console.log('\n[INFO] All tests completed successfully!');
+    console.log('[INFO] Beaconism DLL Sideloading System is working properly!');
     
 } catch (error) {
-    console.error('✗ Test failed:', error.message);
+    console.error('[INFO] Test failed:', error.message);
     console.error('Stack trace:', error.stack);
     process.exit(1);
 }
