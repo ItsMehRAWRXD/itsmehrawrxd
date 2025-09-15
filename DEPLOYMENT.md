@@ -312,7 +312,12 @@ tar -czf rawrz-backup-$(date +%Y%m%d).tar.gz data/ uploads/ logs/ .env
 
 ### Common Issues
 
-1. **Port Already in Use**
+1. **Certificate Popup Dialogs**
+   - Fixed in latest version - EV Certificate Encryptor now loads certificate store silently
+   - No user interaction required during server startup
+   - PowerShell commands run with -WindowStyle Hidden parameter
+
+2. **Port Already in Use**
    ```bash
    # Find process using port
    lsof -i :8080
@@ -321,14 +326,14 @@ tar -czf rawrz-backup-$(date +%Y%m%d).tar.gz data/ uploads/ logs/ .env
    kill -9 <PID>
    ```
 
-2. **Permission Denied**
+3. **Permission Denied**
    ```bash
    # Fix permissions
    sudo chown -R $USER:$USER data/ uploads/ logs/
    chmod -R 755 data/ uploads/ logs/
    ```
 
-3. **Database Connection Failed**
+4. **Database Connection Failed**
    ```bash
    # Check database status
    docker-compose exec postgres pg_isready -U rawrz
@@ -337,7 +342,7 @@ tar -czf rawrz-backup-$(date +%Y%m%d).tar.gz data/ uploads/ logs/ .env
    docker-compose logs postgres
    ```
 
-4. **SSL Certificate Issues**
+5. **SSL Certificate Issues**
    ```bash
    # Verify certificate
    openssl x509 -in ssl/cert.pem -text -noout
@@ -430,5 +435,6 @@ For deployment issues:
 
 ---
 
-*Last updated: 2024-01-01*
-*Deployment guide version: 1.0.0*
+*Last updated: September 15, 2025*
+*Deployment guide version: 1.1.0*
+*Latest update: Certificate popup fix documentation added*

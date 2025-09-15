@@ -201,22 +201,27 @@ Integration points are tested for:
 
 ### Common Issues
 
-1. **Server Not Starting**
+1. **Certificate Popup Dialogs**
+   - Fixed in latest version - EV Certificate Encryptor loads silently
+   - No user interaction required during testing
+   - PowerShell commands run with hidden window style
+
+2. **Server Not Starting**
    - Check if port 8080 is available
    - Verify all dependencies are installed
    - Check for syntax errors in server.js
 
-2. **Engine Initialization Failures**
+3. **Engine Initialization Failures**
    - Verify engine files exist
    - Check for missing dependencies
    - Review engine-specific error messages
 
-3. **Performance Test Failures**
+4. **Performance Test Failures**
    - Check system resources
    - Verify no other processes are consuming CPU/memory
    - Review performance thresholds
 
-4. **API Test Failures**
+5. **API Test Failures**
    - Ensure server is running
    - Check authentication configuration
    - Verify endpoint implementations
@@ -305,5 +310,6 @@ For testing issues or questions:
 
 ---
 
-*Last updated: 2024-01-01*
-*Test suite version: 1.0.0*
+*Last updated: September 15, 2025*
+*Test suite version: 1.1.0*
+*Latest update: Certificate popup fix documentation added*
