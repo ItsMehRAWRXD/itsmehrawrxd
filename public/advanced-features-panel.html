@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RawrZ Advanced Features Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .tab {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .tab:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .tab.active {
+            background: #ff6b6b;
+            border-color: #ff6b6b;
+            box-shadow: 0 4px 15px rgba(255,107,107,0.3);
+        }
+
+        .panel {
+            display: none;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h3 {
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #ff6b6b;
+            padding-bottom: 5px;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .control-group {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .control-group h4 {
+            color: #4ecdc4;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 5px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255,255,255,0.05);
+            padding: 8px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255,107,107,0.3);
+        }
+
+        .button.secondary {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+        }
+
+        .button.secondary:hover {
+            box-shadow: 0 4px 15px rgba(78,205,196,0.3);
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(0,0,0,0.2);
+            border-left: 4px solid #4ecdc4;
+        }
+
+        .status.error {
+            border-left-color: #ff6b6b;
+            background: rgba(255,107,107,0.1);
+        }
+
+        .status.success {
+            border-left-color: #4ecdc4;
+            background: rgba(78,205,196,0.1);
+        }
+
+        .output {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #ff6b6b;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>RawrZ Advanced Features Panel</h1>
+            <p>Comprehensive Security Platform Control Center</p>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showPanel('anti-analysis')">Anti-Analysis</div>
+            <div class="tab" onclick="showPanel('fud-engine')">FUD Engine</div>
+            <div class="tab" onclick="showPanel('red-killer')">Red Killer</div>
+            <div class="tab" onclick="showPanel('stub-generator')">Stub Generator</div>
+            <div class="tab" onclick="showPanel('dual-crypto')">Dual Crypto</div>
+            <div class="tab" onclick="showPanel('irc-bot')">IRC Bot</div>
+            <div class="tab" onclick="showPanel('red-shells')">Red Shells</div>
+            <div class="tab" onclick="showPanel('ev-cert')">EV Cert</div>
+        </div>
+
+        <!-- Anti-Analysis Panel -->
+        <div id="anti-analysis" class="panel active">
+            <div class="section">
+                <h3>Anti-Analysis Detection</h3>
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <h4>Detection Methods</h4>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="detect-sandbox" checked>
+                                <label for="detect-sandbox">Sandbox</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="detect-vm" checked>
+                                <label for="detect-vm">Virtual Machine</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="detect-debugger" checked>
+                                <label for="detect-debugger">Debugger</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="detect-tools" checked>
+                                <label for="detect-tools">Analysis Tools</label>
+                            </div>
+                        </div>
+                        <button class="button" onclick="runAntiAnalysis()">Run Detection</button>
+                    </div>
+
+                    <div class="control-group">
+                        <h4>Advanced Detection</h4>
+                        <div class="form-group">
+                            <label>Detection Level:</label>
+                            <select id="detection-level">
+                                <option value="basic">Basic</option>
+                                <option value="detailed" selected>Detailed</option>
+                                <option value="comprehensive">Comprehensive</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Output Format:</label>
+                            <select id="output-format">
+                                <option value="summary">Summary</option>
+                                <option value="json">JSON</option>
+                                <option value="detailed">Detailed</option>
+                            </select>
+                        </div>
+                        <button class="button secondary" onclick="saveDetectionResults()">Save Results</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FUD Engine Panel -->
+        <div id="fud-engine" class="panel">
+            <div class="section">
+                <h3>FUD Engine Configuration</h3>
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <h4>Obfuscation Settings</h4>
+                        <div class="form-group">
+                            <label>Obfuscation Level:</label>
+                            <select id="obfuscation-level">
+                                <option value="basic">Basic</option>
+                                <option value="intermediate" selected>Intermediate</option>
+                                <option value="advanced">Advanced</option>
+                                <option value="extreme">Extreme</option>
+                                <option value="godlike">Godlike</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Technique:</label>
+                            <select id="fud-technique">
+                                <option value="polymorphic" selected>Polymorphic</option>
+                                <option value="metamorphic">Metamorphic</option>
+                                <option value="obfuscation">Obfuscation</option>
+                                <option value="encryption">Encryption</option>
+                            </select>
+                        </div>
+                        <button class="button" onclick="generateFUD()">Generate FUD</button>
+                    </div>
+
+                    <div class="control-group">
+                        <h4>Stealth Features</h4>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="anti-debug" checked>
+                                <label for="anti-debug">Anti-Debug</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="anti-vm" checked>
+                                <label for="anti-vm">Anti-VM</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="anti-sandbox" checked>
+                                <label for="anti-sandbox">Anti-Sandbox</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="timing-evasion">
+                                <label for="timing-evasion">Timing Evasion</label>
+                            </div>
+                        </div>
+                        <button class="button secondary" onclick="enableStealth()">Enable Stealth</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Red Killer Panel -->
+        <div id="red-killer" class="panel">
+            <div class="section">
+                <h3>Red Killer AV/EDR Termination</h3>
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <h4>Target Selection</h4>
+                        <div class="form-group">
+                            <label>Target Process:</label>
+                            <select id="target-process">
+                                <option value="MsMpEng.exe">Microsoft Defender</option>
+                                <option value="avast">Avast Antivirus</option>
+                                <option value="norton">Norton Security</option>
+                                <option value="mcafee">McAfee</option>
+                                <option value="kaspersky">Kaspersky</option>
+                                <option value="eset">ESET NOD32</option>
+                                <option value="bitdefender">Bitdefender</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Termination Method:</label>
+                            <select id="termination-method">
+                                <option value="stealth" selected>Stealth</option>
+                                <option value="force">Force</option>
+                                <option value="kernel">Kernel Level</option>
+                            </select>
+                        </div>
+                        <button class="button" onclick="terminateAV()">Terminate Target</button>
+                    </div>
+
+                    <div class="control-group">
+                        <h4>Data Extraction</h4>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="extract-wifi" checked>
+                                <label for="extract-wifi">WiFi Credentials</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="extract-browser" checked>
+                                <label for="extract-browser">Browser Data</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="extract-system">
+                                <label for="extract-system">System Info</label>
+                            </div>
+                        </div>
+                        <button class="button secondary" onclick="extractData()">Extract Data</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status and Output -->
+        <div class="status" id="status">
+            Ready to execute commands...
+        </div>
+
+        <div class="output" id="output"></div>
+    </div>
+
+    <script>
+        // Panel switching
+        function showPanel(panelName) {
+            // Hide all panels
+            document.querySelectorAll('.panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected panel
+            document.getElementById(panelName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // API call function
+        async function apiCall(endpoint, data = {}) {
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('API call failed:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Anti-Analysis functions
+        async function runAntiAnalysis() {
+            const detectionMethods = [];
+            if (document.getElementById('detect-sandbox').checked) detectionMethods.push('sandbox');
+            if (document.getElementById('detect-vm').checked) detectionMethods.push('vm');
+            if (document.getElementById('detect-debugger').checked) detectionMethods.push('debugger');
+            if (document.getElementById('detect-tools').checked) detectionMethods.push('tools');
+
+            const level = document.getElementById('detection-level').value;
+            const format = document.getElementById('output-format').value;
+
+            updateStatus('Running anti-analysis detection...', 'info');
+            
+            const result = await apiCall('/api/antianalysis/detect', {
+                methods: detectionMethods,
+                level: level,
+                format: format
+            });
+
+            if (result.success) {
+                updateStatus('Anti-analysis detection completed successfully', 'success');
+                updateOutput(JSON.stringify(result.data, null, 2));
+            } else {
+                updateStatus('Anti-analysis detection failed: ' + result.error, 'error');
+            }
+        }
+
+        async function saveDetectionResults() {
+            updateStatus('Saving detection results...', 'info');
+            const result = await apiCall('/api/antianalysis/save');
+            if (result.success) {
+                updateStatus('Results saved successfully', 'success');
+            } else {
+                updateStatus('Failed to save results: ' + result.error, 'error');
+            }
+        }
+
+        // FUD Engine functions
+        async function generateFUD() {
+            const level = document.getElementById('obfuscation-level').value;
+            const technique = document.getElementById('fud-technique').value;
+
+            updateStatus('Generating FUD stub...', 'info');
+            
+            const result = await apiCall('/api/fud/generate', {
+                level: level,
+                technique: technique
+            });
+
+            if (result.success) {
+                updateStatus('FUD stub generated successfully', 'success');
+                updateOutput(JSON.stringify(result.data, null, 2));
+            } else {
+                updateStatus('FUD generation failed: ' + result.error, 'error');
+            }
+        }
+
+        async function enableStealth() {
+            const features = [];
+            if (document.getElementById('anti-debug').checked) features.push('anti-debug');
+            if (document.getElementById('anti-vm').checked) features.push('anti-vm');
+            if (document.getElementById('anti-sandbox').checked) features.push('anti-sandbox');
+            if (document.getElementById('timing-evasion').checked) features.push('timing-evasion');
+
+            updateStatus('Enabling stealth features...', 'info');
+            
+            const result = await apiCall('/api/fud/stealth', {
+                features: features
+            });
+
+            if (result.success) {
+                updateStatus('Stealth features enabled successfully', 'success');
+            } else {
+                updateStatus('Failed to enable stealth: ' + result.error, 'error');
+            }
+        }
+
+        // Red Killer functions
+        async function terminateAV() {
+            const target = document.getElementById('target-process').value;
+            const method = document.getElementById('termination-method').value;
+
+            updateStatus(`Terminating ${target} using ${method} method...`, 'info');
+            
+            const result = await apiCall('/api/redkill/terminate', {
+                target: target,
+                method: method
+            });
+
+            if (result.success) {
+                updateStatus(`${target} terminated successfully`, 'success');
+                updateOutput(JSON.stringify(result.data, null, 2));
+            } else {
+                updateStatus(`Failed to terminate ${target}: ` + result.error, 'error');
+            }
+        }
+
+        async function extractData() {
+            const extractTypes = [];
+            if (document.getElementById('extract-wifi').checked) extractTypes.push('wifi');
+            if (document.getElementById('extract-browser').checked) extractTypes.push('browser');
+            if (document.getElementById('extract-system').checked) extractTypes.push('system');
+
+            updateStatus('Extracting data...', 'info');
+            
+            const result = await apiCall('/api/redkill/extract', {
+                types: extractTypes
+            });
+
+            if (result.success) {
+                updateStatus('Data extraction completed successfully', 'success');
+                updateOutput(JSON.stringify(result.data, null, 2));
+            } else {
+                updateStatus('Data extraction failed: ' + result.error, 'error');
+            }
+        }
+
+        // Utility functions
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+        }
+
+        function updateOutput(data) {
+            const output = document.getElementById('output');
+            output.textContent = data;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus('Advanced Features Panel loaded successfully', 'success');
+        });
+    </script>
+</body>
+</html>

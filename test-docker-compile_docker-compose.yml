@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  dotnet-compiler:
+    build: .
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: dotnet run
+
+  dotnet-build:
+    build: .
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: dotnet build -c Release

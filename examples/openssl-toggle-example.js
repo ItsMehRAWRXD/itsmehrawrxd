@@ -13,14 +13,14 @@ const { OpenSSLConfig } = require('../src/utils/openssl-config');
 const { OpenSSLManager } = require('../src/utils/openssl-manager');
 
 async function demonstrateOpenSSLToggle() {
-    console.log('🔐 RawrZ OpenSSL Toggle Demonstration\n');
+    console.log('RawrZ OpenSSL Toggle Demonstration\n');
     
     // Initialize the OpenSSL Manager
     const manager = new OpenSSLManager();
     await manager.initialize();
     
     // Create crypto engines with different configurations
-    console.log('📋 Creating crypto engines...\n');
+    console.log('Creating crypto engines...\n');
     
     // OpenSSL-only mode
     const opensslCrypto = new AdvancedCrypto({ 
@@ -46,7 +46,7 @@ async function demonstrateOpenSSLToggle() {
     manager.registerEngine('mixed-crypto', mixedCrypto);
     
     // Demonstrate algorithm availability
-    console.log('🔍 Algorithm Availability Analysis:\n');
+    console.log('Algorithm Availability Analysis:\n');
     
     const opensslAlgorithms = opensslCrypto.getOpenSSLAlgorithms();
     const customAlgorithms = customCrypto.getCustomAlgorithms();
@@ -57,20 +57,20 @@ async function demonstrateOpenSSLToggle() {
     console.log(`Total algorithms: ${allAlgorithms.length}\n`);
     
     // Show some examples
-    console.log('📝 OpenSSL Algorithms (first 10):');
+    console.log('OpenSSL Algorithms (first 10):');
     opensslAlgorithms.slice(0, 10).forEach(alg => {
         console.log(`  ✓ ${alg}`);
     });
     console.log();
     
-    console.log('📝 Custom Algorithms (first 10):');
+    console.log('Custom Algorithms (first 10):');
     customAlgorithms.slice(0, 10).forEach(alg => {
-        console.log(`  ⚠ ${alg}`);
+        console.log(`  Warning: ${alg}`);
     });
     console.log();
     
     // Demonstrate algorithm resolution
-    console.log('🔄 Algorithm Resolution Examples:\n');
+    console.log('Algorithm Resolution Examples:\n');
     
     const testAlgorithms = [
         'aes-256-gcm',      // OpenSSL native
@@ -97,7 +97,7 @@ async function demonstrateOpenSSLToggle() {
     }
     
     // Demonstrate encryption with different modes
-    console.log('🔐 Encryption Examples:\n');
+    console.log('Encryption Examples:\n');
     
     const testData = 'Hello, RawrZ OpenSSL Toggle!';
     console.log(`Original data: "${testData}"\n`);
@@ -138,7 +138,7 @@ async function demonstrateOpenSSLToggle() {
     console.log();
     
     // Demonstrate runtime toggle
-    console.log('🔄 Runtime Toggle Demonstration:\n');
+    console.log('Runtime Toggle Demonstration:\n');
     
     console.log('Current configuration:');
     const configSummary = manager.getConfigSummary();
@@ -166,7 +166,7 @@ async function demonstrateOpenSSLToggle() {
     console.log();
     
     // Demonstrate stub generator integration
-    console.log('🏗️ Stub Generator Integration:\n');
+    console.log('Stub Generator Integration:\n');
     
     const stubGen = new StubGenerator({ 
         useOpenSSL: true, 
@@ -184,7 +184,7 @@ async function demonstrateOpenSSLToggle() {
     console.log();
     
     // Demonstrate algorithm preference updates
-    console.log('⚙️ Algorithm Preference Updates:\n');
+    console.log('Algorithm Preference Updates:\n');
     
     console.log('Adding custom algorithm preference...');
     await manager.updateAlgorithmPreference('my-custom-alg', 'aes-256-gcm');
@@ -194,7 +194,7 @@ async function demonstrateOpenSSLToggle() {
     console.log();
     
     // Show engine status
-    console.log('📊 Engine Status:\n');
+    console.log('Engine Status:\n');
     const engineStatus = manager.getEngineStatus();
     Object.entries(engineStatus).forEach(([name, status]) => {
         console.log(`${name}:`);
@@ -206,7 +206,7 @@ async function demonstrateOpenSSLToggle() {
     });
     
     // Validate engines
-    console.log('✅ Engine Validation:\n');
+    console.log('Engine Validation:\n');
     const validation = manager.validateEngines();
     console.log(`Valid: ${validation.valid}`);
     if (validation.errors.length > 0) {
@@ -215,11 +215,11 @@ async function demonstrateOpenSSLToggle() {
     }
     if (validation.warnings.length > 0) {
         console.log('Warnings:');
-        validation.warnings.forEach(warning => console.log(`  ⚠ ${warning}`));
+        validation.warnings.forEach(warning => console.log(`  Warning: ${warning}`));
     }
     console.log();
     
-    console.log('🎉 OpenSSL Toggle demonstration completed successfully!');
+    console.log('OpenSSL Toggle demonstration completed successfully!');
     console.log('\nKey Features Demonstrated:');
     console.log('  ✓ OpenSSL-only mode');
     console.log('  ✓ Custom algorithms mode');
@@ -234,7 +234,7 @@ async function demonstrateOpenSSLToggle() {
 // Run the demonstration
 if (require.main === module) {
     demonstrateOpenSSLToggle().catch(error => {
-        console.error('❌ Demonstration failed:', error);
+        console.error('Demonstration failed:', error);
         process.exit(1);
     });
 }

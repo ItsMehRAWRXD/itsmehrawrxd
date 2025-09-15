@@ -919,4 +919,4 @@ class JottiScanner {
     }
 }
 
-module.exports = JottiScanner;
+module.exports = new JottiScanner();

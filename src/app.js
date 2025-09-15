@@ -92,4 +92,13 @@ async function startIRCBot() {
   }
 }
 
-startIRCBot();
+// Export the main functions for external use
+module.exports = {
+  startIRCBot,
+  rawrzEngine
+};
+
+// Start the IRC bot if this file is run directly
+if (require.main === module) {
+  startIRCBot();
+}

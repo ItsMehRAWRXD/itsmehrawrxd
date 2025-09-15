@@ -1,6 +1,7 @@
 // RawrZ Advanced Crypto - Advanced cryptographic systems
 const crypto = require('crypto');
 const { logger } = require('../utils/logger');
+const nativeCompiler = require('./native-compiler');
 
 class AdvancedCrypto {
     constructor(options = {}) {
@@ -703,7 +704,9 @@ class AdvancedCrypto {
             if (this.isCustomAlgorithm(algorithm)) {
                 encrypted = await this.encryptCustom(processedData, algorithm, key, iv);
             } else if (algorithm.includes('gcm')) {
-                const cipher = crypto.createCipheriv(algorithm, key, iv);
+                // For GCM modes, we need proper IV length (12 bytes for GCM)
+                const gcmIv = iv.length === 16 ? iv.slice(0, 12) : iv;
+                const cipher = crypto.createCipheriv(algorithm, key, gcmIv);
                 encrypted = cipher.update(processedData);
                 encrypted = Buffer.concat([encrypted, cipher.final()]);
                 authTag = cipher.getAuthTag();
@@ -712,8 +715,10 @@ class AdvancedCrypto {
                 encrypted = cipher.update(processedData);
                 encrypted = Buffer.concat([encrypted, cipher.final()]);
             } else if (algorithm === 'chacha20' || algorithm === 'chacha20-poly1305') {
-                const cipher = crypto.createCipheriv('chacha20-poly1305', key, iv);
-                encrypted = cipher.update(processedData, 'utf8');
+                // ChaCha20-Poly1305 needs 12-byte IV
+                const chachaIv = iv.length === 16 ? iv.slice(0, 12) : iv;
+                const cipher = crypto.createCipheriv('chacha20-poly1305', key, chachaIv);
+                encrypted = cipher.update(processedData);
                 encrypted = Buffer.concat([encrypted, cipher.final()]);
                 authTag = cipher.getAuthTag();
             } else {
@@ -722,9 +727,14 @@ class AdvancedCrypto {
         } catch (error) {
             console.error(`[ERROR] Encryption failed with ${algorithm}:`, error.message);
             // Fallback to AES-256-CBC if algorithm fails
-            const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
-            encrypted = cipher.update(processedData);
-            encrypted = Buffer.concat([encrypted, cipher.final()]);
+            try {
+                const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+                encrypted = cipher.update(processedData);
+                encrypted = Buffer.concat([encrypted, cipher.final()]);
+            } catch (fallbackError) {
+                console.error(`[ERROR] Fallback encryption also failed:`, fallbackError.message);
+                throw new Error(`Both primary and fallback encryption failed: ${error.message}`);
+            }
         }
         
         const result = {
@@ -1013,16 +1023,18 @@ class AdvancedCrypto {
                 instructions.commands.cpp = {
                     gcc: 'g++ -o stub.exe stub.cpp',
                     clang: 'clang++ -o stub.exe stub.cpp',
-                    msvc: 'cl /Fe:stub.exe stub.cpp'
+                    msvc: 'cl /Fe:stub.exe stub.cpp',
+                    fallback: 'Use online compiler or IDE (Code::Blocks, Visual Studio, etc.)'
                 };
-                instructions.requirements.push('C++ compiler (GCC, Clang, or MSVC)');
+                instructions.requirements.push('C++ compiler (GCC, Clang, or MSVC) - Fallback: Online compiler');
             } else if (targetFormat === 'dll') {
                 instructions.commands.cpp = {
                     gcc: 'g++ -shared -o stub.dll stub.cpp',
                     clang: 'clang++ -shared -o stub.dll stub.cpp',
-                    msvc: 'cl /LD /Fe:stub.dll stub.cpp'
+                    msvc: 'cl /LD /Fe:stub.dll stub.cpp',
+                    fallback: 'Use online compiler or IDE with DLL support'
                 };
-                instructions.requirements.push('C++ compiler with shared library support');
+                instructions.requirements.push('C++ compiler with shared library support - Fallback: Online compiler');
             }
         }
         
@@ -1031,10 +1043,12 @@ class AdvancedCrypto {
             instructions.commands.cross = {
                 windows: 'x86_64-w64-mingw32-g++ -o stub.exe stub.cpp',
                 linux: 'g++ -o stub stub.cpp',
-                macos: 'clang++ -o stub stub.cpp'
+                macos: 'clang++ -o stub stub.cpp',
+                fallback: 'Use online cross-compilation services or target platform IDE'
             };
-            instructions.requirements.push('Cross-compilation toolchain');
+            instructions.requirements.push('Cross-compilation toolchain - Fallback: Online services');
             instructions.notes.push('Ensure target platform libraries are available');
+            instructions.notes.push('If compilers unavailable, use online compilation services');
         }
         
         return instructions;
@@ -1614,6 +1628,39 @@ main();`;
                 "Test compilation before deployment"
             ]
         };
+    }
+
+    // Native compilation integration
+    async compileStubWithNativeCompiler(sourceCode, language, options = {}) {
+        try {
+            await nativeCompiler.initialize();
+            return await nativeCompiler.compileSource(sourceCode, language, {
+                outputFormat: options.outputFormat || 'exe',
+                optimization: options.optimization || 'release',
+                includeDebugInfo: options.includeDebugInfo || false,
+                framework: options.framework || 'auto',
+                ...options
+            });
+        } catch (error) {
+            logger.error('Native compilation failed:', error);
+            throw error;
+        }
+    }
+
+    // Source-to-exe regeneration using native compiler
+    async regenerateExecutableWithNativeCompiler(exePath, options = {}) {
+        try {
+            await nativeCompiler.initialize();
+            return await nativeCompiler.regenerateExecutable(exePath, options);
+        } catch (error) {
+            logger.error('Executable regeneration failed:', error);
+            throw error;
+        }
+    }
+
+    // Get native compiler statistics
+    getNativeCompilerStats() {
+        return nativeCompiler.getCompilationStats();
     }
 
     async cleanup() {

@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RawrZ EV Certificate Encryptor Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1rem 2rem;
+            border-bottom: 2px solid #00ff88;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            color: #00ff88;
+            font-size: 2rem;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
+        }
+
+        .card h3 {
+            color: #00ff88;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #00ff88, #00cc66);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+        }
+
+        .btn:hover {
+            background: linear-gradient(45deg, #00cc66, #009944);
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.4);
+        }
+
+        .btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #444, #666);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(45deg, #666, #888);
+        }
+
+        .status {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-weight: bold;
+        }
+
+        .status.success {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+        }
+
+        .status.error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            color: #ff0000;
+        }
+
+        .status.info {
+            background: rgba(0, 150, 255, 0.2);
+            border: 1px solid #0096ff;
+            color: #0096ff;
+        }
+
+        .log {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 1rem;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        .log-entry {
+            margin-bottom: 0.5rem;
+            padding: 0.3rem;
+            border-radius: 4px;
+        }
+
+        .log-entry.info {
+            background: rgba(0, 150, 255, 0.1);
+        }
+
+        .log-entry.success {
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        .log-entry.error {
+            background: rgba(255, 0, 0, 0.1);
+        }
+
+        .log-entry.warning {
+            background: rgba(255, 165, 0, 0.1);
+        }
+
+        .input-group {
+            margin: 1rem 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #ccc;
+        }
+
+        .input-group input,
+        .input-group select,
+        .input-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #555;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #00ff88;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+        }
+
+        .cert-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cert-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #00ff88;
+        }
+
+        .cert-item h4 {
+            color: #00ff88;
+            margin-bottom: 0.5rem;
+        }
+
+        .cert-item p {
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #00ff88, #00cc66);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-card h4 {
+            color: #00ff88;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card p {
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: rgba(30, 30, 30, 0.95);
+            margin: 5% auto;
+            padding: 2rem;
+            border: 1px solid #00ff88;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            color: #00ff88;
+            float: right;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #00cc66;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #555;
+            margin-bottom: 1rem;
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            border-bottom-color: #00ff88;
+            color: #00ff88;
+        }
+
+        .tab:hover {
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .template-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .template-card:hover {
+            border-color: #00ff88;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .template-card.selected {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .template-card h4 {
+            color: #00ff88;
+            margin-bottom: 0.5rem;
+        }
+
+        .template-card p {
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+
+        .algorithm-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .algorithm-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .algorithm-card:hover {
+            border-color: #00ff88;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .algorithm-card.selected {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .algorithm-card h4 {
+            color: #00ff88;
+            margin-bottom: 0.5rem;
+        }
+
+        .algorithm-card p {
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+
+        .language-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .language-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .language-card:hover {
+            border-color: #00ff88;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .language-card.selected {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .language-card h4 {
+            color: #00ff88;
+            margin-bottom: 0.5rem;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .loading {
+            animation: pulse 1s infinite;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>RawrZ EV Certificate Encryptor Panel</h1>
+    </div>
+
+    <div class="container">
+        <!-- Status Overview -->
+        <div class="card">
+            <h3>System Status</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4 id="totalCerts">0</h4>
+                    <p>Total Certificates</p>
+                </div>
+                <div class="stat-card">
+                    <h4 id="totalStubs">0</h4>
+                    <p>Encrypted Stubs</p>
+                </div>
+                <div class="stat-card">
+                    <h4 id="supportedTemplates">0</h4>
+                    <p>Supported Templates</p>
+                </div>
+                <div class="stat-card">
+                    <h4 id="supportedLanguages">0</h4>
+                    <p>Supported Languages</p>
+                </div>
+            </div>
+            <button class="btn" onclick="refreshStatus()">Refresh Status</button>
+        </div>
+
+        <!-- Main Tabs -->
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('certificates')">Certificates</div>
+            <div class="tab" onclick="switchTab('generate')">Generate Certificate</div>
+            <div class="tab" onclick="switchTab('encrypt')">Encrypt Stub</div>
+            <div class="tab" onclick="switchTab('stubs')">Encrypted Stubs</div>
+            <div class="tab" onclick="switchTab('templates')">Templates</div>
+        </div>
+
+        <!-- Certificates Tab -->
+        <div id="certificates" class="tab-content active">
+            <div class="grid">
+                <div class="card">
+                    <h3>EV Certificates</h3>
+                    <p>Manage and view generated EV certificates</p>
+                    <button class="btn" onclick="loadCertificates()">Load Certificates</button>
+                    <div id="certStatus" class="status hidden"></div>
+                    <div id="certificatesList"></div>
+                </div>
+
+                <div class="card">
+                    <h3>Certificate Details</h3>
+                    <div id="certificateDetails"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generate Certificate Tab -->
+        <div id="generate" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>Generate EV Certificate</h3>
+                    <p>Create a new EV certificate with custom template</p>
+                    
+                    <div class="input-group">
+                        <label>Certificate Template:</label>
+                        <select id="certTemplate">
+                            <option value="microsoft">Microsoft Corporation</option>
+                            <option value="google">Google LLC</option>
+                            <option value="adobe">Adobe Inc.</option>
+                            <option value="oracle">Oracle Corporation</option>
+                            <option value="intel">Intel Corporation</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Certificate Options:</label>
+                        <textarea id="certOptions" rows="4" placeholder='{"validityDays": 365, "keySize": 2048, "country": "US", "state": "California", "city": "San Francisco", "organization": "Custom Org", "organizationalUnit": "IT Department"}'></textarea>
+                    </div>
+
+                    <button class="btn" onclick="generateCertificate()">Generate Certificate</button>
+                    <div id="generateStatus" class="status hidden"></div>
+                    <div id="generateProgress" class="progress-bar hidden">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <div id="generateResults" class="log hidden"></div>
+                </div>
+
+                <div class="card">
+                    <h3>Available Templates</h3>
+                    <div id="templatesList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Encrypt Stub Tab -->
+        <div id="encrypt" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>Encrypt Stub with EV Certificate</h3>
+                    <p>Encrypt stub code using generated EV certificates</p>
+                    
+                    <div class="input-group">
+                        <label>Select Certificate:</label>
+                        <select id="encryptCertId">
+                            <option value="">Select a certificate...</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Stub Code:</label>
+                        <textarea id="stubCode" rows="10" placeholder="Enter your stub code here..."></textarea>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Programming Language:</label>
+                        <select id="stubLanguage">
+                            <option value="csharp">C#</option>
+                            <option value="cpp">C++</option>
+                            <option value="python">Python</option>
+                            <option value="javascript">JavaScript</option>
+                            <option value="powershell">PowerShell</option>
+                            <option value="batch">Batch</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Encryption Algorithm:</label>
+                        <select id="encryptionAlgorithm">
+                            <option value="aes-256-gcm">AES-256-GCM</option>
+                            <option value="aes-256-cbc">AES-256-CBC</option>
+                            <option value="rsa-oaep">RSA-OAEP</option>
+                            <option value="chacha20-poly1305">ChaCha20-Poly1305</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Encryption Options:</label>
+                        <textarea id="encryptOptions" rows="3" placeholder='{"compression": true, "obfuscation": true, "antiAnalysis": true}'></textarea>
+                    </div>
+
+                    <button class="btn" onclick="encryptStub()">Encrypt Stub</button>
+                    <div id="encryptStatus" class="status hidden"></div>
+                    <div id="encryptProgress" class="progress-bar hidden">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <div id="encryptResults" class="log hidden"></div>
+                </div>
+
+                <div class="card">
+                    <h3>Supported Languages & Algorithms</h3>
+                    <div id="supportedLanguagesList"></div>
+                    <div id="supportedAlgorithmsList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Encrypted Stubs Tab -->
+        <div id="stubs" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>Encrypted Stubs</h3>
+                    <p>View and manage encrypted stub files</p>
+                    <button class="btn" onclick="loadStubs()">Load Stubs</button>
+                    <div id="stubsStatus" class="status hidden"></div>
+                    <div id="stubsList"></div>
+                </div>
+
+                <div class="card">
+                    <h3>Stub Details</h3>
+                    <div id="stubDetails"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Templates Tab -->
+        <div id="templates" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>Certificate Templates</h3>
+                    <p>Available EV certificate templates</p>
+                    <button class="btn" onclick="loadTemplates()">Load Templates</button>
+                    <div id="templatesStatus" class="status hidden"></div>
+                    <div id="templatesGrid"></div>
+                </div>
+
+                <div class="card">
+                    <h3>Template Details</h3>
+                    <div id="templateDetails"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for detailed views -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'certificates';
+        let isOperationRunning = false;
+        let selectedTemplate = null;
+        let selectedAlgorithm = null;
+
+        // Initialize the panel
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshStatus();
+            loadCertificates();
+            loadTemplates();
+            loadSupportedLanguages();
+            loadSupportedAlgorithms();
+        });
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            currentTab = tabName;
+        }
+
+        // Status refresh
+        async function refreshStatus() {
+            try {
+                const response = await fetch('/ev-cert/status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('totalCerts').textContent = data.result.totalCertificates;
+                    document.getElementById('totalStubs').textContent = data.result.totalStubs;
+                    document.getElementById('supportedTemplates').textContent = data.result.supportedTemplates;
+                    document.getElementById('supportedLanguages').textContent = data.result.supportedLanguages;
+                }
+            } catch (error) {
+                console.error('Failed to refresh status:', error);
+            }
+        }
+
+        // Load certificates
+        async function loadCertificates() {
+            try {
+                const response = await fetch('/ev-cert/certificates');
+                const data = await response.json();
+                
+                const container = document.getElementById('certificatesList');
+                const selectContainer = document.getElementById('encryptCertId');
+                
+                container.innerHTML = '';
+                selectContainer.innerHTML = '<option value="">Select a certificate...</option>';
+                
+                if (data.success && data.certificates.length > 0) {
+                    data.certificates.forEach(cert => {
+                        // Add to list
+                        const item = document.createElement('div');
+                        item.className = 'cert-item';
+                        item.onclick = () => showCertificateDetails(cert);
+                        item.innerHTML = `
+                            <h4>${cert.id}</h4>
+                            <p>Template: ${cert.template}</p>
+                            <p>Subject: ${cert.subject}</p>
+                            <p>Valid From: ${new Date(cert.validFrom).toLocaleDateString()}</p>
+                            <p>Valid To: ${new Date(cert.validTo).toLocaleDateString()}</p>
+                        `;
+                        container.appendChild(item);
+
+                        // Add to select
+                        const option = document.createElement('option');
+                        option.value = cert.id;
+                        option.textContent = `${cert.id} (${cert.template})`;
+                        selectContainer.appendChild(option);
+                    });
+                } else {
+                    container.innerHTML = '<p>No certificates found. Generate a certificate first.</p>';
+                }
+            } catch (error) {
+                console.error('Failed to load certificates:', error);
+            }
+        }
+
+        // Show certificate details
+        function showCertificateDetails(cert) {
+            const container = document.getElementById('certificateDetails');
+            container.innerHTML = `
+                <h4>Certificate Details</h4>
+                <p><strong>ID:</strong> ${cert.id}</p>
+                <p><strong>Template:</strong> ${cert.template}</p>
+                <p><strong>Subject:</strong> ${cert.subject}</p>
+                <p><strong>Issuer:</strong> ${cert.issuer}</p>
+                <p><strong>Serial Number:</strong> ${cert.serialNumber}</p>
+                <p><strong>Valid From:</strong> ${new Date(cert.validFrom).toLocaleString()}</p>
+                <p><strong>Valid To:</strong> ${new Date(cert.validTo).toLocaleString()}</p>
+                <p><strong>Thumbprint:</strong> ${cert.thumbprint}</p>
+                <p><strong>Key Size:</strong> ${cert.keySize} bits</p>
+                <p><strong>Signature Algorithm:</strong> ${cert.signatureAlgorithm}</p>
+            `;
+        }
+
+        // Generate certificate
+        async function generateCertificate() {
+            if (isOperationRunning) return;
+            isOperationRunning = true;
+            
+            const template = document.getElementById('certTemplate').value;
+            const optionsText = document.getElementById('certOptions').value;
+            
+            let options = {};
+            try {
+                if (optionsText.trim()) {
+                    options = JSON.parse(optionsText);
+                }
+            } catch (error) {
+                alert('Invalid JSON in options field');
+                isOperationRunning = false;
+                return;
+            }
+            
+            const statusDiv = document.getElementById('generateStatus');
+            const progressDiv = document.getElementById('generateProgress');
+            const resultsDiv = document.getElementById('generateResults');
+            
+            statusDiv.className = 'status info';
+            statusDiv.textContent = 'Generating EV certificate...';
+            statusDiv.classList.remove('hidden');
+            
+            progressDiv.classList.remove('hidden');
+            resultsDiv.innerHTML = '';
+            resultsDiv.classList.remove('hidden');
+            
+            // Simulate progress
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 10;
+                document.querySelector('.progress-fill').style.width = progress + '%';
+                if (progress >= 100) clearInterval(progressInterval);
+            }, 200);
+            
+            try {
+                const response = await fetch('/ev-cert/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ template: template, options: options })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = 'Certificate generated successfully.';
+                    
+                    // Display results
+                    const entry = document.createElement('div');
+                    entry.className = 'log-entry success';
+                    entry.innerHTML = `
+                        <strong>Certificate Generated</strong><br>
+                        ID: ${data.result.id}<br>
+                        Template: ${data.result.template}<br>
+                        Subject: ${data.result.subject}<br>
+                        Valid From: ${new Date(data.result.validFrom).toLocaleString()}<br>
+                        Valid To: ${new Date(data.result.validTo).toLocaleString()}<br>
+                        Thumbprint: ${data.result.thumbprint}
+                    `;
+                    resultsDiv.appendChild(entry);
+                    
+                    loadCertificates();
+                    refreshStatus();
+                } else {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = 'Certificate generation failed: ' + (data.error || 'Unknown error');
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = 'Certificate generation failed: ' + error.message;
+            } finally {
+                isOperationRunning = false;
+                clearInterval(progressInterval);
+            }
+        }
+
+        // Encrypt stub
+        async function encryptStub() {
+            if (isOperationRunning) return;
+            isOperationRunning = true;
+            
+            const certId = document.getElementById('encryptCertId').value;
+            const stubCode = document.getElementById('stubCode').value;
+            const language = document.getElementById('stubLanguage').value;
+            const algorithm = document.getElementById('encryptionAlgorithm').value;
+            const optionsText = document.getElementById('encryptOptions').value;
+            
+            if (!certId || !stubCode.trim()) {
+                alert('Please select a certificate and enter stub code');
+                isOperationRunning = false;
+                return;
+            }
+            
+            let options = {};
+            try {
+                if (optionsText.trim()) {
+                    options = JSON.parse(optionsText);
+                }
+            } catch (error) {
+                alert('Invalid JSON in options field');
+                isOperationRunning = false;
+                return;
+            }
+            
+            const statusDiv = document.getElementById('encryptStatus');
+            const progressDiv = document.getElementById('encryptProgress');
+            const resultsDiv = document.getElementById('encryptResults');
+            
+            statusDiv.className = 'status info';
+            statusDiv.textContent = 'Encrypting stub with EV certificate...';
+            statusDiv.classList.remove('hidden');
+            
+            progressDiv.classList.remove('hidden');
+            resultsDiv.innerHTML = '';
+            resultsDiv.classList.remove('hidden');
+            
+            // Simulate progress
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 5;
+                document.querySelector('.progress-fill').style.width = progress + '%';
+                if (progress >= 100) clearInterval(progressInterval);
+            }, 100);
+            
+            try {
+                const response = await fetch('/ev-cert/encrypt-stub', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        stubCode: stubCode,
+                        language: language,
+                        certId: certId,
+                        algorithm: algorithm,
+                        options: options
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = 'Stub encrypted successfully.';
+                    
+                    // Display results
+                    const entry = document.createElement('div');
+                    entry.className = 'log-entry success';
+                    entry.innerHTML = `
+                        <strong>Stub Encrypted</strong><br>
+                        Stub ID: ${data.result.stubId}<br>
+                        Language: ${data.result.language}<br>
+                        Algorithm: ${data.result.algorithm}<br>
+                        Certificate: ${data.result.certId}<br>
+                        Size: ${data.result.size} bytes<br>
+                        Timestamp: ${new Date(data.result.timestamp).toLocaleString()}
+                    `;
+                    resultsDiv.appendChild(entry);
+                    
+                    loadStubs();
+                    refreshStatus();
+                } else {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = 'Stub encryption failed: ' + (data.error || 'Unknown error');
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = 'Stub encryption failed: ' + error.message;
+            } finally {
+                isOperationRunning = false;
+                clearInterval(progressInterval);
+            }
+        }
+
+        // Load stubs
+        async function loadStubs() {
+            try {
+                const response = await fetch('/ev-cert/stubs');
+                const data = await response.json();
+                
+                const container = document.getElementById('stubsList');
+                container.innerHTML = '';
+                
+                if (data.success && data.stubs.length > 0) {
+                    data.stubs.forEach(stub => {
+                        const item = document.createElement('div');
+                        item.className = 'cert-item';
+                        item.onclick = () => showStubDetails(stub);
+                        item.innerHTML = `
+                            <h4>${stub.stubId}</h4>
+                            <p>Language: ${stub.language}</p>
+                            <p>Algorithm: ${stub.algorithm}</p>
+                            <p>Certificate: ${stub.certId}</p>
+                            <p>Size: ${stub.size} bytes</p>
+                            <p>Timestamp: ${new Date(stub.timestamp).toLocaleString()}</p>
+                        `;
+                        container.appendChild(item);
+                    });
+                } else {
+                    container.innerHTML = '<p>No encrypted stubs found. Encrypt a stub first.</p>';
+                }
+            } catch (error) {
+                console.error('Failed to load stubs:', error);
+            }
+        }
+
+        // Show stub details
+        function showStubDetails(stub) {
+            const container = document.getElementById('stubDetails');
+            container.innerHTML = `
+                <h4>Stub Details</h4>
+                <p><strong>Stub ID:</strong> ${stub.stubId}</p>
+                <p><strong>Language:</strong> ${stub.language}</p>
+                <p><strong>Algorithm:</strong> ${stub.algorithm}</p>
+                <p><strong>Certificate:</strong> ${stub.certId}</p>
+                <p><strong>Size:</strong> ${stub.size} bytes</p>
+                <p><strong>Timestamp:</strong> ${new Date(stub.timestamp).toLocaleString()}</p>
+                <p><strong>Options:</strong> ${JSON.stringify(stub.options, null, 2)}</p>
+            `;
+        }
+
+        // Load templates
+        async function loadTemplates() {
+            try {
+                const response = await fetch('/ev-cert/templates');
+                const data = await response.json();
+                
+                const container = document.getElementById('templatesGrid');
+                container.innerHTML = '';
+                
+                if (data.success && data.templates.length > 0) {
+                    data.templates.forEach(template => {
+                        const item = document.createElement('div');
+                        item.className = 'template-card';
+                        item.onclick = () => selectTemplate(template, item);
+                        item.innerHTML = `
+                            <h4>${template.name}</h4>
+                            <p>${template.description}</p>
+                            <p><strong>Organization:</strong> ${template.organization}</p>
+                            <p><strong>Country:</strong> ${template.country}</p>
+                        `;
+                        container.appendChild(item);
+                    });
+                } else {
+                    container.innerHTML = '<p>No templates available.</p>';
+                }
+            } catch (error) {
+                console.error('Failed to load templates:', error);
+            }
+        }
+
+        // Select template
+        function selectTemplate(template, element) {
+            // Remove previous selection
+            document.querySelectorAll('.template-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selection to clicked element
+            element.classList.add('selected');
+            selectedTemplate = template;
+            
+            // Show template details
+            const container = document.getElementById('templateDetails');
+            container.innerHTML = `
+                <h4>Template Details</h4>
+                <p><strong>Name:</strong> ${template.name}</p>
+                <p><strong>Description:</strong> ${template.description}</p>
+                <p><strong>Organization:</strong> ${template.organization}</p>
+                <p><strong>Country:</strong> ${template.country}</p>
+                <p><strong>State:</strong> ${template.state}</p>
+                <p><strong>City:</strong> ${template.city}</p>
+                <p><strong>Key Size:</strong> ${template.keySize} bits</p>
+                <p><strong>Validity:</strong> ${template.validityDays} days</p>
+            `;
+        }
+
+        // Load supported languages
+        async function loadSupportedLanguages() {
+            try {
+                const response = await fetch('/ev-cert/languages');
+                const data = await response.json();
+                
+                const container = document.getElementById('supportedLanguagesList');
+                container.innerHTML = '<h4>Supported Languages</h4>';
+                
+                if (data.success && data.languages.length > 0) {
+                    const grid = document.createElement('div');
+                    grid.className = 'language-grid';
+                    
+                    data.languages.forEach(language => {
+                        const item = document.createElement('div');
+                        item.className = 'language-card';
+                        item.innerHTML = `<h4>${language}</h4>`;
+                        grid.appendChild(item);
+                    });
+                    
+                    container.appendChild(grid);
+                }
+            } catch (error) {
+                console.error('Failed to load supported languages:', error);
+            }
+        }
+
+        // Load supported algorithms
+        async function loadSupportedAlgorithms() {
+            try {
+                const response = await fetch('/ev-cert/algorithms');
+                const data = await response.json();
+                
+                const container = document.getElementById('supportedAlgorithmsList');
+                container.innerHTML = '<h4>Supported Algorithms</h4>';
+                
+                if (data.success && data.algorithms.length > 0) {
+                    const grid = document.createElement('div');
+                    grid.className = 'algorithm-grid';
+                    
+                    data.algorithms.forEach(algorithm => {
+                        const item = document.createElement('div');
+                        item.className = 'algorithm-card';
+                        item.innerHTML = `
+                            <h4>${algorithm.name}</h4>
+                            <p>${algorithm.description}</p>
+                            <p><strong>Key Size:</strong> ${algorithm.keySize}</p>
+                        `;
+                        grid.appendChild(item);
+                    });
+                    
+                    container.appendChild(grid);
+                }
+            } catch (error) {
+                console.error('Failed to load supported algorithms:', error);
+            }
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('modal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

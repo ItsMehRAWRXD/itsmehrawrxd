@@ -47,7 +47,7 @@ class RawrZAPIExamples {
 
     // Example 1: OpenSSL Toggle Management
     async demonstrateOpenSSLManagement() {
-        console.log('🔐 OpenSSL Management Demonstration\n');
+        console.log('OpenSSL Management Demonstration\n');
 
         try {
             // Get current OpenSSL configuration
@@ -102,7 +102,7 @@ class RawrZAPIExamples {
 
     // Example 2: Advanced Stub Generation with All Options
     async demonstrateAdvancedStubGeneration() {
-        console.log('🏗️ Advanced Stub Generation Demonstration\n');
+        console.log('Advanced Stub Generation Demonstration\n');
 
         try {
             const target = 'test-payload.exe';
@@ -141,10 +141,10 @@ class RawrZAPIExamples {
             const result = await this.apiCall('/stub', 'POST', { target, options });
             
             if (result.success) {
-                console.log('✅ Advanced stub generated successfully!');
+                console.log('Advanced stub generated successfully!');
                 console.log('Result:', JSON.stringify(result.result, null, 2));
             } else {
-                console.log('❌ Advanced stub generation failed');
+                console.log('Advanced stub generation failed');
             }
             console.log();
 
@@ -155,7 +155,7 @@ class RawrZAPIExamples {
 
     // Example 3: Port Scanning with Interactive Controls
     async demonstratePortScanning() {
-        console.log('🔍 Port Scanning Demonstration\n');
+        console.log('Port Scanning Demonstration\n');
 
         try {
             const host = '127.0.0.1';
@@ -186,10 +186,10 @@ class RawrZAPIExamples {
             });
 
             if (result.success) {
-                console.log('✅ Port scan completed successfully!');
+                console.log('Port scan completed successfully!');
                 console.log('Results:', JSON.stringify(result.result, null, 2));
             } else {
-                console.log('❌ Port scan failed');
+                console.log('Port scan failed');
             }
             console.log();
 
@@ -200,7 +200,7 @@ class RawrZAPIExamples {
 
     // Example 4: Encryption with OpenSSL Toggle
     async demonstrateEncryptionWithToggle() {
-        console.log('🔐 Encryption with OpenSSL Toggle Demonstration\n');
+        console.log('Encryption with OpenSSL Toggle Demonstration\n');
 
         try {
             const testData = 'Hello, RawrZ OpenSSL Toggle!';
@@ -250,7 +250,7 @@ class RawrZAPIExamples {
 
     // Example 5: Advanced Crypto with All Options
     async demonstrateAdvancedCrypto() {
-        console.log('🔐 Advanced Crypto Demonstration\n');
+        console.log('Advanced Crypto Demonstration\n');
 
         try {
             const testData = 'Advanced crypto test data';
@@ -279,10 +279,10 @@ class RawrZAPIExamples {
             });
 
             if (result.success) {
-                console.log('✅ Advanced encryption successful!');
+                console.log('Advanced encryption successful!');
                 console.log('Result:', JSON.stringify(result.result, null, 2));
             } else {
-                console.log('❌ Advanced encryption failed');
+                console.log('Advanced encryption failed');
             }
             console.log();
 
@@ -293,7 +293,7 @@ class RawrZAPIExamples {
 
     // Example 6: Network Tools with Interactive Controls
     async demonstrateNetworkTools() {
-        console.log('🌐 Network Tools Demonstration\n');
+        console.log('Network Tools Demonstration\n');
 
         try {
             // Ping test
@@ -379,7 +379,7 @@ class RawrZAPIExamples {
 
     // Example 8: System Information and Monitoring
     async demonstrateSystemMonitoring() {
-        console.log('📊 System Monitoring Demonstration\n');
+        console.log('System Monitoring Demonstration\n');
 
         try {
             // System info
@@ -425,14 +425,14 @@ class RawrZAPIExamples {
 
     // Example 9: Complete Workflow Integration
     async demonstrateCompleteWorkflow() {
-        console.log('🔄 Complete Workflow Integration Demonstration\n');
+        console.log('Complete Workflow Integration Demonstration\n');
 
         try {
             // Step 1: Configure OpenSSL settings
             console.log('Step 1: Configuring OpenSSL settings...');
             await this.apiCall('/openssl/toggle-openssl', 'POST', { enabled: true });
             await this.apiCall('/openssl/toggle-custom', 'POST', { enabled: false });
-            console.log('✅ OpenSSL configured for maximum compatibility');
+            console.log('OpenSSL configured for maximum compatibility');
             console.log();
 
             // Step 2: Generate a stub with advanced options
@@ -457,9 +457,9 @@ class RawrZAPIExamples {
             });
 
             if (stubResult.success) {
-                console.log('✅ Advanced stub generated successfully');
+                console.log('Advanced stub generated successfully');
             } else {
-                console.log('❌ Stub generation failed');
+                console.log('Stub generation failed');
                 return;
             }
             console.log();
@@ -472,9 +472,9 @@ class RawrZAPIExamples {
             });
 
             if (encryptResult.success) {
-                console.log('✅ Stub encrypted successfully');
+                console.log('Stub encrypted successfully');
             } else {
-                console.log('❌ Encryption failed');
+                console.log('Encryption failed');
                 return;
             }
             console.log();
@@ -491,9 +491,9 @@ class RawrZAPIExamples {
             });
 
             if (scanResult.success) {
-                console.log('✅ Network scan completed');
+                console.log('Network scan completed');
             } else {
-                console.log('❌ Network scan failed');
+                console.log('Network scan failed');
             }
             console.log();
 
@@ -518,11 +518,11 @@ class RawrZAPIExamples {
                 }
             };
 
-            console.log('📋 Workflow Report:');
+            console.log('Workflow Report:');
             console.log(JSON.stringify(report, null, 2));
             console.log();
 
-            console.log('🎉 Complete workflow demonstration finished!');
+            console.log('Complete workflow demonstration finished!');
 
         } catch (error) {
             console.error('Complete workflow demonstration failed:', error.message);
@@ -531,7 +531,7 @@ class RawrZAPIExamples {
 
     // Run all demonstrations
     async runAllDemonstrations() {
-        console.log('🚀 RawrZ API Demonstrations\n');
+        console.log('RawrZ API Demonstrations\n');
         console.log('=' .repeat(50));
         console.log();
 
@@ -542,7 +542,7 @@ class RawrZAPIExamples {
             if (!health.ok) {
                 throw new Error('Server is not healthy');
             }
-            console.log('✅ Server is healthy\n');
+            console.log('Server is healthy\n');
 
             // Run all demonstrations
             await this.demonstrateOpenSSLManagement();
@@ -555,10 +555,10 @@ class RawrZAPIExamples {
             await this.demonstrateSystemMonitoring();
             await this.demonstrateCompleteWorkflow();
 
-            console.log('🎉 All demonstrations completed successfully!');
+            console.log('All demonstrations completed successfully!');
 
         } catch (error) {
-            console.error('❌ Demonstrations failed:', error.message);
+            console.error('Demonstrations failed:', error.message);
             console.log('\nMake sure the RawrZ server is running on', this.baseUrl);
         }
     }
@@ -580,7 +580,7 @@ async function runExamples() {
 // Run if called directly
 if (require.main === module) {
     runExamples().catch(error => {
-        console.error('❌ Examples failed:', error.message);
+        console.error('Examples failed:', error.message);
         process.exit(1);
     });
 }

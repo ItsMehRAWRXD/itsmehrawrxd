@@ -1,0 +1,30 @@
+# DotNet Compilation Dockerfile
+# Generated: 2025-09-15T15:34:34.839Z
+
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+
+WORKDIR /app
+
+# Copy source code
+COPY Program.cs .
+
+# Create project file
+RUN dotnet new console -n TempApp --force
+RUN cp Program.cs TempApp/Program.cs
+WORKDIR /app/TempApp
+
+# Build application
+RUN dotnet build -c Release
+
+# Publish application
+RUN dotnet publish -c Release -r win-x64 --self-contained true
+
+FROM mcr.microsoft.com/dotnet/runtime:6.0 AS runtime
+
+WORKDIR /app
+
+# Copy published application
+COPY --from=build /app/TempApp/bin/Release/net6.0/win-x64/publish/ .
+
+# Set entry point
+ENTRYPOINT ["./TempApp.exe"]

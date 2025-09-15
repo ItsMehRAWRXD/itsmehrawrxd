@@ -4,249 +4,249 @@
     "passedTests": 37,
     "failedTests": 3,
     "successRate": 92.5,
-    "duration": 4270
+    "duration": 4216
   },
   "results": [
     {
       "test": "Server Health Check",
       "passed": true,
       "details": "Server is healthy",
-      "timestamp": "2025-09-15T14:34:39.028Z"
+      "timestamp": "2025-09-15T15:13:29.837Z"
     },
     {
       "test": "API Status Endpoint",
       "passed": true,
       "details": "Status endpoint working",
-      "timestamp": "2025-09-15T14:34:39.031Z"
+      "timestamp": "2025-09-15T15:13:29.839Z"
     },
     {
       "test": "CLI Help Command",
       "passed": true,
       "details": "Command executed successfully",
-      "timestamp": "2025-09-15T14:34:39.109Z"
+      "timestamp": "2025-09-15T15:13:29.913Z"
     },
     {
       "test": "CLI Engines Status",
       "passed": true,
       "details": "Command executed successfully",
-      "timestamp": "2025-09-15T14:34:39.186Z"
+      "timestamp": "2025-09-15T15:13:29.986Z"
     },
     {
       "test": "CLI Load Engine",
       "passed": true,
       "details": "Command executed successfully",
-      "timestamp": "2025-09-15T14:34:39.255Z"
+      "timestamp": "2025-09-15T15:13:30.055Z"
     },
     {
       "test": "CLI Ping Command",
       "passed": true,
       "details": "Command executed successfully",
-      "timestamp": "2025-09-15T14:34:42.443Z"
+      "timestamp": "2025-09-15T15:13:33.229Z"
     },
     {
       "test": "CLI DNS Command",
       "passed": true,
       "details": "Command executed successfully",
-      "timestamp": "2025-09-15T14:34:42.517Z"
+      "timestamp": "2025-09-15T15:13:33.307Z"
     },
     {
       "test": "CLI Rebuild Command",
       "passed": true,
       "details": "Command executed successfully",
-      "timestamp": "2025-09-15T14:34:42.588Z"
+      "timestamp": "2025-09-15T15:13:33.381Z"
     },
     {
       "test": "Engine anti-analysis Initialization",
       "passed": true,
       "details": "Engine initialized successfully",
-      "timestamp": "2025-09-15T14:34:42.589Z"
+      "timestamp": "2025-09-15T15:13:33.383Z"
     },
     {
       "test": "Engine digital-forensics Initialization",
       "passed": true,
       "details": "Engine initialized successfully",
-      "timestamp": "2025-09-15T14:34:42.591Z"
+      "timestamp": "2025-09-15T15:13:33.384Z"
     },
     {
       "test": "Engine malware-analysis Initialization",
       "passed": true,
       "details": "Engine initialized successfully",
-      "timestamp": "2025-09-15T14:34:42.592Z"
+      "timestamp": "2025-09-15T15:13:33.385Z"
     },
     {
       "test": "Engine network-tools Initialization",
       "passed": true,
       "details": "Engine initialized successfully",
-      "timestamp": "2025-09-15T14:34:42.596Z"
+      "timestamp": "2025-09-15T15:13:33.390Z"
     },
     {
       "test": "Engine hot-patchers Initialization",
       "passed": true,
       "details": "Engine initialized successfully",
-      "timestamp": "2025-09-15T14:34:42.599Z"
+      "timestamp": "2025-09-15T15:13:33.392Z"
     },
     {
       "test": "Engine reverse-engineering Initialization",
       "passed": true,
       "details": "Engine initialized successfully",
-      "timestamp": "2025-09-15T14:34:42.600Z"
+      "timestamp": "2025-09-15T15:13:33.393Z"
     },
     {
       "test": "Engine jotti-scanner Initialization",
       "passed": true,
       "details": "Engine initialized successfully",
-      "timestamp": "2025-09-15T14:34:42.628Z"
+      "timestamp": "2025-09-15T15:13:33.422Z"
     },
     {
       "test": "Engine private-virus-scanner Initialization",
       "passed": true,
       "details": "Engine initialized successfully",
-      "timestamp": "2025-09-15T14:34:42.901Z"
+      "timestamp": "2025-09-15T15:13:33.715Z"
     },
     {
       "test": "Engine dual-generators Initialization",
       "passed": true,
       "details": "Engine initialized successfully",
-      "timestamp": "2025-09-15T14:34:42.902Z"
+      "timestamp": "2025-09-15T15:13:33.716Z"
     },
     {
       "test": "Engine health-monitor Initialization",
       "passed": true,
       "details": "Engine initialized successfully",
-      "timestamp": "2025-09-15T14:34:42.903Z"
+      "timestamp": "2025-09-15T15:13:33.717Z"
     },
     {
       "test": "Engine stealth-engine Initialization",
       "passed": true,
       "details": "Engine initialized successfully",
-      "timestamp": "2025-09-15T14:34:42.904Z"
+      "timestamp": "2025-09-15T15:13:33.719Z"
     },
     {
       "test": "Engine advanced-fud-engine Initialization",
       "passed": true,
       "details": "Engine initialized successfully",
-      "timestamp": "2025-09-15T14:34:42.905Z"
+      "timestamp": "2025-09-15T15:13:33.720Z"
     },
     {
       "test": "Status Endpoint",
       "passed": true,
       "details": "Endpoint working",
-      "timestamp": "2025-09-15T14:34:42.907Z"
+      "timestamp": "2025-09-15T15:13:33.721Z"
     },
     {
       "test": "Rebuild Endpoint",
       "passed": false,
       "details": "Status: 400",
-      "timestamp": "2025-09-15T14:34:42.908Z"
+      "timestamp": "2025-09-15T15:13:33.723Z"
     },
     {
       "test": "Security Scan Endpoint",
       "passed": true,
       "details": "Endpoint working",
-      "timestamp": "2025-09-15T14:34:42.909Z"
+      "timestamp": "2025-09-15T15:13:33.724Z"
     },
     {
       "test": "Malware Analysis Endpoint",
       "passed": true,
       "details": "Endpoint working",
-      "timestamp": "2025-09-15T14:34:42.915Z"
+      "timestamp": "2025-09-15T15:13:33.730Z"
     },
     {
       "test": "Dashboard Stats Endpoint",
       "passed": false,
       "details": "Status: 500",
-      "timestamp": "2025-09-15T14:34:42.919Z"
+      "timestamp": "2025-09-15T15:13:33.733Z"
     },
     {
       "test": "Bots Status Endpoint",
       "passed": true,
       "details": "Endpoint working",
-      "timestamp": "2025-09-15T14:34:42.934Z"
+      "timestamp": "2025-09-15T15:13:33.749Z"
     },
     {
       "test": "Web Panel /panel",
       "passed": true,
       "details": "Panel loads correctly",
-      "timestamp": "2025-09-15T14:34:42.937Z"
+      "timestamp": "2025-09-15T15:13:33.752Z"
     },
     {
       "test": "Web Panel /unified",
       "passed": true,
       "details": "Panel loads correctly",
-      "timestamp": "2025-09-15T14:34:42.938Z"
+      "timestamp": "2025-09-15T15:13:33.754Z"
     },
     {
       "test": "Web Panel /irc-bot-builder",
       "passed": true,
       "details": "Panel loads correctly",
-      "timestamp": "2025-09-15T14:34:42.940Z"
+      "timestamp": "2025-09-15T15:13:33.756Z"
     },
     {
       "test": "Web Panel /http-bot-panel",
       "passed": true,
       "details": "Panel loads correctly",
-      "timestamp": "2025-09-15T14:34:42.941Z"
+      "timestamp": "2025-09-15T15:13:33.758Z"
     },
     {
       "test": "Web Panel /stub-generator-panel",
       "passed": true,
       "details": "Panel loads correctly",
-      "timestamp": "2025-09-15T14:34:42.943Z"
+      "timestamp": "2025-09-15T15:13:33.759Z"
     },
     {
       "test": "Web Panel /health-dashboard",
       "passed": true,
       "details": "Panel loads correctly",
-      "timestamp": "2025-09-15T14:34:42.944Z"
+      "timestamp": "2025-09-15T15:13:33.760Z"
     },
     {
       "test": "File Reading",
       "passed": true,
       "details": "Package.json read successfully",
-      "timestamp": "2025-09-15T14:34:42.944Z"
+      "timestamp": "2025-09-15T15:13:33.761Z"
     },
     {
       "test": "Directory Listing",
       "passed": true,
-      "details": "Found 46 files",
-      "timestamp": "2025-09-15T14:34:42.944Z"
+      "details": "Found 42 files",
+      "timestamp": "2025-09-15T15:13:33.761Z"
     },
     {
       "test": "Encryption/Decryption",
       "passed": true,
       "details": "Encryption/decryption working",
-      "timestamp": "2025-09-15T14:34:42.945Z"
+      "timestamp": "2025-09-15T15:13:33.762Z"
     },
     {
       "test": "DNS Lookup",
       "passed": 6,
-      "details": "Resolved to 2607:f8b0:4004:c21::71",
-      "timestamp": "2025-09-15T14:34:42.946Z"
+      "details": "Resolved to 2607:f8b0:4004:c0b::65",
+      "timestamp": "2025-09-15T15:13:33.763Z"
     },
     {
       "test": "TCP Connection",
       "passed": true,
       "details": "TCP connection successful",
-      "timestamp": "2025-09-15T14:34:42.974Z"
+      "timestamp": "2025-09-15T15:13:33.790Z"
     },
     {
       "test": "Session Creation",
       "passed": true,
       "details": "Session created",
-      "timestamp": "2025-09-15T14:34:43.072Z"
+      "timestamp": "2025-09-15T15:13:33.871Z"
     },
     {
       "test": "Session Listing",
       "passed": true,
       "details": "Sessions listed",
-      "timestamp": "2025-09-15T14:34:43.172Z"
+      "timestamp": "2025-09-15T15:13:33.947Z"
     },
     {
       "test": "Error Handling",
       "passed": "",
       "details": "No error handling detected. stderr: ",
-      "timestamp": "2025-09-15T14:34:43.264Z"
+      "timestamp": "2025-09-15T15:13:34.021Z"
     }
   ],
-  "timestamp": "2025-09-15T14:34:43.265Z"
+  "timestamp": "2025-09-15T15:13:34.022Z"
 }

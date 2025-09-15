@@ -3,6 +3,7 @@
 const crypto = require('crypto');
 const fs = require('fs').promises;
 const path = require('path');
+const nativeCompiler = require('./native-compiler');
 
 class DualCryptoEngine {
   constructor() {
@@ -286,11 +287,13 @@ class DualCryptoEngine {
   }
 
   async encryptWithAES(data, key, iv) {
-    const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+    // For GCM mode, IV should be 12 bytes
+    const gcmIv = iv.length === 16 ? iv.slice(0, 12) : iv;
+    const cipher = crypto.createCipheriv('aes-256-gcm', key, gcmIv);
     let encrypted = cipher.update(data);
     encrypted = Buffer.concat([encrypted, cipher.final()]);
     const authTag = cipher.getAuthTag();
-    return Buffer.concat([iv, encrypted, authTag]);
+    return Buffer.concat([gcmIv, encrypted, authTag]);
   }
 
   async encryptWithCamellia(data, key, iv) {
@@ -312,11 +315,13 @@ class DualCryptoEngine {
   }
 
   async encryptWithChaCha20(data, key, iv) {
-    const cipher = crypto.createCipheriv('chacha20-poly1305', key, iv);
+    // ChaCha20-Poly1305 needs 12-byte IV
+    const chachaIv = iv.length === 16 ? iv.slice(0, 12) : iv;
+    const cipher = crypto.createCipheriv('chacha20-poly1305', key, chachaIv);
     let encrypted = cipher.update(data);
     encrypted = Buffer.concat([encrypted, cipher.final()]);
     const authTag = cipher.getAuthTag();
-    return Buffer.concat([iv, encrypted, authTag]);
+    return Buffer.concat([chachaIv, encrypted, authTag]);
   }
 
   prepareData(data, dataType) {
@@ -924,6 +929,42 @@ handle_exe:
     const bytes = hex.match(/.{2}/g);
     return bytes.map(byte => `0x${byte}`).join(', ');
   }
+
+  // Native compilation integration
+  async compileWithNativeCompiler(sourceCode, language, options = {}) {
+    try {
+      await nativeCompiler.initialize();
+      return await nativeCompiler.compileSource(sourceCode, language, {
+        outputFormat: options.outputFormat || 'exe',
+        optimization: options.optimization || 'release',
+        includeDebugInfo: options.includeDebugInfo || false,
+        framework: options.framework || 'auto',
+        ...options
+      });
+    } catch (error) {
+      console.error('Native compilation failed:', error);
+      throw error;
+    }
+  }
+
+  // Source-to-exe regeneration using native compiler
+  async regenerateExecutable(exePath, options = {}) {
+    try {
+      await nativeCompiler.initialize();
+      return await nativeCompiler.regenerateExecutable(exePath, options);
+    } catch (error) {
+      console.error('Executable regeneration failed:', error);
+      throw error;
+    }
+  }
+
+  // Get native compiler statistics
+  getNativeCompilerStats() {
+    return nativeCompiler.getCompilationStats();
+  }
 }
 
-module.exports = DualCryptoEngine;
+// Create and export instance
+const dualCryptoEngine = new DualCryptoEngine();
+
+module.exports = dualCryptoEngine;

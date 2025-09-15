@@ -981,7 +981,7 @@ class HealthMonitor extends EventEmitter {
             const timestamp = new Date(alert.timestamp).toISOString();
             const logEntry = `[${timestamp}] [${alert.severity.toUpperCase()}] ${alert.ruleName}: ${alert.message}\n`;
             
-            await fs.appendFile(logFile, logEntry);
+            await fs.writeFile(logFile, logEntry, { flag: 'a' });
         } catch (error) {
             logger.error('Failed to write alert to file:', error);
         }

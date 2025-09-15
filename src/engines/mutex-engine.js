@@ -446,4 +446,7 @@ function cleanupMutex() {
     }
 }
 
-module.exports = MutexEngine;
+// Create and export instance
+const mutexEngine = new MutexEngine();
+
+module.exports = mutexEngine;

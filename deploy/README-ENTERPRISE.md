@@ -1,6 +1,6 @@
 # RawrZ Enterprise Deployment Guide
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Docker & Docker Compose
@@ -19,7 +19,7 @@ chmod +x deploy/enterprise-deploy.sh
 ./deploy/enterprise-deploy.sh production yourdomain.com admin@yourdomain.com
 ```
 
-## 🏗️ Architecture
+## Architecture
 
 ### Core Services
 - **RawrZ Application**: Main security platform
@@ -32,14 +32,14 @@ chmod +x deploy/enterprise-deploy.sh
 - **Grafana**: Dashboards & visualization
 - **ELK Stack**: Log aggregation & analysis
 
-## 📊 Monitoring URLs
+## Monitoring URLs
 
 - **RawrZ Application**: https://yourdomain.com
 - **Grafana Dashboard**: http://yourdomain.com:3000
 - **Prometheus Metrics**: http://yourdomain.com:9090
 - **Kibana Logs**: http://yourdomain.com:5601
 
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables
 ```bash
@@ -54,7 +54,7 @@ GRAFANA_PASSWORD=secure_password
 - Self-signed certificates are generated automatically
 - For production, replace with Let's Encrypt certificates
 
-## 🛡️ Security Features
+## Security Features
 
 - SSL/TLS encryption
 - Rate limiting
@@ -63,7 +63,7 @@ GRAFANA_PASSWORD=secure_password
 - Non-root containers
 - Resource limits
 
-## 📈 Scaling
+## Scaling
 
 ### Horizontal Scaling
 ```yaml
@@ -77,7 +77,7 @@ services:
 ### Load Balancing
 Nginx automatically distributes traffic across multiple RawrZ instances.
 
-## 🔄 Backup & Recovery
+## Backup & Recovery
 
 ### Automated Backups
 - Database backups: Daily at 2 AM
@@ -89,7 +89,7 @@ Nginx automatically distributes traffic across multiple RawrZ instances.
 docker-compose exec postgres pg_dump -U rawrz rawrz_enterprise > backup.sql
 ```
 
-## 🚨 Troubleshooting
+## Troubleshooting
 
 ### Health Checks
 ```bash
@@ -115,11 +115,11 @@ docker-compose logs
 3. Analyze logs in Kibana
 4. Scale services if needed
 
-## 📞 Support
+## Support
 
 For enterprise support and custom configurations, contact the RawrZ team.
 
-## 🔄 Updates
+## Updates
 
 ### Rolling Updates
 ```bash

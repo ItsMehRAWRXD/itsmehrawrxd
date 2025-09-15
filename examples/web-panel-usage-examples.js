@@ -7,7 +7,7 @@
 
 // Example 1: OpenSSL Toggle Management
 async function demonstrateOpenSSLControls() {
-    console.log('🔐 OpenSSL Controls Demonstration');
+    console.log('OpenSSL Controls Demonstration');
     
     // Initialize OpenSSL manager
     await initializeOpenSSLManager();
@@ -35,7 +35,7 @@ async function demonstrateOpenSSLControls() {
 
 // Example 2: Advanced Stub Generation with All Controls
 async function demonstrateAdvancedStubControls() {
-    console.log('🏗️ Advanced Stub Controls Demonstration');
+    console.log('Advanced Stub Controls Demonstration');
     
     // Set polymorphic engine to advanced
     const polymorphicSlider = document.getElementById('stubPolymorphicSlider');
@@ -119,7 +119,7 @@ async function demonstrateAdvancedStubControls() {
 
 // Example 3: Port Scanning with Interactive Controls
 async function demonstratePortScanControls() {
-    console.log('🔍 Port Scan Controls Demonstration');
+    console.log('Port Scan Controls Demonstration');
     
     // Set port range
     const startPortSlider = document.getElementById('scanStartPortSlider');
@@ -174,7 +174,7 @@ async function demonstratePortScanControls() {
 
 // Example 4: Complete Workflow with All Controls
 async function demonstrateCompleteWorkflow() {
-    console.log('🔄 Complete Workflow Demonstration');
+    console.log('Complete Workflow Demonstration');
     
     try {
         // Step 1: Configure OpenSSL
@@ -182,7 +182,7 @@ async function demonstrateCompleteWorkflow() {
         await toggleOpenSSLMode(true);
         await toggleCustomAlgorithms(false);
         filterAlgorithms('openssl');
-        console.log('✅ OpenSSL configured');
+        console.log('OpenSSL configured');
         
         // Step 2: Set up advanced stub options
         console.log('Step 2: Setting up advanced stub options...');
@@ -232,7 +232,7 @@ async function demonstrateCompleteWorkflow() {
             }
         });
         
-        console.log('✅ Advanced stub options configured');
+        console.log('Advanced stub options configured');
         
         // Step 3: Set up port scanning
         console.log('Step 3: Setting up port scanning...');
@@ -268,7 +268,7 @@ async function demonstrateCompleteWorkflow() {
             }
         });
         
-        console.log('✅ Port scanning configured');
+        console.log('Port scanning configured');
         
         // Step 4: Execute workflow
         console.log('Step 4: Executing workflow...');
@@ -281,7 +281,7 @@ async function demonstrateCompleteWorkflow() {
         });
         
         if (stubResult.success) {
-            console.log('✅ Stub generated successfully');
+            console.log('Stub generated successfully');
         }
         
         // Run port scan
@@ -292,7 +292,7 @@ async function demonstrateCompleteWorkflow() {
         });
         
         if (scanResult.success) {
-            console.log('✅ Port scan completed successfully');
+            console.log('Port scan completed successfully');
         }
         
         // Step 5: Generate report
@@ -316,19 +316,19 @@ async function demonstrateCompleteWorkflow() {
             }
         };
         
-        console.log('📋 Workflow Report:');
+        console.log('Workflow Report:');
         console.log(JSON.stringify(report, null, 2));
         
-        console.log('🎉 Complete workflow demonstration finished!');
+        console.log('Complete workflow demonstration finished!');
         
     } catch (error) {
-        console.error('❌ Workflow demonstration failed:', error);
+        console.error('Workflow demonstration failed:', error);
     }
 }
 
 // Example 5: Real-time Control Updates
 function demonstrateRealTimeUpdates() {
-    console.log('⚡ Real-time Control Updates Demonstration');
+    console.log('Real-time Control Updates Demonstration');
     
     // Monitor slider changes
     const sliders = document.querySelectorAll('.slider');
@@ -438,12 +438,12 @@ function demonstrateRealTimeUpdates() {
         });
     });
     
-    console.log('✅ Real-time monitoring enabled for all controls');
+    console.log('Real-time monitoring enabled for all controls');
 }
 
 // Example 6: API Integration with Controls
 async function demonstrateAPIIntegration() {
-    console.log('🔗 API Integration Demonstration');
+    console.log('API Integration Demonstration');
     
     // Function to get current control values
     function getCurrentControlValues() {
@@ -520,10 +520,10 @@ async function demonstrateAPIIntegration() {
             
             if (data.success) {
                 updateControlsFromAPI(data.result);
-                console.log('✅ Controls updated from API');
+                console.log('Controls updated from API');
             }
         } catch (error) {
-            console.error('❌ Failed to load configuration from API:', error);
+            console.error('Failed to load configuration from API:', error);
         }
     }
     
@@ -541,10 +541,10 @@ async function demonstrateAPIIntegration() {
             const data = await response.json();
             
             if (data.success) {
-                console.log('✅ Configuration saved to API');
+                console.log('Configuration saved to API');
             }
         } catch (error) {
-            console.error('❌ Failed to save configuration to API:', error);
+            console.error('Failed to save configuration to API:', error);
         }
     }
     
@@ -559,12 +559,12 @@ async function demonstrateAPIIntegration() {
         });
     });
     
-    console.log('✅ API integration enabled');
+    console.log('API integration enabled');
 }
 
 // Run all demonstrations
 async function runAllWebPanelDemonstrations() {
-    console.log('🚀 RawrZ Web Panel Demonstrations\n');
+    console.log('RawrZ Web Panel Demonstrations\n');
     console.log('=' .repeat(50));
     console.log();
     
@@ -587,10 +587,10 @@ async function runAllWebPanelDemonstrations() {
         await demonstrateAPIIntegration();
         console.log();
         
-        console.log('🎉 All web panel demonstrations completed successfully!');
+        console.log('All web panel demonstrations completed successfully!');
         
     } catch (error) {
-        console.error('❌ Web panel demonstrations failed:', error);
+        console.error('Web panel demonstrations failed:', error);
     }
 }
 

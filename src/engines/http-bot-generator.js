@@ -1286,6 +1286,18 @@ public class RawrZHTTPBot {
         return this.performRealActiveBotDetection();
     }
 
+    getBotStats() {
+        // Return bot statistics
+        const activeBots = this.getActiveBots();
+        return {
+            total: activeBots.length,
+            active: activeBots.filter(bot => bot.status === 'online').length,
+            offline: activeBots.filter(bot => bot.status === 'offline').length,
+            connections: activeBots.reduce((sum, bot) => sum + (bot.connections || 0), 0),
+            uptime: activeBots.length > 0 ? Math.min(...activeBots.map(bot => bot.uptime || 0)) : 0
+        };
+    }
+
     // Real implementation methods
     performRealActiveBotDetection() {
         try {

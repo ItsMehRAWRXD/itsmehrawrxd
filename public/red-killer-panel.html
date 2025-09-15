@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RawrZ Red Killer Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1rem 2rem;
+            border-bottom: 2px solid #ff4444;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            color: #ff4444;
+            font-size: 2rem;
+            text-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 68, 68, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 68, 68, 0.3);
+        }
+
+        .card h3 {
+            color: #ff4444;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff4444, #cc0000);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+        }
+
+        .btn:hover {
+            background: linear-gradient(45deg, #cc0000, #990000);
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 68, 68, 0.4);
+        }
+
+        .btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #444, #666);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(45deg, #666, #888);
+        }
+
+        .status {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-weight: bold;
+        }
+
+        .status.success {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+        }
+
+        .status.error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            color: #ff0000;
+        }
+
+        .status.info {
+            background: rgba(0, 150, 255, 0.2);
+            border: 1px solid #0096ff;
+            color: #0096ff;
+        }
+
+        .log {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 1rem;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        .log-entry {
+            margin-bottom: 0.5rem;
+            padding: 0.3rem;
+            border-radius: 4px;
+        }
+
+        .log-entry.info {
+            background: rgba(0, 150, 255, 0.1);
+        }
+
+        .log-entry.success {
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        .log-entry.error {
+            background: rgba(255, 0, 0, 0.1);
+        }
+
+        .log-entry.warning {
+            background: rgba(255, 165, 0, 0.1);
+        }
+
+        .input-group {
+            margin: 1rem 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #ccc;
+        }
+
+        .input-group input,
+        .input-group select,
+        .input-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #555;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #ff4444;
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
+        }
+
+        .loot-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .loot-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #ff4444;
+        }
+
+        .loot-item h4 {
+            color: #ff4444;
+            margin-bottom: 0.5rem;
+        }
+
+        .loot-item p {
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #ff4444, #cc0000);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-card h4 {
+            color: #ff4444;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card p {
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: rgba(30, 30, 30, 0.95);
+            margin: 5% auto;
+            padding: 2rem;
+            border: 1px solid #ff4444;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            color: #ff4444;
+            float: right;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #cc0000;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #555;
+            margin-bottom: 1rem;
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            border-bottom-color: #ff4444;
+            color: #ff4444;
+        }
+
+        .tab:hover {
+            background: rgba(255, 68, 68, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .loading {
+            animation: pulse 1s infinite;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>RawrZ Red Killer Panel</h1>
+    </div>
+
+    <div class="container">
+        <!-- Status Overview -->
+        <div class="card">
+            <h3>System Status</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4 id="activeKills">0</h4>
+                    <p>Active Kills</p>
+                </div>
+                <div class="stat-card">
+                    <h4 id="extractedData">0</h4>
+                    <p>Extracted Data</p>
+                </div>
+                <div class="stat-card">
+                    <h4 id="lootItems">0</h4>
+                    <p>Loot Items</p>
+                </div>
+                <div class="stat-card">
+                    <h4 id="wifiProfiles">0</h4>
+                    <p>WiFi Profiles</p>
+                </div>
+            </div>
+            <button class="btn" onclick="refreshStatus()">Refresh Status</button>
+        </div>
+
+        <!-- Main Tabs -->
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('detection')">AV/EDR Detection</div>
+            <div class="tab" onclick="switchTab('termination')">Termination</div>
+            <div class="tab" onclick="switchTab('extraction')">Data Extraction</div>
+            <div class="tab" onclick="switchTab('loot')">Loot Container</div>
+            <div class="tab" onclick="switchTab('wifi')">WiFi Dumper</div>
+        </div>
+
+        <!-- AV/EDR Detection Tab -->
+        <div id="detection" class="tab-content active">
+            <div class="grid">
+                <div class="card">
+                    <h3>AV/EDR Detection</h3>
+                    <p>Scan for installed antivirus and endpoint detection systems</p>
+                    <button class="btn" onclick="detectAVEDR()">Start Detection</button>
+                    <div id="detectionStatus" class="status hidden"></div>
+                    <div id="detectionResults" class="log hidden"></div>
+                </div>
+
+                <div class="card">
+                    <h3>Detection Results</h3>
+                    <div id="detectedSystems"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Termination Tab -->
+        <div id="termination" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>Red Killer Execution</h3>
+                    <p>Execute 2-stage exploit to terminate detected AV/EDR systems</p>
+                    <div class="input-group">
+                        <label>Target Systems (comma-separated):</label>
+                        <input type="text" id="targetSystems" placeholder="Microsoft Defender, Norton Security, etc.">
+                    </div>
+                    <button class="btn" onclick="executeRedKiller()">Execute Red Killer</button>
+                    <div id="terminationStatus" class="status hidden"></div>
+                    <div id="terminationProgress" class="progress-bar hidden">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <div id="terminationResults" class="log hidden"></div>
+                </div>
+
+                <div class="card">
+                    <h3>Active Kills</h3>
+                    <div id="activeKillsList"></div>
+                    <button class="btn btn-secondary" onclick="getActiveKills()">Refresh Kills</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Extraction Tab -->
+        <div id="extraction" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>Advanced Data Extraction</h3>
+                    <p>Extract data efficiently and securely over TLS</p>
+                    <div class="input-group">
+                        <label>Extraction Targets:</label>
+                        <select id="extractionTargets" multiple>
+                            <option value="browser_data">Browser Data</option>
+                            <option value="system_info">System Information</option>
+                            <option value="credentials">Credentials</option>
+                            <option value="documents">Documents</option>
+                            <option value="network_data">Network Data</option>
+                            <option value="registry_data">Registry Data</option>
+                            <option value="memory_dumps">Memory Dumps</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="extractData()">Start Extraction</button>
+                    <div id="extractionStatus" class="status hidden"></div>
+                    <div id="extractionProgress" class="progress-bar hidden">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <div id="extractionResults" class="log hidden"></div>
+                </div>
+
+                <div class="card">
+                    <h3>Extraction Statistics</h3>
+                    <div id="extractionStats"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loot Container Tab -->
+        <div id="loot" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>Loot Container</h3>
+                    <p>Browse and inspect extracted data</p>
+                    <button class="btn" onclick="browseLoot()">Browse Loot</button>
+                    <div id="lootStatus" class="status hidden"></div>
+                    <div id="lootContainer"></div>
+                </div>
+
+                <div class="card">
+                    <h3>Loot Inspector</h3>
+                    <div id="lootInspector"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WiFi Dumper Tab -->
+        <div id="wifi" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>WiFi Credential Dumper</h3>
+                    <p>Extract WiFi profiles and passwords from Windows terminals</p>
+                    <button class="btn" onclick="dumpWiFiCredentials()">Dump WiFi Credentials</button>
+                    <div id="wifiStatus" class="status hidden"></div>
+                    <div id="wifiResults" class="log hidden"></div>
+                </div>
+
+                <div class="card">
+                    <h3>WiFi Profiles</h3>
+                    <div id="wifiProfilesList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for detailed views -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'detection';
+        let isOperationRunning = false;
+
+        // Initialize the panel
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshStatus();
+            loadDetectedSystems();
+        });
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            currentTab = tabName;
+        }
+
+        // Status refresh
+        async function refreshStatus() {
+            try {
+                const response = await fetch('/red-killer/status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('activeKills').textContent = data.result.activeKills;
+                    document.getElementById('extractedData').textContent = data.result.extractedData;
+                    document.getElementById('lootItems').textContent = data.result.lootItems;
+                }
+            } catch (error) {
+                console.error('Failed to refresh status:', error);
+            }
+        }
+
+        // AV/EDR Detection
+        async function detectAVEDR() {
+            if (isOperationRunning) return;
+            isOperationRunning = true;
+            
+            const statusDiv = document.getElementById('detectionStatus');
+            const resultsDiv = document.getElementById('detectionResults');
+            
+            statusDiv.className = 'status info';
+            statusDiv.textContent = 'Scanning for AV/EDR systems...';
+            statusDiv.classList.remove('hidden');
+            
+            resultsDiv.innerHTML = '';
+            resultsDiv.classList.remove('hidden');
+            
+            try {
+                const response = await fetch('/red-killer/detect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = `Detection completed. Found ${data.result.length} systems.`;
+                    
+                    // Display results
+                    data.result.forEach(system => {
+                        const entry = document.createElement('div');
+                        entry.className = 'log-entry info';
+                        entry.innerHTML = `
+                            <strong>${system.name}</strong><br>
+                            Type: ${system.type}<br>
+                            Processes: ${system.processes.length}<br>
+                            Threat Level: ${system.threatLevel}
+                        `;
+                        resultsDiv.appendChild(entry);
+                    });
+                    
+                    loadDetectedSystems();
+                } else {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = 'Detection failed: ' + (data.error || 'Unknown error');
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = 'Detection failed: ' + error.message;
+            } finally {
+                isOperationRunning = false;
+            }
+        }
+
+        // Load detected systems
+        async function loadDetectedSystems() {
+            try {
+                const response = await fetch('/red-killer/detect');
+                const data = await response.json();
+                
+                const container = document.getElementById('detectedSystems');
+                container.innerHTML = '';
+                
+                if (data.success && data.result.length > 0) {
+                    data.result.forEach(system => {
+                        const item = document.createElement('div');
+                        item.className = 'loot-item';
+                        item.innerHTML = `
+                            <h4>${system.name}</h4>
+                            <p>Type: ${system.type} | Threat Level: ${system.threatLevel}</p>
+                            <p>Processes: ${system.processes.length}</p>
+                        `;
+                        container.appendChild(item);
+                    });
+                } else {
+                    container.innerHTML = '<p>No systems detected. Run detection first.</p>';
+                }
+            } catch (error) {
+                console.error('Failed to load detected systems:', error);
+            }
+        }
+
+        // Execute Red Killer
+        async function executeRedKiller() {
+            if (isOperationRunning) return;
+            isOperationRunning = true;
+            
+            const targetSystems = document.getElementById('targetSystems').value;
+            const statusDiv = document.getElementById('terminationStatus');
+            const progressDiv = document.getElementById('terminationProgress');
+            const resultsDiv = document.getElementById('terminationResults');
+            
+            statusDiv.className = 'status info';
+            statusDiv.textContent = 'Executing Red Killer...';
+            statusDiv.classList.remove('hidden');
+            
+            progressDiv.classList.remove('hidden');
+            resultsDiv.innerHTML = '';
+            resultsDiv.classList.remove('hidden');
+            
+            // Simulate progress
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 10;
+                document.querySelector('.progress-fill').style.width = progress + '%';
+                if (progress >= 100) clearInterval(progressInterval);
+            }, 200);
+            
+            try {
+                const response = await fetch('/red-killer/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ systems: targetSystems.split(',').map(s => s.trim()) })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = 'Red Killer execution completed successfully.';
+                    
+                    // Display results
+                    data.result.forEach(result => {
+                        const entry = document.createElement('div');
+                        entry.className = `log-entry ${result.success ? 'success' : 'error'}`;
+                        entry.innerHTML = `
+                            <strong>${result.system}</strong><br>
+                            Status: ${result.success ? 'Success' : 'Failed'}<br>
+                            Details: ${result.details.join(', ')}
+                        `;
+                        resultsDiv.appendChild(entry);
+                    });
+                    
+                    getActiveKills();
+                } else {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = 'Red Killer execution failed: ' + (data.error || 'Unknown error');
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = 'Red Killer execution failed: ' + error.message;
+            } finally {
+                isOperationRunning = false;
+                clearInterval(progressInterval);
+            }
+        }
+
+        // Get active kills
+        async function getActiveKills() {
+            try {
+                const response = await fetch('/red-killer/kills');
+                const data = await response.json();
+                
+                const container = document.getElementById('activeKillsList');
+                container.innerHTML = '';
+                
+                if (data.success && data.result.length > 0) {
+                    data.result.forEach(kill => {
+                        const item = document.createElement('div');
+                        item.className = 'loot-item';
+                        item.innerHTML = `
+                            <h4>${kill.name}</h4>
+                            <p>Timestamp: ${new Date(kill.timestamp).toLocaleString()}</p>
+                            <p>Threat Level: ${kill.threatLevel}</p>
+                        `;
+                        container.appendChild(item);
+                    });
+                } else {
+                    container.innerHTML = '<p>No active kills found.</p>';
+                }
+            } catch (error) {
+                console.error('Failed to get active kills:', error);
+            }
+        }
+
+        // Extract data
+        async function extractData() {
+            if (isOperationRunning) return;
+            isOperationRunning = true;
+            
+            const targets = Array.from(document.getElementById('extractionTargets').selectedOptions)
+                .map(option => option.value);
+            
+            const statusDiv = document.getElementById('extractionStatus');
+            const progressDiv = document.getElementById('extractionProgress');
+            const resultsDiv = document.getElementById('extractionResults');
+            
+            statusDiv.className = 'status info';
+            statusDiv.textContent = 'Starting data extraction...';
+            statusDiv.classList.remove('hidden');
+            
+            progressDiv.classList.remove('hidden');
+            resultsDiv.innerHTML = '';
+            resultsDiv.classList.remove('hidden');
+            
+            // Simulate progress
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 5;
+                document.querySelector('.progress-fill').style.width = progress + '%';
+                if (progress >= 100) clearInterval(progressInterval);
+            }, 100);
+            
+            try {
+                const response = await fetch('/red-killer/extract', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ targets: targets })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = 'Data extraction completed successfully.';
+                    
+                    // Display results summary
+                    const entry = document.createElement('div');
+                    entry.className = 'log-entry success';
+                    entry.innerHTML = `
+                        <strong>Extraction Summary</strong><br>
+                        Browser Data: ${data.result.browserData.length} browsers<br>
+                        System Info: ${Object.keys(data.result.systemInfo).length} categories<br>
+                        Credentials: ${Object.keys(data.result.credentials).length} types<br>
+                        Documents: ${Object.keys(data.result.documents).length} locations<br>
+                        Network Data: ${Object.keys(data.result.networkData).length} types<br>
+                        Registry Data: ${Object.keys(data.result.registryData).length} hives<br>
+                        Memory Dumps: ${Object.keys(data.result.memoryDumps).length} types
+                    `;
+                    resultsDiv.appendChild(entry);
+                    
+                    browseLoot();
+                    refreshStatus();
+                } else {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = 'Data extraction failed: ' + (data.error || 'Unknown error');
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = 'Data extraction failed: ' + error.message;
+            } finally {
+                isOperationRunning = false;
+                clearInterval(progressInterval);
+            }
+        }
+
+        // Browse loot container
+        async function browseLoot() {
+            try {
+                const response = await fetch('/red-killer/loot');
+                const data = await response.json();
+                
+                const container = document.getElementById('lootContainer');
+                container.innerHTML = '';
+                
+                if (data.success && data.loot.length > 0) {
+                    data.loot.forEach(item => {
+                        const lootItem = document.createElement('div');
+                        lootItem.className = 'loot-item';
+                        lootItem.onclick = () => inspectLootItem(item.id);
+                        lootItem.innerHTML = `
+                            <h4>${item.id}</h4>
+                            <p>Timestamp: ${new Date(item.timestamp).toLocaleString()}</p>
+                            <p>Data Types: ${item.dataTypes.join(', ')}</p>
+                            <p>Size: ${(item.totalSize / 1024).toFixed(2)} KB</p>
+                        `;
+                        container.appendChild(lootItem);
+                    });
+                } else {
+                    container.innerHTML = '<p>No loot items found. Run data extraction first.</p>';
+                }
+            } catch (error) {
+                console.error('Failed to browse loot:', error);
+            }
+        }
+
+        // Inspect loot item
+        async function inspectLootItem(lootId) {
+            try {
+                const response = await fetch(`/red-killer/loot/${lootId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const modal = document.getElementById('modal');
+                    const modalContent = document.getElementById('modalContent');
+                    
+                    modalContent.innerHTML = `
+                        <h2>Loot Item: ${lootId}</h2>
+                        <h3>Metadata</h3>
+                        <pre>${JSON.stringify(data.item.metadata, null, 2)}</pre>
+                        <h3>Data Preview</h3>
+                        <pre>${JSON.stringify(data.item.data, null, 2).substring(0, 2000)}...</pre>
+                    `;
+                    
+                    modal.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Failed to inspect loot item:', error);
+            }
+        }
+
+        // Dump WiFi credentials
+        async function dumpWiFiCredentials() {
+            if (isOperationRunning) return;
+            isOperationRunning = true;
+            
+            const statusDiv = document.getElementById('wifiStatus');
+            const resultsDiv = document.getElementById('wifiResults');
+            
+            statusDiv.className = 'status info';
+            statusDiv.textContent = 'Dumping WiFi credentials...';
+            statusDiv.classList.remove('hidden');
+            
+            resultsDiv.innerHTML = '';
+            resultsDiv.classList.remove('hidden');
+            
+            try {
+                const response = await fetch('/red-killer/wifi-dump', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = `WiFi dump completed. Found ${data.wifi.length} profiles.`;
+                    
+                    // Display results
+                    if (data.wifi.length > 0) {
+                        data.wifi.forEach(profile => {
+                            const entry = document.createElement('div');
+                            entry.className = 'log-entry success';
+                            entry.innerHTML = `
+                                <strong>SSID: ${profile.ssid}</strong><br>
+                                Password: ${profile.password || 'Not available'}<br>
+                                Timestamp: ${new Date(profile.timestamp).toLocaleString()}
+                            `;
+                            resultsDiv.appendChild(entry);
+                        });
+                    } else {
+                        const entry = document.createElement('div');
+                        entry.className = 'log-entry warning';
+                        entry.textContent = 'No WiFi profiles found or accessible.';
+                        resultsDiv.appendChild(entry);
+                    }
+                    
+                    loadWiFiProfiles();
+                } else {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = 'WiFi dump failed: ' + (data.error || 'Unknown error');
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = 'WiFi dump failed: ' + error.message;
+            } finally {
+                isOperationRunning = false;
+            }
+        }
+
+        // Load WiFi profiles
+        async function loadWiFiProfiles() {
+            try {
+                const response = await fetch('/red-killer/wifi-dump');
+                const data = await response.json();
+                
+                const container = document.getElementById('wifiProfilesList');
+                container.innerHTML = '';
+                
+                if (data.success && data.wifi.length > 0) {
+                    data.wifi.forEach(profile => {
+                        const item = document.createElement('div');
+                        item.className = 'loot-item';
+                        item.innerHTML = `
+                            <h4>${profile.ssid}</h4>
+                            <p>Password: ${profile.password || 'Not available'}</p>
+                            <p>Timestamp: ${new Date(profile.timestamp).toLocaleString()}</p>
+                        `;
+                        container.appendChild(item);
+                    });
+                } else {
+                    container.innerHTML = '<p>No WiFi profiles found. Run WiFi dump first.</p>';
+                }
+            } catch (error) {
+                console.error('Failed to load WiFi profiles:', error);
+            }
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('modal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

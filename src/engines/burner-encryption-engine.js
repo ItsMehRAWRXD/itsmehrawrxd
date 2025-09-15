@@ -222,8 +222,9 @@ class BurnerEncryptionEngine {
             const iv = crypto.randomBytes(layer.ivSize);
             
             try {
-                // Use createCipher for compatibility
-                const cipher = crypto.createCipheriv(layer.algorithm, key, Buffer.alloc(16));
+                // Use createCipheriv with proper IV
+                const iv = crypto.randomBytes(16);
+                const cipher = crypto.createCipheriv(layer.algorithm, key, iv);
                 cipher.setAutoPadding(true);
                 let encryptedLayer = cipher.update(encrypted, 'utf8', 'hex');
                 encryptedLayer += cipher.final('hex');
@@ -264,8 +265,8 @@ class BurnerEncryptionEngine {
         const key = Buffer.from(parts[2], 'hex');
         
         try {
-            // Use createDecipher for compatibility
-            const decipher = crypto.createDecipher('aes-256-cbc', key);
+            // Use createDecipheriv with proper IV
+            const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
             decipher.setAutoPadding(true);
             let decryptedLayer = decipher.update(encrypted, 'hex', 'utf8');
             decryptedLayer += decipher.final('utf8');
@@ -811,4 +812,7 @@ class BurnerEncryptionEngine {
     }
 }
 
-module.exports = BurnerEncryptionEngine;
+// Create and export instance
+const burnerEncryptionEngine = new BurnerEncryptionEngine();
+
+module.exports = burnerEncryptionEngine;
