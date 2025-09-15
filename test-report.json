@@ -1,0 +1,252 @@
+{
+  "summary": {
+    "totalTests": 40,
+    "passedTests": 37,
+    "failedTests": 3,
+    "successRate": 92.5,
+    "duration": 4270
+  },
+  "results": [
+    {
+      "test": "Server Health Check",
+      "passed": true,
+      "details": "Server is healthy",
+      "timestamp": "2025-09-15T14:34:39.028Z"
+    },
+    {
+      "test": "API Status Endpoint",
+      "passed": true,
+      "details": "Status endpoint working",
+      "timestamp": "2025-09-15T14:34:39.031Z"
+    },
+    {
+      "test": "CLI Help Command",
+      "passed": true,
+      "details": "Command executed successfully",
+      "timestamp": "2025-09-15T14:34:39.109Z"
+    },
+    {
+      "test": "CLI Engines Status",
+      "passed": true,
+      "details": "Command executed successfully",
+      "timestamp": "2025-09-15T14:34:39.186Z"
+    },
+    {
+      "test": "CLI Load Engine",
+      "passed": true,
+      "details": "Command executed successfully",
+      "timestamp": "2025-09-15T14:34:39.255Z"
+    },
+    {
+      "test": "CLI Ping Command",
+      "passed": true,
+      "details": "Command executed successfully",
+      "timestamp": "2025-09-15T14:34:42.443Z"
+    },
+    {
+      "test": "CLI DNS Command",
+      "passed": true,
+      "details": "Command executed successfully",
+      "timestamp": "2025-09-15T14:34:42.517Z"
+    },
+    {
+      "test": "CLI Rebuild Command",
+      "passed": true,
+      "details": "Command executed successfully",
+      "timestamp": "2025-09-15T14:34:42.588Z"
+    },
+    {
+      "test": "Engine anti-analysis Initialization",
+      "passed": true,
+      "details": "Engine initialized successfully",
+      "timestamp": "2025-09-15T14:34:42.589Z"
+    },
+    {
+      "test": "Engine digital-forensics Initialization",
+      "passed": true,
+      "details": "Engine initialized successfully",
+      "timestamp": "2025-09-15T14:34:42.591Z"
+    },
+    {
+      "test": "Engine malware-analysis Initialization",
+      "passed": true,
+      "details": "Engine initialized successfully",
+      "timestamp": "2025-09-15T14:34:42.592Z"
+    },
+    {
+      "test": "Engine network-tools Initialization",
+      "passed": true,
+      "details": "Engine initialized successfully",
+      "timestamp": "2025-09-15T14:34:42.596Z"
+    },
+    {
+      "test": "Engine hot-patchers Initialization",
+      "passed": true,
+      "details": "Engine initialized successfully",
+      "timestamp": "2025-09-15T14:34:42.599Z"
+    },
+    {
+      "test": "Engine reverse-engineering Initialization",
+      "passed": true,
+      "details": "Engine initialized successfully",
+      "timestamp": "2025-09-15T14:34:42.600Z"
+    },
+    {
+      "test": "Engine jotti-scanner Initialization",
+      "passed": true,
+      "details": "Engine initialized successfully",
+      "timestamp": "2025-09-15T14:34:42.628Z"
+    },
+    {
+      "test": "Engine private-virus-scanner Initialization",
+      "passed": true,
+      "details": "Engine initialized successfully",
+      "timestamp": "2025-09-15T14:34:42.901Z"
+    },
+    {
+      "test": "Engine dual-generators Initialization",
+      "passed": true,
+      "details": "Engine initialized successfully",
+      "timestamp": "2025-09-15T14:34:42.902Z"
+    },
+    {
+      "test": "Engine health-monitor Initialization",
+      "passed": true,
+      "details": "Engine initialized successfully",
+      "timestamp": "2025-09-15T14:34:42.903Z"
+    },
+    {
+      "test": "Engine stealth-engine Initialization",
+      "passed": true,
+      "details": "Engine initialized successfully",
+      "timestamp": "2025-09-15T14:34:42.904Z"
+    },
+    {
+      "test": "Engine advanced-fud-engine Initialization",
+      "passed": true,
+      "details": "Engine initialized successfully",
+      "timestamp": "2025-09-15T14:34:42.905Z"
+    },
+    {
+      "test": "Status Endpoint",
+      "passed": true,
+      "details": "Endpoint working",
+      "timestamp": "2025-09-15T14:34:42.907Z"
+    },
+    {
+      "test": "Rebuild Endpoint",
+      "passed": false,
+      "details": "Status: 400",
+      "timestamp": "2025-09-15T14:34:42.908Z"
+    },
+    {
+      "test": "Security Scan Endpoint",
+      "passed": true,
+      "details": "Endpoint working",
+      "timestamp": "2025-09-15T14:34:42.909Z"
+    },
+    {
+      "test": "Malware Analysis Endpoint",
+      "passed": true,
+      "details": "Endpoint working",
+      "timestamp": "2025-09-15T14:34:42.915Z"
+    },
+    {
+      "test": "Dashboard Stats Endpoint",
+      "passed": false,
+      "details": "Status: 500",
+      "timestamp": "2025-09-15T14:34:42.919Z"
+    },
+    {
+      "test": "Bots Status Endpoint",
+      "passed": true,
+      "details": "Endpoint working",
+      "timestamp": "2025-09-15T14:34:42.934Z"
+    },
+    {
+      "test": "Web Panel /panel",
+      "passed": true,
+      "details": "Panel loads correctly",
+      "timestamp": "2025-09-15T14:34:42.937Z"
+    },
+    {
+      "test": "Web Panel /unified",
+      "passed": true,
+      "details": "Panel loads correctly",
+      "timestamp": "2025-09-15T14:34:42.938Z"
+    },
+    {
+      "test": "Web Panel /irc-bot-builder",
+      "passed": true,
+      "details": "Panel loads correctly",
+      "timestamp": "2025-09-15T14:34:42.940Z"
+    },
+    {
+      "test": "Web Panel /http-bot-panel",
+      "passed": true,
+      "details": "Panel loads correctly",
+      "timestamp": "2025-09-15T14:34:42.941Z"
+    },
+    {
+      "test": "Web Panel /stub-generator-panel",
+      "passed": true,
+      "details": "Panel loads correctly",
+      "timestamp": "2025-09-15T14:34:42.943Z"
+    },
+    {
+      "test": "Web Panel /health-dashboard",
+      "passed": true,
+      "details": "Panel loads correctly",
+      "timestamp": "2025-09-15T14:34:42.944Z"
+    },
+    {
+      "test": "File Reading",
+      "passed": true,
+      "details": "Package.json read successfully",
+      "timestamp": "2025-09-15T14:34:42.944Z"
+    },
+    {
+      "test": "Directory Listing",
+      "passed": true,
+      "details": "Found 46 files",
+      "timestamp": "2025-09-15T14:34:42.944Z"
+    },
+    {
+      "test": "Encryption/Decryption",
+      "passed": true,
+      "details": "Encryption/decryption working",
+      "timestamp": "2025-09-15T14:34:42.945Z"
+    },
+    {
+      "test": "DNS Lookup",
+      "passed": 6,
+      "details": "Resolved to 2607:f8b0:4004:c21::71",
+      "timestamp": "2025-09-15T14:34:42.946Z"
+    },
+    {
+      "test": "TCP Connection",
+      "passed": true,
+      "details": "TCP connection successful",
+      "timestamp": "2025-09-15T14:34:42.974Z"
+    },
+    {
+      "test": "Session Creation",
+      "passed": true,
+      "details": "Session created",
+      "timestamp": "2025-09-15T14:34:43.072Z"
+    },
+    {
+      "test": "Session Listing",
+      "passed": true,
+      "details": "Sessions listed",
+      "timestamp": "2025-09-15T14:34:43.172Z"
+    },
+    {
+      "test": "Error Handling",
+      "passed": "",
+      "details": "No error handling detected. stderr: ",
+      "timestamp": "2025-09-15T14:34:43.264Z"
+    }
+  ],
+  "timestamp": "2025-09-15T14:34:43.265Z"
+}

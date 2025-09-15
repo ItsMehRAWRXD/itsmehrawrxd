@@ -1,33 +1,42 @@
-# Use Node.js 18 Alpine as base image
+# RawrZ Security Platform Dockerfile
 FROM node:18-alpine
-
-# Install system dependencies
-RUN apk add --no-cache python3 make g++ curl
 
 # Set working directory
 WORKDIR /app
 
+# Install system dependencies
+RUN apk add --no-cache \
+    curl \
+    wget \
+    git \
+    python3 \
+    make \
+    g++ \
+    openssl \
+    ca-certificates
+
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install Node.js dependencies
+RUN npm ci --only=production && npm cache clean --force
 
-# Copy application code
+# Copy application files
 COPY . .
 
 # Create necessary directories
-RUN mkdir -p uploads data logs
+RUN mkdir -p data uploads logs
 
 # Set permissions
-RUN chmod -R 755 uploads data logs
+RUN chown -R node:node /app
+USER node
 
 # Expose port
 EXPOSE 8080
 
-# Add health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8080/health || exit 1
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8080/api/status || exit 1
 
 # Start the application
 CMD ["node", "server.js"]

@@ -1,5 +1,13 @@
 // RawrZ HTTP Bot Generator Engine - Advanced HTTP-based bot generation
+const fs = require('fs').promises;
+const path = require('path');
+const { exec, spawn } = require('child_process');
+const { promisify } = require('util');
+const os = require('os');
+const crypto = require('crypto');
 const { logger } = require('../utils/logger');
+
+const execAsync = promisify(exec);
 
 class HTTPBotGenerator {
     constructor() {
@@ -1271,6 +1279,294 @@ public class RawrZHTTPBot {
             outputFile: `bot.${this.getFileExtension(language)}`,
             timestamp: new Date().toISOString()
         };
+    }
+
+    getActiveBots() {
+        // Return real active bots from system
+        return this.performRealActiveBotDetection();
+    }
+
+    // Real implementation methods
+    performRealActiveBotDetection() {
+        try {
+            const activeBots = [];
+            
+            // Check for running processes that might be HTTP bots
+            const botProcesses = this.detectBotProcesses();
+            
+            // Check for network connections that might be bot communications
+            const botConnections = this.detectBotConnections();
+            
+            // Check for bot files in common locations
+            const botFiles = this.detectBotFiles();
+            
+            // Combine all detected bots
+            activeBots.push(...botProcesses, ...botConnections, ...botFiles);
+            
+            // Remove duplicates based on ID
+            const uniqueBots = activeBots.filter((bot, index, self) => 
+                index === self.findIndex(b => b.id === bot.id)
+            );
+            
+            return uniqueBots;
+        } catch (error) {
+            logger.error('Real active bot detection failed:', error.message);
+            return [];
+        }
+    }
+
+    detectBotProcesses() {
+        try {
+            const processes = [];
+            
+            // Check for suspicious process names
+            const suspiciousNames = [
+                'rawrzbot', 'httpbot', 'client', 'agent', 'service',
+                'update', 'helper', 'support', 'system'
+            ];
+            
+            // Use system commands to detect processes
+            if (os.platform() === 'win32') {
+                // Windows process detection
+                const { stdout } = execAsync('tasklist /fo csv');
+                const lines = stdout.split('\n');
+                
+                for (const line of lines) {
+                    if (line.includes(',')) {
+                        const parts = line.split(',');
+                        if (parts.length >= 2) {
+                            const processName = parts[0].replace(/"/g, '').toLowerCase();
+                            
+                            if (suspiciousNames.some(name => processName.includes(name))) {
+                                processes.push({
+                                    id: `process_${crypto.randomUUID()}`,
+                                    name: processName,
+                                    status: 'online',
+                                    platform: 'windows',
+                                    language: 'unknown',
+                                    ip: '127.0.0.1',
+                                    connections: 1,
+                                    dataTransferred: 0,
+                                    lastSeen: new Date().toISOString(),
+                                    type: 'process'
+                                });
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Unix-like process detection
+                const { stdout } = execAsync('ps aux');
+                const lines = stdout.split('\n');
+                
+                for (const line of lines) {
+                    const parts = line.trim().split(/\s+/);
+                    if (parts.length >= 11) {
+                        const processName = parts[10].toLowerCase();
+                        
+                        if (suspiciousNames.some(name => processName.includes(name))) {
+                            processes.push({
+                                id: `process_${crypto.randomUUID()}`,
+                                name: processName,
+                                status: 'online',
+                                platform: os.platform(),
+                                language: 'unknown',
+                                ip: '127.0.0.1',
+                                connections: 1,
+                                dataTransferred: 0,
+                                lastSeen: new Date().toISOString(),
+                                type: 'process'
+                            });
+                        }
+                    }
+                }
+            }
+            
+            return processes;
+        } catch (error) {
+            logger.error('Bot process detection failed:', error.message);
+            return [];
+        }
+    }
+
+    detectBotConnections() {
+        try {
+            const connections = [];
+            
+            // Check for suspicious network connections
+            if (os.platform() === 'win32') {
+                // Windows network connection detection
+                const { stdout } = execAsync('netstat -an');
+                const lines = stdout.split('\n');
+                
+                for (const line of lines) {
+                    if (line.includes('ESTABLISHED') || line.includes('LISTENING')) {
+                        const parts = line.trim().split(/\s+/);
+                        if (parts.length >= 4) {
+                            const localAddress = parts[1];
+                            const remoteAddress = parts[2];
+                            const state = parts[3];
+                            
+                            // Check for suspicious ports or addresses
+                            if (this.isSuspiciousConnection(localAddress, remoteAddress)) {
+                                connections.push({
+                                    id: `connection_${crypto.randomUUID()}`,
+                                    name: `Bot Connection ${localAddress}`,
+                                    status: 'online',
+                                    platform: 'windows',
+                                    language: 'unknown',
+                                    ip: remoteAddress.split(':')[0],
+                                    connections: 1,
+                                    dataTransferred: 0,
+                                    lastSeen: new Date().toISOString(),
+                                    type: 'connection',
+                                    localAddress: localAddress,
+                                    remoteAddress: remoteAddress,
+                                    state: state
+                                });
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Unix-like network connection detection
+                const { stdout } = execAsync('netstat -tulpn');
+                const lines = stdout.split('\n');
+                
+                for (const line of lines) {
+                    if (line.includes('ESTABLISHED') || line.includes('LISTEN')) {
+                        const parts = line.trim().split(/\s+/);
+                        if (parts.length >= 6) {
+                            const localAddress = parts[3];
+                            const remoteAddress = parts[4];
+                            const state = parts[5];
+                            
+                            // Check for suspicious ports or addresses
+                            if (this.isSuspiciousConnection(localAddress, remoteAddress)) {
+                                connections.push({
+                                    id: `connection_${crypto.randomUUID()}`,
+                                    name: `Bot Connection ${localAddress}`,
+                                    status: 'online',
+                                    platform: os.platform(),
+                                    language: 'unknown',
+                                    ip: remoteAddress.split(':')[0],
+                                    connections: 1,
+                                    dataTransferred: 0,
+                                    lastSeen: new Date().toISOString(),
+                                    type: 'connection',
+                                    localAddress: localAddress,
+                                    remoteAddress: remoteAddress,
+                                    state: state
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return connections;
+        } catch (error) {
+            logger.error('Bot connection detection failed:', error.message);
+            return [];
+        }
+    }
+
+    detectBotFiles() {
+        try {
+            const files = [];
+            
+            // Check for bot files in common locations
+            const commonPaths = [
+                path.join(os.homedir(), 'AppData', 'Local', 'Temp'),
+                path.join(os.homedir(), 'AppData', 'Roaming'),
+                path.join(os.homedir(), 'Downloads'),
+                '/tmp',
+                '/var/tmp',
+                '/opt'
+            ];
+            
+            for (const basePath of commonPaths) {
+                try {
+                    const entries = fs.readdirSync(basePath);
+                    
+                    for (const entry of entries) {
+                        const fullPath = path.join(basePath, entry);
+                        const stat = fs.statSync(fullPath);
+                        
+                        if (stat.isFile() && this.isSuspiciousFile(entry)) {
+                            files.push({
+                                id: `file_${crypto.randomUUID()}`,
+                                name: entry,
+                                status: 'offline',
+                                platform: os.platform(),
+                                language: this.detectFileLanguage(entry),
+                                ip: '127.0.0.1',
+                                connections: 0,
+                                dataTransferred: stat.size,
+                                lastSeen: stat.mtime.toISOString(),
+                                type: 'file',
+                                path: fullPath,
+                                size: stat.size
+                            });
+                        }
+                    }
+                } catch (error) {
+                    // Skip inaccessible directories
+                    continue;
+                }
+            }
+            
+            return files;
+        } catch (error) {
+            logger.error('Bot file detection failed:', error.message);
+            return [];
+        }
+    }
+
+    isSuspiciousConnection(localAddress, remoteAddress) {
+        // Check for suspicious ports
+        const suspiciousPorts = [8080, 8443, 9999, 1337, 31337, 4444, 5555];
+        
+        const localPort = parseInt(localAddress.split(':')[1]);
+        const remotePort = parseInt(remoteAddress.split(':')[1]);
+        
+        return suspiciousPorts.includes(localPort) || suspiciousPorts.includes(remotePort);
+    }
+
+    isSuspiciousFile(filename) {
+        const suspiciousNames = [
+            'rawrz', 'httpbot', 'client', 'agent', 'service',
+            'update', 'helper', 'support', 'system'
+        ];
+        
+        const suspiciousExtensions = ['.exe', '.dll', '.so', '.dylib', '.bin'];
+        
+        const lowerFilename = filename.toLowerCase();
+        
+        return suspiciousNames.some(name => lowerFilename.includes(name)) ||
+               suspiciousExtensions.some(ext => lowerFilename.endsWith(ext));
+    }
+
+    detectFileLanguage(filename) {
+        const ext = path.extname(filename).toLowerCase();
+        
+        const languageMap = {
+            '.exe': 'cpp',
+            '.dll': 'cpp',
+            '.so': 'cpp',
+            '.dylib': 'cpp',
+            '.py': 'python',
+            '.js': 'javascript',
+            '.jar': 'java',
+            '.class': 'java',
+            '.go': 'go',
+            '.rs': 'rust',
+            '.cs': 'csharp',
+            '.swift': 'swift',
+            '.kt': 'kotlin'
+        };
+        
+        return languageMap[ext] || 'unknown';
     }
 }
 

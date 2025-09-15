@@ -2125,18 +2125,18 @@ class IRCBot {
                 await fs.access(outputPath);
                 const stats = await fs.stat(outputPath);
                 
-                this.sendToIRC(`${nick}: ✅ Compilation successful!`);
-                this.sendToIRC(`${nick}: 📁 Executable saved: ${outputFilename}`);
-                this.sendToIRC(`${nick}: 📊 Size: ${(stats.size / 1024).toFixed(2)} KB`);
-                this.sendToIRC(`${nick}: 🚀 Ready to execute: ${outputFilename}`);
+                this.sendToIRC(`${nick}: Compilation successful!`);
+                this.sendToIRC(`${nick}: Executable saved: ${outputFilename}`);
+                this.sendToIRC(`${nick}: Size: ${(stats.size / 1024).toFixed(2)} KB`);
+                this.sendToIRC(`${nick}: Ready to execute: ${outputFilename}`);
                 
             } catch (error) {
-                this.sendToIRC(`${nick}: ❌ Compilation failed. Check C++ syntax and dependencies.`);
-                this.sendToIRC(`${nick}: 💡 Make sure your C++ code is valid and includes necessary headers.`);
+                this.sendToIRC(`${nick}: Compilation failed. Check C++ syntax and dependencies.`);
+                this.sendToIRC(`${nick}: Make sure your C++ code is valid and includes necessary headers.`);
             }
             
         } catch (error) {
-            this.sendToIRC(`${nick}: ❌ Compilation error: ${error.message}`);
+            this.sendToIRC(`${nick}: Compilation error: ${error.message}`);
             logger.error('Compilation error:', error);
         }
     }

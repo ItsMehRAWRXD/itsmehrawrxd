@@ -372,16 +372,16 @@
 
         <div class="controls">
             <button class="button" onclick="refreshDashboard()">
-                <span id="refreshIcon">🔄</span> Refresh Dashboard
+                <span id="refreshIcon">Refresh</span> Refresh Dashboard
             </button>
             <button class="button secondary" onclick="runImplementationCheck()">
-                <span id="checkIcon">🔍</span> Run Implementation Check
+                <span id="checkIcon">Check</span> Run Implementation Check
             </button>
             <button class="button secondary" onclick="forceHealthCheck()">
-                <span id="forceIcon">⚡</span> Force Health Check
+                <span id="forceIcon">Force</span> Force Health Check
             </button>
             <button class="button" onclick="toggleAutoRefresh()">
-                <span id="autoRefreshIcon">⏸️</span> <span id="autoRefreshText">Pause Auto-Refresh</span>
+                <span id="autoRefreshIcon">Pause</span> <span id="autoRefreshText">Pause Auto-Refresh</span>
             </button>
         </div>
 
@@ -390,7 +390,7 @@
         <div class="dashboard-grid">
             <!-- Overall Health Score -->
             <div class="card">
-                <h3>🏥 Overall Health</h3>
+                <h3>Overall Health</h3>
                 <div class="health-score" id="healthScore">--</div>
                 <div class="metric">
                     <span class="metric-label">Status</span>
@@ -434,7 +434,7 @@
 
             <!-- Module Health -->
             <div class="card">
-                <h3>🔧 Module Health</h3>
+                <h3>Module Health</h3>
                 <div class="metric">
                     <span class="metric-label">Total Modules</span>
                     <span class="metric-value" id="totalModules">--</span>
@@ -455,7 +455,7 @@
 
             <!-- API Endpoints -->
             <div class="card">
-                <h3>🌐 API Endpoints</h3>
+                <h3>API Endpoints</h3>
                 <div class="metric">
                     <span class="metric-label">Total Endpoints</span>
                     <span class="metric-value" id="totalEndpoints">--</span>
@@ -492,7 +492,7 @@
 
             <!-- Recommendations -->
             <div class="card full-width">
-                <h3>💡 Recommendations</h3>
+                <h3>Recommendations</h3>
                 <div id="recommendations">
                     <div class="chart-container">Loading recommendations...</div>
                 </div>
@@ -738,11 +738,11 @@
             if (autoRefreshEnabled) {
                 startAutoRefresh();
                 document.getElementById('autoRefreshText').textContent = 'Pause Auto-Refresh';
-                document.getElementById('autoRefreshIcon').textContent = '⏸️';
+                document.getElementById('autoRefreshIcon').textContent = 'Pause';
             } else {
                 stopAutoRefresh();
                 document.getElementById('autoRefreshText').textContent = 'Resume Auto-Refresh';
-                document.getElementById('autoRefreshIcon').textContent = '▶️';
+                document.getElementById('autoRefreshIcon').textContent = 'Resume';
             }
         }
 
@@ -779,9 +779,9 @@
             if (element) {
                 // Restore original icon based on elementId
                 const icons = {
-                    'refreshIcon': '🔄',
-                    'checkIcon': '🔍',
-                    'forceIcon': '⚡'
+                    'refreshIcon': 'Refresh',
+                    'checkIcon': 'Check',
+                    'forceIcon': 'Force'
                 };
                 element.innerHTML = icons[elementId] || '';
             }

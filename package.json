@@ -7,7 +7,11 @@
     "start": "node rawrz-standalone.js",
     "help": "node rawrz-standalone.js help",
     "test": "node rawrz-standalone.js sysinfo",
-    "start:web": "node server.js"
+    "start:web": "node server.js",
+    "test:unit": "node test-unit.js",
+    "test:performance": "node test-performance.js",
+    "test:comprehensive": "node test-comprehensive.js",
+    "test:all": "node test-runner.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

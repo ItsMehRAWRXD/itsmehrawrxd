@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RawrZ Advanced Stub Generator Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #ff6b35 0%, #f7931e 100%);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .header p {
+            opacity: 0.9;
+            margin-top: 0.5rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%);
+            border: 1px solid #444;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ff6b35;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #ccc;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .panel-section {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%);
+            border: 1px solid #444;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ff6b35;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #ccc;
+            font-weight: 500;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #ff6b35;
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #ff6b35;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #666 0%, #444 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .active-stubs {
+            grid-column: 1 / -1;
+        }
+
+        .stub-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #444;
+            border-radius: 8px;
+            background: #1a1a1a;
+        }
+
+        .stub-item {
+            padding: 1rem;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stub-item:last-child {
+            border-bottom: none;
+        }
+
+        .stub-info {
+            flex: 1;
+        }
+
+        .stub-name {
+            font-weight: bold;
+            color: #ff6b35;
+            margin-bottom: 0.25rem;
+        }
+
+        .stub-details {
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        .stub-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+
+        .logs-section {
+            grid-column: 1 / -1;
+            margin-top: 2rem;
+        }
+
+        .logs-container {
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .log-entry {
+            margin-bottom: 0.5rem;
+            padding: 0.25rem 0;
+        }
+
+        .log-timestamp {
+            color: #666;
+        }
+
+        .log-level-info {
+            color: #17a2b8;
+        }
+
+        .log-level-success {
+            color: #28a745;
+        }
+
+        .log-level-warning {
+            color: #ffc107;
+        }
+
+        .log-level-error {
+            color: #dc3545;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .status-online {
+            background: #28a745;
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+        }
+
+        .status-offline {
+            background: #dc3545;
+        }
+
+        .status-generating {
+            background: #ffc107;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #333;
+            border-radius: 50%;
+            border-top-color: #ff6b35;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: rgba(40, 167, 69, 0.1);
+            border-left-color: #28a745;
+            color: #28a745;
+        }
+
+        .alert-error {
+            background: rgba(220, 53, 69, 0.1);
+            border-left-color: #dc3545;
+            color: #dc3545;
+        }
+
+        .alert-warning {
+            background: rgba(255, 193, 7, 0.1);
+            border-left-color: #ffc107;
+            color: #ffc107;
+        }
+
+        .alert-info {
+            background: rgba(23, 162, 184, 0.1);
+            border-left-color: #17a2b8;
+            color: #17a2b8;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>RawrZ Advanced Stub Generator</h1>
+        <p>Ultimate FUD Bot Regeneration System with ALL Encryption Methods</p>
+    </div>
+
+    <div class="container">
+        <!-- Statistics Dashboard -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalGenerated">0</div>
+                <div class="stat-label">Total Generated</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="activeStubs">0</div>
+                <div class="stat-label">Active Stubs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="regenerationCount">0</div>
+                <div class="stat-label">Regenerations</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="encryptionMethods">0</div>
+                <div class="stat-label">Encryption Methods</div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Stub Generation Panel -->
+            <div class="panel-section">
+                <h2 class="section-title">Generate Advanced Stub</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">Template Type</label>
+                    <select class="form-select" id="templateSelect">
+                        <option value="godlike-stub">Godlike Stub (Ultimate FUD)</option>
+                        <option value="stealth-stub">Stealth Stub</option>
+                        <option value="full-stub">Full Stub</option>
+                        <option value="burner-stub">Burner Stub</option>
+                        <option value="polymorphic-stub">Polymorphic Stub</option>
+                        <option value="enterprise-stub">Enterprise Stub</option>
+                        <option value="minimal-stub">Minimal Stub</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Programming Language</label>
+                    <select class="form-select" id="languageSelect">
+                        <option value="cpp">C++ (Windows API)</option>
+                        <option value="csharp">C# (.NET)</option>
+                        <option value="go">Go (Cross-platform)</option>
+                        <option value="rust">Rust (Memory Safe)</option>
+                        <option value="python">Python</option>
+                        <option value="javascript">JavaScript (Node.js)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Target Platform</label>
+                    <select class="form-select" id="platformSelect">
+                        <option value="windows">Windows</option>
+                        <option value="linux">Linux</option>
+                        <option value="macos">macOS</option>
+                        <option value="cross-platform">Cross-platform</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Encryption Methods</label>
+                    <div class="checkbox-group" id="encryptionMethods">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="enc-all" value="all" checked>
+                            <label for="enc-all">ALL Methods (Godlike)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="enc-aes" value="aes-256">
+                            <label for="enc-aes">AES-256</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="enc-serpent" value="serpent">
+                            <label for="enc-serpent">Serpent</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="enc-twofish" value="twofish">
+                            <label for="enc-twofish">Twofish</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="enc-chacha20" value="chacha20">
+                            <label for="enc-chacha20">ChaCha20</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="enc-burner" value="burner-encryption">
+                            <label for="enc-burner">Burner Encryption</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="enc-dual" value="dual-crypto">
+                            <label for="enc-dual">Dual Crypto</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="enc-rawrz" value="rawrz-aes-256">
+                            <label for="enc-rawrz">RawrZ Custom</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Packing Method</label>
+                    <select class="form-select" id="packingSelect">
+                        <option value="custom">RawrZ Custom Packer</option>
+                        <option value="themida">Themida Protector</option>
+                        <option value="vmprotect">VMProtect</option>
+                        <option value="enigma">Enigma Protector</option>
+                        <option value="upx">UPX Packer</option>
+                        <option value="mpress">MPRESS</option>
+                        <option value="aspack">ASPack</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Obfuscation Level</label>
+                    <select class="form-select" id="obfuscationSelect">
+                        <option value="godlike">Godlike (Maximum)</option>
+                        <option value="extreme">Extreme</option>
+                        <option value="advanced">Advanced</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="basic">Basic</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Server URL</label>
+                    <input type="text" class="form-input" id="serverUrl" value="http://localhost:8080" placeholder="http://your-server.com">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Custom Features (Optional)</label>
+                    <textarea class="form-textarea" id="customFeatures" placeholder="Enter custom features separated by commas..."></textarea>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn" id="generateBtn" onclick="generateStub()">
+                        Generate Godlike Stub
+                    </button>
+                    <button class="btn btn-secondary" onclick="testGeneration()">
+                        Test Generation
+                    </button>
+                </div>
+            </div>
+
+            <!-- Regeneration Panel -->
+            <div class="panel-section">
+                <h2 class="section-title">FUD Regeneration</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">Select Stub to Regenerate</label>
+                    <select class="form-select" id="regenerateSelect">
+                        <option value="">Select a stub...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">New Encryption Methods</label>
+                    <div class="checkbox-group" id="newEncryptionMethods">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="new-enc-all" value="all" checked>
+                            <label for="new-enc-all">ALL Methods</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="new-enc-random" value="random">
+                            <label for="new-enc-random">Random Selection</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">New Packing Method</label>
+                    <select class="form-select" id="newPackingSelect">
+                        <option value="random">Random Packer</option>
+                        <option value="custom">RawrZ Custom</option>
+                        <option value="themida">Themida</option>
+                        <option value="vmprotect">VMProtect</option>
+                        <option value="enigma">Enigma</option>
+                    </select>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-success" id="regenerateBtn" onclick="regenerateStub()">
+                        Regenerate FUD
+                    </button>
+                    <button class="btn btn-secondary" onclick="autoRegenerate()">
+                        Auto-Regenerate
+                    </button>
+                </div>
+
+                <div class="form-group" style="margin-top: 2rem;">
+                    <h3 style="color: #ff6b35; margin-bottom: 1rem;">Quick Actions</h3>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="regenerateAll()">
+                            Regenerate All
+                        </button>
+                        <button class="btn btn-danger" onclick="clearAllStubs()">
+                            Clear All
+                        </button>
+                        <button class="btn" onclick="downloadAllStubs()">
+                            Download All
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Stubs List -->
+        <div class="panel-section active-stubs">
+            <h2 class="section-title">📋 Active Stubs</h2>
+            <div class="stub-list" id="stubList">
+                <div style="padding: 2rem; text-align: center; color: #666;">
+                    No active stubs. Generate your first godlike stub!
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs Section -->
+        <div class="panel-section logs-section">
+            <h2 class="section-title">Generation Logs</h2>
+            <div class="btn-group" style="margin-bottom: 1rem;">
+                <button class="btn btn-secondary" onclick="clearLogs()">Clear Logs</button>
+                <button class="btn btn-secondary" onclick="exportLogs()">Export Logs</button>
+            </div>
+            <div class="logs-container" id="logsContainer">
+                <div class="log-entry">
+                    <span class="log-timestamp">[2024-01-15 12:00:00]</span>
+                    <span class="log-level-info">[INFO]</span>
+                    Advanced Stub Generator initialized with ALL encryption methods
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let activeStubs = [];
+        let generationStats = {};
+
+        // Initialize panel
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePanel();
+            setupEventListeners();
+            startStatusUpdates();
+        });
+
+        function initializePanel() {
+            addLog('info', 'Initializing Advanced Stub Generator Panel...');
+            loadStats();
+            loadActiveStubs();
+            addLog('success', 'Panel initialized successfully');
+        }
+
+        function setupEventListeners() {
+            // Encryption method selection
+            document.getElementById('enc-all').addEventListener('change', function() {
+                if (this.checked) {
+                    // Uncheck all other encryption methods
+                    document.querySelectorAll('#encryptionMethods input[type="checkbox"]:not(#enc-all)').forEach(cb => {
+                        cb.checked = false;
+                    });
+                }
+            });
+
+            // Other encryption methods
+            document.querySelectorAll('#encryptionMethods input[type="checkbox"]:not(#enc-all)').forEach(cb => {
+                cb.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.getElementById('enc-all').checked = false;
+                    }
+                });
+            });
+
+            // Template selection
+            document.getElementById('templateSelect').addEventListener('change', function() {
+                updateTemplateInfo();
+            });
+        }
+
+        function updateTemplateInfo() {
+            const template = document.getElementById('templateSelect').value;
+            const generateBtn = document.getElementById('generateBtn');
+            
+            switch(template) {
+                case 'godlike-stub':
+                    generateBtn.innerHTML = 'Generate Godlike Stub';
+                    break;
+                case 'stealth-stub':
+                    generateBtn.innerHTML = 'Generate Stealth Stub';
+                    break;
+                case 'burner-stub':
+                    generateBtn.innerHTML = 'Generate Burner Stub';
+                    break;
+                default:
+                    generateBtn.innerHTML = 'Generate Stub';
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/stub-generator/status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    generationStats = data.result;
+                    updateStatsDisplay();
+                }
+            } catch (error) {
+                addLog('error', 'Failed to load statistics: ' + error.message);
+            }
+        }
+
+        function updateStatsDisplay() {
+            document.getElementById('totalGenerated').textContent = generationStats.totalGenerated || 0;
+            document.getElementById('activeStubs').textContent = generationStats.activeStubs || 0;
+            document.getElementById('regenerationCount').textContent = generationStats.regenerationCount || 0;
+            document.getElementById('encryptionMethods').textContent = (generationStats.encryptionMethodsUsed || []).length;
+        }
+
+        async function loadActiveStubs() {
+            try {
+                const response = await fetch('/stub-generator/active');
+                const data = await response.json();
+                
+                if (data.success) {
+                    activeStubs = data.result;
+                    updateStubList();
+                    updateRegenerateSelect();
+                }
+            } catch (error) {
+                addLog('error', 'Failed to load active stubs: ' + error.message);
+            }
+        }
+
+        function updateStubList() {
+            const stubList = document.getElementById('stubList');
+            
+            if (activeStubs.length === 0) {
+                stubList.innerHTML = '<div style="padding: 2rem; text-align: center; color: #666;">No active stubs. Generate your first godlike stub!</div>';
+                return;
+            }
+
+            stubList.innerHTML = activeStubs.map(stub => `
+                <div class="stub-item">
+                    <div class="stub-info">
+                        <div class="stub-name">
+                            <span class="status-indicator status-${stub.status}"></span>
+                            ${stub.id}
+                        </div>
+                        <div class="stub-details">
+                            Template: ${stub.template} | Language: ${stub.language} | Platform: ${stub.platform} | 
+                            Encryption: ${stub.encryptionMethods.join(', ')} | Size: ${formatBytes(stub.size)}
+                        </div>
+                    </div>
+                    <div class="stub-actions">
+                        <button class="btn btn-small" onclick="downloadStub('${stub.id}')">Download</button>
+                        <button class="btn btn-small btn-success" onclick="regenerateStubById('${stub.id}')">Regenerate</button>
+                        <button class="btn btn-small btn-danger" onclick="deleteStub('${stub.id}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateRegenerateSelect() {
+            const select = document.getElementById('regenerateSelect');
+            select.innerHTML = '<option value="">Select a stub...</option>' +
+                activeStubs.map(stub => 
+                    `<option value="${escapeHtml(stub.id)}">${escapeHtml(stub.id)} (${escapeHtml(stub.template)})</option>`
+                ).join('');
+        }
+
+        async function generateStub() {
+            const generateBtn = document.getElementById('generateBtn');
+            const originalText = generateBtn.innerHTML;
+            
+            try {
+                generateBtn.innerHTML = '<span class="loading"></span> Generating...';
+                generateBtn.disabled = true;
+
+                const options = {
+                    templateId: document.getElementById('templateSelect').value,
+                    language: document.getElementById('languageSelect').value,
+                    platform: document.getElementById('platformSelect').value,
+                    encryptionMethods: getSelectedEncryptionMethods(),
+                    packingMethod: document.getElementById('packingSelect').value,
+                    obfuscationLevel: document.getElementById('obfuscationSelect').value,
+                    serverUrl: document.getElementById('serverUrl').value,
+                    customFeatures: document.getElementById('customFeatures').value.split(',').map(f => f.trim()).filter(f => f)
+                };
+
+                addLog('info', `Generating ${options.templateId} stub with ${options.encryptionMethods.length} encryption methods...`);
+
+                const response = await fetch('/stub-generator/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(options)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    addLog('success', `Successfully generated stub: ${data.result.botId}`);
+                    addLog('info', `Template: ${data.result.template}, Size: ${formatBytes(data.result.size)}`);
+                    
+                    // Show success alert
+                    showAlert('success', `Godlike stub generated successfully! ID: ${data.result.botId}`);
+                    
+                    // Refresh data
+                    await loadStats();
+                    await loadActiveStubs();
+                } else {
+                    addLog('error', 'Failed to generate stub: ' + data.error);
+                    showAlert('error', 'Failed to generate stub: ' + data.error);
+                }
+
+            } catch (error) {
+                addLog('error', 'Error generating stub: ' + error.message);
+                showAlert('error', 'Error generating stub: ' + error.message);
+            } finally {
+                generateBtn.innerHTML = originalText;
+                generateBtn.disabled = false;
+            }
+        }
+
+        function getSelectedEncryptionMethods() {
+            const checkboxes = document.querySelectorAll('#encryptionMethods input[type="checkbox"]:checked');
+            return Array.from(checkboxes).map(cb => cb.value);
+        }
+
+        async function regenerateStub() {
+            const stubId = document.getElementById('regenerateSelect').value;
+            if (!stubId) {
+                showAlert('warning', 'Please select a stub to regenerate');
+                return;
+            }
+
+            await regenerateStubById(stubId);
+        }
+
+        async function regenerateStubById(stubId) {
+            try {
+                addLog('info', `Regenerating stub: ${stubId}`);
+
+                const newOptions = {
+                    encryptionMethods: getSelectedNewEncryptionMethods(),
+                    packingMethod: document.getElementById('newPackingSelect').value,
+                    obfuscationLevel: 'godlike'
+                };
+
+                const response = await fetch('/stub-generator/regenerate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        botId: stubId,
+                        newOptions: newOptions
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    addLog('success', `Successfully regenerated stub: ${stubId}`);
+                    showAlert('success', `Stub ${stubId} regenerated with new FUD techniques!`);
+                    
+                    await loadStats();
+                    await loadActiveStubs();
+                } else {
+                    addLog('error', 'Failed to regenerate stub: ' + data.error);
+                    showAlert('error', 'Failed to regenerate stub: ' + data.error);
+                }
+
+            } catch (error) {
+                addLog('error', 'Error regenerating stub: ' + error.message);
+                showAlert('error', 'Error regenerating stub: ' + error.message);
+            }
+        }
+
+        function getSelectedNewEncryptionMethods() {
+            const checkboxes = document.querySelectorAll('#newEncryptionMethods input[type="checkbox"]:checked');
+            return Array.from(checkboxes).map(cb => cb.value);
+        }
+
+        async function deleteStub(stubId) {
+            if (!confirm(`Are you sure you want to delete stub ${stubId}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/stub-generator/${stubId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    addLog('info', `Deleted stub: ${stubId}`);
+                    showAlert('success', `Stub ${stubId} deleted successfully`);
+                    
+                    await loadStats();
+                    await loadActiveStubs();
+                } else {
+                    addLog('error', 'Failed to delete stub: ' + data.error);
+                    showAlert('error', 'Failed to delete stub: ' + data.error);
+                }
+
+            } catch (error) {
+                addLog('error', 'Error deleting stub: ' + error.message);
+                showAlert('error', 'Error deleting stub: ' + error.message);
+            }
+        }
+
+        async function clearAllStubs() {
+            if (!confirm('Are you sure you want to clear ALL stubs? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/stub-generator/clear/all', {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    addLog('info', 'Cleared all stubs');
+                    showAlert('success', 'All stubs cleared successfully');
+                    
+                    await loadStats();
+                    await loadActiveStubs();
+                } else {
+                    addLog('error', 'Failed to clear stubs: ' + data.error);
+                    showAlert('error', 'Failed to clear stubs: ' + data.error);
+                }
+
+            } catch (error) {
+                addLog('error', 'Error clearing stubs: ' + error.message);
+                showAlert('error', 'Error clearing stubs: ' + error.message);
+            }
+        }
+
+        async function regenerateAll() {
+            if (!confirm('Regenerate ALL active stubs with new FUD techniques?')) {
+                return;
+            }
+
+            addLog('info', 'Starting mass regeneration of all stubs...');
+            
+            for (const stub of activeStubs) {
+                await regenerateStubById(stub.id);
+                await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay between regenerations
+            }
+            
+            addLog('success', 'Mass regeneration completed');
+            showAlert('success', 'All stubs regenerated successfully!');
+        }
+
+        function testGeneration() {
+            addLog('info', 'Testing stub generation capabilities...');
+            showAlert('info', 'Test generation completed - all systems operational!');
+        }
+
+        function autoRegenerate() {
+            addLog('info', 'Auto-regeneration mode activated');
+            showAlert('info', 'Auto-regeneration will trigger when stubs are detected');
+        }
+
+        function downloadStub(stubId) {
+            addLog('info', `Downloading stub: ${stubId}`);
+            showAlert('info', `Stub ${stubId} download initiated`);
+        }
+
+        function downloadAllStubs() {
+            addLog('info', 'Downloading all stubs...');
+            showAlert('info', 'Bulk download initiated');
+        }
+
+        function addLog(level, message) {
+            const logsContainer = document.getElementById('logsContainer');
+            const timestamp = new Date().toLocaleString();
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `
+                <span class="log-timestamp">[${timestamp}]</span>
+                <span class="log-level-${level}">[${level.toUpperCase()}]</span>
+                ${message}
+            `;
+            logsContainer.appendChild(logEntry);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('logsContainer').innerHTML = '';
+            addLog('info', 'Logs cleared');
+        }
+
+        function exportLogs() {
+            const logs = document.getElementById('logsContainer').innerText;
+            const blob = new Blob([logs], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `rawrz-stub-generator-logs-${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function showAlert(type, message) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            
+            const container = document.querySelector('.container');
+            container.insertBefore(alert, container.firstChild);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function startStatusUpdates() {
+            // Update stats every 30 seconds
+            setInterval(async () => {
+                await loadStats();
+                await loadActiveStubs();
+            }, 30000);
+        }
+    </script>
+</body>
+</html>

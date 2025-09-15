@@ -3,6 +3,11 @@ const EventEmitter = require('events');
 const crypto = require('crypto');
 const fs = require('fs').promises;
 const path = require('path');
+const os = require('os');
+const { exec, spawn } = require('child_process');
+const { promisify } = require('util');
+
+const execAsync = promisify(exec);
 
 class AntiAnalysis extends EventEmitter {
     constructor() {
@@ -480,6 +485,10 @@ class AntiAnalysis extends EventEmitter {
     }
 
     // Check for virtual machine
+    async checkVM() {
+        return await this.checkForVM();
+    }
+
     async checkForVM() {
         try {
             const checks = [];
@@ -507,15 +516,9 @@ class AntiAnalysis extends EventEmitter {
                 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\VirtualBox Guest Additions'
             ];
 
-            // Simulate VM detection
-            if (Math.random() < 0.2) { // 20% chance of detection
-                checks.push({
-                    type: 'vm',
-                    detected: true,
-                    method: 'process_check',
-                    severity: 'medium'
-                });
-            }
+            // Real VM detection
+            const vmChecks = await this.performRealVMDetection();
+            checks.push(...vmChecks);
 
             this.emit('vmCheck', { checks });
             return { success: true, checks };
@@ -538,14 +541,10 @@ class AntiAnalysis extends EventEmitter {
                 'automated_environment'
             ];
 
-            // Simulate sandbox detection
-            if (Math.random() < 0.3) { // 30% chance of detection
-                checks.push({
-                    type: 'sandbox',
-                    detected: true,
-                    method: 'resource_check',
-                    severity: 'medium'
-                });
+            // Real sandbox detection
+            const sandboxCheck = await this.performRealSandboxDetection();
+            if (sandboxCheck.detected) {
+                checks.push(sandboxCheck);
             }
 
             this.emit('sandboxCheck', { checks });
@@ -686,6 +685,290 @@ class AntiAnalysis extends EventEmitter {
         return recommendations;
     }
 
+    // Real VM detection implementation
+    async performRealVMDetection() {
+        const checks = [];
+        
+        try {
+            // Check for VM processes
+            const vmProcesses = await this.checkVMProcesses();
+            if (vmProcesses.length > 0) {
+                checks.push({
+                    type: 'vm',
+                    detected: true,
+                    method: 'process_check',
+                    severity: 'high',
+                    details: `VM processes detected: ${vmProcesses.join(', ')}`
+                });
+            }
+
+            // Check for VM registry keys (Windows)
+            if (os.platform() === 'win32') {
+                const vmRegistry = await this.checkVMRegistry();
+                if (vmRegistry.length > 0) {
+                    checks.push({
+                        type: 'vm',
+                        detected: true,
+                        method: 'registry_check',
+                        severity: 'high',
+                        details: `VM registry keys found: ${vmRegistry.join(', ')}`
+                    });
+                }
+            }
+
+            // Check for VM files and directories
+            const vmFiles = await this.checkVMFiles();
+            if (vmFiles.length > 0) {
+                checks.push({
+                    type: 'vm',
+                    detected: true,
+                    method: 'file_check',
+                    severity: 'medium',
+                    details: `VM files detected: ${vmFiles.join(', ')}`
+                });
+            }
+
+            // Check system information for VM indicators
+            const systemInfo = await this.checkSystemInfo();
+            if (systemInfo.isVM) {
+                checks.push({
+                    type: 'vm',
+                    detected: true,
+                    method: 'system_info',
+                    severity: 'medium',
+                    details: `VM indicators in system info: ${systemInfo.indicators.join(', ')}`
+                });
+            }
+
+            // Check for VM network adapters
+            const vmNetwork = await this.checkVMNetwork();
+            if (vmNetwork.length > 0) {
+                checks.push({
+                    type: 'vm',
+                    detected: true,
+                    method: 'network_check',
+                    severity: 'low',
+                    details: `VM network adapters: ${vmNetwork.join(', ')}`
+                });
+            }
+
+        } catch (error) {
+            checks.push({
+                type: 'vm',
+                detected: false,
+                method: 'error',
+                severity: 'low',
+                details: `VM detection error: ${error.message}`
+            });
+        }
+
+        return checks;
+    }
+
+    // Check for VM processes
+    async checkVMProcesses() {
+        const vmProcesses = [];
+        const vmProcessNames = [
+            'vmware', 'vbox', 'virtualbox', 'qemu', 'kvm', 'xen',
+            'vmwaretray', 'vmwareuser', 'vmtoolsd', 'vboxservice',
+            'vboxtray', 'qemu-ga', 'xenservice'
+        ];
+
+        try {
+            if (os.platform() === 'win32') {
+                const { stdout } = await execAsync('tasklist /FO CSV');
+                const lines = stdout.split('\n');
+                for (const line of lines) {
+                    for (const vmProcess of vmProcessNames) {
+                        if (line.toLowerCase().includes(vmProcess.toLowerCase())) {
+                            const processName = line.split(',')[0].replace(/"/g, '');
+                            if (!vmProcesses.includes(processName)) {
+                                vmProcesses.push(processName);
+                            }
+                        }
+                    }
+                }
+            } else {
+                const { stdout } = await execAsync('ps aux');
+                const lines = stdout.split('\n');
+                for (const line of lines) {
+                    for (const vmProcess of vmProcessNames) {
+                        if (line.toLowerCase().includes(vmProcess.toLowerCase())) {
+                            const parts = line.trim().split(/\s+/);
+                            const processName = parts[10] || parts[0];
+                            if (!vmProcesses.includes(processName)) {
+                                vmProcesses.push(processName);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            // Ignore errors, return empty array
+        }
+
+        return vmProcesses;
+    }
+
+    // Check for VM registry keys (Windows)
+    async checkVMRegistry() {
+        const vmRegistryKeys = [];
+        const registryPaths = [
+            'HKEY_LOCAL_MACHINE\\SOFTWARE\\VMware, Inc.\\VMware Tools',
+            'HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\VirtualBox Guest Additions',
+            'HKEY_LOCAL_MACHINE\\SYSTEM\\ControlSet001\\Services\\VBoxService',
+            'HKEY_LOCAL_MACHINE\\SYSTEM\\ControlSet001\\Services\\VMTools',
+            'HKEY_LOCAL_MACHINE\\SYSTEM\\ControlSet001\\Services\\VMMEMCTL',
+            'HKEY_LOCAL_MACHINE\\SYSTEM\\ControlSet001\\Services\\VMMOUSE',
+            'HKEY_LOCAL_MACHINE\\SYSTEM\\ControlSet001\\Services\\VMSRVC',
+            'HKEY_LOCAL_MACHINE\\SYSTEM\\ControlSet001\\Services\\VMTools'
+        ];
+
+        try {
+            for (const regPath of registryPaths) {
+                try {
+                    const { stdout } = await execAsync(`reg query "${regPath}" 2>nul`);
+                    if (stdout && !stdout.includes('ERROR')) {
+                        vmRegistryKeys.push(regPath);
+                    }
+                } catch (error) {
+                    // Registry key doesn't exist, continue
+                }
+            }
+        } catch (error) {
+            // Ignore errors
+        }
+
+        return vmRegistryKeys;
+    }
+
+    // Check for VM files and directories
+    async checkVMFiles() {
+        const vmFiles = [];
+        const vmFilePaths = [
+            'C:\\Program Files\\VMware\\VMware Tools',
+            'C:\\Program Files\\Oracle\\VirtualBox Guest Additions',
+            'C:\\Windows\\System32\\drivers\\vmmouse.sys',
+            'C:\\Windows\\System32\\drivers\\vmhgfs.sys',
+            'C:\\Windows\\System32\\drivers\\VBoxMouse.sys',
+            'C:\\Windows\\System32\\drivers\\VBoxGuest.sys',
+            'C:\\Windows\\System32\\drivers\\VBoxSF.sys',
+            '/usr/bin/vmware-tools',
+            '/usr/bin/VBoxClient',
+            '/usr/lib/vmware-tools',
+            '/usr/lib/virtualbox',
+            '/proc/vz',
+            '/proc/xen'
+        ];
+
+        try {
+            for (const filePath of vmFilePaths) {
+                try {
+                    await fs.access(filePath);
+                    vmFiles.push(filePath);
+                } catch (error) {
+                    // File doesn't exist, continue
+                }
+            }
+        } catch (error) {
+            // Ignore errors
+        }
+
+        return vmFiles;
+    }
+
+    // Check system information for VM indicators
+    async checkSystemInfo() {
+        const indicators = [];
+        let isVM = false;
+
+        try {
+            // Check CPU information
+            const cpus = os.cpus();
+            for (const cpu of cpus) {
+                const model = cpu.model.toLowerCase();
+                if (model.includes('vmware') || model.includes('virtualbox') || 
+                    model.includes('qemu') || model.includes('kvm') || 
+                    model.includes('xen') || model.includes('microsoft corporation')) {
+                    indicators.push(`VM CPU: ${cpu.model}`);
+                    isVM = true;
+                }
+            }
+
+            // Check total memory (VMs often have specific memory amounts)
+            const totalMem = os.totalmem();
+            const vmMemorySizes = [1073741824, 2147483648, 4294967296, 8589934592]; // Common VM memory sizes
+            if (vmMemorySizes.includes(totalMem)) {
+                indicators.push(`Suspicious memory size: ${Math.round(totalMem / 1024 / 1024 / 1024)}GB`);
+                isVM = true;
+            }
+
+            // Check hostname for VM indicators
+            const hostname = os.hostname().toLowerCase();
+            if (hostname.includes('vm') || hostname.includes('virtual') || 
+                hostname.includes('sandbox') || hostname.includes('analysis')) {
+                indicators.push(`Suspicious hostname: ${os.hostname()}`);
+                isVM = true;
+            }
+
+            // Check platform information
+            const platform = os.platform();
+            const arch = os.arch();
+            if (platform === 'win32' && arch === 'x64') {
+                // Additional Windows-specific checks
+                try {
+                    const { stdout } = await execAsync('wmic computersystem get model');
+                    if (stdout.toLowerCase().includes('virtual') || 
+                        stdout.toLowerCase().includes('vmware') ||
+                        stdout.toLowerCase().includes('virtualbox')) {
+                        indicators.push(`VM model detected: ${stdout.trim()}`);
+                        isVM = true;
+                    }
+                } catch (error) {
+                    // Ignore errors
+                }
+            }
+
+        } catch (error) {
+            // Ignore errors
+        }
+
+        return { isVM, indicators };
+    }
+
+    // Check for VM network adapters
+    async checkVMNetwork() {
+        const vmAdapters = [];
+
+        try {
+            if (os.platform() === 'win32') {
+                const { stdout } = await execAsync('wmic path win32_networkadapter get name');
+                const lines = stdout.split('\n');
+                for (const line of lines) {
+                    const adapter = line.toLowerCase();
+                    if (adapter.includes('vmware') || adapter.includes('virtualbox') || 
+                        adapter.includes('vbox') || adapter.includes('qemu') ||
+                        adapter.includes('xen') || adapter.includes('hyper-v')) {
+                        vmAdapters.push(line.trim());
+                    }
+                }
+            } else {
+                const { stdout } = await execAsync('ip link show');
+                const lines = stdout.split('\n');
+                for (const line of lines) {
+                    if (line.includes('veth') || line.includes('docker') || 
+                        line.includes('br-') || line.includes('virbr')) {
+                        vmAdapters.push(line.trim());
+                    }
+                }
+            }
+        } catch (error) {
+            // Ignore errors
+        }
+
+        return vmAdapters;
+    }
+
     // Cleanup and shutdown
     async shutdown() {
         try {
@@ -696,6 +979,222 @@ class AntiAnalysis extends EventEmitter {
             this.emit('error', { engine: this.name, error: error.message });
             throw error;
         }
+    }
+
+    // Real sandbox detection method
+    async performRealSandboxDetection() {
+        try {
+            const checks = [];
+            
+            // Check for sandbox-specific processes
+            const sandboxProcesses = await this.checkSandboxProcesses();
+            if (sandboxProcesses.length > 0) {
+                checks.push({
+                    type: 'sandbox',
+                    detected: true,
+                    method: 'process_check',
+                    severity: 'high',
+                    details: sandboxProcesses
+                });
+            }
+            
+            // Check for sandbox-specific files
+            const sandboxFiles = await this.checkSandboxFiles();
+            if (sandboxFiles.length > 0) {
+                checks.push({
+                    type: 'sandbox',
+                    detected: true,
+                    method: 'file_check',
+                    severity: 'medium',
+                    details: sandboxFiles
+                });
+            }
+            
+            // Check for sandbox-specific registry keys (Windows)
+            if (os.platform() === 'win32') {
+                const sandboxRegistry = await this.checkSandboxRegistry();
+                if (sandboxRegistry.length > 0) {
+                    checks.push({
+                        type: 'sandbox',
+                        detected: true,
+                        method: 'registry_check',
+                        severity: 'medium',
+                        details: sandboxRegistry
+                    });
+                }
+            }
+            
+            // Check for sandbox-specific network adapters
+            const sandboxNetwork = await this.checkSandboxNetwork();
+            if (sandboxNetwork.length > 0) {
+                checks.push({
+                    type: 'sandbox',
+                    detected: true,
+                    method: 'network_check',
+                    severity: 'low',
+                    details: sandboxNetwork
+                });
+            }
+            
+            // Return the most severe detection
+            if (checks.length > 0) {
+                const mostSevere = checks.reduce((prev, current) => 
+                    this.getSeverityLevel(current.severity) > this.getSeverityLevel(prev.severity) ? current : prev
+                );
+                return mostSevere;
+            }
+            
+            return { detected: false };
+        } catch (error) {
+            logger.error('Real sandbox detection failed:', error);
+            return { detected: false };
+        }
+    }
+
+    async checkSandboxProcesses() {
+        try {
+            const sandboxProcesses = [
+                'vmware', 'vbox', 'virtualbox', 'qemu', 'xen', 'hyper-v',
+                'sandboxie', 'cuckoo', 'joe', 'anubis', 'threatgrid',
+                'fireeye', 'vmware-tools', 'vmtoolsd', 'vmwareuser'
+            ];
+            
+            const detected = [];
+            
+            if (os.platform() === 'win32') {
+                const { stdout } = await execAsync('tasklist /fo csv');
+                const lines = stdout.split('\n');
+                
+                for (const line of lines) {
+                    if (line.includes(',')) {
+                        const processName = line.split(',')[0].replace(/"/g, '').toLowerCase();
+                        if (sandboxProcesses.some(sandbox => processName.includes(sandbox))) {
+                            detected.push(processName);
+                        }
+                    }
+                }
+            } else {
+                const { stdout } = await execAsync('ps aux');
+                const lines = stdout.split('\n');
+                
+                for (const line of lines) {
+                    const parts = line.trim().split(/\s+/);
+                    if (parts.length >= 11) {
+                        const processName = parts[10].toLowerCase();
+                        if (sandboxProcesses.some(sandbox => processName.includes(sandbox))) {
+                            detected.push(processName);
+                        }
+                    }
+                }
+            }
+            
+            return detected;
+        } catch (error) {
+            logger.error('Sandbox process check failed:', error);
+            return [];
+        }
+    }
+
+    async checkSandboxFiles() {
+        try {
+            const sandboxFiles = [
+                'C:\\Program Files\\VMware\\VMware Tools\\',
+                'C:\\Program Files\\Oracle\\VirtualBox Guest Additions\\',
+                '/usr/bin/vmware-tools',
+                '/usr/bin/vboxadd',
+                '/proc/vz/',
+                '/proc/xen/',
+                '/sys/class/dmi/id/product_name',
+                '/sys/class/dmi/id/sys_vendor'
+            ];
+            
+            const detected = [];
+            
+            for (const file of sandboxFiles) {
+                try {
+                    await fs.access(file);
+                    detected.push(file);
+                } catch (error) {
+                    // File doesn't exist, continue
+                }
+            }
+            
+            return detected;
+        } catch (error) {
+            logger.error('Sandbox file check failed:', error);
+            return [];
+        }
+    }
+
+    async checkSandboxRegistry() {
+        try {
+            const sandboxKeys = [
+                'HKEY_LOCAL_MACHINE\\SOFTWARE\\VMware, Inc.\\VMware Tools',
+                'HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\VirtualBox Guest Additions',
+                'HKEY_LOCAL_MACHINE\\SYSTEM\\ControlSet001\\Services\\VBoxService',
+                'HKEY_LOCAL_MACHINE\\SYSTEM\\ControlSet001\\Services\\VMTools'
+            ];
+            
+            const detected = [];
+            
+            for (const key of sandboxKeys) {
+                try {
+                    const { stdout } = await execAsync(`reg query "${key}"`);
+                    if (stdout.includes('ERROR') === false) {
+                        detected.push(key);
+                    }
+                } catch (error) {
+                    // Key doesn't exist, continue
+                }
+            }
+            
+            return detected;
+        } catch (error) {
+            logger.error('Sandbox registry check failed:', error);
+            return [];
+        }
+    }
+
+    async checkSandboxNetwork() {
+        try {
+            const sandboxAdapters = [
+                'vmware', 'virtualbox', 'vbox', 'hyper-v', 'xen'
+            ];
+            
+            const detected = [];
+            
+            if (os.platform() === 'win32') {
+                const { stdout } = await execAsync('wmic path win32_networkadapter get name');
+                const lines = stdout.split('\n');
+                
+                for (const line of lines) {
+                    const adapterName = line.toLowerCase();
+                    if (sandboxAdapters.some(sandbox => adapterName.includes(sandbox))) {
+                        detected.push(adapterName.trim());
+                    }
+                }
+            } else {
+                const { stdout } = await execAsync('ip link show');
+                const lines = stdout.split('\n');
+                
+                for (const line of lines) {
+                    const adapterName = line.toLowerCase();
+                    if (sandboxAdapters.some(sandbox => adapterName.includes(sandbox))) {
+                        detected.push(adapterName.trim());
+                    }
+                }
+            }
+            
+            return detected;
+        } catch (error) {
+            logger.error('Sandbox network check failed:', error);
+            return [];
+        }
+    }
+
+    getSeverityLevel(severity) {
+        const levels = { 'low': 1, 'medium': 2, 'high': 3, 'critical': 4 };
+        return levels[severity] || 0;
     }
 }
 

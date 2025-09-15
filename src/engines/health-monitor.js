@@ -3,7 +3,15 @@ const EventEmitter = require('events');
 const fs = require('fs').promises;
 const path = require('path');
 const crypto = require('crypto');
+const { exec, spawn } = require('child_process');
+const { promisify } = require('util');
+const os = require('os');
+const http = require('http');
+const https = require('https');
+const net = require('net');
 const { logger } = require('../utils/logger');
+
+const execAsync = promisify(exec);
 
 class HealthMonitor extends EventEmitter {
     constructor() {
@@ -441,8 +449,8 @@ class HealthMonitor extends EventEmitter {
             
             for (const endpoint of endpoints) {
                 try {
-                    // Simulate endpoint check
-                    const isUp = await this.checkServiceStatus(service); // Real service status check
+                    // Real endpoint check
+                    const isUp = await this.performRealEndpointCheck(endpoint);
                     results.push({
                         endpoint,
                         status: isUp ? 'up' : 'down',
@@ -477,6 +485,215 @@ class HealthMonitor extends EventEmitter {
         }
     }
 
+    // Real endpoint check implementation
+    async performRealEndpointCheck(endpoint) {
+        try {
+            const startTime = Date.now();
+            
+            if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
+                // HTTP/HTTPS endpoint check
+                return await this.checkHttpEndpoint(endpoint);
+            } else if (endpoint.includes(':')) {
+                // TCP endpoint check (host:port)
+                const [host, port] = endpoint.split(':');
+                return await this.checkTcpEndpoint(host, parseInt(port));
+            } else {
+                // DNS/ICMP check
+                return await this.checkDnsEndpoint(endpoint);
+            }
+        } catch (error) {
+            logger.warn(`Endpoint check failed for ${endpoint}:`, error.message);
+            return false;
+        }
+    }
+
+    // Check HTTP/HTTPS endpoint
+    async checkHttpEndpoint(url) {
+        return new Promise((resolve) => {
+            const isHttps = url.startsWith('https://');
+            const client = isHttps ? https : http;
+            const timeout = 5000;
+            
+            const req = client.get(url, { timeout }, (res) => {
+                resolve(res.statusCode >= 200 && res.statusCode < 400);
+            });
+            
+            req.on('error', () => resolve(false));
+            req.on('timeout', () => {
+                req.destroy();
+                resolve(false);
+            });
+        });
+    }
+
+    // Check TCP endpoint
+    async checkTcpEndpoint(host, port) {
+        return new Promise((resolve) => {
+            const socket = new net.Socket();
+            const timeout = 5000;
+            
+            socket.setTimeout(timeout);
+            socket.on('connect', () => {
+                socket.destroy();
+                resolve(true);
+            });
+            socket.on('timeout', () => {
+                socket.destroy();
+                resolve(false);
+            });
+            socket.on('error', () => {
+                socket.destroy();
+                resolve(false);
+            });
+            
+            socket.connect(port, host);
+        });
+    }
+
+    // Check DNS endpoint
+    async checkDnsEndpoint(hostname) {
+        try {
+            const dns = require('dns');
+            return new Promise((resolve) => {
+                dns.lookup(hostname, (err) => {
+                    resolve(!err);
+                });
+            });
+        } catch (error) {
+            return false;
+        }
+    }
+
+    // Real service check implementation
+    async performRealServiceCheck(service) {
+        try {
+            switch (service.type) {
+                case 'http':
+                case 'https':
+                    return await this.checkHttpEndpoint(service.url || service.endpoint);
+                case 'tcp':
+                    return await this.checkTcpEndpoint(service.host, service.port);
+                case 'database':
+                    return await this.checkDatabaseService(service);
+                case 'process':
+                    return await this.checkProcessService(service);
+                case 'file':
+                    return await this.checkFileService(service);
+                default:
+                    // Try to determine service type automatically
+                    if (service.url || service.endpoint) {
+                        return await this.performRealEndpointCheck(service.url || service.endpoint);
+                    } else if (service.host && service.port) {
+                        return await this.checkTcpEndpoint(service.host, service.port);
+                    } else {
+                        return false;
+                    }
+            }
+        } catch (error) {
+            logger.warn(`Service check failed for ${service.name}:`, error.message);
+            return false;
+        }
+    }
+
+    // Check database service
+    async checkDatabaseService(service) {
+        try {
+            if (service.database === 'mysql') {
+                return await this.checkMysqlConnection(service);
+            } else if (service.database === 'postgresql') {
+                return await this.checkPostgresqlConnection(service);
+            } else if (service.database === 'mongodb') {
+                return await this.checkMongodbConnection(service);
+            } else {
+                // Generic database check via TCP
+                return await this.checkTcpEndpoint(service.host, service.port);
+            }
+        } catch (error) {
+            return false;
+        }
+    }
+
+    // Check MySQL connection
+    async checkMysqlConnection(service) {
+        try {
+            const mysql = require('mysql2/promise');
+            const connection = await mysql.createConnection({
+                host: service.host,
+                port: service.port || 3306,
+                user: service.username || 'root',
+                password: service.password || '',
+                database: service.database || 'mysql',
+                connectTimeout: 5000
+            });
+            await connection.ping();
+            await connection.end();
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    // Check PostgreSQL connection
+    async checkPostgresqlConnection(service) {
+        try {
+            const { Client } = require('pg');
+            const client = new Client({
+                host: service.host,
+                port: service.port || 5432,
+                user: service.username || 'postgres',
+                password: service.password || '',
+                database: service.database || 'postgres',
+                connectionTimeoutMillis: 5000
+            });
+            await client.connect();
+            await client.query('SELECT 1');
+            await client.end();
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    // Check MongoDB connection
+    async checkMongodbConnection(service) {
+        try {
+            const { MongoClient } = require('mongodb');
+            const uri = `mongodb://${service.host}:${service.port || 27017}/${service.database || 'admin'}`;
+            const client = new MongoClient(uri, { serverSelectionTimeoutMS: 5000 });
+            await client.connect();
+            await client.db().admin().ping();
+            await client.close();
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    // Check process service
+    async checkProcessService(service) {
+        try {
+            if (os.platform() === 'win32') {
+                const { stdout } = await execAsync(`tasklist /FI "IMAGENAME eq ${service.processName}"`);
+                return stdout.includes(service.processName);
+            } else {
+                const { stdout } = await execAsync(`ps aux | grep "${service.processName}" | grep -v grep`);
+                return stdout.trim().length > 0;
+            }
+        } catch (error) {
+            return false;
+        }
+    }
+
+    // Check file service
+    async checkFileService(service) {
+        try {
+            await fs.access(service.filePath);
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
     // Check database connections
     async checkDatabaseConnections() {
         // Real database connectivity check
@@ -504,8 +721,8 @@ class HealthMonitor extends EventEmitter {
         
         for (const service of services) {
             try {
-                // Simulate service check
-                const isUp = await this.checkDatabaseConnection(db); // Real database connection check
+                // Real service check
+                const isUp = await this.performRealServiceCheck(service);
                 results.push({
                     name: service.name,
                     status: isUp ? 'up' : 'down',

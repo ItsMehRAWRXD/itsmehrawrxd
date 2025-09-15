@@ -2755,7 +2755,7 @@
             if (isOpenSSL) {
                 infoText = `✓ OpenSSL Compatible - Native support, high performance`;
             } else if (isCustom) {
-                infoText = `⚠ Custom Implementation - May have compatibility limitations`;
+                infoText = `Custom Implementation - May have compatibility limitations`;
             } else {
                 infoText = `? Unknown Algorithm Type`;
             }
@@ -4794,10 +4794,10 @@ Examples:
                 let statusHtml = '<div class="status-info">';
                 statusHtml += `<h4>OpenSSL Management Status</h4>`;
                 statusHtml += `<p><strong>Engine:</strong> ${status.engine} v${status.version}</p>`;
-                statusHtml += `<p><strong>Initialized:</strong> ${status.initialized ? '✅ Yes' : '❌ No'}</p>`;
+                statusHtml += `<p><strong>Initialized:</strong> ${status.initialized ? 'Yes' : 'No'}</p>`;
                 statusHtml += `<p><strong>Mode:</strong> ${status.configuration.mode}</p>`;
-                statusHtml += `<p><strong>Custom Algorithms:</strong> ${status.configuration.customAlgorithms ? '✅ Enabled' : '❌ Disabled'}</p>`;
-                statusHtml += `<p><strong>Auto Fallback:</strong> ${status.configuration.autoFallback ? '✅ Enabled' : '❌ Disabled'}</p>`;
+                statusHtml += `<p><strong>Custom Algorithms:</strong> ${status.configuration.customAlgorithms ? 'Enabled' : 'Disabled'}</p>`;
+                statusHtml += `<p><strong>Auto Fallback:</strong> ${status.configuration.autoFallback ? 'Enabled' : 'Disabled'}</p>`;
                 statusHtml += `<p><strong>Total Algorithms:</strong> ${status.algorithms.total}</p>`;
                 statusHtml += `<p><strong>OpenSSL Algorithms:</strong> ${status.algorithms.openssl}</p>`;
                 statusHtml += `<p><strong>Custom Algorithms:</strong> ${status.algorithms.custom}</p>`;
@@ -4880,7 +4880,7 @@ Examples:
                 Object.entries(result.results).forEach(([engineName, engineResult]) => {
                     resultsHtml += '<tr>';
                     resultsHtml += `<td>${engineName}</td>`;
-                    resultsHtml += `<td>${engineResult.success ? '✅' : '❌'}</td>`;
+                    resultsHtml += `<td>${engineResult.success ? 'Success' : 'Failed'}</td>`;
                     resultsHtml += `<td>${engineResult.duration || 0}</td>`;
                     resultsHtml += `<td>${engineResult.keySize || 0}</td>`;
                     resultsHtml += `<td>${engineResult.ivSize || 0}</td>`;
@@ -5323,7 +5323,7 @@ Examples:
                 
                 Object.entries(scanResult.results.engines).forEach(([engine, result]) => {
                     const statusClass = result.detected ? 'detected' : 'clean';
-                    const statusIcon = result.detected ? '⚠️' : '✅';
+                    const statusIcon = result.detected ? 'Warning' : 'Success';
                     
                     html += `
                         <div class="engine-item ${statusClass}">
