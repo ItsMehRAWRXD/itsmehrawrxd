@@ -17,7 +17,7 @@ app.use(helmet({
             frameSrc: ["'none'"],
         },
     },
-}));app.use(cors());app.use(express.json({limit:'5mb'}));app.use('/static',express.static(path.join(__dirname,'public')));
+}));app.use(cors());app.use(express.json({limit:'5mb',verify:(req,res,buf,encoding)=>{try{JSON.parse(buf)}catch(e){console.error('[JSON] Invalid JSON received:',e.message);res.status(400).json({error:'Invalid JSON'});return false}}}));app.use('/static',express.static(path.join(__dirname,'public')));
 (async()=>{try{await rawrzEngine.initializeModules();console.log('[OK] RawrZ core engine initialized')}catch(e){console.error('[WARN] Core engine init failed:',e.message)}})();
 app.get('/health',(_req,res)=>res.json({ok:true,status:'healthy'}));
 app.get('/panel',(_req,res)=>res.sendFile(path.join(__dirname,'public','panel.html')));

@@ -671,22 +671,39 @@ class RawrZStandalone {
     // Network Analysis Commands
     async portScan(host, startPort = 1, endPort = 1000) {
         try {
-            console.log(`[OK] Scanning ${host} ports ${startPort}-${endPort}...`);
+            // Limit scan range to prevent freezing
+            const maxPorts = 20;
+            const actualEndPort = Math.min(endPort, startPort + maxPorts - 1);
+            
+            console.log(`[OK] Scanning ${host} ports ${startPort}-${actualEndPort} (limited to ${maxPorts} ports)...`);
             const openPorts = [];
             
-            for (let port = startPort; port <= Math.min(endPort, startPort + 10); port++) {
+            for (let port = startPort; port <= actualEndPort; port++) {
                 try {
                     const net = require('net');
                     const socket = new net.Socket();
                     
                     await new Promise((resolve, reject) => {
-                        socket.setTimeout(1000);
+                        const timeout = setTimeout(() => {
+                            socket.destroy();
+                            resolve();
+                        }, 500); // Reduced timeout to 500ms
+                        
                         socket.connect(port, host, () => {
+                            clearTimeout(timeout);
                             openPorts.push(port);
                             socket.destroy();
                             resolve();
                         });
+                        
                         socket.on('error', () => {
+                            clearTimeout(timeout);
+                            socket.destroy();
+                            resolve();
+                        });
+                        
+                        socket.on('timeout', () => {
+                            clearTimeout(timeout);
                             socket.destroy();
                             resolve();
                         });
@@ -696,10 +713,14 @@ class RawrZStandalone {
                 }
             }
             
-            console.log(`[OK] Open ports found: ${openPorts.length}`);
-            openPorts.forEach(port => console.log(`[OK] Port ${port}: OPEN`));
+            console.log(`[OK] Scan complete. Open ports found: ${openPorts.length}`);
+            if (openPorts.length > 0) {
+                openPorts.forEach(port => console.log(`[OK] Port ${port}: OPEN`));
+            } else {
+                console.log(`[OK] No open ports found in range ${startPort}-${actualEndPort}`);
+            }
             
-            return { success: true, host, openPorts };
+            return { success: true, host, openPorts, scannedRange: `${startPort}-${actualEndPort}` };
         } catch (error) {
             console.log(`[ERROR] Port scan failed: ${error.message}`);
             return { success: false, error: error.message };
@@ -767,16 +788,31 @@ class RawrZStandalone {
     async textOperations(operation, input, options = {}) {
         try {
             let text = input;
-            if (input.includes(':\\') || input.startsWith('/')) {
-                text = (await this.readAbsoluteFile(input)).toString('utf8');
-            } else if (this.isLikelyFilePath(input)) {
-                // Check if it's a relative file path
-                try {
-                    text = (await this.readAbsoluteFile(input)).toString('utf8');
-                } catch (error) {
-                    // If file read fails, treat as text
-                    text = input;
+            
+            // Add timeout protection for file operations
+            const fileReadPromise = async () => {
+                if (input.includes(':\\') || input.startsWith('/')) {
+                    return (await this.readAbsoluteFile(input)).toString('utf8');
+                } else if (this.isLikelyFilePath(input)) {
+                    try {
+                        return (await this.readAbsoluteFile(input)).toString('utf8');
+                    } catch (error) {
+                        return input; // Fallback to input text
+                    }
                 }
+                return input;
+            };
+            
+            // Add 2-second timeout for file operations
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('File read timeout')), 2000)
+            );
+            
+            try {
+                text = await Promise.race([fileReadPromise(), timeoutPromise]);
+            } catch (error) {
+                console.log(`[WARN] File read failed or timeout, using input as text: ${error.message}`);
+                text = input;
             }
             
             let result;
@@ -991,9 +1027,15 @@ class RawrZStandalone {
         let authTag;
         
         try {
-            // Use the normalized algorithm name directly for cipher creation
-            cipher = crypto.createCipheriv(normalizedAlgorithm, key, iv);
-            encrypted = cipher.update(data);
+            // Handle ChaCha20 specifically
+            let cipherAlgorithm = normalizedAlgorithm;
+            if (algo === 'chacha20') {
+                cipherAlgorithm = 'chacha20-poly1305';
+            }
+            
+            // Use the cipher algorithm for cipher creation
+            cipher = crypto.createCipheriv(cipherAlgorithm, key, iv);
+            encrypted = cipher.update(data, 'utf8');
             encrypted = Buffer.concat([encrypted, cipher.final()]);
             
             // Get auth tag for authenticated encryption modes
@@ -1004,7 +1046,7 @@ class RawrZStandalone {
             console.error(`[ERROR] Encryption failed with ${algorithm}:`, error.message);
             // Fallback to AES-256-CBC if algorithm fails
             cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
-            encrypted = cipher.update(data);
+            encrypted = cipher.update(data, 'utf8');
             encrypted = Buffer.concat([encrypted, cipher.final()]);
         }
         
@@ -3036,21 +3078,27 @@ WScript.StdIn.ReadLine()
     }
 
     async encryptChaCha20(data) {
-        const key = crypto.randomBytes(32);
-        const iv = crypto.randomBytes(12);
-        const cipher = crypto.createCipheriv('chacha20-poly1305', key, iv);
-        
-        let encrypted = cipher.update(data);
-        encrypted = Buffer.concat([encrypted, cipher.final()]);
-        const authTag = cipher.getAuthTag();
-        
-        return {
-            method: 'chacha20-poly1305',
-            key: key.toString('base64'),
-            iv: iv.toString('base64'),
-            authTag: authTag.toString('base64'),
-            data: encrypted.toString('base64')
-        };
+        try {
+            const key = crypto.randomBytes(32);
+            const iv = crypto.randomBytes(12);
+            const cipher = crypto.createCipheriv('chacha20-poly1305', key, iv);
+            
+            let encrypted = cipher.update(data, 'utf8');
+            encrypted = Buffer.concat([encrypted, cipher.final()]);
+            const authTag = cipher.getAuthTag();
+            
+            return {
+                method: 'chacha20-poly1305',
+                key: key.toString('base64'),
+                iv: iv.toString('base64'),
+                authTag: authTag.toString('base64'),
+                data: encrypted.toString('base64')
+            };
+        } catch (error) {
+            console.error(`[ERROR] ChaCha20 encryption failed: ${error.message}`);
+            // Fallback to AES-256-GCM
+            return await this.encryptAES256GCM(data);
+        }
     }
 
     async encryptCAM(data) {
