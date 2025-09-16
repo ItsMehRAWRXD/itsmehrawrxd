@@ -1203,6 +1203,7 @@ class HTTPBotGenerator {
         
         return { init, execute, methods };
     }
+}
 
     getFileExtension(language) {
         const ext = { 
