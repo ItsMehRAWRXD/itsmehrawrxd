@@ -297,15 +297,15 @@ class HTTPBotGenerator {
     generatePythonHTTPBot(config, features, timestamp, botId) {
         const featureCode = this.generatePythonFeatures(features);
         
-        return `#!/usr/bin/env python3
-# RawrZ HTTP Bot - Python Implementation
-# Generated: ${timestamp}
-# Bot ID: ${botId}
-
-import requests
-import time
-import threading
-import json
+        return '#!/usr/bin/env python3\n' +
+            '# RawrZ HTTP Bot - Python Implementation\n' +
+            '# Generated: ' + timestamp + '\n' +
+            '# Bot ID: ' + botId + '\n' +
+            '\n' +
+            'import requests\n' +
+            'import time\n' +
+            'import threading\n' +
+            'import json\n' +
 import os
 import sys
 from datetime import datetime
