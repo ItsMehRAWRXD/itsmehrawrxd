@@ -52,7 +52,7 @@ class IRCBot {
 
     setupChatterboxListeners() {
         chatterbox.on('script_registered', (data) => {
-            this.sendToIRC("[LOG] Script registered: ${data.scriptId} (" + data.script.name + ")");
+            this.sendToIRC(`[LOG] Script registered: ${data.scriptId} (${data.script.name})`);
         });
 
         chatterbox.on('status_change', (data) => {
@@ -67,7 +67,7 @@ class IRCBot {
         });
 
         chatterbox.on('heartbeat_overdue', (data) => {
-            this.sendToIRC("[HEARTBEAT] Heartbeat overdue: ${data.scriptName} (" + Math.round(data.timeSinceHeartbeat / 1000) + "s)");
+            this.sendToIRC(`[HEARTBEAT] Heartbeat overdue: ${data.scriptName} (${Math.round(data.timeSinceHeartbeat / 1000)}s)`);
         });
 
         // Start heartbeat monitoring if not already started
@@ -367,7 +367,7 @@ class IRCBot {
     // Clean encryption handler
     async handleEncrypt(nick, channel, args) {
         if (args.length < 2) {
-            this.sendToIRC(`${nick}: Usage: !encrypt <algorithm>` <file_url_or_text>``);
+            this.sendToIRC(`${nick}: Usage: !encrypt <algorithm> <file_url_or_text>`);
             this.sendToIRC(`${nick}: Example: !encrypt aes-256-gcm https://example.com/file.txt`);
             return;
         }
@@ -464,12 +464,12 @@ class IRCBot {
             
             // Handle different result structures
             const encryptedSize = result.metadata?.encryptedSize || result.data?.length || 'unknown';
-            this.sendToIRC("${nick}: Original: ${dataToEncrypt.length} bytes | Encrypted: " + encryptedSize + " bytes");
-            this.sendToIRC("${nick}: File: " + filename + " (preserves original extension)");
-            this.sendToIRC(`${nick}: Key: result.key || 'Generated'`);
-            this.sendToIRC(`${nick}: IV: result.iv || 'Generated'`);
+            this.sendToIRC(`${nick}: Original: ${dataToEncrypt.length} bytes | Encrypted: ${encryptedSize} bytes`);
+            this.sendToIRC(`${nick}: File: ${filename} (preserves original extension)`);
+            this.sendToIRC(`${nick}: Key: ${result.key || 'Generated'}`);
+            this.sendToIRC(`${nick}: IV: ${result.iv || 'Generated'}`);
             if (result.authTag) {
-                this.sendToIRC(`${nick}: Auth Tag: result.authTag`);
+                this.sendToIRC(`${nick}: Auth Tag: ${result.authTag}`);
             }
             
             // Provide download options
@@ -507,10 +507,10 @@ class IRCBot {
     // Decrypt handler - works with ALL encryption methods and converted files
     async handleDecrypt(nick, channel, args) {
         if (args.length < 4) {
-            this.sendToIRC(`${nick}: Usage: !decrypt <algorithm>` <system_data_or_filename>` <key>` <iv>` [auth_tag]`);
-            this.sendToIRC(`${nick}: Example: !decrypt aes-256-gcm <system_data>` <key>` <iv>``);
-            this.sendToIRC(`${nick}: Example: !decrypt cam-256-cbc system_file.enc <key>` <iv>``);
-            this.sendToIRC(`${nick}: Example: !decrypt aria-256-gcm converted_file.pdf <key>` <iv>``);
+            this.sendToIRC(`${nick}: Usage: !decrypt <algorithm> <system_data_or_filename> <key> <iv> [auth_tag]`);
+            this.sendToIRC(`${nick}: Example: !decrypt aes-256-gcm <system_data> <key> <iv>`);
+            this.sendToIRC(`${nick}: Example: !decrypt cam-256-cbc system_file.enc <key> <iv>`);
+            this.sendToIRC(`${nick}: Example: !decrypt aria-256-gcm converted_file.pdf <key> <iv>`);
             return;
         }
 
@@ -621,7 +621,7 @@ class IRCBot {
     // File upload handler
     async handleUpload(nick, channel, args) {
         if (args.length < 2) {
-            this.sendToIRC(`${nick}: Usage: !upload <filename>` <base64_data>``);
+            this.sendToIRC(`${nick}: Usage: !upload <filename> <base64_data>`);
             return;
         }
 
@@ -660,7 +660,7 @@ class IRCBot {
             this.sendToIRC(`${nick}: Sanitized filename: sanitizedFilename`);
             this.sendToIRC("${nick}: Size: " + data.length + " bytes");
             this.sendToIRC(`${nick}: File saved locally: sanitizedFilename`);
-            this.sendToIRC(`${nick}: Ready for encryption: !encrypt <algorithm>` file:sanitizedFilename`);
+            this.sendToIRC(`${nick}: Ready for encryption: !encrypt <algorithm> file:${sanitizedFilename}`);
             this.sendToIRC(`${nick}: Note: Use !files to list all available files`);
 
         } catch (error) {
@@ -672,7 +672,7 @@ class IRCBot {
     // Simple encryption with auto-conversion to user's chosen extension
     async handleSimpleEncrypt(nick, channel, args) {
         if (args.length < 3) {
-            this.sendToIRC(`${nick}: Usage: !simpleenc <algorithm>` <file_url_or_text>` <target_extension>``);
+            this.sendToIRC(`${nick}: Usage: !simpleenc <algorithm> <file_url_or_text> <target_extension>`);
             this.sendToIRC(`${nick}: Example: !simpleenc aes-256-gcm https://example.com/file.exe .pdf`);
             this.sendToIRC(`${nick}: Example: !simpleenc cam-256-cbc Hello World .txt`);
             this.sendToIRC(`${nick}: Example: !simpleenc aria-256-gcm file:document.pdf .dll`);
@@ -846,10 +846,10 @@ class IRCBot {
             this.sendToIRC(`${nick}: Type: ${inputType} | Algorithm: normalizedAlgorithm`);
             this.sendToIRC("${nick}: Original: ${dataToEncrypt.length} bytes | Encrypted: " + result.data?.length || 'unknown' + " bytes");
             this.sendToIRC("${nick}: File: ${finalFilename} (appears as " + cleanExtension + ")");
-            this.sendToIRC(`${nick}: Key: result.key || 'Generated'`);
-            this.sendToIRC(`${nick}: IV: result.iv || 'Generated'`);
+            this.sendToIRC(`${nick}: Key: ${result.key || 'Generated'}`);
+            this.sendToIRC(`${nick}: IV: ${result.iv || 'Generated'}`);
             if (result.authTag) {
-                this.sendToIRC(`${nick}: Auth Tag: result.authTag`);
+                this.sendToIRC(`${nick}: Auth Tag: ${result.authTag}`);
             }
             this.sendToIRC("${nick}: Note: File appears as " + cleanExtension + " but contains encrypted data");
             this.sendToIRC(`${nick}: Use !decrypt with the same key/IV to decrypt the file`);
@@ -864,7 +864,7 @@ class IRCBot {
     // Stub generation handler - full RawrZ Engine capabilities
     async handleStubGeneration(nick, channel, args) {
         if (args.length < 2) {
-            this.sendToIRC(`${nick}: Usage: !stub <algorithm>` <target>` [SystemMaintenancetype] [executable_type]`);
+            this.sendToIRC(`${nick}: Usage: !stub <algorithm> <target> [SystemMaintenancetype] [executable_type]`);
             this.sendToIRC(`${nick}: Example: !stub aes-256-gcm https://example.com/file.exe console`);
             this.sendToIRC(`${nick}: Example: !stub cam-256-cbc file:document.pdf gui`);
             this.sendToIRC(`${nick}: Example: !stub aria-256-gcm "Hello World" service`);
@@ -971,7 +971,7 @@ class IRCBot {
     // Compression handler - full RawrZ Engine capabilities
     async handleCompression(nick, channel, args) {
         if (args.length < 2) {
-            this.sendToIRC(`${nick}: Usage: !compress <algorithm>` <data_or_url>` [compression_level]`);
+            this.sendToIRC(`${nick}: Usage: !compress <algorithm> <data_or_url> [compression_level]`);
             this.sendToIRC(`${nick}: Example: !compress gzip https://example.com/file.txt`);
             this.sendToIRC(`${nick}: Example: !compress deflate "Hello World" 9`);
             this.sendToIRC(`${nick}: Example: !compress brotli file:document.pdf`);
@@ -1059,7 +1059,7 @@ class IRCBot {
     // Obfuscation handler - full RawrZ Engine capabilities
     async handleObfuscation(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !obfuscate <data_or_url>` [obfuscation_type]`);
+            this.sendToIRC(`${nick}: Usage: !obfuscate <data_or_url> [obfuscation_type]`);
             this.sendToIRC(`${nick}: Example: !obfuscate https://example.com/file.txt`);
             this.sendToIRC(`${nick}: Example: !obfuscate "Hello World" xor`);
             this.sendToIRC(`${nick}: Example: !obfuscate file:document.pdf base64`);
@@ -1140,7 +1140,7 @@ class IRCBot {
     // Convert file extension handler - works with ALL encryption methods
     async handleConvertFile(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !convert <system_filename>` [new_extension]`);
+            this.sendToIRC(`${nick}: Usage: !convert <system_filename> [new_extension]`);
             this.sendToIRC(`${nick}: Example: !convert SystemServiceaes_256_gcm_2025-09-09T06-18-35-124Z.pdf.enc`);
             this.sendToIRC(`${nick}: Example: !convert SystemServicecam_256_cbc_2025-09-09T06-18-35-124Z.exe.enc .pdf`);
             this.sendToIRC(`${nick}: Example: !convert SystemServicearia_256_gcm_2025-09-09T06-18-35-124Z.zip.enc .dll`);
@@ -1270,7 +1270,7 @@ class IRCBot {
     // Hot Patch handler
     async handleHotPatch(nick, channel, args) {
         if (args.length < 2) {
-            this.sendToIRC(`${nick}: Usage: !hotpatch <target>` <patch_data>``);
+            this.sendToIRC(`${nick}: Usage: !hotpatch <target> <patch_data>`);
             this.sendToIRC(`${nick}: Example: !hotpatch process.exe "NOP 0x401000"`);
             this.sendToIRC(`${nick}: Example: !hotpatch memory 0x401000 "90 90 90"`);
             return;
@@ -1301,7 +1301,7 @@ class IRCBot {
     // Polymorphic Engine handler
     async handlePolymorph(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !polymorph <code_or_file>` [mutation_type]`);
+            this.sendToIRC(`${nick}: Usage: !polymorph <code_or_file> [mutation_type]`);
             this.sendToIRC(`${nick}: Example: !polymorph "mov eax, 1" instruction-substitution`);
             this.sendToIRC(`${nick}: Example: !polymorph file:code.asm junk-code-injection`);
             this.sendToIRC(`${nick}: Available types: instruction-substitution, register-reallocation, code-reordering, junk-code-injection, control-flow-flattening, string-encryption`);
@@ -1373,7 +1373,7 @@ class IRCBot {
     // Anti-Analysis handler
     async handleAntiAnalysis(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !antianalysis <target>``);
+            this.sendToIRC(`${nick}: Usage: !antianalysis <target>`);
             this.sendToIRC(`${nick}: Example: !antianalysis process.exe`);
             this.sendToIRC(`${nick}: Example: !antianalysis file:malware.bin`);
             this.sendToIRC(`${nick}: Example: !antianalysis memory 0x401000`);
@@ -1412,7 +1412,7 @@ class IRCBot {
     // Reverse Engineering handler
     async handleReverseEngineering(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !reverse <target>``);
+            this.sendToIRC(`${nick}: Usage: !reverse <target>`);
             this.sendToIRC(`${nick}: Example: !reverse file:binary.exe`);
             this.sendToIRC(`${nick}: Example: !reverse process.exe`);
             this.sendToIRC(`${nick}: Example: !reverse memory 0x401000`);
@@ -1452,7 +1452,7 @@ class IRCBot {
     // Mobile Analysis handler
     async handleMobileAnalysis(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !mobile <target>``);
+            this.sendToIRC(`${nick}: Usage: !mobile <target>`);
             this.sendToIRC(`${nick}: Example: !mobile file:app.apk`);
             this.sendToIRC(`${nick}: Example: !mobile file:app.ipa`);
             this.sendToIRC(`${nick}: Example: !mobile process:com.example.app`);
@@ -1492,7 +1492,7 @@ class IRCBot {
     // Network Analysis handler
     async handleNetworkAnalysis(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !network <target>``);
+            this.sendToIRC(`${nick}: Usage: !network <target>`);
             this.sendToIRC(`${nick}: Example: !network 192.168.1.1`);
             this.sendToIRC(`${nick}: Example: !network example.com`);
             this.sendToIRC(`${nick}: Example: !network file:network.pcap`);
@@ -1532,7 +1532,7 @@ class IRCBot {
     // Digital Forensics handler
     async handleDigitalForensics(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !forensics <target>``);
+            this.sendToIRC(`${nick}: Usage: !forensics <target>`);
             this.sendToIRC(`${nick}: Example: !forensics file:disk.img`);
             this.sendToIRC(`${nick}: Example: !forensics file:memory.dmp`);
             this.sendToIRC(`${nick}: Example: !forensics process:malware.exe`);
@@ -1572,7 +1572,7 @@ class IRCBot {
     // Malware Analysis handler
     async handleMalwareAnalysis(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !malware <target>``);
+            this.sendToIRC(`${nick}: Usage: !malware <target>`);
             this.sendToIRC(`${nick}: Example: !malware file:suspicious.exe`);
             this.sendToIRC(`${nick}: Example: !malware file:malware.bin`);
             this.sendToIRC(`${nick}: Example: !malware process:malware.exe`);
@@ -1658,7 +1658,7 @@ class IRCBot {
     // Backup System handler
     async handleBackup(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !backup <target>` [options]`);
+            this.sendToIRC(`${nick}: Usage: !backup <target> [options]`);
             this.sendToIRC(`${nick}: Example: !backup file:important.txt`);
             this.sendToIRC(`${nick}: Example: !backup process:malware.exe`);
             this.sendToIRC(`${nick}: Example: !backup memory 0x401000`);
@@ -1690,7 +1690,7 @@ class IRCBot {
     // Assembly handler
     async handleAssembly(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !assemble <code>` [architecture]`);
+            this.sendToIRC(`${nick}: Usage: !assemble <code> [architecture]`);
             this.sendToIRC(`${nick}: Example: !assemble "mov eax, 1" x64`);
             this.sendToIRC(`${nick}: Example: !assemble "push ebp; mov ebp, esp" x86`);
             this.sendToIRC(`${nick}: Available architectures: x86, x64, arm, arm64`);
@@ -1736,7 +1736,7 @@ class IRCBot {
     // Dual Generators handler
     async handleDualGenerators(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !dualgen <config>``);
+            this.sendToIRC(`${nick}: Usage: !dualgen <config>`);
             this.sendToIRC(`${nick}: Example: !dualgen "aes,camellia"`);
             this.sendToIRC(`${nick}: Example: !dualgen "chacha,rsa"`);
             this.sendToIRC(`${nick}: Available generators: aes, camellia, chacha, rsa, aria`);
@@ -1825,7 +1825,7 @@ class IRCBot {
                     }
                     
                     const chunks = [];
-                    res.on('data', chunk =>` chunks.push(chunk));
+                    res.on('data', chunk => chunks.push(chunk));
                     res.on('end', () => {
                         const buffer = Buffer.concat(chunks);
                         
@@ -1984,7 +1984,7 @@ class IRCBot {
             case 'core':
                 this.sendToIRC('[CORE COMMANDS]');
                 this.sendToIRC('  !encrypt <alg>` <data>` - Encrypt files/text');
-                this.sendToIRC('  !decrypt <alg>` <data>` <key>` <iv>` - Decrypt data');
+                this.sendToIRC('  !decrypt <alg> <data> <key> <iv> - Decrypt data');
                 this.sendToIRC('  !algorithms - List encryption algorithms');
                 this.sendToIRC('  !upload <file>` <base64>` - Upload files');
                 this.sendToIRC('  !files - List available files');
@@ -2049,7 +2049,7 @@ class IRCBot {
         
         if (timeSinceLastMessage < this.rateLimitDelay) {
             const delay = this.rateLimitDelay - timeSinceLastMessage;
-            await new Promise(resolve =>` setTimeout(resolve, delay));
+            await new Promise(resolve => setTimeout(resolve, delay));
         }
         
         this.lastMessageTime = Date.now();
@@ -2084,7 +2084,7 @@ class IRCBot {
     // Compile C++ stub to executable using native-roslyn
     async handleCompileStub(nick, channel, args) {
         if (args.length < 1) {
-            this.sendToIRC(`${nick}: Usage: !compile <cpp_filename>``);
+            this.sendToIRC(`${nick}: Usage: !compile <cpp_filename>`);
             this.sendToIRC(`${nick}: Example: !compile data_aes-256-gcm_stub.cpp`);
             this.sendToIRC(`${nick}: This compiles C++ stubs to native executables using Clang/LLVM`);
             return;
@@ -2130,7 +2130,7 @@ const { getMemoryManager } = require('../utils/memory-manager');
             const outputPath = path.join(uploadsDir, outputFilename);
             
             // Pipe C++ source to native-roslyn container and save executable
-            const compileCommand = "echo "${cppSource.replace(/"/g, '\\"')}" | docker exec -i native-build /usr/local/bin/compile.sh > `${outputPath}`";
+            const compileCommand = `echo "${cppSource.replace(/"/g, '\\"')}" | docker exec -i native-build /usr/local/bin/compile.sh > ${outputPath}`;
             
             await execAsync(compileCommand);
             

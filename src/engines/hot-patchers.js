@@ -482,7 +482,7 @@ class HotPatchers {
             // Use system tools to read/write process memory
             if (os.platform() === 'win32') {
                 // Use PowerShell for Windows
-                const readCmd = "powershell -Command "Get-Process -Id " + pid + " | Select-Object -ExpandProperty WorkingSet"";
+                const readCmd = "powershell -Command \"Get-Process -Id " + pid + " | Select-Object -ExpandProperty WorkingSet\"";
                 const { stdout } = await execAsync(readCmd);
                 
                 // Real memory read/write implementation
@@ -502,7 +502,7 @@ class HotPatchers {
                 };
             } else {
                 // Use gdb for Unix systems
-                const readCmd = "gdb -batch -ex "attach ${pid}" -ex `x/${size || data.length}b offset` -ex "detach" -ex "quit" 2>`/dev/null";
+                const readCmd = `gdb -batch -ex "attach ${pid}" -ex "x/${size || data.length}b offset" -ex "detach" -ex "quit" 2>/dev/null`;
                 const { stdout } = await execAsync(readCmd);
                 
                 // Parse gdb output and apply patch
@@ -554,7 +554,7 @@ class HotPatchers {
             } else {
                 // Fallback using system commands
                 if (os.platform() === 'win32') {
-                    const { stdout } = await execAsync("tasklist /FI `IMAGENAME eq ${target}` /FO CSV | findstr /V "INFO:"");
+                    const { stdout } = await execAsync(`tasklist /FI "IMAGENAME eq ${target}" /FO CSV | findstr /V "INFO:"`);
                     const lines = stdout.trim().split('\n');
                     if (lines.length > 0 && lines[0].includes(',')) {
                         const pid = lines[0].split(',')[1].replace(/"/g, '');
@@ -806,14 +806,14 @@ class HotPatchers {
 
                 case 'set':
                     // Set registry value using reg add
-                    const setCmd = "reg add "${target}" /v "${valueName}" /t ${valueType} /d `${valueData}` /f";
+                    const setCmd = `reg add "${target}" /v "${valueName}" /t ${valueType} /d "${valueData}" /f`;
                     await execAsync(setCmd);
                     result = { operation: 'set', key: target, value: valueName, data: valueData, success: true };
                     break;
 
                 case 'get':
                     // Get registry value using reg query
-                    const getCmd = "reg query "${target}" /v `${valueName}`";
+                    const getCmd = `reg query "${target}" /v "${valueName}"`;
                     const { stdout } = await execAsync(getCmd);
                     const lines = stdout.split('\n');
                     let foundValue = null;
@@ -831,7 +831,7 @@ class HotPatchers {
 
                 case 'delete':
                     // Delete registry value using reg delete
-                    const deleteCmd = "reg delete "${target}" /v `${valueName}` /f";
+                    const deleteCmd = `reg delete "${target}" /v "${valueName}" /f`;
                     await execAsync(deleteCmd);
                     result = { operation: 'delete', key: target, value: valueName, success: true };
                     break;
@@ -982,7 +982,7 @@ class HotPatchers {
         try {
             const content = await fs.readFile(file, 'utf8');
             const lines = content.split('\n');
-            const filteredLines = lines.filter(line =>` !line.startsWith(`${key}=`));
+            const filteredLines = lines.filter(line => !line.startsWith(`${key}=`));
             await fs.writeFile(file, filteredLines.join('\n'));
         } catch (error) {
             throw new Error(`Failed to delete config value: ${error.message}`);

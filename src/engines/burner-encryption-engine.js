@@ -335,7 +335,7 @@ class BurnerEncryptionEngine {
 
     // Apply LSB steganography
     applyLSBSteganography(container, data) {
-        const dataBits = data.split('').map(char =>` char.charCodeAt(0).toString(2).padStart(8, '0')).join('');
+        const dataBits = data.split('').map(char => char.charCodeAt(0).toString(2).padStart(8, '0')).join('');
         let bitIndex = 0;
         
         for (let i = 0; i < container.length && bitIndex < dataBits.length; i++) {
@@ -355,7 +355,7 @@ class BurnerEncryptionEngine {
         const delays = [100, 200, 300, 500, 750, 1000, 1500, 2000];
         const randomDelay = delays[Math.floor(Math.random() * delays.length)];
         
-        await new Promise(resolve =>` setTimeout(resolve, randomDelay));
+        await new Promise(resolve => setTimeout(resolve, randomDelay));
         
         // Add timing-based obfuscation to data
         const timestamp = Date.now();
@@ -668,7 +668,7 @@ class BurnerEncryptionEngine {
             int unusedVar3 = 0xDEADBEEF;
             
             // This code will never execute
-            if (unusedVar1 >` 1000) {
+            if (unusedVar1 > 1000) {
                 unusedVar2 = unusedVar1 * 2;
                 unusedVar3 = unusedVar2 + unusedVar1;
             }

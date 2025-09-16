@@ -20,39 +20,39 @@ This system completely removes all emojis from codebases to prevent ROE (Rate of
 
 | Original Emoji | Unicode | Replacement | Meaning |
 |----------------|---------|-------------|---------|
-| [INFO] | `\u2713` | `[OK]` | Success/Working |
-| [INFO] | `\u2717` | `[ERROR]` | Error/Failed |
-| [INFO] | `\u2705` | `[OK]` | Success/Working |
-| [INFO] | `\u274C` | `[ERROR]` | Error/Failed |
-| [INFO][INFO] | `\u1F510` | `[SECURE]` | Security/Encryption |
-| [INFO][INFO] | `\u1F512` | `[LOCK]` | Locked/Secure |
-| [INFO][INFO] | `\u1F513` | `[UNLOCK]` | Unlocked/Open |
-| [INFO][INFO] | `\u1F511` | `[KEY]` | Key/Access |
-| [INFO][INFO][INFO] | `\u1F6E1` | `[SHIELD]` | Protection/Defense |
-| [INFO] | `\u26A1` | `[LIGHTNING]` | Fast/Powerful |
-| [INFO][INFO] | `\u1F680` | `[LAUNCH]` | Launch/Start |
-| [INFO]� | `\u1F4BE` | `[SAVE]` | Save/Storage |
-| [INFO]� | `\u1F4C1` | `[FILE]` | File/Folder |
-| [INFO]� | `\u1F4C4` | `[DOC]` | Document |
-| [INFO][INFO] | `\u1F50D` | `[SEARCH]` | Search/Check |
-| [INFO][INFO] | `\u1F4CA` | `[CHART]` | Chart/Graph |
-| [INFO][INFO] | `\u1F4C8` | `[UP]` | Increase/Up |
-| [INFO][INFO] | `\u1F4C9` | `[DOWN]` | Decrease/Down |
-| [INFO][INFO] | `\u1F3AF` | `[TARGET]` | Target/Goal |
-| [INFO][INFO] | `\u2699` | `[CONFIG]` | Configuration/Settings |
-| [INFO][INFO] | `\u1F527` | `[TOOL]` | Tool/Utility |
-| [INFO]�[INFO] | `\u1F6E0` | `[TOOLS]` | Tools/Utilities |
-| [INFO]� | `\u1F4CB` | `[LOG]` | Log/List |
-| [INFO][INFO] | `\u1F4DD` | `[NOTE]` | Note/Text |
-| [INFO][INFO] | `\u1F4A1` | `[INFO]` | Information/Tip |
-| [INFO][INFO] | `\u26A0` | `[WARNING]` | Warning/Alert |
-| [INFO][INFO] | `\u1F504` | `[REFRESH]` | Refresh/Reload |
-| ⏳ | `\u23F3` | `[WAIT]` | Wait/Processing |
-| [INFO][INFO] | `\u1F389` | `[SUCCESS]` | Success/Celebration |
-| [INFO]� | `\u1F525` | `[HOT]` | Hot/Fast |
-| [INFO]� | `\u1F4AF` | `[PERFECT]` | Perfect/Complete |
-| [INFO]� | `\u1F31F` | `[STAR]` | Star/Excellent |
-| ⭐ | `\u2B50` | `[STAR]` | Star/Excellent |
+| Checkmark | `\u2713` | `[OK]` | Success/Working |
+| X Mark | `\u2717` | `[ERROR]` | Error/Failed |
+| Green Check | `\u2705` | `[OK]` | Success/Working |
+| Red X | `\u274C` | `[ERROR]` | Error/Failed |
+| Lock | `\u1F510` | `[SECURE]` | Security/Encryption |
+| Locked | `\u1F512` | `[LOCK]` | Locked/Secure |
+| Unlocked | `\u1F513` | `[UNLOCK]` | Unlocked/Open |
+| Key | `\u1F511` | `[KEY]` | Key/Access |
+| Shield | `\u1F6E1` | `[SHIELD]` | Protection/Defense |
+| Lightning | `\u26A1` | `[LIGHTNING]` | Fast/Powerful |
+| Rocket | `\u1F680` | `[LAUNCH]` | Launch/Start |
+| Floppy Disk | `\u1F4BE` | `[SAVE]` | Save/Storage |
+| File Folder | `\u1F4C1` | `[FILE]` | File/Folder |
+| Document | `\u1F4C4` | `[DOC]` | Document |
+| Magnifying Glass | `\u1F50D` | `[SEARCH]` | Search/Check |
+| Bar Chart | `\u1F4CA` | `[CHART]` | Chart/Graph |
+| Trending Up | `\u1F4C8` | `[UP]` | Increase/Up |
+| Trending Down | `\u1F4C9` | `[DOWN]` | Decrease/Down |
+| Direct Hit | `\u1F3AF` | `[TARGET]` | Target/Goal |
+| Gear | `\u2699` | `[CONFIG]` | Configuration/Settings |
+| Wrench | `\u1F527` | `[TOOL]` | Tool/Utility |
+| Hammer and Wrench | `\u1F6E0` | `[TOOLS]` | Tools/Utilities |
+| Clipboard | `\u1F4CB` | `[LOG]` | Log/List |
+| Memo | `\u1F4DD` | `[NOTE]` | Note/Text |
+| Light Bulb | `\u1F4A1` | `[INFO]` | Information/Tip |
+| Warning Sign | `\u26A0` | `[WARNING]` | Warning/Alert |
+| Counterclockwise Arrows | `\u1F504` | `[REFRESH]` | Refresh/Reload |
+| Hourglass | `\u23F3` | `[WAIT]` | Wait/Processing |
+| Party Popper | `\u1F389` | `[SUCCESS]` | Success/Celebration |
+| Fire | `\u1F525` | `[HOT]` | Hot/Fast |
+| Hundred Points | `\u1F4AF` | `[PERFECT]` | Perfect/Complete |
+| Glowing Star | `\u1F31F` | `[STAR]` | Star/Excellent |
+| Star | `\u2B50` | `[STAR]` | Star/Excellent |
 
 ## Usage Instructions
 

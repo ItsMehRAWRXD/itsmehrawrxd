@@ -10,7 +10,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { exec } = require('child_process');
 const { promisify } = require('util');
-const { getMemoryManager } = require('../utils/memory-manager');
+const memoryManager = require('./memory-manager');
 const { logger } = require('../utils/logger');
 
 const execAsync = promisify(exec);
@@ -41,7 +41,7 @@ class JottiScanner {
             'eScan', 'Fortinet', 'G DATA', 'Ikarus', 'K7 AV', 
             'Kaspersky', 'Trend Micro', 'VBA32'
         ];
-        this.activeScans = this.memoryManager.createManagedCollection('activeScans', 'Map', 100);
+        this.activeScans = new Map();
         this.scanHistory = [];
     }
 
@@ -63,7 +63,7 @@ class JottiScanner {
             // Check if file exists and get size
             const stats = await fs.stat(filePath);
             if (stats.size > this.maxFileSize) {
-                throw new Error("File too large: ${stats.size} bytes (max: " + this.maxFileSize + ")");
+                throw new Error(`File too large: ${stats.size} bytes (max: ${this.maxFileSize})`);
             }
 
             // Upload file to Jotti
@@ -144,7 +144,7 @@ class JottiScanner {
                 status: 'uploaded'
             });
 
-            logger.info("File uploaded for embedded scan: ${fileName} (" + jobId + ")");
+            logger.info(`File uploaded for embedded scan: ${fileName} (${jobId})`);
 
             return {
                 success: true,
@@ -196,7 +196,7 @@ class JottiScanner {
             }
 
         } catch (error) {
-            logger.error("Failed to get embedded scan results for " + jobId + ":", error);
+            logger.error(`Failed to get embedded scan results for ${jobId}:`, error);
             return {
                 success: false,
                 error: error.message,
@@ -263,7 +263,7 @@ class JottiScanner {
 
             // Calculate detection rate
             results.summary.detectionRate = (results.summary.detected / results.summary.total) * 100;
-            results.summary.status = results.summary.detected >` 0 ? 'infected' : 'clean';
+            results.summary.status = results.summary.detected > 0 ? 'infected' : 'clean';
 
             return results;
 
@@ -322,7 +322,7 @@ class JottiScanner {
         const hasSuspiciousName = suspiciousPatterns.some(pattern => pattern.test(fileName));
         const hasLegitimateName = legitimatePatterns.some(pattern => pattern.test(fileName));
         const hasSuspiciousExt = suspiciousExtensions.some(ext => fileName.toLowerCase().endsWith(ext));
-        const isSuspiciousSize = fileSize < 1024 || fileSize >` 50 * 1024 * 1024; // Very small or very large
+        const isSuspiciousSize = fileSize < 1024 || fileSize > 50 * 1024 * 1024; // Very small or very large
         
         // ENHANCED: Check for FUD evasion techniques
         const hasFUDEvasion = this.detectFUDEvasion(fileName, fileSize);
@@ -422,10 +422,10 @@ class JottiScanner {
             this.supportedEngines.forEach(engine => {
                 // Try multiple regex patterns to catch different HTML structures
                 const patterns = [
-                    new RegExp(`${engine}[^>]*>([^<]+)<`, 'i'),
+                    new RegExp(engine + '[^>]*>([^<]+)<', 'i'),
                     new RegExp("<td[^>]*>" + engine + "</td>\\s*<td[^>]*>([^<]+)</td>", 'i'),
-                    new RegExp(`${engine}\\s*:?\\s*([^\\n<]+)`, 'i'),
-                    new RegExp(`${engine}[^>]*>([^<]+)<`, 'i')
+                    new RegExp(engine + '\\s*:?\\s*([^\\n<]+)', 'i'),
+                    new RegExp(engine + '[^>]*>([^<]+)<', 'i')
                 ];
 
                 let match = null;
@@ -463,7 +463,7 @@ class JottiScanner {
             if (results.summary.total === 0) {
                 // Look for any threat mentions
                 const threatMatches = htmlResponse.match(/([A-Za-z0-9.-]+)/g);
-                if (threatMatches && threatMatches.length >` 0) {
+                if (threatMatches && threatMatches.length > 0) {
                     results.summary.status = 'infected';
                     results.summary.detected = threatMatches.length;
                     results.summary.total = threatMatches.length;
@@ -519,15 +519,15 @@ class JottiScanner {
             fudScore = 100;
         } else if (detectionRate < 10) {
             status = 'Low Detection';
-            message = "Very low detection rate: " + detectionRate.toFixed(1) + "%";
+            message = `Very low detection rate: ${detectionRate.toFixed(1)}%`;
             fudScore = 90 - detectionRate;
         } else if (detectionRate < 30) {
             status = 'Medium Detection';
-            message = "Moderate detection rate: " + detectionRate.toFixed(1) + "%";
+            message = `Moderate detection rate: ${detectionRate.toFixed(1)}%`;
             fudScore = 70 - detectionRate;
         } else {
             status = 'High Detection';
-            message = "High detection rate: " + detectionRate.toFixed(1) + "%";
+            message = `High detection rate: ${detectionRate.toFixed(1)}%`;
             fudScore = Math.max(0, 50 - detectionRate);
         }
 
@@ -615,7 +615,7 @@ class JottiScanner {
                 filePath: scanInfo.filePath,
                 status: scanInfo.status,
                 uploadTime: scanInfo.uploadTime,
-                scanUrl: `${this.baseUrl}/en/filescanresult/jobId`
+                scanUrl: `${this.baseUrl}/en/filescanresult/${jobId}`
             });
         }
         return activeScans;
@@ -634,9 +634,9 @@ class JottiScanner {
     async cancelScan(jobId) {
         if (this.activeScans.has(jobId)) {
             this.activeScans.delete(jobId);
-            return { success: true, message: "Scan " + jobId + " cancelled" };
+            return { success: true, message: `Scan ${jobId} cancelled` };
         }
-        return { success: false, message: "Scan " + jobId + " not found" };
+        return { success: false, message: `Scan ${jobId} not found` };
     }
 
     /**
@@ -650,10 +650,10 @@ class JottiScanner {
                 status: scanInfo.status,
                 fileName: scanInfo.fileName,
                 uploadTime: scanInfo.uploadTime,
-                scanUrl: `${this.baseUrl}/en/filescanresult/jobId`
+                scanUrl: `${this.baseUrl}/en/filescanresult/${jobId}`
             };
         }
-        return { success: false, message: "Scan " + jobId + " not found" };
+        return { success: false, message: `Scan ${jobId} not found` };
     }
 
     /**
@@ -687,7 +687,7 @@ class JottiScanner {
     async performRealJottiScan(jobId) {
         try {
             // Make actual API call to Jotti
-            const response = await fetch(`${this.baseUrl}${this.resultsEndpoint}/jobId`, {
+            const response = await fetch(this.baseUrl + this.resultsEndpoint + '/jobId', {
                 method: 'GET',
                 headers: {
                     'User-Agent': 'RawrZ-Scanner/1.0.0',
@@ -696,7 +696,7 @@ class JottiScanner {
             });
 
             if (!response.ok) {
-                throw new Error(`Jotti API error: ${response.status} response.statusText`);
+                throw new Error(`Jotti API error: ${response.status} ${response.statusText}`);
             }
 
             const data = await response.json();
@@ -886,7 +886,7 @@ class JottiScanner {
                 };
             }
 
-            const { stdout, stderr } = await execAsync("${engine.command} `${scanInfo.filePath}`");
+            const { stdout, stderr } = await execAsync(`${engine.command} '${scanInfo.filePath}'`);
             
             // Parse output based on engine type
             const detected = this.parseEngineOutput(engine.type, stdout, stderr);

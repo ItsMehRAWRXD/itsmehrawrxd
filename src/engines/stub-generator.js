@@ -551,7 +551,7 @@ class StubGenerator {
         return {
             method: 'triple',
             data: Buffer.concat([...keys, encrypted]),
-            keys: keys.map(key =>` key.toString('hex'))
+            keys: keys.map(key => key.toString('hex'))
         };
     }
 
@@ -851,7 +851,7 @@ class StubGenerator {
         return {
             method: 'multiparty',
             data: Buffer.concat([iv, encrypted]),
-            keys: keys.map(key =>` key.toString('hex')),
+            keys: keys.map(key => key.toString('hex')),
             iv: iv.toString('hex'),
             threshold: 2 // Require 2 out of 3 keys
         };
@@ -901,12 +901,12 @@ class StubGenerator {
     getStubTemplate(stubType) {
         const templates = {
             cpp: `#include <iostream>`
-#include <vector>`
-#include <string>`
-#include <windows.h>`
-#include <openssl/evp.h>`
-#include <openssl/aes.h>`
-#include <openssl/rand.h>`
+`#include <vector>`
+`#include <string>`
+`#include <windows.h>`
+`#include <openssl/evp.h>`
+`#include <openssl/aes.h>`
+`#include <openssl/rand.h>`
 
 // Anti-Debug Code
 {ANTI_DEBUG}
@@ -2063,7 +2063,7 @@ decrypt_payload endp";
     async checkCompilation(directory = './uploads') {
         try {
             const files = await fs.readdir(directory);
-            const cppFiles = files.filter(file =>` file.endsWith('.cpp'));
+            const cppFiles = files.filter(file => file.endsWith('.cpp'));
             const asmFiles = files.filter(file => file.endsWith('.asm'));
             const ps1Files = files.filter(file => file.endsWith('.ps1'));
             const pyFiles = files.filter(file => file.endsWith('.py'));

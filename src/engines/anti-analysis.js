@@ -6,7 +6,7 @@ const path = require('path');
 const os = require('os');
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
-const { getMemoryManager } = require('../utils/memory-manager');
+const memoryManager = require('./memory-manager');
 
 const execAsync = promisify(exec);
 
@@ -28,16 +28,16 @@ class AntiAnalysis extends EventEmitter {
         super();
         this.name = 'AntiAnalysis';
         this.version = '2.0.0';
-        this.memoryManager = getMemoryManager();
-        this.techniques = this.memoryManager.createManagedCollection('techniques', 'Map', 100);
-        this.obfuscationMethods = this.memoryManager.createManagedCollection('obfuscationMethods', 'Map', 100);
-        this.antiDebugging = this.memoryManager.createManagedCollection('antiDebugging', 'Map', 100);
-        this.antiVM = this.memoryManager.createManagedCollection('antiVM', 'Map', 100);
-        this.antiSandbox = this.memoryManager.createManagedCollection('antiSandbox', 'Map', 100);
+        this.memoryManager = memoryManager;
+        this.techniques = new Map();
+        this.obfuscationMethods = new Map();
+        this.antiDebugging = new Map();
+        this.antiVM = new Map();
+        this.antiSandbox = new Map();
         this.polymorphicEngine = null;
         this.stealthMode = false;
         this.protectionLevel = 'medium';
-        this.activeProtections = this.memoryManager.createManagedCollection('activeProtections', 'Set', 100);
+        this.activeProtections = new Set();
     }
 
     // Enable anti-analysis - main entry point

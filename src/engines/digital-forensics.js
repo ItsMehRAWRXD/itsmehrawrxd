@@ -5,7 +5,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
-const { getMemoryManager } = require('../utils/memory-manager');
+const memoryManager = require('./memory-manager');
 const os = require('os');
 const net = require('net');
 const { logger } = require('../utils/logger');
@@ -30,27 +30,27 @@ class DigitalForensics extends EventEmitter {
         super();
         this.name = 'DigitalForensics';
         this.version = '2.0.0';
-        this.memoryManager = getMemoryManager();
-        this.analysisTypes = this.memoryManager.createManagedCollection('analysisTypes', 'Map', 100);
-        this.forensicTools = this.memoryManager.createManagedCollection('forensicTools', 'Map', 100);
-        this.evidenceChain = this.memoryManager.createManagedCollection('evidenceChain', 'Map', 100);
-        this.timelineAnalysis = this.memoryManager.createManagedCollection('timelineAnalysis', 'Map', 100);
-        this.fileSystemAnalysis = this.memoryManager.createManagedCollection('fileSystemAnalysis', 'Map', 100);
-        this.memoryAnalysis = this.memoryManager.createManagedCollection('memoryAnalysis', 'Map', 100);
-        this.networkAnalysis = this.memoryManager.createManagedCollection('networkAnalysis', 'Map', 100);
-        this.registryAnalysis = this.memoryManager.createManagedCollection('registryAnalysis', 'Map', 100);
-        this.metadataExtraction = this.memoryManager.createManagedCollection('metadataExtraction', 'Map', 100);
-        this.hashDatabase = this.memoryManager.createManagedCollection('hashDatabase', 'Map', 100);
-        this.knownGoodHashes = this.memoryManager.createManagedCollection('knownGoodHashes', 'Set', 100);
-        this.knownBadHashes = this.memoryManager.createManagedCollection('knownBadHashes', 'Set', 100);
+        this.memoryManager = memoryManager;
+        this.analysisTypes = new Map();
+        this.forensicTools = new Map();
+        this.evidenceChain = new Map();
+        this.timelineAnalysis = new Map();
+        this.fileSystemAnalysis = new Map();
+        this.memoryAnalysis = new Map();
+        this.networkAnalysis = new Map();
+        this.registryAnalysis = new Map();
+        this.metadataExtraction = new Map();
+        this.hashDatabase = new Map();
+        this.knownGoodHashes = new Set();
+        this.knownBadHashes = new Set();
         
         // Performance optimizations
-        this.cache = this.memoryManager.createManagedCollection('cache', 'Map', 100);
+        this.cache = new Map();
         this.cacheTimeout = 600000; // 10 minutes
         this.analysisQueue = [];
         this.isProcessingAnalysis = false;
         this.maxConcurrentAnalysis = 3;
-        this.activeAnalysis = this.memoryManager.createManagedCollection('activeAnalysis', 'Set', 100);
+        this.activeAnalysis = new Set();
     }
 
     // Performance optimization methods

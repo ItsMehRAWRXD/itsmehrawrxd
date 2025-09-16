@@ -110,8 +110,8 @@ class MutexEngine {
         
         return "
 // Mutex implementation for process synchronization
-#include <windows.h>`
-#include <iostream>`
+`#include <windows.h>`
+`#include <iostream>`
 
 class MutexManager {
 private:

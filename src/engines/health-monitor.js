@@ -5,7 +5,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
-const { getMemoryManager } = require('../utils/memory-manager');
+const memoryManager = require('./memory-manager');
 const os = require('os');
 const http = require('http');
 const https = require('https');
@@ -32,14 +32,14 @@ class HealthMonitor extends EventEmitter {
         super();
         this.name = 'HealthMonitor';
         this.version = '1.0.0';
-        this.memoryManager = getMemoryManager();
-        this.monitors = this.memoryManager.createManagedCollection('monitors', 'Map', 100);
-        this.alerts = this.memoryManager.createManagedCollection('alerts', 'Map', 100);
-        this.healthMetrics = this.memoryManager.createManagedCollection('healthMetrics', 'Map', 100);
-        this.alertRules = this.memoryManager.createManagedCollection('alertRules', 'Map', 100);
-        this.notificationChannels = this.memoryManager.createManagedCollection('notificationChannels', 'Map', 100);
+        this.memoryManager = memoryManager;
+        this.monitors = new Map();
+        this.alerts = new Map();
+        this.healthMetrics = new Map();
+        this.alertRules = new Map();
+        this.notificationChannels = new Map();
         this.monitoringInterval = null;
-        this.alertCooldown = this.memoryManager.createManagedCollection('alertCooldown', 'Map', 100);
+        this.alertCooldown = new Map();
         this.initialized = false;
         
         // Default monitoring intervals

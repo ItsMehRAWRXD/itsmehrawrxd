@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const { spawn, exec } = require('child_process');
+const memoryManager = require('./memory-manager');
 
 class EVCertEncryptor {
     // Performance monitoring
@@ -21,9 +22,9 @@ class EVCertEncryptor {
         this.name = 'RawrZ EV Certificate Encryptor';
         this.version = '1.0.0';
         this.initialized = false;
-        this.certificates = this.memoryManager.createManagedCollection('certificates', 'Map', 100);
-        this.encryptedStubs = this.memoryManager.createManagedCollection('encryptedStubs', 'Map', 100);
-        this.trustedCAs = this.memoryManager.createManagedCollection('trustedCAs', 'Map', 100);
+        this.certificates = new Map();
+        this.encryptedStubs = new Map();
+        this.trustedCAs = new Map();
         
         // EV Certificate Templates
         this.evCertTemplates = {
@@ -192,7 +193,7 @@ class EVCertEncryptor {
 
     async initialize() {
         try {
-            console.log("[EV Cert Encryptor] Initializing ${this.name} v" + this.version + "...");
+            console.log(`[EV Cert Encryptor] Initializing ${this.name} v${this.version}...`);
             
             // Initialize certificate generation
             await this.initializeCertificateGeneration();
@@ -207,7 +208,7 @@ class EVCertEncryptor {
             await this.loadTrustedCAs();
             
             this.initialized = true;
-            console.log("[EV Cert Encryptor] ${this.name} v" + this.version + " initialized successfully");
+            console.log(`[EV Cert Encryptor] ${this.name} v${this.version} initialized successfully`);
             return true;
         } catch (error) {
             console.error(`[EV Cert Encryptor] Initialization failed:`, error);
@@ -335,7 +336,7 @@ class EVCertEncryptor {
 
     // Encrypt Stub with EV Certificate
     async encryptStubWithEVCert(stubCode, language, certId, options = {}) {
-        console.log("[EV Cert Encryptor] Encrypting ${language} stub with EV certificate " + certId + "...");
+        console.log(`[EV Cert Encryptor] Encrypting ${language} stub with EV certificate ${certId}...`);
         
         try {
             const certificate = this.certificates.get(certId);
@@ -564,12 +565,12 @@ namespace RawrZStub
     }
 
     getCppStubTemplate() {
-        return `#include <iostream>`
-#include <string>`
-#include <vector>`
-#include <windows.h>`
-#include <wincrypt.h>`
-#include <bcrypt.h>`
+        return `#include <iostream>
+#include <string>
+#include <vector>
+#include <windows.h>
+#include <wincrypt.h>
+#include <bcrypt.h>
 
 #pragma comment(lib, "crypt32.lib")
 #pragma comment(lib, "bcrypt.lib")

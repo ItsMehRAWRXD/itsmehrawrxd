@@ -379,7 +379,7 @@ class PolymorphicEngine {
     encryptString(str) {
         // Simple XOR encryption
         const key = Math.floor(Math.random() * 256);
-        const encrypted = Buffer.from(str, 'utf8').map(byte =>` byte ^ key);
+        const encrypted = Buffer.from(str, 'utf8').map(byte => byte ^ key);
         return encrypted.toString('hex');
     }
 

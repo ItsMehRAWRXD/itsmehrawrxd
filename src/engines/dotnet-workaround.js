@@ -5,7 +5,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { spawn, exec } = require('child_process');
 const { promisify } = require('util');
-const { getMemoryManager } = require('../utils/memory-manager');
+const memoryManager = require('./memory-manager');
 const os = require('os');
 const { logger } = require('../utils/logger');
 
@@ -479,8 +479,8 @@ class DotNetWorkaround {
 
     buildDotnetArgs(tempDir, options) {
         const args = [
-            "`${tempDir}`",
-            "--output `${path.dirname(options.outputPath)}`"
+            `"${tempDir}"`,
+            `--output "${path.dirname(options.outputPath)}"`
         ];
 
         if (options.optimization === 'release') {
@@ -498,8 +498,8 @@ class DotNetWorkaround {
 
     buildCscArgs(sourceFile, options) {
         const args = [
-            "`${sourceFile}`",
-            "/out:`${options.outputPath}`",
+            `"${sourceFile}"`,
+            `/out:"${options.outputPath}"`,
             `/target:${options.outputFormat === 'dll' ? 'library' : 'exe'}`
         ];
 
@@ -520,8 +520,8 @@ class DotNetWorkaround {
 
     buildMcsArgs(sourceFile, options) {
         const args = [
-            "`${sourceFile}`",
-            "-out:`${options.outputPath}`",
+            `"${sourceFile}"`,
+            `-out:"${options.outputPath}"`,
             `-target:${options.outputFormat === 'dll' ? 'library' : 'exe'}`
         ];
 
@@ -539,23 +539,23 @@ class DotNetWorkaround {
     async generateProjectFile(tempDir, options) {
         const projectFile = path.join(tempDir, 'Program.csproj');
         
-        const projectContent = "<?xml version="1.0" encoding="utf-8"?>`
-<Project Sdk="Microsoft.NET.Sdk">`
-  <PropertyGroup>`
-    <OutputType>`${options.outputFormat === 'dll' ? 'Library' : 'Exe'}</OutputType>`
-    <TargetFramework>`${options.framework || 'net6.0'}</TargetFramework>`
-    <AssemblyName>`${path.basename(options.outputPath || 'output')}</AssemblyName>`
-    <Optimize>`${options.optimization === 'release' ? 'true' : 'false'}</Optimize>`
-    <DebugType>`" + options.includeDebugInfo ? 'full' : 'none' + "</DebugType>`
-  </PropertyGroup>`
-</Project>`";
+        const projectContent = `<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>${options.outputFormat === 'dll' ? 'Library' : 'Exe'}</OutputType>
+    <TargetFramework>${options.framework || 'net6.0'}</TargetFramework>
+    <AssemblyName>${path.basename(options.outputPath || 'output')}</AssemblyName>
+    <Optimize>${options.optimization === 'release' ? 'true' : 'false'}</Optimize>
+    <DebugType>${options.includeDebugInfo ? 'full' : 'none'}</DebugType>
+  </PropertyGroup>
+</Project>`;
 
         await fs.writeFile(projectFile, projectContent, 'utf8');
         return projectFile;
     }
 
     generateCompilationInstructions(sourceCode, options) {
-        return "DotNet Compilation Instructions
+        return `DotNet Compilation Instructions
 =====================================
 
 Source File: ${path.basename(options.outputPath || 'Program.cs')}
@@ -582,7 +582,7 @@ Available Compilation Methods:
 4. Online Compilation:
    - Visit: https://dotnetfiddle.net/
    - Paste the source code
-   - Click "Run`
+   - Click "Run"
 
 5. Visual Studio Code:
    - Install C# extension
@@ -608,7 +608,7 @@ Generated: ${new Date().toISOString()}
     }
 
     generateBatchFile(sourceCode, options) {
-        return "@echo off
+        return `@echo off
 REM DotNet Compilation Batch Script
 REM Generated: ${new Date().toISOString()}
 
@@ -639,7 +639,7 @@ REM Check for CSC
 csc /? >nul 2>&1
 if %errorlevel% == 0 (
     echo C# Compiler found, using csc...
-    csc "${path.basename(options.outputPath || 'Program.cs')}" /out:`${path.basename(options.outputPath || 'output.exe')}` /target:exe
+    csc "${path.basename(options.outputPath || 'Program.cs')}" /out:"${path.basename(options.outputPath || 'output.exe')}" /target:exe
     if %errorlevel% == 0 (
         echo Compilation successful!
     ) else (
@@ -654,11 +654,11 @@ echo Download from: https://dotnet.microsoft.com/download
 
 :end
 pause
-";
+`;
     }
 
     generatePowerShellScript(sourceCode, options) {
-        return "# DotNet Compilation PowerShell Script
+        return `# DotNet Compilation PowerShell Script
 # Generated: ${new Date().toISOString()}
 
 Write-Host "Starting DotNet compilation..." -ForegroundColor Green
@@ -698,7 +698,7 @@ try {
     $cscVersion = csc /? 2>$null
     if ($LASTEXITCODE -eq 0) {
         Write-Host "C# Compiler found, using csc..." -ForegroundColor Green
-        csc "${path.basename(options.outputPath || 'Program.cs')}" /out:`${path.basename(options.outputPath || 'output.exe')}` /target:exe
+        csc "${path.basename(options.outputPath || 'Program.cs')}" /out:"${path.basename(options.outputPath || 'output.exe')}" /target:exe
         if ($LASTEXITCODE -eq 0) {
             Write-Host "Compilation successful!" -ForegroundColor Green
         } else {
@@ -715,12 +715,12 @@ Write-Host "Please install .NET SDK or Visual Studio Build Tools" -ForegroundCol
 Write-Host "Download from: https://dotnet.microsoft.com/download" -ForegroundColor Cyan
 
 Read-Host "Press Enter to continue"
-";
+`;
     }
 
     generateDockerFile(sourceCode, options) {
-        return "# DotNet Compilation Dockerfile
-# Generated: " + new Date().toISOString() + "
+        return `# DotNet Compilation Dockerfile
+# Generated: ${new Date().toISOString()}
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 
@@ -749,7 +749,7 @@ COPY --from=build /app/TempApp/bin/Release/net6.0/win-x64/publish/ .
 
 # Set entry point
 ENTRYPOINT ["./TempApp.exe"]
-";
+`;
     }
 
     generateDockerCompose(sourceCode, options) {
@@ -773,7 +773,7 @@ services:
     }
 
     generateOnlineInstructions(sourceCode, options) {
-        return "Online DotNet Compilation Instructions
+        return `Online DotNet Compilation Instructions
 ==========================================
 
 Since no local .NET compiler is available, here are online alternatives:
@@ -835,8 +835,8 @@ Framework: ${options.framework || 'auto'}
 Optimization: ${options.optimization}
 Debug Info: ${options.includeDebugInfo ? 'Yes' : 'No'}
 
-Generated: " + new Date().toISOString() + "
-";
+Generated: ${new Date().toISOString()}
+`;
     }
 
     generatePortableReadme(sourceCode, options) {
@@ -888,18 +888,18 @@ mcs Program.cs -out:Program.exe -target:exe
 
 ## Source Code
 
-\`\`\"csharp
-" + sourceCode + "
-\"\`\"
+\`\`\`csharp
+${sourceCode}
+\`\`\`
 
-Generated: " + new Date().toISOString() + "
-";
+Generated: ${new Date().toISOString()}
+`;
     }
 
     generatePortableSetup(sourceCode, options) {
-        return "@echo off
+        return `@echo off
 REM Portable DotNet Setup Script
-REM Generated: " + new Date().toISOString() + "
+REM Generated: ${new Date().toISOString()}
 
 echo ========================================
 echo   Portable DotNet Compilation Setup
@@ -965,7 +965,7 @@ echo After installation, run this script again.
 :end
 echo.
 pause
-";
+`;
     }
 
     // Get available methods

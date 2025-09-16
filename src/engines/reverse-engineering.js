@@ -1324,13 +1324,13 @@ class ReverseEngineering extends EventEmitter {
         try {
             // Use decompiler tools
             try {
-                const { stdout } = await execAsync("strings `${filePath}`");
+                const { stdout } = await execAsync(`strings "${filePath}"`);
                 const strings = stdout.split('\n').filter(s => s.length > 4);
                 
-                return "
+                return `
 int main() {
     // Decompiled from ${filePath}
-    // Found strings: " + strings.slice(0, 5).join(', ') + "
+    // Found strings: ${strings.slice(0, 5).join(', ')}
     
     int var1 = 0;
     int var2 = 10;

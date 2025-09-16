@@ -2,6 +2,7 @@
 const EventEmitter = require('events');
 const path = require('path');
 const { logger } = require('../utils/logger');
+const memoryManager = require('./memory-manager');
 
 class RawrZEngine extends EventEmitter {
     // Performance monitoring
@@ -21,10 +22,10 @@ class RawrZEngine extends EventEmitter {
         super();
         this.name = 'RawrZEngine';
         this.version = '1.0.0';
-        this.memoryManager = getMemoryManager();
-        this.modules = this.memoryManager.createManagedCollection('modules', 'Map', 100);
+        this.memoryManager = memoryManager;
+        this.modules = new Map();
         this.initialized = false;
-        this.activeOperations = this.memoryManager.createManagedCollection('activeOperations', 'Map', 100);
+        this.activeOperations = new Map();
     }
 
     async initializeModules() {
