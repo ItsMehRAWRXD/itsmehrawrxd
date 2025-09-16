@@ -5,7 +5,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
-const memoryManager = require('./memory-manager');
+//const memoryManager = require('./memory-manager');
 const os = require('os');
 const net = require('net');
 const { logger } = require('../utils/logger');
@@ -30,7 +30,7 @@ class DigitalForensics extends EventEmitter {
         super();
         this.name = 'DigitalForensics';
         this.version = '2.0.0';
-        this.memoryManager = memoryManager;
+        this.memoryManager = new Map();
         this.analysisTypes = new Map();
         this.forensicTools = new Map();
         this.evidenceChain = new Map();
@@ -269,7 +269,7 @@ class DigitalForensics extends EventEmitter {
     // Setup evidence chain
     async setupEvidenceChain() {
         try {
-            this.evidenceChain = this.memoryManager.createManagedCollection('evidenceChain', 'Map', 100);
+            this.evidenceChain = new Map();
             this.emit('evidenceChainInitialized');
             return { success: true, message: 'Evidence chain initialized' };
         } catch (error) {
@@ -281,7 +281,7 @@ class DigitalForensics extends EventEmitter {
     // Initialize timeline analysis
     async initializeTimelineAnalysis() {
         try {
-            this.timelineAnalysis = this.memoryManager.createManagedCollection('timelineAnalysis', 'Map', 100);
+            this.timelineAnalysis = new Map();
             this.emit('timelineAnalysisInitialized');
             return { success: true, message: 'Timeline analysis initialized' };
         } catch (error) {

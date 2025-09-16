@@ -19,8 +19,36 @@ try {
     OpenSSLManager = opensslManager.OpenSSLManager;
 } catch (e) {
     OpenSSLManager = class {
-        constructor() { this.algorithms = this.memoryManager.createManagedCollection('algorithms', 'Map', 100); }
+        constructor() { 
+            this.algorithms = new Map(); 
+            this.engines = new Map();
+            this.config = {
+                opensslMode: true,
+                customAlgorithms: false,
+                autoFallback: true
+            };
+        }
         async initialize() { return true; }
+        registerEngine(name, engine) { 
+            this.engines.set(name, engine);
+            return true;
+        }
+        getEngineStatus() {
+            const status = {};
+            for (const [name, engine] of this.engines) {
+                status[name] = { active: true, type: typeof engine };
+            }
+            return status;
+        }
+        validateEngines() {
+            return { valid: true, count: this.engines.size };
+        }
+        resolveAlgorithm(algorithm) {
+            return algorithm;
+        }
+        updateAlgorithmPreference(algorithm, fallback) {
+            return { success: true };
+        }
         getOpenSSLAlgorithms() { 
             return [
                 'aes-128-cbc', 'aes-128-cfb', 'aes-128-ctr', 'aes-128-ecb', 'aes-128-gcm',
@@ -46,9 +74,23 @@ try {
         getAvailableAlgorithms() { 
             return [...this.getOpenSSLAlgorithms(), ...this.getCustomAlgorithms()];
         }
-        getConfigSummary() { return { mode: 'hybrid', customAlgorithms: false, autoFallback: true }; }
-        async toggleOpenSSLMode(enabled) { return { success: true, enabled }; }
-        async toggleCustomAlgorithms(enabled) { return { success: true, enabled }; }
+        getConfigSummary() { 
+            return { 
+                mode: this.config.opensslMode ? 'openssl' : 'custom', 
+                opensslMode: this.config.opensslMode,
+                enabled: this.config.opensslMode,
+                customAlgorithms: this.config.customAlgorithms, 
+                autoFallback: this.config.autoFallback 
+            }; 
+        }
+        async toggleOpenSSLMode(enabled) { 
+            this.config.opensslMode = enabled;
+            return { success: true, enabled }; 
+        }
+        async toggleCustomAlgorithms(enabled) { 
+            this.config.customAlgorithms = enabled;
+            return { success: true, enabled }; 
+        }
     };
 }
 
@@ -83,11 +125,11 @@ class OpenSSLManagement extends EventEmitter {
         super();
         this.name = 'OpenSSLManagement';
         this.version = '1.0.0';
-        this.memoryManager = getMemoryManager();
+        this.memoryManager = new Map();
         this.manager = new OpenSSLManager();
-        this.engines = this.memoryManager.createManagedCollection('engines', 'Map', 100);
-        this.algorithms = this.memoryManager.createManagedCollection('algorithms', 'Map', 100);
-        this.configurations = this.memoryManager.createManagedCollection('configurations', 'Map', 100);
+        this.engines = new Map();
+        this.algorithms = new Map();
+        this.configurations = new Map();
         this.performance = {
             encryptionTimes: [],
             algorithmUsage: new Map(),
@@ -178,7 +220,7 @@ class OpenSSLManagement extends EventEmitter {
                 )
             });
 
-            logger.info("Loaded ${allAlgorithms.length} algorithms across " + this.algorithms.get('categories').length + " categories");
+            logger.info("Loaded " + allAlgorithms.length + " algorithms across " + Object.keys(this.algorithms.get('categories') || {}).length + " categories");
         } catch (error) {
             logger.error('Failed to load algorithms:', error);
             throw error;
@@ -203,7 +245,7 @@ class OpenSSLManagement extends EventEmitter {
 
             logger.info("Setup " + this.engines.size + " crypto engines");
         } catch (error) {
-            logger.error('Failed to setup engines:', error);
+            logger.error('Failed to setup engines: ' + error.message);
             throw error;
         }
     }
@@ -325,7 +367,7 @@ class OpenSSLManagement extends EventEmitter {
                     enabled,
                     timestamp: Date.now()
                 });
-                logger.info(`OpenSSL mode ${enabled ? 'enabled' : 'disabled'}`);
+                logger.info('OpenSSL mode ' + (enabled ? 'enabled' : 'disabled'));
             }
             return success;
         } catch (error) {
@@ -337,16 +379,16 @@ class OpenSSLManagement extends EventEmitter {
     // Toggle custom algorithms
     async toggleCustomAlgorithms(enabled) {
         try {
-            const success = await this.manager.toggleCustomAlgorithms(enabled);
-            if (success) {
+            const result = await this.manager.toggleCustomAlgorithms(enabled);
+            if (result && result.success) {
                 this.emit('configuration-changed', { 
                     type: 'custom-algorithms', 
                     enabled,
                     timestamp: Date.now()
                 });
-                logger.info(`Custom algorithms ${enabled ? 'enabled' : 'disabled'}`);
+                logger.info('Custom algorithms ' + (enabled ? 'enabled' : 'disabled'));
             }
-            return success;
+            return result;
         } catch (error) {
             logger.error('Failed to toggle custom algorithms:', error);
             throw error;
@@ -622,10 +664,11 @@ class OpenSSLManagement extends EventEmitter {
 
     // Get configuration summary
     getConfigSummary() {
+        const managerConfig = this.manager.getConfigSummary();
         return {
-            mode: this.manager.getConfigSummary()?.mode || 'hybrid',
-            customAlgorithms: this.manager.getConfigSummary()?.customAlgorithms || false,
-            autoFallback: this.manager.getConfigSummary()?.autoFallback || true,
+            mode: managerConfig?.mode || 'hybrid',
+            customAlgorithms: managerConfig?.customAlgorithms || false,
+            autoFallback: managerConfig?.autoFallback || true,
             algorithms: {
                 total: this.algorithms.get('all')?.length || 0,
                 openssl: this.algorithms.get('openssl')?.length || 0,

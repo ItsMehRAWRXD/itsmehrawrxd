@@ -9,7 +9,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
-const { getMemoryManager } = require('../utils/memory-manager');
+//const { getMemoryManager } = require('../utils/memory-manager');
 const os = require('os');
 const net = require('net');
 const { logger } = require('../utils/logger');
@@ -33,9 +33,10 @@ class PrivateVirusScanner {
     constructor() {
         this.name = 'PrivateVirusScanner';
         this.version = '1.0.0';
-        this.scanQueue = this.memoryManager.createManagedCollection('scanQueue', 'Map', 100);
-        this.scanResults = this.memoryManager.createManagedCollection('scanResults', 'Map', 100);
-        this.engines = this.memoryManager.createManagedCollection('engines', 'Map', 100);
+        this.memoryManager = new Map();
+        this.scanQueue = new Map();
+        this.scanResults = new Map();
+        this.engines = new Map();
         this.scanHistory = [];
         this.maxConcurrentScans = 5;
         this.activeScans = 0;

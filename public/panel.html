@@ -1718,6 +1718,16 @@
                         <button onclick="runThreatDetection(this)">Threat Detection</button>
                         <button onclick="runVulnerabilityCheck(this)">Vulnerability Check</button>
                     </div>
+                    <div class="row" style="margin-top: 10px;">
+                        <select id="securityScanTarget" style="flex: 1; margin-right: 10px;">
+                            <option value="localhost">Local System</option>
+                            <option value="uploaded">Uploaded File</option>
+                        </select>
+                        <select id="securityScanFile" style="flex: 1; margin-right: 10px;" disabled>
+                            <option value="">Select uploaded file...</option>
+                        </select>
+                        <button onclick="refreshSecurityFileList()">Refresh Files</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2411,18 +2421,21 @@
                     <h3>Configuration</h3>
                     <div class="form-group">
                         <label>
-                            <input type="checkbox" id="openssl-mode-toggle" checked>
+                            <input type="checkbox" id="opensslToggleConfig" checked>
                             OpenSSL Mode
                         </label>
+                        <div id="opensslStatusConfig" class="status-text">OpenSSL Mode: Enabled</div>
                     </div>
                     <div class="form-group">
                         <label>
-                            <input type="checkbox" id="custom-algorithms-toggle" checked>
+                            <input type="checkbox" id="customAlgorithmsToggleConfig" checked>
                             Custom Algorithms
                         </label>
+                        <div id="customAlgorithmsStatusConfig" class="status-text">Custom Algorithms: Enabled</div>
                     </div>
                     <div class="form-group">
                         <button onclick="updateOpenSSLConfig(this)">Update Configuration</button>
+                        <button onclick="updateOpenSSLUI()" style="margin-left: 10px; background: #4a5568;">Force UI Update</button>
                     </div>
                 </div>
 
@@ -2575,7 +2588,7 @@
 <script>
         // Global variables
         let authToken = localStorage.getItem('authToken') || '';
-        let uploadedFiles = [];
+        window.uploadedFiles = [];
         let opensslConfig = {
             useOpenSSL: true,
             allowCustomAlgorithms: false,
@@ -2587,10 +2600,22 @@
         // OpenSSL Management Functions
         async function initializeOpenSSLManager() {
             try {
+                console.log('Initializing OpenSSL Manager...');
+                
                 // Load current configuration
                 const configResponse = await api('/openssl/config');
+                console.log('Config response:', configResponse);
+                
                 if (configResponse.success) {
-                    opensslConfig = { ...opensslConfig, ...configResponse.result };
+                    const result = configResponse.result;
+                    console.log('Config result:', result);
+                    
+                    // Map backend fields to frontend config
+                    opensslConfig.useOpenSSL = result.enabled;
+                    opensslConfig.allowCustomAlgorithms = result.customAlgorithms;
+                    opensslConfig.autoFallback = result.autoFallback || true;
+                    
+                    console.log('Mapped config:', opensslConfig);
                     updateOpenSSLUI();
                 }
                 
@@ -2607,20 +2632,166 @@
         }
         
         function setupOpenSSLEventListeners() {
+            console.log('Setting up OpenSSL event listeners...');
+            
             // OpenSSL toggle
             const opensslToggle = document.getElementById('opensslToggle');
+            console.log('OpenSSL toggle element found:', !!opensslToggle);
+            
             if (opensslToggle) {
+                // Add click event listener for debugging
+                opensslToggle.addEventListener('click', (e) => {
+                    console.log('OpenSSL checkbox CLICKED!');
+                });
+                
                 opensslToggle.addEventListener('change', async (e) => {
+                    console.log('OpenSSL checkbox CHANGED! New state:', e.target.checked);
+                    
+                    // Update local config immediately
+                    opensslConfig.useOpenSSL = e.target.checked;
+                    
+                    // Update all status texts immediately
+                    const opensslStatus = document.getElementById('opensslStatus');
+                    const opensslStatusConfig = document.getElementById('opensslStatusConfig');
+                    
+                    if (opensslStatus) {
+                        opensslStatus.textContent = `OpenSSL Mode: ${e.target.checked ? 'Enabled' : 'Disabled'}`;
+                        opensslStatus.style.color = e.target.checked ? '#68d391' : '#a0aec0';
+                        console.log('Updated OpenSSL status text to:', opensslStatus.textContent);
+                    }
+                    if (opensslStatusConfig) {
+                        opensslStatusConfig.textContent = `OpenSSL Mode: ${e.target.checked ? 'Enabled' : 'Disabled'}`;
+                        opensslStatusConfig.style.color = e.target.checked ? '#68d391' : '#a0aec0';
+                    }
+                    
+                    // Sync config section checkbox
+                    const opensslToggleConfig = document.getElementById('opensslToggleConfig');
+                    if (opensslToggleConfig) {
+                        opensslToggleConfig.checked = e.target.checked;
+                    }
+                    
+                    console.log('OpenSSL checkbox changed to:', e.target.checked);
                     await toggleOpenSSLMode(e.target.checked);
                 });
+                console.log('OpenSSL event listener added successfully');
+            } else {
+                console.error('OpenSSL toggle element not found!');
             }
             
             // Custom algorithms toggle
             const customToggle = document.getElementById('customAlgorithmsToggle');
+            console.log('Custom toggle element found:', !!customToggle);
+            
             if (customToggle) {
+                // Add click event listener for debugging
+                customToggle.addEventListener('click', (e) => {
+                    console.log('Custom Algorithms checkbox CLICKED!');
+                });
+                
                 customToggle.addEventListener('change', async (e) => {
+                    console.log('Custom Algorithms checkbox CHANGED! New state:', e.target.checked);
+                    
+                    // Update local config immediately
+                    opensslConfig.allowCustomAlgorithms = e.target.checked;
+                    
+                    // Update all status texts immediately
+                    const customStatus = document.getElementById('customAlgorithmsStatus');
+                    const customStatusConfig = document.getElementById('customAlgorithmsStatusConfig');
+                    
+                    if (customStatus) {
+                        customStatus.textContent = `Custom Algorithms: ${e.target.checked ? 'Enabled' : 'Disabled'}`;
+                        customStatus.style.color = e.target.checked ? '#68d391' : '#a0aec0';
+                        console.log('Updated Custom status text to:', customStatus.textContent);
+                    }
+                    if (customStatusConfig) {
+                        customStatusConfig.textContent = `Custom Algorithms: ${e.target.checked ? 'Enabled' : 'Disabled'}`;
+                        customStatusConfig.style.color = e.target.checked ? '#68d391' : '#a0aec0';
+                    }
+                    
+                    // Sync config section checkbox
+                    const customToggleConfig = document.getElementById('customAlgorithmsToggleConfig');
+                    if (customToggleConfig) {
+                        customToggleConfig.checked = e.target.checked;
+                    }
+                    
+                    console.log('Custom Algorithms checkbox changed to:', e.target.checked);
                     await toggleCustomAlgorithms(e.target.checked);
                 });
+                console.log('Custom event listener added successfully');
+            } else {
+                console.error('Custom toggle element not found!');
+            }
+            
+            // Configuration section OpenSSL toggle
+            const opensslToggleConfig = document.getElementById('opensslToggleConfig');
+            console.log('OpenSSL config toggle element found:', !!opensslToggleConfig);
+            
+            if (opensslToggleConfig) {
+                opensslToggleConfig.addEventListener('change', async (e) => {
+                    console.log('OpenSSL config checkbox CHANGED! New state:', e.target.checked);
+                    
+                    // Update local config immediately
+                    opensslConfig.useOpenSSL = e.target.checked;
+                    
+                    // Update all status texts immediately
+                    const opensslStatus = document.getElementById('opensslStatus');
+                    const opensslStatusConfig = document.getElementById('opensslStatusConfig');
+                    
+                    if (opensslStatus) {
+                        opensslStatus.textContent = `OpenSSL Mode: ${e.target.checked ? 'Enabled' : 'Disabled'}`;
+                        opensslStatus.style.color = e.target.checked ? '#68d391' : '#a0aec0';
+                    }
+                    if (opensslStatusConfig) {
+                        opensslStatusConfig.textContent = `OpenSSL Mode: ${e.target.checked ? 'Enabled' : 'Disabled'}`;
+                        opensslStatusConfig.style.color = e.target.checked ? '#68d391' : '#a0aec0';
+                    }
+                    
+                    // Sync main section checkbox
+                    const opensslToggle = document.getElementById('opensslToggle');
+                    if (opensslToggle) {
+                        opensslToggle.checked = e.target.checked;
+                    }
+                    
+                    console.log('OpenSSL config checkbox changed to:', e.target.checked);
+                    await toggleOpenSSLMode(e.target.checked);
+                });
+                console.log('OpenSSL config event listener added successfully');
+            }
+            
+            // Configuration section Custom algorithms toggle
+            const customToggleConfig = document.getElementById('customAlgorithmsToggleConfig');
+            console.log('Custom config toggle element found:', !!customToggleConfig);
+            
+            if (customToggleConfig) {
+                customToggleConfig.addEventListener('change', async (e) => {
+                    console.log('Custom config checkbox CHANGED! New state:', e.target.checked);
+                    
+                    // Update local config immediately
+                    opensslConfig.allowCustomAlgorithms = e.target.checked;
+                    
+                    // Update all status texts immediately
+                    const customStatus = document.getElementById('customAlgorithmsStatus');
+                    const customStatusConfig = document.getElementById('customAlgorithmsStatusConfig');
+                    
+                    if (customStatus) {
+                        customStatus.textContent = `Custom Algorithms: ${e.target.checked ? 'Enabled' : 'Disabled'}`;
+                        customStatus.style.color = e.target.checked ? '#68d391' : '#a0aec0';
+                    }
+                    if (customStatusConfig) {
+                        customStatusConfig.textContent = `Custom Algorithms: ${e.target.checked ? 'Enabled' : 'Disabled'}`;
+                        customStatusConfig.style.color = e.target.checked ? '#68d391' : '#a0aec0';
+                    }
+                    
+                    // Sync main section checkbox
+                    const customToggle = document.getElementById('customAlgorithmsToggle');
+                    if (customToggle) {
+                        customToggle.checked = e.target.checked;
+                    }
+                    
+                    console.log('Custom config checkbox changed to:', e.target.checked);
+                    await toggleCustomAlgorithms(e.target.checked);
+                });
+                console.log('Custom config event listener added successfully');
             }
             
             // Algorithm filter
@@ -2633,38 +2804,106 @@
         }
         
         async function toggleOpenSSLMode(enabled) {
+            const opensslToggle = document.getElementById('opensslToggle');
+            if (opensslToggle) {
+                opensslToggle.disabled = true; // Prevent multiple clicks
+            }
+            
             try {
                 const response = await api('/openssl/toggle-openssl', 'POST', { enabled }, 3);
                 
-                if (response.success) {
-                    opensslConfig.useOpenSSL = enabled;
-                    updateOpenSSLUI();
-                    await loadAvailableAlgorithms();
+                if (response.success && response.result && response.result.success) {
+                    // Local config already updated in event listener
                     showStatus(`OpenSSL mode ${enabled ? 'enabled' : 'disabled'}`, 'success');
                 } else {
                     showStatus('Failed to toggle OpenSSL mode', 'error');
+                    // Revert checkbox state and status text on failure
+                    if (opensslToggle) {
+                        opensslToggle.checked = opensslConfig.useOpenSSL;
+                    }
+                    const opensslStatus = document.getElementById('opensslStatus');
+                    if (opensslStatus) {
+                        opensslStatus.textContent = `OpenSSL Mode: ${opensslConfig.useOpenSSL ? 'Enabled' : 'Disabled'}`;
+                        opensslStatus.style.color = opensslConfig.useOpenSSL ? '#68d391' : '#a0aec0';
+                    }
                 }
             } catch (error) {
                 console.error('Error toggling OpenSSL mode:', error);
                 showStatus('Error toggling OpenSSL mode', 'error');
+                // Revert checkbox state and status text on error
+                if (opensslToggle) {
+                    opensslToggle.checked = opensslConfig.useOpenSSL;
+                }
+                const opensslStatus = document.getElementById('opensslStatus');
+                if (opensslStatus) {
+                    opensslStatus.textContent = `OpenSSL Mode: ${opensslConfig.useOpenSSL ? 'Enabled' : 'Disabled'}`;
+                    opensslStatus.style.color = opensslConfig.useOpenSSL ? '#68d391' : '#a0aec0';
+                }
+            } finally {
+                if (opensslToggle) {
+                    opensslToggle.disabled = false; // Re-enable checkbox
+                }
             }
         }
         
         async function toggleCustomAlgorithms(enabled) {
+            const customToggle = document.getElementById('customAlgorithmsToggle');
+            if (customToggle) {
+                customToggle.disabled = true; // Prevent multiple clicks
+            }
+            
             try {
                 const response = await api('/openssl/toggle-custom', 'POST', { enabled }, 3);
                 
-                if (response.data && response.data.success) {
+                if (response.success && response.result && response.result.success) {
+                    // Update local config immediately
                     opensslConfig.allowCustomAlgorithms = enabled;
-                    updateOpenSSLUI();
-                    await loadAvailableAlgorithms();
                     showStatus(`Custom algorithms ${enabled ? 'enabled' : 'disabled'}`, 'success');
                 } else {
                     showStatus('Failed to toggle custom algorithms', 'error');
+                    // Revert checkbox state and status text on failure
+                    if (customToggle) {
+                        customToggle.checked = opensslConfig.allowCustomAlgorithms;
+                    }
+                    const customStatus = document.getElementById('customAlgorithmsStatus');
+                    if (customStatus) {
+                        customStatus.textContent = `Custom Algorithms: ${opensslConfig.allowCustomAlgorithms ? 'Enabled' : 'Disabled'}`;
+                        customStatus.style.color = opensslConfig.allowCustomAlgorithms ? '#68d391' : '#a0aec0';
+                    }
                 }
             } catch (error) {
                 console.error('Error toggling custom algorithms:', error);
                 showStatus('Error toggling custom algorithms', 'error');
+                // Revert checkbox state and status text on error
+                if (customToggle) {
+                    customToggle.checked = opensslConfig.allowCustomAlgorithms;
+                }
+                const customStatus = document.getElementById('customAlgorithmsStatus');
+                if (customStatus) {
+                    customStatus.textContent = `Custom Algorithms: ${opensslConfig.allowCustomAlgorithms ? 'Enabled' : 'Disabled'}`;
+                    customStatus.style.color = opensslConfig.allowCustomAlgorithms ? '#68d391' : '#a0aec0';
+                }
+            } finally {
+                if (customToggle) {
+                    customToggle.disabled = false; // Re-enable checkbox
+                }
+            }
+        }
+        
+        async function refreshOpenSSLConfig() {
+            try {
+                const configResponse = await api('/openssl/config');
+                if (configResponse.success) {
+                    const result = configResponse.result;
+                    // Map backend fields to frontend config
+                    opensslConfig.useOpenSSL = result.enabled || result.opensslMode || (result.mode === 'openssl');
+                    opensslConfig.allowCustomAlgorithms = result.customAlgorithms || false;
+                    opensslConfig.autoFallback = result.autoFallback || true;
+                    updateOpenSSLUI();
+                    await loadAvailableAlgorithms();
+                }
+            } catch (error) {
+                console.error('Error refreshing OpenSSL config:', error);
             }
         }
         
@@ -2765,23 +3004,127 @@
         }
         
         function updateOpenSSLUI() {
-            // Update toggle states
+            console.log('updateOpenSSLUI called with config:', opensslConfig);
+            
+            // Update main encryption section elements
             const opensslToggle = document.getElementById('opensslToggle');
             const customToggle = document.getElementById('customAlgorithmsToggle');
             const opensslStatus = document.getElementById('opensslStatus');
             const customStatus = document.getElementById('customAlgorithmsStatus');
             
+            // Update configuration section elements
+            const opensslToggleConfig = document.getElementById('opensslToggleConfig');
+            const customToggleConfig = document.getElementById('customAlgorithmsToggleConfig');
+            const opensslStatusConfig = document.getElementById('opensslStatusConfig');
+            const customStatusConfig = document.getElementById('customAlgorithmsStatusConfig');
+            
+            console.log('Elements found:', {
+                opensslToggle: !!opensslToggle,
+                customToggle: !!customToggle,
+                opensslStatus: !!opensslStatus,
+                customStatus: !!customStatus,
+                opensslToggleConfig: !!opensslToggleConfig,
+                customToggleConfig: !!customToggleConfig,
+                opensslStatusConfig: !!opensslStatusConfig,
+                customStatusConfig: !!customStatusConfig
+            });
+            
+            // Update main section
             if (opensslToggle) {
                 opensslToggle.checked = opensslConfig.useOpenSSL;
+                console.log('Set opensslToggle.checked to:', opensslConfig.useOpenSSL);
             }
             if (customToggle) {
                 customToggle.checked = opensslConfig.allowCustomAlgorithms;
+                console.log('Set customToggle.checked to:', opensslConfig.allowCustomAlgorithms);
             }
             if (opensslStatus) {
                 opensslStatus.textContent = `OpenSSL Mode: ${opensslConfig.useOpenSSL ? 'Enabled' : 'Disabled'}`;
+                opensslStatus.style.color = opensslConfig.useOpenSSL ? '#68d391' : '#a0aec0';
+                console.log('Updated opensslStatus text to:', opensslStatus.textContent);
             }
             if (customStatus) {
                 customStatus.textContent = `Custom Algorithms: ${opensslConfig.allowCustomAlgorithms ? 'Enabled' : 'Disabled'}`;
+                customStatus.style.color = opensslConfig.allowCustomAlgorithms ? '#68d391' : '#a0aec0';
+                console.log('Updated customStatus text to:', customStatus.textContent);
+            }
+            
+            // Update config section
+            if (opensslToggleConfig) {
+                opensslToggleConfig.checked = opensslConfig.useOpenSSL;
+                console.log('Set opensslToggleConfig.checked to:', opensslConfig.useOpenSSL);
+            }
+            if (customToggleConfig) {
+                customToggleConfig.checked = opensslConfig.allowCustomAlgorithms;
+                console.log('Set customToggleConfig.checked to:', opensslConfig.allowCustomAlgorithms);
+            }
+            if (opensslStatusConfig) {
+                opensslStatusConfig.textContent = `OpenSSL Mode: ${opensslConfig.useOpenSSL ? 'Enabled' : 'Disabled'}`;
+                opensslStatusConfig.style.color = opensslConfig.useOpenSSL ? '#68d391' : '#a0aec0';
+                console.log('Updated opensslStatusConfig text to:', opensslStatusConfig.textContent);
+            }
+            if (customStatusConfig) {
+                customStatusConfig.textContent = `Custom Algorithms: ${opensslConfig.allowCustomAlgorithms ? 'Enabled' : 'Disabled'}`;
+                customStatusConfig.style.color = opensslConfig.allowCustomAlgorithms ? '#68d391' : '#a0aec0';
+                console.log('Updated customStatusConfig text to:', customStatusConfig.textContent);
+            }
+        }
+        
+        function syncStatusWithCheckboxes() {
+            console.log('Syncing status text with checkbox states...');
+            
+            const opensslToggle = document.getElementById('opensslToggle');
+            const customToggle = document.getElementById('customAlgorithmsToggle');
+            const opensslStatus = document.getElementById('opensslStatus');
+            const customStatus = document.getElementById('customAlgorithmsStatus');
+            
+            if (opensslToggle && opensslStatus) {
+                const isEnabled = opensslToggle.checked;
+                opensslStatus.textContent = `OpenSSL Mode: ${isEnabled ? 'Enabled' : 'Disabled'}`;
+                opensslStatus.style.color = isEnabled ? '#68d391' : '#a0aec0';
+                console.log('Updated OpenSSL status to:', opensslStatus.textContent);
+            }
+            
+            if (customToggle && customStatus) {
+                const isEnabled = customToggle.checked;
+                customStatus.textContent = `Custom Algorithms: ${isEnabled ? 'Enabled' : 'Disabled'}`;
+                customStatus.style.color = isEnabled ? '#68d391' : '#a0aec0';
+                console.log('Updated Custom status to:', customStatus.textContent);
+            }
+        }
+        
+        function testCheckboxClickability() {
+            console.log('Testing checkbox clickability...');
+            
+            const opensslToggle = document.getElementById('opensslToggle');
+            const customToggle = document.getElementById('customAlgorithmsToggle');
+            
+            if (opensslToggle) {
+                console.log('OpenSSL checkbox properties:', {
+                    disabled: opensslToggle.disabled,
+                    readonly: opensslToggle.readOnly,
+                    style: opensslToggle.style.cssText,
+                    pointerEvents: window.getComputedStyle(opensslToggle).pointerEvents,
+                    zIndex: window.getComputedStyle(opensslToggle).zIndex
+                });
+                
+                // Try to manually trigger a click
+                opensslToggle.click();
+                console.log('Manually triggered OpenSSL checkbox click');
+            }
+            
+            if (customToggle) {
+                console.log('Custom checkbox properties:', {
+                    disabled: customToggle.disabled,
+                    readonly: customToggle.readOnly,
+                    style: customToggle.style.cssText,
+                    pointerEvents: window.getComputedStyle(customToggle).pointerEvents,
+                    zIndex: window.getComputedStyle(customToggle).zIndex
+                });
+                
+                // Try to manually trigger a click
+                customToggle.click();
+                console.log('Manually triggered Custom checkbox click');
             }
         }
         
@@ -3154,7 +3497,7 @@ Results: ${JSON.stringify(result.result, null, 2)}`, 'success');
                     uploaded: false
                 };
                 
-                uploadedFiles.push(fileData);
+                window.uploadedFiles.push(fileData);
                 displayFile(fileData);
                 
                 // Show save location dialog after file selection
@@ -3194,7 +3537,7 @@ Results: ${JSON.stringify(result.result, null, 2)}`, 'success');
         }
         
         function confirmSaveLocation(fileId) {
-            const fileData = uploadedFiles.find(f => f.id == fileId);
+            const fileData = window.uploadedFiles.find(f => f.id == fileId);
             if (fileData) {
                 const saveLocation = document.getElementById('saveLocation').value.trim();
                 const saveFileName = document.getElementById('saveFileName').value.trim();
@@ -3251,7 +3594,7 @@ Results: ${JSON.stringify(result.result, null, 2)}`, 'success');
         }
         
         function selectFile(fileId) {
-            const fileData = uploadedFiles.find(f => f.id == fileId);
+            const fileData = window.uploadedFiles.find(f => f.id == fileId);
             if (fileData) {
                 // Set as selected file for operations
                 window.selectedFile = fileData;
@@ -3266,7 +3609,7 @@ Results: ${JSON.stringify(result.result, null, 2)}`, 'success');
         }
         
         function removeFile(fileId) {
-            uploadedFiles = uploadedFiles.filter(f => f.id != fileId);
+            window.uploadedFiles = window.uploadedFiles.filter(f => f.id != fileId);
             const fileElement = document.getElementById(`file-${fileId}`);
             if (fileElement) {
                 fileElement.remove();
@@ -3311,7 +3654,7 @@ Results: ${JSON.stringify(result.result, null, 2)}`, 'success');
                     uploaded: false
                 };
                 
-                uploadedFiles.push(fileData);
+                window.uploadedFiles.push(fileData);
                 displayFile(fileData);
                 
                 showStatus(`File downloaded successfully: ${fileName}`, 'success');
@@ -3325,7 +3668,120 @@ Results: ${JSON.stringify(result.result, null, 2)}`, 'success');
         }
         
         // Initialize file upload system when page loads
-        document.addEventListener('DOMContentLoaded', initializeFileUpload);
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeFileUpload();
+            
+            // Add event listeners for security scan dropdowns
+            const securityTarget = document.getElementById('securityScanTarget');
+            const securityFile = document.getElementById('securityScanFile');
+            const threatTarget = document.getElementById('threatDetectionTarget');
+            const threatFile = document.getElementById('threatDetectionFile');
+            const vulnTarget = document.getElementById('vulnerabilityCheckTarget');
+            const vulnFile = document.getElementById('vulnerabilityCheckFile');
+            
+            if (securityTarget) {
+                securityTarget.addEventListener('change', function() {
+                    securityFile.disabled = this.value !== 'uploaded';
+                    if (this.value === 'uploaded') {
+                        refreshSecurityFileList();
+                    }
+                });
+            }
+            
+            if (threatTarget) {
+                threatTarget.addEventListener('change', function() {
+                    threatFile.disabled = this.value !== 'uploaded';
+                    if (this.value === 'uploaded') {
+                        refreshThreatFileList();
+                    }
+                });
+            }
+            
+            if (vulnTarget) {
+                vulnTarget.addEventListener('change', function() {
+                    vulnFile.disabled = this.value !== 'uploaded';
+                    if (this.value === 'uploaded') {
+                        refreshVulnFileList();
+                    }
+                });
+            }
+        });
+        
+        // Security scan file list refresh functions
+        async function refreshSecurityFileList() {
+            try {
+                const fileSelect = document.getElementById('securityScanFile');
+                const targetSelect = document.getElementById('securityScanTarget');
+                
+                // Clear existing options except the first one
+                fileSelect.innerHTML = '<option value="">Select uploaded file...</option>';
+                
+                // Use the local uploadedFiles array instead of server files
+                if (window.uploadedFiles && window.uploadedFiles.length > 0) {
+                    window.uploadedFiles.forEach(fileData => {
+                        const option = document.createElement('option');
+                        option.value = fileData.name; // Use filename for now
+                        option.textContent = `${fileData.name} (${formatFileSize(fileData.size)})`;
+                        fileSelect.appendChild(option);
+                    });
+                }
+                
+                // Enable/disable file select based on target type
+                fileSelect.disabled = targetSelect.value !== 'uploaded';
+            } catch (error) {
+                showStatus(`Failed to refresh file list: ${error.message}`, 'error');
+            }
+        }
+        
+        async function refreshThreatFileList() {
+            try {
+                const fileSelect = document.getElementById('threatDetectionFile');
+                const targetSelect = document.getElementById('threatDetectionTarget');
+                
+                // Clear existing options except the first one
+                fileSelect.innerHTML = '<option value="">Select uploaded file...</option>';
+                
+                // Use the local uploadedFiles array instead of server files
+                if (window.uploadedFiles && window.uploadedFiles.length > 0) {
+                    window.uploadedFiles.forEach(fileData => {
+                        const option = document.createElement('option');
+                        option.value = fileData.name; // Use filename for now
+                        option.textContent = `${fileData.name} (${formatFileSize(fileData.size)})`;
+                        fileSelect.appendChild(option);
+                    });
+                }
+                
+                // Enable/disable file select based on target type
+                fileSelect.disabled = targetSelect.value !== 'uploaded';
+            } catch (error) {
+                showStatus(`Failed to refresh file list: ${error.message}`, 'error');
+            }
+        }
+        
+        async function refreshVulnFileList() {
+            try {
+                const fileSelect = document.getElementById('vulnerabilityCheckFile');
+                const targetSelect = document.getElementById('vulnerabilityCheckTarget');
+                
+                // Clear existing options except the first one
+                fileSelect.innerHTML = '<option value="">Select uploaded file...</option>';
+                
+                // Use the local uploadedFiles array instead of server files
+                if (window.uploadedFiles && window.uploadedFiles.length > 0) {
+                    window.uploadedFiles.forEach(fileData => {
+                        const option = document.createElement('option');
+                        option.value = fileData.name; // Use filename for now
+                        option.textContent = `${fileData.name} (${formatFileSize(fileData.size)})`;
+                        fileSelect.appendChild(option);
+                    });
+                }
+                
+                // Enable/disable file select based on target type
+                fileSelect.disabled = targetSelect.value !== 'uploaded';
+            } catch (error) {
+                showStatus(`Failed to refresh file list: ${error.message}`, 'error');
+            }
+        }
         
         // Embedded CLI System
         let cliHistory = [];
@@ -4819,8 +5275,8 @@ Examples:
             const stopLoading = button ? showLoading(button) : () => {};
             
             try {
-                const opensslMode = document.getElementById('openssl-mode-toggle').checked;
-                const customAlgorithms = document.getElementById('custom-algorithms-toggle').checked;
+                const opensslMode = document.getElementById('opensslToggle').checked;
+                const customAlgorithms = document.getElementById('customAlgorithmsToggle').checked;
                 
                 // Toggle OpenSSL mode
                 await api('/openssl-management/toggle', 'POST', { enabled: opensslMode });
@@ -6239,7 +6695,33 @@ Examples:
             const stopLoading = button ? showLoading(button) : () => {};
             
             try {
-                const result = await api('/cli', 'POST', { command: 'analyze', args: ['--security-scan'] });
+                const targetType = document.getElementById('securityScanTarget').value;
+                let result;
+                
+                if (targetType === 'uploaded') {
+                    // Scan uploaded file
+                    const selectedFileName = document.getElementById('securityScanFile').value;
+                    if (!selectedFileName) {
+                        showStatus('Please select a file to scan', 'error');
+                        stopLoading();
+                        return;
+                    }
+                    
+                    // Find the file data from uploadedFiles
+                    const fileData = window.uploadedFiles.find(f => f.name === selectedFileName);
+                    if (!fileData) {
+                        showStatus('Selected file not found in uploaded files', 'error');
+                        stopLoading();
+                        return;
+                    }
+                    
+                    // Use file analysis endpoint for uploaded files
+                    result = await api('/file-analysis', 'POST', { filepath: fileData.name });
+                } else {
+                    // Scan local system
+                    result = await api('/api/security/scan', 'POST', { target: 'localhost' });
+                }
+                
                 stopLoading();
                 if (result.status === 200) {
                     showStatus('Security scan completed', 'success');
@@ -6260,7 +6742,33 @@ Examples:
             const stopLoading = button ? showLoading(button) : () => {};
             
             try {
-                const result = await api('/cli', 'POST', { command: 'analyze', args: ['--threat-detection'] });
+                const targetType = document.getElementById('threatDetectionTarget').value;
+                let result;
+                
+                if (targetType === 'uploaded') {
+                    // Analyze uploaded file for threats
+                    const selectedFileName = document.getElementById('threatDetectionFile').value;
+                    if (!selectedFileName) {
+                        showStatus('Please select a file to analyze', 'error');
+                        stopLoading();
+                        return;
+                    }
+                    
+                    // Find the file data from uploadedFiles
+                    const fileData = window.uploadedFiles.find(f => f.name === selectedFileName);
+                    if (!fileData) {
+                        showStatus('Selected file not found in uploaded files', 'error');
+                        stopLoading();
+                        return;
+                    }
+                    
+                    // Use malware scan endpoint for threat detection on files
+                    result = await api('/malware-scan', 'POST', { target: fileData.name });
+                } else {
+                    // Use threat detection endpoint for system
+                    result = await api('/threat-detection', 'POST', { target: 'localhost' });
+                }
+                
                 stopLoading();
                 if (result.status === 200) {
                     showStatus('Threat detection completed', 'success');
@@ -6281,7 +6789,33 @@ Examples:
             const stopLoading = button ? showLoading(button) : () => {};
             
             try {
-                const result = await api('/cli', 'POST', { command: 'analyze', args: ['--vulnerability-check'] });
+                const targetType = document.getElementById('vulnerabilityCheckTarget').value;
+                let result;
+                
+                if (targetType === 'uploaded') {
+                    // Check uploaded file for vulnerabilities
+                    const selectedFileName = document.getElementById('vulnerabilityCheckFile').value;
+                    if (!selectedFileName) {
+                        showStatus('Please select a file to check', 'error');
+                        stopLoading();
+                        return;
+                    }
+                    
+                    // Find the file data from uploadedFiles
+                    const fileData = window.uploadedFiles.find(f => f.name === selectedFileName);
+                    if (!fileData) {
+                        showStatus('Selected file not found in uploaded files', 'error');
+                        stopLoading();
+                        return;
+                    }
+                    
+                    // Use vulnerability check endpoint for files
+                    result = await api('/vulnerability-check', 'POST', { target: fileData.name });
+                } else {
+                    // Use vulnerability check endpoint for system
+                    result = await api('/vulnerability-check', 'POST', { target: 'localhost' });
+                }
+                
                 stopLoading();
                 if (result.status === 200) {
                     showStatus('Vulnerability check completed', 'success');
@@ -7132,6 +7666,12 @@ Examples:
             checkHealth();
             initializeOpenSSLManager();
             initializeInteractiveControls();
+            
+            // Force UI update after a short delay to ensure elements are loaded
+            setTimeout(() => {
+                console.log('Force updating OpenSSL UI after delay...');
+                updateOpenSSLUI();
+            }, 1000);
         });
     </script>
 </body>

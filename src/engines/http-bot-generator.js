@@ -70,6 +70,11 @@ class HTTPBotGenerator {
         const timestamp = new Date().toISOString();
         const botId = 'http_bot_' + Date.now();
         
+        // Ensure config has required fields
+        if (!config.name) config.name = 'http_bot';
+        if (!config.server) config.server = 'localhost';
+        if (!config.port) config.port = 8080;
+        
         const generatedBots = {};
         for (const extension of extensions) {
             const botCode = this.generateBotCode(config, features, extension, timestamp, botId);

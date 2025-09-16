@@ -78,7 +78,7 @@ class RawrZEngine extends EventEmitter {
     async loadModule(moduleName) {
         // Check if module is already loaded
         const existingModule = this.modules.get(moduleName);
-        if (existingModule !== null) {
+        if (existingModule) {
             return existingModule;
         }
         
