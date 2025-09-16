@@ -1,15 +1,13 @@
 {
-  "name": "rawrz-security-platform",
-  "version": "2.0.0",
-  "description": "Complete Standalone Security Platform - 110+ Security Features with Enterprise-Level Capabilities",
-  "main": "rawrz-standalone.js",
+  "name": "rawr-security-platform",
+  "version": "1.0.0",
+  "description": "RawR - Complete Standalone Security Platform - 294+ Endpoints with 100% Functionality",
+  "main": "server.js",
   "scripts": {
-    "start": "node rawrz-standalone.js",
-    "help": "node rawrz-standalone.js help",
-    "test": "node rawrz-standalone.js sysinfo",
-    "start:web": "node server.js",
-    "test:unit": "node test-unit.js",
-    "test:performance": "node test-performance.js",
+    "start": "node server.js",
+    "start:standalone": "node rawrz-standalone.js",
+    "test": "node test-all-294-endpoints.js",
+    "test:simple": "node simple-endpoint-test.js",
     "test:comprehensive": "node test-comprehensive.js",
     "test:all": "node test-runner.js",
     "payload-cli": "node cli/payload-cli.js",
@@ -50,9 +48,13 @@
     "memory-management",
     "enterprise-security"
   ],
-  "author": "RawrZ",
+  "author": "RawR",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ItsMehRAWRXD/RawR.git"
+  },
   "bin": {
-    "rawrz": "./rawrz-standalone.js"
+    "rawr": "./server.js"
   }
 }

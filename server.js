@@ -1364,8 +1364,34 @@ module.exports = {
 // Start the server if this file is run directly
 if (require.main === module) {
   const host = process.env.HOST || '0.0.0.0';
-  app.listen(port, host, () => {
+  
+  // Add error handling for server startup
+  const server = app.listen(port, host, () => {
     console.log(`[OK] RawrZ API listening on ${host}:${port}`);
     console.log(`[INFO] Health check available at http://${host}:${port}/health`);
+    console.log(`[INFO] Server started successfully in ${process.env.NODE_ENV || 'development'} mode`);
+  });
+
+  // Handle server errors
+  server.on('error', (error) => {
+    console.error('[ERROR] Server failed to start:', error);
+    process.exit(1);
+  });
+
+  // Graceful shutdown
+  process.on('SIGTERM', () => {
+    console.log('[INFO] SIGTERM received, shutting down gracefully');
+    server.close(() => {
+      console.log('[INFO] Server closed');
+      process.exit(0);
+    });
+  });
+
+  process.on('SIGINT', () => {
+    console.log('[INFO] SIGINT received, shutting down gracefully');
+    server.close(() => {
+      console.log('[INFO] Server closed');
+      process.exit(0);
+    });
   });
 }
