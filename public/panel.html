@@ -813,6 +813,135 @@
             margin-bottom: 1rem;
         }
         
+        .custom-commands {
+            margin-top: 1rem;
+        }
+        
+        .add-command-form {
+            background: #1a202c;
+            border: 1px solid #4a5568;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .add-command-form .form-group {
+            margin-bottom: 0.75rem;
+        }
+        
+        .add-command-form label {
+            display: block;
+            margin-bottom: 0.25rem;
+            color: #cbd5e0;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .add-command-form input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #4a5568;
+            border-radius: 6px;
+            background: #2d3748;
+            color: #e6e9ef;
+            font-size: 0.85rem;
+        }
+        
+        .add-command-form input:focus {
+            outline: none;
+            border-color: #68d391;
+            box-shadow: 0 0 0 2px rgba(104, 211, 145, 0.1);
+        }
+        
+        .add-cmd-btn {
+            background: linear-gradient(135deg, #68d391 0%, #48bb78 100%);
+            border: none;
+            color: #1a202c;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        
+        .add-cmd-btn:hover {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            transform: translateY(-1px);
+        }
+        
+        .custom-commands-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .custom-command-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1a202c;
+            border: 1px solid #4a5568;
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            transition: all 0.2s;
+        }
+        
+        .custom-command-item:hover {
+            background: #2d3748;
+            border-color: #68d391;
+        }
+        
+        .custom-command-info {
+            flex: 1;
+        }
+        
+        .custom-command-name {
+            color: #68d391;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .custom-command-text {
+            color: #a0aec0;
+            font-size: 0.8rem;
+            font-family: monospace;
+        }
+        
+        .custom-command-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .custom-command-btn {
+            padding: 0.25rem 0.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .custom-command-execute {
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            color: white;
+        }
+        
+        .custom-command-execute:hover {
+            background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
+        }
+        
+        .custom-command-delete {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+            color: white;
+        }
+        
+        .custom-command-delete:hover {
+            background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+        }
+        
         .history-item {
             display: flex;
             gap: 1rem;
@@ -2856,7 +2985,7 @@
         <!-- Embedded CLI Tab -->
         <div id="cli" class="tab-content">
             <div class="grid">
-                <div class="card">
+                <div class="card" style="grid-column: 1 / -1;">
                     <h3>RawrZ CLI Terminal</h3>
                     <div class="cli-container">
                         <div class="cli-header">
@@ -2867,19 +2996,19 @@
                                 <button onclick="toggleCLIHistory()" class="cli-btn">History</button>
                             </div>
                         </div>
-                        <div class="cli-output" id="cliOutput">
+                        <div class="cli-terminal" id="cliTerminal" contenteditable="true" spellcheck="false">
                             <div class="cli-line">
                                 <span class="cli-prompt">RawrZ@Security:~$</span>
-                                <span class="cli-text">RawrZ Security Platform - Embedded CLI</span>
+                                <span class="cli-text">RawrZ Security Platform - Interactive CLI</span>
                             </div>
                             <div class="cli-line">
                                 <span class="cli-prompt">RawrZ@Security:~$</span>
-                                <span class="cli-text">Type 'help' for available commands or use the buttons below</span>
+                                <span class="cli-text">Type commands directly or use quick commands below</span>
                             </div>
-                        </div>
-                        <div class="cli-input-container">
-                            <input type="text" id="cliInput" class="cli-input" placeholder="Enter RawrZ command..." />
-                            <button onclick="executeCLI()" class="cli-execute">Execute</button>
+                            <div class="cli-line">
+                                <span class="cli-prompt">RawrZ@Security:~$</span>
+                                <span class="cli-cursor" id="cliCursor">_</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2919,10 +3048,65 @@
                 </div>
 
                 <div class="card">
+                    <h3>Custom Quick Commands</h3>
+                    <div class="custom-commands">
+                        <div class="add-command-form">
+                            <div class="form-group">
+                                <label>Command Name:</label>
+                                <input type="text" id="customCommandName" placeholder="e.g., My Custom Command">
+                            </div>
+                            <div class="form-group">
+                                <label>Command:</label>
+                                <input type="text" id="customCommandText" placeholder="e.g., encrypt aes256 MySecret">
+                            </div>
+                            <button onclick="addCustomCommand()" class="add-cmd-btn">Add Command</button>
+                        </div>
+                        
+                        <div class="custom-commands-list" id="customCommandsList">
+                            <!-- Custom commands will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Available Commands</h3>
+                    <div class="command-help" id="commandHelp">
+                        <div class="help-section">
+                            <h4>Crypto Operations</h4>
+                            <div class="help-command">encrypt &lt;algorithm&gt; &lt;text&gt;</div>
+                            <div class="help-command">hash &lt;text&gt; &lt;algorithm&gt;</div>
+                            <div class="help-command">keygen &lt;algorithm&gt;</div>
+                            <div class="help-command">uuid</div>
+                        </div>
+                        
+                        <div class="help-section">
+                            <h4>System Info</h4>
+                            <div class="help-command">sysinfo</div>
+                            <div class="help-command">processes</div>
+                            <div class="help-command">files [path]</div>
+                        </div>
+                        
+                        <div class="help-section">
+                            <h4>Network Tools</h4>
+                            <div class="help-command">ping &lt;host&gt;</div>
+                            <div class="help-command">dns &lt;domain&gt;</div>
+                            <div class="help-command">portscan &lt;host&gt; &lt;ports&gt;</div>
+                        </div>
+                        
+                        <div class="help-section">
+                            <h4>File Operations</h4>
+                            <div class="help-command">analyze &lt;filepath&gt;</div>
+                            <div class="help-command">base64encode &lt;text&gt;</div>
+                            <div class="help-command">validate &lt;value&gt; &lt;type&gt;</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
                     <h3>CLI History & Logs</h3>
                     <div class="cli-history" id="cliHistory">
                         <div class="history-item">
-                            <span class="history-time">[2025-09-14 21:00:00]</span>
+                            <span class="history-time">[2025-09-16 21:00:00]</span>
                             <span class="history-command">help</span>
                             <span class="history-result">Available commands displayed</span>
                         </div>
@@ -4688,6 +4872,87 @@ Examples:
         function executeQuickCommand(command) {
             document.getElementById('cliInput').value = command;
             executeCLI();
+        }
+
+        // Custom Commands Functions
+        function addCustomCommand() {
+            const name = document.getElementById('customCommandName').value.trim();
+            const command = document.getElementById('customCommandText').value.trim();
+            
+            if (!name || !command) {
+                showStatus('Please enter both command name and command text', 'error');
+                return;
+            }
+            
+            // Get existing custom commands
+            let customCommands = JSON.parse(localStorage.getItem('rawrzCustomCommands') || '[]');
+            
+            // Check if command name already exists
+            if (customCommands.some(cmd => cmd.name === name)) {
+                showStatus('Command name already exists', 'error');
+                return;
+            }
+            
+            // Add new command
+            customCommands.push({
+                id: Date.now(),
+                name: name,
+                command: command,
+                created: new Date().toISOString()
+            });
+            
+            // Save to localStorage
+            localStorage.setItem('rawrzCustomCommands', JSON.stringify(customCommands));
+            
+            // Clear form
+            document.getElementById('customCommandName').value = '';
+            document.getElementById('customCommandText').value = '';
+            
+            // Refresh custom commands list
+            loadCustomCommands();
+            
+            showStatus(`Custom command "${name}" added successfully`, 'success');
+        }
+
+        function loadCustomCommands() {
+            const customCommands = JSON.parse(localStorage.getItem('rawrzCustomCommands') || '[]');
+            const container = document.getElementById('customCommandsList');
+            
+            if (customCommands.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #a0aec0; padding: 1rem;">No custom commands yet. Add one above!</div>';
+                return;
+            }
+            
+            container.innerHTML = customCommands.map(cmd => `
+                <div class="custom-command-item">
+                    <div class="custom-command-info">
+                        <div class="custom-command-name">${cmd.name}</div>
+                        <div class="custom-command-text">${cmd.command}</div>
+                    </div>
+                    <div class="custom-command-actions">
+                        <button class="custom-command-btn custom-command-execute" onclick="executeCustomCommand('${cmd.command}')">Execute</button>
+                        <button class="custom-command-btn custom-command-delete" onclick="deleteCustomCommand(${cmd.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function executeCustomCommand(command) {
+            executeQuickCommand(command);
+        }
+
+        function deleteCustomCommand(commandId) {
+            if (!confirm('Are you sure you want to delete this custom command?')) {
+                return;
+            }
+            
+            let customCommands = JSON.parse(localStorage.getItem('rawrzCustomCommands') || '[]');
+            customCommands = customCommands.filter(cmd => cmd.id !== commandId);
+            
+            localStorage.setItem('rawrzCustomCommands', JSON.stringify(customCommands));
+            loadCustomCommands();
+            
+            showStatus('Custom command deleted successfully', 'success');
         }
         
         function addToCLIHistory(command, result) {
@@ -8323,6 +8588,7 @@ Examples:
             checkHealth();
             initializeOpenSSLManager();
             initializeInteractiveControls();
+            loadCustomCommands(); // Load custom commands on page load
             
             // Force UI update after a short delay to ensure elements are loaded
             setTimeout(() => {
