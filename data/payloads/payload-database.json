@@ -1,0 +1,130 @@
+{
+  "payloads": {
+    "beaconism-default": {
+      "id": "beaconism-default",
+      "name": "Default Beaconism Payload",
+      "type": "beaconism",
+      "description": "Standard beaconism DLL sideloading payload",
+      "config": {
+        "target": "notepad.exe",
+        "architecture": "x64",
+        "stealth": true,
+        "persistence": false,
+        "encryption": "aes-256"
+      },
+      "createdAt": "2025-09-16T20:03:39.672Z",
+      "updatedAt": "2025-09-16T20:03:39.672Z"
+    },
+    "red-shell-default": {
+      "id": "red-shell-default",
+      "name": "Default Red Shell",
+      "type": "red-shell",
+      "description": "Standard red shell payload",
+      "config": {
+        "shellType": "cmd",
+        "encoding": "base64",
+        "compression": true,
+        "encryption": "xor"
+      },
+      "createdAt": "2025-09-16T20:03:39.672Z",
+      "updatedAt": "2025-09-16T20:03:39.672Z"
+    },
+    "hot-patch-default": {
+      "id": "hot-patch-default",
+      "name": "Default Hot Patch",
+      "type": "hot-patch",
+      "description": "Standard hot patch payload",
+      "config": {
+        "target": "notepad.exe",
+        "patchType": "memory",
+        "stealth": true,
+        "rollback": true
+      },
+      "createdAt": "2025-09-16T20:03:39.672Z",
+      "updatedAt": "2025-09-16T20:03:39.672Z"
+    },
+    "stub-generator-default": {
+      "id": "stub-generator-default",
+      "name": "Default Stub Generator",
+      "type": "stub-generator",
+      "description": "Standard stub generator payload",
+      "config": {
+        "language": "csharp",
+        "architecture": "x64",
+        "encryption": "aes-256",
+        "packing": "upx",
+        "fud": true
+      },
+      "createdAt": "2025-09-16T20:03:39.672Z",
+      "updatedAt": "2025-09-16T20:03:39.672Z"
+    },
+    "3b26be7eea2e427442914eac5702b9a8": {
+      "id": "3b26be7eea2e427442914eac5702b9a8",
+      "name": "Test Payload",
+      "type": "crypto",
+      "description": "Test crypto payload",
+      "config": {
+        "algorithm": "aes-256"
+      },
+      "createdAt": "2025-09-16T20:06:28.051Z",
+      "updatedAt": "2025-09-16T20:06:28.051Z"
+    }
+  },
+  "categories": {
+    "malware": {
+      "id": "malware",
+      "name": "Malware",
+      "description": "Malicious software payloads",
+      "color": "#ff4444",
+      "icon": "🦠",
+      "createdAt": "2025-09-16T20:09:50.184Z"
+    },
+    "backdoor": {
+      "id": "backdoor",
+      "name": "Backdoor",
+      "description": "Remote access and control payloads",
+      "color": "#ff8800",
+      "icon": "🚪",
+      "createdAt": "2025-09-16T20:09:50.185Z"
+    },
+    "stealer": {
+      "id": "stealer",
+      "name": "Stealer",
+      "description": "Data exfiltration payloads",
+      "color": "#ffaa00",
+      "icon": "💰",
+      "createdAt": "2025-09-16T20:09:50.185Z"
+    },
+    "crypto": {
+      "id": "crypto",
+      "name": "Cryptographic",
+      "description": "Encryption and decryption tools",
+      "color": "#00aa00",
+      "icon": "🔐",
+      "createdAt": "2025-09-16T20:09:50.185Z"
+    },
+    "network": {
+      "id": "network",
+      "name": "Network",
+      "description": "Network analysis and tools",
+      "color": "#0088ff",
+      "icon": "🌐",
+      "createdAt": "2025-09-16T20:09:50.185Z"
+    },
+    "utility": {
+      "id": "utility",
+      "name": "Utility",
+      "description": "General utility payloads",
+      "color": "#888888",
+      "icon": "🔧",
+      "createdAt": "2025-09-16T20:09:50.185Z"
+    }
+  },
+  "versions": {},
+  "lastUpdated": "2025-09-16T20:09:50.185Z",
+  "metadata": {
+    "totalPayloads": 5,
+    "totalCategories": 6,
+    "totalVersions": 0
+  }
+}

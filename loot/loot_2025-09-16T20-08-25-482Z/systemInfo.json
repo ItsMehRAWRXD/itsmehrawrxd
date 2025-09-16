@@ -1,0 +1,1852 @@
+{
+  "os": {
+    "platform": "win32",
+    "arch": "x64",
+    "release": "10.0.26100",
+    "hostname": "ItsMehRAWRXD",
+    "uptime": 22475.953
+  },
+  "hardware": {
+    "cpus": [
+      {
+        "model": "AMD Ryzen 7 7800X3D 8-Core Processor           ",
+        "speed": 4200,
+        "times": {
+          "user": 1651390,
+          "nice": 0,
+          "sys": 1903968,
+          "idle": 18920250,
+          "irq": 208406
+        }
+      },
+      {
+        "model": "AMD Ryzen 7 7800X3D 8-Core Processor           ",
+        "speed": 4200,
+        "times": {
+          "user": 1872250,
+          "nice": 0,
+          "sys": 1196031,
+          "idle": 19407265,
+          "irq": 32984
+        }
+      },
+      {
+        "model": "AMD Ryzen 7 7800X3D 8-Core Processor           ",
+        "speed": 4200,
+        "times": {
+          "user": 6326984,
+          "nice": 0,
+          "sys": 2522031,
+          "idle": 13626531,
+          "irq": 51828
+        }
+      },
+      {
+        "model": "AMD Ryzen 7 7800X3D 8-Core Processor           ",
+        "speed": 4200,
+        "times": {
+          "user": 3350750,
+          "nice": 0,
+          "sys": 2029156,
+          "idle": 17095640,
+          "irq": 49765
+        }
+      },
+      {
+        "model": "AMD Ryzen 7 7800X3D 8-Core Processor           ",
+        "speed": 4200,
+        "times": {
+          "user": 1226984,
+          "nice": 0,
+          "sys": 898359,
+          "idle": 20350203,
+          "irq": 27171
+        }
+      },
+      {
+        "model": "AMD Ryzen 7 7800X3D 8-Core Processor           ",
+        "speed": 4200,
+        "times": {
+          "user": 1469984,
+          "nice": 0,
+          "sys": 878031,
+          "idle": 20127531,
+          "irq": 26312
+        }
+      },
+      {
+        "model": "AMD Ryzen 7 7800X3D 8-Core Processor           ",
+        "speed": 4200,
+        "times": {
+          "user": 2472640,
+          "nice": 0,
+          "sys": 1774234,
+          "idle": 18228671,
+          "irq": 39046
+        }
+      },
+      {
+        "model": "AMD Ryzen 7 7800X3D 8-Core Processor           ",
+        "speed": 4200,
+        "times": {
+          "user": 2531875,
+          "nice": 0,
+          "sys": 1576125,
+          "idle": 18367546,
+          "irq": 39281
+        }
+      },
+      {
+        "model": "AMD Ryzen 7 7800X3D 8-Core Processor           ",
+        "speed": 4200,
+        "times": {
+          "user": 863609,
+          "nice": 0,
+          "sys": 497078,
+          "idle": 21114859,
+          "irq": 16437
+        }
+      },
+      {
+        "model": "AMD Ryzen 7 7800X3D 8-Core Processor           ",
+        "speed": 4200,
+        "times": {
+          "user": 898984,
+          "nice": 0,
+          "sys": 444953,
+          "idle": 21131609,
+          "irq": 15093
+        }
+      },
+      {
+        "model": "AMD Ryzen 7 7800X3D 8-Core Processor           ",
+        "speed": 4200,
+        "times": {
+          "user": 5274421,
+          "nice": 0,
+          "sys": 2269578,
+          "idle": 14931546,
+          "irq": 45000
+        }
+      },
+      {
+        "model": "AMD Ryzen 7 7800X3D 8-Core Processor           ",
+        "speed": 4200,
+        "times": {
+          "user": 5708812,
+          "nice": 0,
+          "sys": 2006625,
+          "idle": 14760109,
+          "irq": 42562
+        }
+      },
+      {
+        "model": "AMD Ryzen 7 7800X3D 8-Core Processor           ",
+        "speed": 4200,
+        "times": {
+          "user": 602562,
+          "nice": 0,
+          "sys": 327281,
+          "idle": 21545703,
+          "irq": 11640
+        }
+      },
+      {
+        "model": "AMD Ryzen 7 7800X3D 8-Core Processor           ",
+        "speed": 4200,
+        "times": {
+          "user": 634828,
+          "nice": 0,
+          "sys": 302843,
+          "idle": 21537875,
+          "irq": 10921
+        }
+      },
+      {
+        "model": "AMD Ryzen 7 7800X3D 8-Core Processor           ",
+        "speed": 4200,
+        "times": {
+          "user": 1016812,
+          "nice": 0,
+          "sys": 654109,
+          "idle": 20804625,
+          "irq": 21453
+        }
+      },
+      {
+        "model": "AMD Ryzen 7 7800X3D 8-Core Processor           ",
+        "speed": 4200,
+        "times": {
+          "user": 1090078,
+          "nice": 0,
+          "sys": 578781,
+          "idle": 20806687,
+          "irq": 19609
+        }
+      }
+    ],
+    "totalMemory": 67873726464,
+    "freeMemory": 44803989504,
+    "networkInterfaces": {
+      "Dur": [
+        {
+          "address": "2601:5cf:8581:a830::ba5",
+          "netmask": "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
+          "family": "IPv6",
+          "mac": "e8:9c:25:46:5d:9c",
+          "internal": false,
+          "cidr": "2601:5cf:8581:a830::ba5/128",
+          "scopeid": 0
+        },
+        {
+          "address": "2601:5cf:8581:a830:4bc:2dde:28b:1ca8",
+          "netmask": "ffff:ffff:ffff:ffff::",
+          "family": "IPv6",
+          "mac": "e8:9c:25:46:5d:9c",
+          "internal": false,
+          "cidr": "2601:5cf:8581:a830:4bc:2dde:28b:1ca8/64",
+          "scopeid": 0
+        },
+        {
+          "address": "2601:5cf:8581:a830:b97e:b09:1678:d078",
+          "netmask": "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
+          "family": "IPv6",
+          "mac": "e8:9c:25:46:5d:9c",
+          "internal": false,
+          "cidr": "2601:5cf:8581:a830:b97e:b09:1678:d078/128",
+          "scopeid": 0
+        },
+        {
+          "address": "fe80::64ae:edad:9160:59c2",
+          "netmask": "ffff:ffff:ffff:ffff::",
+          "family": "IPv6",
+          "mac": "e8:9c:25:46:5d:9c",
+          "internal": false,
+          "cidr": "fe80::64ae:edad:9160:59c2/64",
+          "scopeid": 19
+        },
+        {
+          "address": "10.0.0.226",
+          "netmask": "255.255.255.0",
+          "family": "IPv4",
+          "mac": "e8:9c:25:46:5d:9c",
+          "internal": false,
+          "cidr": "10.0.0.226/24"
+        }
+      ],
+      "Loopback Pseudo-Interface 1": [
+        {
+          "address": "::1",
+          "netmask": "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
+          "family": "IPv6",
+          "mac": "00:00:00:00:00:00",
+          "internal": true,
+          "cidr": "::1/128",
+          "scopeid": 0
+        },
+        {
+          "address": "127.0.0.1",
+          "netmask": "255.0.0.0",
+          "family": "IPv4",
+          "mac": "00:00:00:00:00:00",
+          "internal": true,
+          "cidr": "127.0.0.1/8"
+        }
+      ]
+    }
+  },
+  "users": [],
+  "services": [],
+  "processes": [
+    {
+      "name": "System Idle Process",
+      "pid": "0",
+      "memory": "8 K"
+    },
+    {
+      "name": "System",
+      "pid": "4",
+      "memory": "11,220 K"
+    },
+    {
+      "name": "Secure System",
+      "pid": "236",
+      "memory": "228,712 K"
+    },
+    {
+      "name": "Registry",
+      "pid": "280",
+      "memory": "45,464 K"
+    },
+    {
+      "name": "smss.exe",
+      "pid": "864",
+      "memory": "1,768 K"
+    },
+    {
+      "name": "csrss.exe",
+      "pid": "1340",
+      "memory": "6,696 K"
+    },
+    {
+      "name": "wininit.exe",
+      "pid": "1600",
+      "memory": "8,664 K"
+    },
+    {
+      "name": "csrss.exe",
+      "pid": "1608",
+      "memory": "7,700 K"
+    },
+    {
+      "name": "winlogon.exe",
+      "pid": "1696",
+      "memory": "16,716 K"
+    },
+    {
+      "name": "services.exe",
+      "pid": "1704",
+      "memory": "20,232 K"
+    },
+    {
+      "name": "LsaIso.exe",
+      "pid": "1756",
+      "memory": "4,252 K"
+    },
+    {
+      "name": "lsass.exe",
+      "pid": "1780",
+      "memory": "37,308 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "1916",
+      "memory": "36,220 K"
+    },
+    {
+      "name": "fontdrvhost.exe",
+      "pid": "1948",
+      "memory": "6,328 K"
+    },
+    {
+      "name": "fontdrvhost.exe",
+      "pid": "1956",
+      "memory": "16,908 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "2044",
+      "memory": "24,960 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "840",
+      "memory": "14,444 K"
+    },
+    {
+      "name": "dwm.exe",
+      "pid": "848",
+      "memory": "141,748 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "2204",
+      "memory": "7,048 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "2232",
+      "memory": "24,508 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "2244",
+      "memory": "15,224 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "2256",
+      "memory": "25,856 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "2352",
+      "memory": "7,084 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "2360",
+      "memory": "8,100 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "2368",
+      "memory": "15,876 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "2376",
+      "memory": "14,196 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "2384",
+      "memory": "10,452 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "2600",
+      "memory": "14,236 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "2612",
+      "memory": "15,332 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "2724",
+      "memory": "24,700 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "2768",
+      "memory": "7,868 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "2860",
+      "memory": "13,208 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "2956",
+      "memory": "9,844 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "2972",
+      "memory": "21,024 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "3008",
+      "memory": "13,992 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "3172",
+      "memory": "15,104 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "3288",
+      "memory": "12,568 K"
+    },
+    {
+      "name": "MsMpEng.exe",
+      "pid": "3320",
+      "memory": "472,652 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "3400",
+      "memory": "13,348 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "3608",
+      "memory": "8,716 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "3644",
+      "memory": "14,680 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "3692",
+      "memory": "8,852 K"
+    },
+    {
+      "name": "MpDefenderCoreService.exe",
+      "pid": "3772",
+      "memory": "31,092 K"
+    },
+    {
+      "name": "WUDFHost.exe",
+      "pid": "3840",
+      "memory": "11,104 K"
+    },
+    {
+      "name": "dasHost.exe",
+      "pid": "3956",
+      "memory": "19,672 K"
+    },
+    {
+      "name": "amdfendrsr.exe",
+      "pid": "3980",
+      "memory": "10,452 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "3988",
+      "memory": "21,004 K"
+    },
+    {
+      "name": "AsusCertService.exe",
+      "pid": "4000",
+      "memory": "12,136 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "2568",
+      "memory": "10,292 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "4128",
+      "memory": "11,980 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "4196",
+      "memory": "10,804 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "4244",
+      "memory": "9,996 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "4784",
+      "memory": "12,568 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "4668",
+      "memory": "31,224 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "4848",
+      "memory": "16,224 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "5036",
+      "memory": "26,700 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "4540",
+      "memory": "25,020 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "4524",
+      "memory": "9,784 K"
+    },
+    {
+      "name": "NisSrv.exe",
+      "pid": "3600",
+      "memory": "15,592 K"
+    },
+    {
+      "name": "atiesrxx.exe",
+      "pid": "5240",
+      "memory": "9,444 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "5484",
+      "memory": "19,508 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "5492",
+      "memory": "10,596 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "5500",
+      "memory": "7,632 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "5544",
+      "memory": "10,044 K"
+    },
+    {
+      "name": "Memory Compression",
+      "pid": "5616",
+      "memory": "N/A"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "5656",
+      "memory": "11,776 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "5704",
+      "memory": "9,188 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "5712",
+      "memory": "12,092 K"
+    },
+    {
+      "name": "atieclxx.exe",
+      "pid": "5720",
+      "memory": "21,776 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "5828",
+      "memory": "18,928 K"
+    },
+    {
+      "name": "atkexComSvc.exe",
+      "pid": "5912",
+      "memory": "20,644 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "6220",
+      "memory": "11,744 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "6372",
+      "memory": "12,356 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "6476",
+      "memory": "36,280 K"
+    },
+    {
+      "name": "SearchIndexer.exe",
+      "pid": "6512",
+      "memory": "54,176 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "6560",
+      "memory": "13,228 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "6664",
+      "memory": "14,692 K"
+    },
+    {
+      "name": "NgcIso.exe",
+      "pid": "6700",
+      "memory": "4,568 K"
+    },
+    {
+      "name": "WmiPrvSE.exe",
+      "pid": "6736",
+      "memory": "61,228 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "6980",
+      "memory": "9,860 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "6208",
+      "memory": "9,256 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "6588",
+      "memory": "13,720 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "7280",
+      "memory": "25,500 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "7308",
+      "memory": "17,252 K"
+    },
+    {
+      "name": "spoolsv.exe",
+      "pid": "7392",
+      "memory": "21,704 K"
+    },
+    {
+      "name": "mDNSResponder.exe",
+      "pid": "7544",
+      "memory": "10,148 K"
+    },
+    {
+      "name": "AmdPpkgSvc.exe",
+      "pid": "7552",
+      "memory": "6,912 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "7560",
+      "memory": "54,804 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "7572",
+      "memory": "14,644 K"
+    },
+    {
+      "name": "AsusFanControlService.exe",
+      "pid": "7588",
+      "memory": "19,908 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "7604",
+      "memory": "25,668 K"
+    },
+    {
+      "name": "PnkBstrA.exe",
+      "pid": "7612",
+      "memory": "9,492 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "7620",
+      "memory": "7,836 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "7628",
+      "memory": "10,248 K"
+    },
+    {
+      "name": "OfficeClickToRun.exe",
+      "pid": "7636",
+      "memory": "75,448 K"
+    },
+    {
+      "name": "lghub_updater.exe",
+      "pid": "7644",
+      "memory": "36,496 K"
+    },
+    {
+      "name": "ROGLiveService.exe",
+      "pid": "7652",
+      "memory": "39,220 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "7660",
+      "memory": "71,088 K"
+    },
+    {
+      "name": "sqlwriter.exe",
+      "pid": "7940",
+      "memory": "11,564 K"
+    },
+    {
+      "name": "CCleanerPerformanceOptimizerService.exe",
+      "pid": "7984",
+      "memory": "32,028 K"
+    },
+    {
+      "name": "logi_lamparray_service.exe",
+      "pid": "8036",
+      "memory": "14,736 K"
+    },
+    {
+      "name": "wslservice.exe",
+      "pid": "7760",
+      "memory": "29,740 K"
+    },
+    {
+      "name": "gamingservices.exe",
+      "pid": "8196",
+      "memory": "56,796 K"
+    },
+    {
+      "name": "gamingservicesnet.exe",
+      "pid": "8204",
+      "memory": "11,756 K"
+    },
+    {
+      "name": "WmiPrvSE.exe",
+      "pid": "9112",
+      "memory": "52,276 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "8512",
+      "memory": "9,628 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "8432",
+      "memory": "9,108 K"
+    },
+    {
+      "name": "AggregatorHost.exe",
+      "pid": "9464",
+      "memory": "15,700 K"
+    },
+    {
+      "name": "unsecapp.exe",
+      "pid": "9596",
+      "memory": "9,516 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "10064",
+      "memory": "5,960 K"
+    },
+    {
+      "name": "mongod.exe",
+      "pid": "6556",
+      "memory": "139,288 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "10144",
+      "memory": "15,168 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "10104",
+      "memory": "38,288 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "10680",
+      "memory": "21,416 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "11140",
+      "memory": "35,328 K"
+    },
+    {
+      "name": "AacKingstonDramHal_x64.exe",
+      "pid": "1896",
+      "memory": "12,900 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "10992",
+      "memory": "21,424 K"
+    },
+    {
+      "name": "sihost.exe",
+      "pid": "1720",
+      "memory": "50,416 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "3084",
+      "memory": "29,168 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "3564",
+      "memory": "11,436 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "4040",
+      "memory": "38,240 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "5248",
+      "memory": "26,696 K"
+    },
+    {
+      "name": "taskhostw.exe",
+      "pid": "5964",
+      "memory": "21,632 K"
+    },
+    {
+      "name": "AUEPMaster.exe",
+      "pid": "8572",
+      "memory": "18,744 K"
+    },
+    {
+      "name": "explorer.exe",
+      "pid": "11240",
+      "memory": "428,132 K"
+    },
+    {
+      "name": "ShellHost.exe",
+      "pid": "4996",
+      "memory": "59,784 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "5732",
+      "memory": "22,072 K"
+    },
+    {
+      "name": "CrossDeviceResume.exe",
+      "pid": "10288",
+      "memory": "65,140 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "2868",
+      "memory": "44,100 K"
+    },
+    {
+      "name": "SearchHost.exe",
+      "pid": "10952",
+      "memory": "155,044 K"
+    },
+    {
+      "name": "StartMenuExperienceHost.exe",
+      "pid": "11268",
+      "memory": "156,976 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "11728",
+      "memory": "22,876 K"
+    },
+    {
+      "name": "RuntimeBroker.exe",
+      "pid": "11736",
+      "memory": "56,420 K"
+    },
+    {
+      "name": "UserOOBEBroker.exe",
+      "pid": "11828",
+      "memory": "11,524 K"
+    },
+    {
+      "name": "RuntimeBroker.exe",
+      "pid": "11992",
+      "memory": "50,164 K"
+    },
+    {
+      "name": "msedgewebview2.exe",
+      "pid": "12568",
+      "memory": "126,052 K"
+    },
+    {
+      "name": "msedgewebview2.exe",
+      "pid": "12628",
+      "memory": "12,180 K"
+    },
+    {
+      "name": "msedgewebview2.exe",
+      "pid": "12848",
+      "memory": "94,736 K"
+    },
+    {
+      "name": "msedgewebview2.exe",
+      "pid": "12876",
+      "memory": "45,164 K"
+    },
+    {
+      "name": "msedgewebview2.exe",
+      "pid": "12956",
+      "memory": "23,288 K"
+    },
+    {
+      "name": "msedgewebview2.exe",
+      "pid": "13104",
+      "memory": "131,192 K"
+    },
+    {
+      "name": "WidgetBoard.exe",
+      "pid": "12392",
+      "memory": "24,668 K"
+    },
+    {
+      "name": "WidgetService.exe",
+      "pid": "11960",
+      "memory": "25,828 K"
+    },
+    {
+      "name": "MicrosoftStartFeedProvider.exe",
+      "pid": "7292",
+      "memory": "50,408 K"
+    },
+    {
+      "name": "TextInputHost.exe",
+      "pid": "13568",
+      "memory": "202,432 K"
+    },
+    {
+      "name": "RadeonSoftware.exe",
+      "pid": "7032",
+      "memory": "37,060 K"
+    },
+    {
+      "name": "RuntimeBroker.exe",
+      "pid": "13576",
+      "memory": "20,640 K"
+    },
+    {
+      "name": "PhoneExperienceHost.exe",
+      "pid": "5424",
+      "memory": "185,308 K"
+    },
+    {
+      "name": "cncmd.exe",
+      "pid": "2140",
+      "memory": "1,024 K"
+    },
+    {
+      "name": "cmd.exe",
+      "pid": "12228",
+      "memory": "1,852 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "12168",
+      "memory": "1,376 K"
+    },
+    {
+      "name": "AMDRSServ.exe",
+      "pid": "7216",
+      "memory": "142,588 K"
+    },
+    {
+      "name": "AUEPDU.exe",
+      "pid": "11472",
+      "memory": "15,580 K"
+    },
+    {
+      "name": "AMDRSSrcExt.exe",
+      "pid": "3036",
+      "memory": "35,372 K"
+    },
+    {
+      "name": "amdow.exe",
+      "pid": "11080",
+      "memory": "3,000 K"
+    },
+    {
+      "name": "ctfmon.exe",
+      "pid": "11864",
+      "memory": "35,388 K"
+    },
+    {
+      "name": "SecurityHealthSystray.exe",
+      "pid": "9136",
+      "memory": "13,516 K"
+    },
+    {
+      "name": "SecurityHealthService.exe",
+      "pid": "6444",
+      "memory": "24,824 K"
+    },
+    {
+      "name": "vgtray.exe",
+      "pid": "9616",
+      "memory": "17,128 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "7084",
+      "memory": "24,868 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "14624",
+      "memory": "15,640 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "14844",
+      "memory": "18,148 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "15052",
+      "memory": "13,848 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "15132",
+      "memory": "15,944 K"
+    },
+    {
+      "name": "Battle.net.exe",
+      "pid": "15244",
+      "memory": "132,804 K"
+    },
+    {
+      "name": "steam.exe",
+      "pid": "15336",
+      "memory": "113,892 K"
+    },
+    {
+      "name": "CCleaner64.exe",
+      "pid": "14832",
+      "memory": "41,996 K"
+    },
+    {
+      "name": "Agent.exe",
+      "pid": "10092",
+      "memory": "31,888 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "10108",
+      "memory": "10,164 K"
+    },
+    {
+      "name": "steamwebhelper.exe",
+      "pid": "3452",
+      "memory": "150,432 K"
+    },
+    {
+      "name": "steamwebhelper.exe",
+      "pid": "3568",
+      "memory": "14,944 K"
+    },
+    {
+      "name": "SteamService.exe",
+      "pid": "15172",
+      "memory": "19,252 K"
+    },
+    {
+      "name": "steamwebhelper.exe",
+      "pid": "15320",
+      "memory": "107,132 K"
+    },
+    {
+      "name": "steamwebhelper.exe",
+      "pid": "14824",
+      "memory": "31,080 K"
+    },
+    {
+      "name": "Battle.net.exe",
+      "pid": "5904",
+      "memory": "112,560 K"
+    },
+    {
+      "name": "Battle.net.exe",
+      "pid": "6084",
+      "memory": "24,920 K"
+    },
+    {
+      "name": "Battle.net.exe",
+      "pid": "15376",
+      "memory": "38,108 K"
+    },
+    {
+      "name": "steamwebhelper.exe",
+      "pid": "15752",
+      "memory": "24,708 K"
+    },
+    {
+      "name": "steamwebhelper.exe",
+      "pid": "15892",
+      "memory": "408,452 K"
+    },
+    {
+      "name": "RiotClientServices.exe",
+      "pid": "15636",
+      "memory": "229,480 K"
+    },
+    {
+      "name": "RiotClientCrashHandler.exe",
+      "pid": "16172",
+      "memory": "7,872 K"
+    },
+    {
+      "name": "EABackgroundService.exe",
+      "pid": "16744",
+      "memory": "48,556 K"
+    },
+    {
+      "name": "AMDNoiseSuppression.exe",
+      "pid": "6628",
+      "memory": "18,664 K"
+    },
+    {
+      "name": "AppleMobileDeviceProcess.exe",
+      "pid": "16044",
+      "memory": "17,144 K"
+    },
+    {
+      "name": "XboxPcTray.exe",
+      "pid": "15732",
+      "memory": "72,328 K"
+    },
+    {
+      "name": "XboxPcAppFT.exe",
+      "pid": "11012",
+      "memory": "36,140 K"
+    },
+    {
+      "name": "ApplicationFrameHost.exe",
+      "pid": "17580",
+      "memory": "62,512 K"
+    },
+    {
+      "name": "XboxPcApp.exe",
+      "pid": "17972",
+      "memory": "233,088 K"
+    },
+    {
+      "name": "NGenuity2Helper.exe",
+      "pid": "18148",
+      "memory": "77,976 K"
+    },
+    {
+      "name": "RuntimeBroker.exe",
+      "pid": "18156",
+      "memory": "30,280 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "18652",
+      "memory": "24,020 K"
+    },
+    {
+      "name": "ShellExperienceHost.exe",
+      "pid": "14244",
+      "memory": "81,672 K"
+    },
+    {
+      "name": "RuntimeBroker.exe",
+      "pid": "5836",
+      "memory": "23,332 K"
+    },
+    {
+      "name": "RuntimeBroker.exe",
+      "pid": "11092",
+      "memory": "10,348 K"
+    },
+    {
+      "name": "steamwebhelper.exe",
+      "pid": "12220",
+      "memory": "91,632 K"
+    },
+    {
+      "name": "Cursor.exe",
+      "pid": "2292",
+      "memory": "336,772 K"
+    },
+    {
+      "name": "Cursor.exe",
+      "pid": "13372",
+      "memory": "41,892 K"
+    },
+    {
+      "name": "Cursor.exe",
+      "pid": "8588",
+      "memory": "434,084 K"
+    },
+    {
+      "name": "Cursor.exe",
+      "pid": "13612",
+      "memory": "58,236 K"
+    },
+    {
+      "name": "Cursor.exe",
+      "pid": "15200",
+      "memory": "5,489,268 K"
+    },
+    {
+      "name": "Cursor.exe",
+      "pid": "6988",
+      "memory": "460,812 K"
+    },
+    {
+      "name": "Cursor.exe",
+      "pid": "5032",
+      "memory": "1,222,800 K"
+    },
+    {
+      "name": "Cursor.exe",
+      "pid": "18892",
+      "memory": "158,600 K"
+    },
+    {
+      "name": "Cursor.exe",
+      "pid": "18600",
+      "memory": "125,448 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "11480",
+      "memory": "8,508 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "8528",
+      "memory": "112,540 K"
+    },
+    {
+      "name": "Cursor.exe",
+      "pid": "4252",
+      "memory": "198,312 K"
+    },
+    {
+      "name": "Cursor.exe",
+      "pid": "5604",
+      "memory": "359,748 K"
+    },
+    {
+      "name": "Cursor.exe",
+      "pid": "15396",
+      "memory": "110,408 K"
+    },
+    {
+      "name": "Cursor.exe",
+      "pid": "17308",
+      "memory": "119,188 K"
+    },
+    {
+      "name": "Cursor.exe",
+      "pid": "18624",
+      "memory": "120,980 K"
+    },
+    {
+      "name": "Cursor.exe",
+      "pid": "16768",
+      "memory": "109,860 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "14648",
+      "memory": "30,744 K"
+    },
+    {
+      "name": "Cursor.exe",
+      "pid": "3348",
+      "memory": "109,612 K"
+    },
+    {
+      "name": "explorer.exe",
+      "pid": "8500",
+      "memory": "196,560 K"
+    },
+    {
+      "name": "dllhost.exe",
+      "pid": "12452",
+      "memory": "17,672 K"
+    },
+    {
+      "name": "SystemSettings.exe",
+      "pid": "14664",
+      "memory": "3,476 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "19772",
+      "memory": "9,856 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "16456",
+      "memory": "14,632 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "5400",
+      "memory": "10,852 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "15444",
+      "memory": "17,900 K"
+    },
+    {
+      "name": "Cursor.exe",
+      "pid": "10956",
+      "memory": "100,628 K"
+    },
+    {
+      "name": "AppActions.exe",
+      "pid": "12496",
+      "memory": "36,372 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "7488",
+      "memory": "10,832 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "3216",
+      "memory": "14,820 K"
+    },
+    {
+      "name": "SDXHelper.exe",
+      "pid": "16516",
+      "memory": "32,764 K"
+    },
+    {
+      "name": "Cursor.exe",
+      "pid": "8024",
+      "memory": "193,596 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "24400",
+      "memory": "8,696 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "19812",
+      "memory": "184,824 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "23696",
+      "memory": "8,536 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "26468",
+      "memory": "115,220 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "12388",
+      "memory": "8,604 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "26416",
+      "memory": "138,968 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "30044",
+      "memory": "8,536 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "28568",
+      "memory": "115,112 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "30112",
+      "memory": "8,588 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "31508",
+      "memory": "113,716 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "32232",
+      "memory": "8,564 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "21652",
+      "memory": "114,112 K"
+    },
+    {
+      "name": "unsecapp.exe",
+      "pid": "31424",
+      "memory": "12,392 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "26828",
+      "memory": "8,628 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "27484",
+      "memory": "163,460 K"
+    },
+    {
+      "name": "docker-language-server-windows-amd64.exe",
+      "pid": "30896",
+      "memory": "20,588 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "25532",
+      "memory": "7,576 K"
+    },
+    {
+      "name": "Cursor.exe",
+      "pid": "32504",
+      "memory": "113,140 K"
+    },
+    {
+      "name": "Cursor.exe",
+      "pid": "28152",
+      "memory": "114,168 K"
+    },
+    {
+      "name": "docker-language-server-windows-amd64.exe",
+      "pid": "26980",
+      "memory": "31,032 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "23820",
+      "memory": "8,572 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "32956",
+      "memory": "114,952 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "16512",
+      "memory": "8,580 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "33960",
+      "memory": "114,396 K"
+    },
+    {
+      "name": "CodeSetup-stable-1.6.26.exe",
+      "pid": "33760",
+      "memory": "10,568 K"
+    },
+    {
+      "name": "CodeSetup-stable-1.6.26.tmp",
+      "pid": "33380",
+      "memory": "40,412 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "34276",
+      "memory": "8,580 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "31308",
+      "memory": "114,460 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "30204",
+      "memory": "8,584 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "7236",
+      "memory": "114,712 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "34660",
+      "memory": "8,532 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "29944",
+      "memory": "114,240 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "36584",
+      "memory": "8,560 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "35676",
+      "memory": "114,788 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "34544",
+      "memory": "8,628 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "35932",
+      "memory": "163,632 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "35356",
+      "memory": "8,544 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "35880",
+      "memory": "112,688 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "25064",
+      "memory": "8,512 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "22548",
+      "memory": "112,888 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "36544",
+      "memory": "8,564 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "32900",
+      "memory": "113,008 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "35412",
+      "memory": "8,516 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "31488",
+      "memory": "112,684 K"
+    },
+    {
+      "name": "WmiApSrv.exe",
+      "pid": "27296",
+      "memory": "11,944 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "37076",
+      "memory": "8,572 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "37428",
+      "memory": "113,688 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "35988",
+      "memory": "8,564 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "27404",
+      "memory": "113,156 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "22064",
+      "memory": "8,524 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "38564",
+      "memory": "112,904 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "38944",
+      "memory": "8,568 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "18560",
+      "memory": "112,792 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "38692",
+      "memory": "9,672 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "32720",
+      "memory": "8,540 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "38812",
+      "memory": "112,512 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "29180",
+      "memory": "8,540 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "39600",
+      "memory": "112,416 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "39476",
+      "memory": "8,592 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "27944",
+      "memory": "112,984 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "37660",
+      "memory": "8,556 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "39752",
+      "memory": "113,084 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "37092",
+      "memory": "8,556 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "4700",
+      "memory": "113,516 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "39892",
+      "memory": "8,556 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "38236",
+      "memory": "113,280 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "39192",
+      "memory": "8,524 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "31332",
+      "memory": "113,012 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "37916",
+      "memory": "8,556 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "35664",
+      "memory": "113,004 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "8444",
+      "memory": "8,416 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "4184",
+      "memory": "112,932 K"
+    },
+    {
+      "name": "audiodg.exe",
+      "pid": "11836",
+      "memory": "15,888 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "30736",
+      "memory": "14,400 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "31284",
+      "memory": "8,436 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "36776",
+      "memory": "112,628 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "22672",
+      "memory": "8,424 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "37476",
+      "memory": "112,412 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "34296",
+      "memory": "8,428 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "34828",
+      "memory": "114,808 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "40216",
+      "memory": "8,428 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "34164",
+      "memory": "113,188 K"
+    },
+    {
+      "name": "svchost.exe",
+      "pid": "38464",
+      "memory": "16,312 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "40716",
+      "memory": "8,516 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "40584",
+      "memory": "110,492 K"
+    },
+    {
+      "name": "conhost.exe",
+      "pid": "22792",
+      "memory": "8,412 K"
+    },
+    {
+      "name": "pwsh.exe",
+      "pid": "38624",
+      "memory": "104,056 K"
+    },
+    {
+      "name": "node.exe",
+      "pid": "31392",
+      "memory": "41,560 K"
+    },
+    {
+      "name": "node.exe",
+      "pid": "40012",
+      "memory": "78,252 K"
+    },
+    {
+      "name": "cmd.exe",
+      "pid": "35696",
+      "memory": "4,892 K"
+    },
+    {
+      "name": "tasklist.exe",
+      "pid": "40332",
+      "memory": "11,560 K"
+    }
+  ]
+}

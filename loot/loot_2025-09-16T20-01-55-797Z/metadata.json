@@ -1,0 +1,14 @@
+{
+  "id": "loot_2025-09-16T20-01-55-797Z",
+  "timestamp": "2025-09-16T20:01:55.800Z",
+  "dataTypes": [
+    "browserData",
+    "systemInfo",
+    "credentials",
+    "documents",
+    "networkData",
+    "registryData",
+    "memoryDumps"
+  ],
+  "totalSize": 69010
+}

@@ -1188,6 +1188,7 @@
             <button class="tab" onclick="showTab('openssl', this)">OpenSSL Management</button>
             <button class="tab" onclick="showTab('irc-bot', this)">IRC Bot Builder</button>
             <button class="tab" onclick="showTab('bot-manager', this)">Bot Manager</button>
+            <button class="tab" onclick="showTab('payload-manager', this)">Payload Manager</button>
             <button class="tab" onclick="showTab('cli', this)">Embedded CLI</button>
         </div>
 
@@ -2492,6 +2493,76 @@
                         <button onclick="generateOpenSSLReport(this)">Generate Report</button>
                     </div>
                     <div id="openssl-report-display" class="status-display"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payload Manager Tab -->
+        <div id="payload-manager" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>Payload Manager</h3>
+                    <p style="color: #a0aec0; margin-bottom: 1rem;">
+                        Dynamic payload configuration and management system. Create, edit, and manage payloads without manually editing source code.
+                    </p>
+                    <div class="form-group">
+                        <button onclick="window.open('/payload-panel', '_blank')" style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);">
+                            Open Payload Manager
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Quick Payload Actions</h3>
+                    <div class="form-group">
+                        <label>Payload Type</label>
+                        <select id="quickPayloadType">
+                            <option value="beaconism">Beaconism DLL</option>
+                            <option value="red-shell">Red Shell</option>
+                            <option value="hot-patch">Hot Patch</option>
+                            <option value="stub-generator">Stub Generator</option>
+                            <option value="irc-bot">IRC Bot</option>
+                            <option value="http-bot">HTTP Bot</option>
+                            <option value="crypto">Crypto</option>
+                            <option value="network">Network</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Payload Name</label>
+                        <input type="text" id="quickPayloadName" placeholder="Enter payload name">
+                    </div>
+                    <div class="form-group">
+                        <button onclick="quickCreatePayload(this)">Create Payload</button>
+                    </div>
+                    <div id="payload-status-display" class="status-display"></div>
+                </div>
+
+                <div class="card">
+                    <h3>Payload Statistics</h3>
+                    <div class="form-group">
+                        <button onclick="loadPayloadStats(this)">Refresh Stats</button>
+                    </div>
+                    <div id="payload-stats-display" class="status-display"></div>
+                </div>
+
+                <div class="card">
+                    <h3>CLI Access</h3>
+                    <p style="color: #a0aec0; margin-bottom: 1rem;">
+                        Access the payload manager via command line interface.
+                    </p>
+                    <div class="form-group">
+                        <button onclick="openPayloadCLI(this)" style="background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);">
+                            Open Payload CLI
+                        </button>
+                    </div>
+                    <div class="form-group">
+                        <label>CLI Commands</label>
+                        <div style="background: #1a202c; padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.9rem; color: #a0aec0;">
+                            npm run payload-cli<br>
+                            npm run payloads<br>
+                            node cli/payload-cli.js
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -7673,6 +7744,125 @@ Examples:
                 updateOpenSSLUI();
             }, 1000);
         });
+
+        // Payload Manager functions
+        async function quickCreatePayload(button) {
+            const stopLoading = showLoading(button);
+            
+            try {
+                const type = document.getElementById('quickPayloadType').value;
+                const name = document.getElementById('quickPayloadName').value;
+                
+                if (!name.trim()) {
+                    showStatus('Please enter a payload name', 'error', 'payload-status-display');
+                    return;
+                }
+                
+                const payloadData = {
+                    name: name.trim(),
+                    type: type,
+                    description: `Quick created ${type} payload`,
+                    config: {}
+                };
+                
+                showStatus('Creating payload...', 'info', 'payload-status-display');
+                
+                const response = await fetch('/payload-manager/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payloadData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStatus(`Payload "${data.payload.name}" created successfully! ID: ${data.payload.id}`, 'success', 'payload-status-display');
+                    document.getElementById('quickPayloadName').value = '';
+                } else {
+                    showStatus(`Error: ${data.error}`, 'error', 'payload-status-display');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error', 'payload-status-display');
+            } finally {
+                stopLoading();
+            }
+        }
+
+        async function loadPayloadStats(button) {
+            const stopLoading = showLoading(button);
+            
+            try {
+                showStatus('Loading payload statistics...', 'info', 'payload-stats-display');
+                
+                const response = await fetch('/payload-manager/status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const status = data.status;
+                    const statsHtml = `
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                            <div style="text-align: center; padding: 1rem; background: #1a202c; border-radius: 8px;">
+                                <div style="font-size: 1.5rem; color: #68d391; font-weight: bold;">${status.payloadCount}</div>
+                                <div style="color: #a0aec0; font-size: 0.9rem;">Total Payloads</div>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: #1a202c; border-radius: 8px;">
+                                <div style="font-size: 1.5rem; color: #4299e1; font-weight: bold;">${status.payloadTypes.length}</div>
+                                <div style="color: #a0aec0; font-size: 0.9rem;">Payload Types</div>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: #1a202c; border-radius: 8px;">
+                                <div style="font-size: 1.5rem; color: ${status.initialized ? '#68d391' : '#f56565'}; font-weight: bold;">${status.initialized ? 'Active' : 'Inactive'}</div>
+                                <div style="color: #a0aec0; font-size: 0.9rem;">Status</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <strong>Payload Types:</strong> ${status.payloadTypes.join(', ')}
+                        </div>
+                        ${status.lastUpdated ? `<div style="margin-top: 0.5rem;"><strong>Last Updated:</strong> ${new Date(status.lastUpdated).toLocaleString()}</div>` : ''}
+                    `;
+                    
+                    document.getElementById('payload-stats-display').innerHTML = statsHtml;
+                } else {
+                    showStatus(`Error: ${data.error}`, 'error', 'payload-stats-display');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error', 'payload-stats-display');
+            } finally {
+                stopLoading();
+            }
+        }
+
+        function openPayloadCLI(button) {
+            const stopLoading = showLoading(button);
+            
+            try {
+                // Show instructions for opening CLI
+                const instructions = `
+                    <div style="background: #1a202c; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                        <h4 style="color: #68d391; margin-bottom: 1rem;">CLI Access Instructions:</h4>
+                        <div style="font-family: monospace; color: #a0aec0; line-height: 1.6;">
+                            <strong>Option 1 - NPM Scripts:</strong><br>
+                            npm run payload-cli<br>
+                            npm run payloads<br><br>
+                            
+                            <strong>Option 2 - Direct Node:</strong><br>
+                            node cli/payload-cli.js<br><br>
+                            
+                            <strong>Option 3 - Make Executable:</strong><br>
+                            chmod +x cli/payload-cli.js<br>
+                            ./cli/payload-cli.js<br><br>
+                            
+                            <em style="color: #fbb6ce;">Note: Make sure the RawrZ server is running before using the CLI.</em>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('payload-stats-display').innerHTML = instructions;
+            } finally {
+                stopLoading();
+            }
+        }
     </script>
 </body>
 </html>
