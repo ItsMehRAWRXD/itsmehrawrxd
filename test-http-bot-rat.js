@@ -199,7 +199,8 @@ async function testHTTPBotRAT() {
     testsTotal++;
     try {
         const response = await makeRequest(`${BASE_URL}/http-bot/screenshot/${testBotId}`, {
-            method: 'POST'
+            method: 'POST',
+            body: {}
         });
         
         if (response.status === 200 && response.data.success) {

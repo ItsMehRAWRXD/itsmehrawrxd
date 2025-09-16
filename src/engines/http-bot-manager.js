@@ -287,8 +287,8 @@ class HTTPBotManager extends EventEmitter {
             id: crypto.randomUUID(),
             botId,
             timestamp: new Date(),
-            data: 'base64_encoded_screenshot_data',
-            size: 1024 * 500 // 500KB
+            data: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', // 1x1 pixel PNG
+            size: 68 // Small test image
         };
         
         this.screenshots.get(botId).push(screenshot);
