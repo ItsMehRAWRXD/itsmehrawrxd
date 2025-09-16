@@ -210,6 +210,7 @@ class CursorAutomationBot extends EventEmitter {
                 Add-Type -TypeDefinition @"
                     using System;
                     using System.Runtime.InteropServices;
+                    using System.Text;
                     public class Win32 {
                         [DllImport("user32.dll")]
                         public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
@@ -218,21 +219,208 @@ class CursorAutomationBot extends EventEmitter {
                         [DllImport("user32.dll")]
                         public static extern bool SetForegroundWindow(IntPtr hWnd);
                         [DllImport("user32.dll")]
+                        public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+                        [DllImport("user32.dll")]
+                        public static extern bool BringWindowToTop(IntPtr hWnd);
+                        [DllImport("user32.dll")]
+                        public static extern bool SetActiveWindow(IntPtr hWnd);
+                        [DllImport("user32.dll")]
                         public static extern bool SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+                        [DllImport("user32.dll")]
+                        public static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+                        [DllImport("user32.dll")]
+                        public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+                        [DllImport("user32.dll")]
+                        public static extern int GetWindowTextLength(IntPtr hWnd);
+                        [DllImport("user32.dll")]
+                        public static extern bool EnumChildWindows(IntPtr hWndParent, EnumWindowsProc lpEnumFunc, IntPtr lParam);
+                        public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
                     }
 "@
-                $cursorHwnd = [Win32]::FindWindow($null, "Cursor")
+
+                function Find-ButtonInWindow {
+                    param([IntPtr]$parentHwnd, [string]$buttonText)
+                    
+                    $foundButton = [IntPtr]::Zero
+                    
+                    $enumProc = {
+                        param([IntPtr]$hWnd, [IntPtr]$lParam)
+                        
+                        $textLength = [Win32]::GetWindowTextLength($hWnd)
+                        if ($textLength -gt 0) {
+                            $sb = New-Object System.Text.StringBuilder -ArgumentList ($textLength + 1)
+                            [Win32]::GetWindowText($hWnd, $sb, $sb.Capacity) | Out-Null
+                            $windowText = $sb.ToString()
+                            
+                            if ($windowText -like "*${buttonText}*") {
+                                $foundButton = $hWnd
+                                return $false
+                            }
+                        }
+                        return $true
+                    }
+                    
+                    [Win32]::EnumChildWindows($parentHwnd, $enumProc, [IntPtr]::Zero) | Out-Null
+                    return $foundButton
+                }
+
+                # Try multiple window title variations
+                $windowTitles = @("Cursor", "Source updated", "Update available", "File changed", "Review change", "Review changes", "Review file")
+                $cursorHwnd = [IntPtr]::Zero
+                
+                foreach ($title in $windowTitles) {
+                    $hwnd = [Win32]::FindWindow($null, $title)
+                    if ($hwnd -ne [IntPtr]::Zero) {
+                        $cursorHwnd = $hwnd
+                        break
+                    }
+                }
+                
                 if ($cursorHwnd -ne [IntPtr]::Zero) {
-                    [Win32]::SetForegroundWindow($cursorHwnd)
-                    Start-Sleep -Milliseconds 500
-                    $buttonHwnd = [Win32]::FindWindowEx($cursorHwnd, [IntPtr]::Zero, "Button", "${buttonText}")
+                    # Bring window to front and activate
+                    [Win32]::ShowWindow($cursorHwnd, 9) | Out-Null  # SW_RESTORE
+                    [Win32]::BringWindowToTop($cursorHwnd) | Out-Null
+                    [Win32]::SetActiveWindow($cursorHwnd) | Out-Null
+                    [Win32]::SetForegroundWindow($cursorHwnd) | Out-Null
+                    
+                    Start-Sleep -Milliseconds 1000
+                    
+                    # Try multiple button text variations
+                    $buttonTexts = @("${buttonText}", "Keep all", "Keep All", "Accept", "OK", "Yes")
+                    $buttonHwnd = [IntPtr]::Zero
+                    
+                    foreach ($btnText in $buttonTexts) {
+                        # First try direct button search
+                        $buttonHwnd = [Win32]::FindWindowEx($cursorHwnd, [IntPtr]::Zero, "Button", $btnText)
+                        if ($buttonHwnd -ne [IntPtr]::Zero) {
+                            break
+                        }
+                        
+                        # Try searching in child windows
+                        $buttonHwnd = Find-ButtonInWindow -parentHwnd $cursorHwnd -buttonText $btnText
+                        if ($buttonHwnd -ne [IntPtr]::Zero) {
+                            break
+                        }
+                    }
+                    
                     if ($buttonHwnd -ne [IntPtr]::Zero) {
-                        [Win32]::SendMessage($buttonHwnd, 0x0201, [IntPtr]::Zero, [IntPtr]::Zero) # WM_LBUTTONDOWN
-                        [Win32]::SendMessage($buttonHwnd, 0x0202, [IntPtr]::Zero, [IntPtr]::Zero) # WM_LBUTTONUP
+                        # Click the button using multiple methods
+                        [Win32]::PostMessage($buttonHwnd, 0x0201, [IntPtr]::Zero, [IntPtr]::Zero) | Out-Null  # WM_LBUTTONDOWN
+                        Start-Sleep -Milliseconds 50
+                        [Win32]::PostMessage($buttonHwnd, 0x0202, [IntPtr]::Zero, [IntPtr]::Zero) | Out-Null  # WM_LBUTTONUP
+                        Start-Sleep -Milliseconds 50
+                        [Win32]::SendMessage($buttonHwnd, 0x00F5, [IntPtr]::Zero, [IntPtr]::Zero) | Out-Null  # BM_CLICK
+                        
                         Write-Output "SUCCESS"
                     } else {
-                        Write-Output "BUTTON_NOT_FOUND"
+                        # If no button found, try Ctrl+Enter as fallback
+                        Write-Output "BUTTON_NOT_FOUND_TRYING_CTRL_ENTER"
                     }
+                } else {
+                    Write-Output "WINDOW_NOT_FOUND"
+                }
+            `;
+            
+            exec(`powershell -Command "${psScript}"`, async (error, stdout, stderr) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    const result = stdout.trim();
+                    if (result === "SUCCESS") {
+                        resolve(true);
+                    } else if (result === "BUTTON_NOT_FOUND_TRYING_CTRL_ENTER") {
+                        // Try Ctrl+Enter as fallback
+                        try {
+                            await this.sendCtrlEnterWindows();
+                            resolve(true);
+                        } catch (ctrlError) {
+                            reject(new Error(`Failed to click button and Ctrl+Enter: ${ctrlError.message}`));
+                        }
+                    } else {
+                        reject(new Error(`Failed to click button: ${result}`));
+                    }
+                }
+            });
+        });
+    }
+    
+    async sendCtrlEnterWindows() {
+        return new Promise((resolve, reject) => {
+            const psScript = `
+                Add-Type -TypeDefinition @"
+                    using System;
+                    using System.Runtime.InteropServices;
+                    public class Win32 {
+                        [DllImport("user32.dll")]
+                        public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+                        [DllImport("user32.dll")]
+                        public static extern bool SetForegroundWindow(IntPtr hWnd);
+                        [DllImport("user32.dll")]
+                        public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+                        [DllImport("user32.dll")]
+                        public static extern bool BringWindowToTop(IntPtr hWnd);
+                        [DllImport("user32.dll")]
+                        public static extern bool SetActiveWindow(IntPtr hWnd);
+                        [DllImport("user32.dll")]
+                        public static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
+                        [DllImport("user32.dll")]
+                        public static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
+                        [DllImport("user32.dll")]
+                        public static extern uint GetCurrentThreadId();
+                        [DllImport("user32.dll")]
+                        public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+                    }
+"@
+
+                # Find Cursor IDE window (main application window)
+                $cursorHwnd = [IntPtr]::Zero
+                $windowTitles = @("Cursor", "Cursor -", "Cursor IDE")
+                
+                foreach ($title in $windowTitles) {
+                    $hwnd = [Win32]::FindWindow($null, $title)
+                    if ($hwnd -ne [IntPtr]::Zero) {
+                        $cursorHwnd = $hwnd
+                        break
+                    }
+                }
+                
+                # If not found by title, try to find by class name
+                if ($cursorHwnd -eq [IntPtr]::Zero) {
+                    $cursorHwnd = [Win32]::FindWindow("Chrome_WidgetWin_1", $null)  # Cursor uses Chromium
+                }
+                
+                if ($cursorHwnd -ne [IntPtr]::Zero) {
+                    # Get window thread and attach to it for proper focus
+                    $windowThreadId = [Win32]::GetWindowThreadProcessId($cursorHwnd, [ref]$null)
+                    $currentThreadId = [Win32]::GetCurrentThreadId()
+                    
+                    if ($windowThreadId -ne $currentThreadId) {
+                        [Win32]::AttachThreadInput($currentThreadId, $windowThreadId, $true) | Out-Null
+                    }
+                    
+                    # Bring window to front and activate
+                    [Win32]::ShowWindow($cursorHwnd, 9) | Out-Null  # SW_RESTORE
+                    [Win32]::BringWindowToTop($cursorHwnd) | Out-Null
+                    [Win32]::SetActiveWindow($cursorHwnd) | Out-Null
+                    [Win32]::SetForegroundWindow($cursorHwnd) | Out-Null
+                    
+                    # Detach thread input
+                    if ($windowThreadId -ne $currentThreadId) {
+                        [Win32]::AttachThreadInput($currentThreadId, $windowThreadId, $false) | Out-Null
+                    }
+                    
+                    Start-Sleep -Milliseconds 1000
+                    
+                    # Send Ctrl+Enter to the focused Cursor window
+                    [Win32]::keybd_event(0x11, 0, 0, [UIntPtr]::Zero)  # VK_CONTROL down
+                    Start-Sleep -Milliseconds 100
+                    [Win32]::keybd_event(0x0D, 0, 0, [UIntPtr]::Zero)  # VK_RETURN down
+                    Start-Sleep -Milliseconds 100
+                    [Win32]::keybd_event(0x0D, 0, 2, [UIntPtr]::Zero)  # VK_RETURN up
+                    Start-Sleep -Milliseconds 100
+                    [Win32]::keybd_event(0x11, 0, 2, [UIntPtr]::Zero)  # VK_CONTROL up
+                    
+                    Write-Output "CTRL_ENTER_SENT"
                 } else {
                     Write-Output "WINDOW_NOT_FOUND"
                 }
@@ -243,10 +431,10 @@ class CursorAutomationBot extends EventEmitter {
                     reject(error);
                 } else {
                     const result = stdout.trim();
-                    if (result === "SUCCESS") {
+                    if (result === "CTRL_ENTER_SENT") {
                         resolve(true);
                     } else {
-                        reject(new Error(`Failed to click button: ${result}`));
+                        reject(new Error(`Failed to send Ctrl+Enter: ${result}`));
                     }
                 }
             });
@@ -258,9 +446,25 @@ class CursorAutomationBot extends EventEmitter {
         
         while (Date.now() - startTime < timeout) {
             try {
-                const hwnd = await this.findWindowWindows('Source updated');
-                if (hwnd) {
-                    return hwnd;
+                // Try multiple dialog title variations
+                const dialogTitles = [
+                    'Source updated',
+                    'Update available', 
+                    'File changed',
+                    'Changes detected',
+                    'Review change',
+                    'Review changes',
+                    'Review file',
+                    'Cursor',
+                    'Update'
+                ];
+                
+                for (const title of dialogTitles) {
+                    const hwnd = await this.findWindowWindows(title);
+                    if (hwnd) {
+                        this.logger.info(`Found dialog with title: ${title}`);
+                        return hwnd;
+                    }
                 }
             } catch (error) {
                 // Continue checking
@@ -562,18 +766,31 @@ class CursorAutomationBot extends EventEmitter {
                     await this.automationEngine.methods.takeScreenshot();
                 }
                 
-                // Click the "Keep all" button
-                await this.automationEngine.methods.clickButton(this.config.uiSettings.buttonText);
+                // Check if this is a "Review file" dialog that needs two-step process
+                const isReviewFileDialog = await this.isReviewFileDialog();
                 
-                this.logger.info('Successfully clicked "Keep all" button');
-                this.emit('updateHandled', { success: true, retries });
+                let success = false;
                 
-                // Send notification if enabled
-                if (this.config.enableNotifications) {
-                    await this.sendNotification('Cursor update handled successfully');
+                if (isReviewFileDialog) {
+                    // Handle "Review file" dialog with two-step process
+                    success = await this.handleReviewFileDialog();
+                } else {
+                    // Handle regular dialogs
+                    success = await this.handleRegularDialog();
                 }
                 
-                return;
+                if (success) {
+                    this.emit('updateHandled', { success: true, retries, method: isReviewFileDialog ? 'review_file_two_step' : 'regular_dialog' });
+                    
+                    // Send notification if enabled
+                    if (this.config.enableNotifications) {
+                        await this.sendNotification('Cursor update handled successfully');
+                    }
+                    
+                    return;
+                } else {
+                    throw new Error('Dialog handling failed');
+                }
                 
             } catch (error) {
                 retries++;
@@ -590,6 +807,75 @@ class CursorAutomationBot extends EventEmitter {
                     }
                 }
             }
+        }
+    }
+    
+    async isReviewFileDialog() {
+        try {
+            const reviewTitles = ['Review file', 'Review change', 'Review changes'];
+            for (const title of reviewTitles) {
+                const hwnd = await this.findWindowWindows(title);
+                if (hwnd) {
+                    this.logger.info(`Detected Review file dialog: ${title}`);
+                    return true;
+                }
+            }
+            return false;
+        } catch (error) {
+            return false;
+        }
+    }
+    
+    async handleReviewFileDialog() {
+        try {
+            this.logger.info('Handling Review file dialog with two-step process');
+            
+            // Step 1: Click the dialog/button first
+            await this.automationEngine.methods.clickButton(this.config.uiSettings.buttonText);
+            this.logger.info('Step 1: Clicked dialog button');
+            
+            // Wait a moment for the dialog to process
+            await this.sleep(500);
+            
+            // Step 2: Send Ctrl+Enter
+            if (this.config.platform === 'win32') {
+                await this.sendCtrlEnterWindows();
+                this.logger.info('Step 2: Sent Ctrl+Enter');
+            }
+            
+            return true;
+        } catch (error) {
+            this.logger.error(`Review file dialog handling failed: ${error.message}`);
+            return false;
+        }
+    }
+    
+    async handleRegularDialog() {
+        try {
+            // First try to click button
+            try {
+                await this.automationEngine.methods.clickButton(this.config.uiSettings.buttonText);
+                this.logger.info('Successfully clicked "Keep all" button');
+                return true;
+            } catch (buttonError) {
+                this.logger.warn(`Button click failed: ${buttonError.message}`);
+                
+                // Try Ctrl+Enter as fallback
+                try {
+                    if (this.config.platform === 'win32') {
+                        await this.sendCtrlEnterWindows();
+                        this.logger.info('Successfully sent Ctrl+Enter as fallback');
+                        return true;
+                    }
+                } catch (ctrlError) {
+                    this.logger.warn(`Ctrl+Enter failed: ${ctrlError.message}`);
+                }
+            }
+            
+            return false;
+        } catch (error) {
+            this.logger.error(`Regular dialog handling failed: ${error.message}`);
+            return false;
         }
     }
     

