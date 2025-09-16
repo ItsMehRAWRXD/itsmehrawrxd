@@ -286,7 +286,7 @@ class CursorAutomationBot extends EventEmitter {
                     Start-Sleep -Milliseconds 1000
                     
                     # Try multiple button text variations
-                    $buttonTexts = @("${buttonText}", "Keep all", "Keep All", "Accept", "OK", "Yes")
+                    $buttonTexts = @("${buttonText}", "Keep all", "Keep All", "Keep", "Accept", "OK", "Yes", "Apply", "Confirm")
                     $buttonHwnd = [IntPtr]::Zero
                     
                     foreach ($btnText in $buttonTexts) {
@@ -812,15 +812,33 @@ class CursorAutomationBot extends EventEmitter {
     
     async isReviewFileDialog() {
         try {
-            const reviewTitles = ['Review file', 'Review change', 'Review changes'];
+            // Since the dialog appears in the middle of Cursor IDE, we'll check if Cursor is running
+            // and assume any dialog detection means it's likely a review dialog
+            const cursorRunning = await this.isCursorRunning();
+            if (!cursorRunning) {
+                return false;
+            }
+            
+            // Check for any dialog-like windows or just assume it's a review dialog
+            // when Cursor is running and we detect a dialog
+            const reviewTitles = [
+                'Review file', 'Review change', 'Review changes', 
+                'File changed', 'Source updated', 'Update available',
+                'Changes detected', 'Cursor', 'Update'
+            ];
+            
             for (const title of reviewTitles) {
                 const hwnd = await this.findWindowWindows(title);
                 if (hwnd) {
-                    this.logger.info(`Detected Review file dialog: ${title}`);
+                    this.logger.info(`Detected potential Review file dialog: ${title}`);
                     return true;
                 }
             }
-            return false;
+            
+            // If Cursor is running, we can also assume any dialog is likely a review dialog
+            // since that's the most common case when files are updated
+            this.logger.info('Cursor is running, assuming any dialog is a review dialog');
+            return true;
         } catch (error) {
             return false;
         }
@@ -828,22 +846,44 @@ class CursorAutomationBot extends EventEmitter {
     
     async handleReviewFileDialog() {
         try {
-            this.logger.info('Handling Review file dialog with two-step process');
+            this.logger.info('Handling Review file dialog - attempting multiple methods');
             
-            // Step 1: Click the dialog/button first
-            await this.automationEngine.methods.clickButton(this.config.uiSettings.buttonText);
-            this.logger.info('Step 1: Clicked dialog button');
+            let success = false;
             
-            // Wait a moment for the dialog to process
-            await this.sleep(500);
-            
-            // Step 2: Send Ctrl+Enter
-            if (this.config.platform === 'win32') {
-                await this.sendCtrlEnterWindows();
-                this.logger.info('Step 2: Sent Ctrl+Enter');
+            // Method 1: Try to find and click "Keep all" button
+            try {
+                await this.automationEngine.methods.clickButton("Keep all");
+                this.logger.info('Method 1: Successfully clicked "Keep all" button');
+                success = true;
+            } catch (buttonError) {
+                this.logger.warn(`Method 1 failed: ${buttonError.message}`);
+                
+                // Method 2: Try Ctrl+Enter as fallback
+                try {
+                    if (this.config.platform === 'win32') {
+                        await this.sendCtrlEnterWindows();
+                        this.logger.info('Method 2: Sent Ctrl+Enter to Cursor IDE');
+                        success = true;
+                    }
+                } catch (ctrlError) {
+                    this.logger.warn(`Method 2 failed: ${ctrlError.message}`);
+                    
+                    // Method 3: Try other common button texts
+                    const alternativeButtons = ["Keep", "Accept", "OK", "Yes", "Apply"];
+                    for (const buttonText of alternativeButtons) {
+                        try {
+                            await this.automationEngine.methods.clickButton(buttonText);
+                            this.logger.info(`Method 3: Successfully clicked "${buttonText}" button`);
+                            success = true;
+                            break;
+                        } catch (altError) {
+                            this.logger.warn(`Method 3 "${buttonText}" failed: ${altError.message}`);
+                        }
+                    }
+                }
             }
             
-            return true;
+            return success;
         } catch (error) {
             this.logger.error(`Review file dialog handling failed: ${error.message}`);
             return false;
