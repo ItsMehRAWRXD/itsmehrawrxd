@@ -4,7 +4,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
-const { getMemoryManager } = require('../utils/memory-manager');
+// const { getMemoryManager } = require('../utils/memory-manager'); // Removed - module not found
 const os = require('os');
 const { logger } = require('../utils/logger');
 
@@ -18,7 +18,8 @@ try {
     ps = require('ps-node');
     netstat = require('node-netstat');
 } catch (error) {
-    logger.warn('Some native modules not available, using fallback implementations');
+    // Native modules not available, using fallback implementations
+    logger.debug('Native modules not available, using fallback implementations');
 }
 
 const execAsync = promisify(exec);
@@ -38,7 +39,7 @@ class HotPatchers {
         }
     }
     constructor() {
-        this.patches = this.memoryManager.createManagedCollection('patches', 'Map', 100);
+        this.patches = new Map();
         this.patchTypes = {
             'memory': {
                 name: 'Memory Patch',
@@ -73,7 +74,7 @@ class HotPatchers {
         };
         
         this.patchHistory = [];
-        this.activePatches = this.memoryManager.createManagedCollection('activePatches', 'Map', 100);
+        this.activePatches = new Map();
     }
 
     async initialize(config) {
@@ -1176,7 +1177,7 @@ class HotPatchers {
     async injectDllIntoProcess(pid, dllPath) {
         try {
             // Use PowerShell to inject DLL
-            const injectCmd = "powershell -Command "& { Add-Type -TypeDefinition 'using System; using System.Diagnostics; using System.Runtime.InteropServices; public class DllInjector { [DllImport(\"kernel32.dll\")] public static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId); [DllImport(\"kernel32.dll\", CharSet = CharSet.Auto)] public static extern IntPtr GetModuleHandle(string lpModuleName); [DllImport(\"kernel32\", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)] public static extern IntPtr GetProcAddress(IntPtr hModule, string procName); [DllImport(\"kernel32.dll\", SetLastError = true, ExactSpelling = true)] public static extern IntPtr VirtualAllocEx(IntPtr hProcess, IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect); [DllImport(\"kernel32.dll\", SetLastError = true)] public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, uint nSize, out UIntPtr lpNumberOfBytesWritten); [DllImport(\"kernel32.dll\")] public static extern IntPtr CreateRemoteThread(IntPtr hProcess, IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId); }'; $process = [System.Diagnostics.Process]::GetProcessById(${pid}); $handle = [DllInjector]::OpenProcess(0x1F0FFF, $false, ${pid}); $dllPathBytes = [System.Text.Encoding]::ASCII.GetBytes('" + dllPath + "'); $allocatedMemory = [DllInjector]::VirtualAllocEx($handle, [IntPtr]::Zero, [uint32]$dllPathBytes.Length, 0x1000, 0x40); [DllInjector]::WriteProcessMemory($handle, $allocatedMemory, $dllPathBytes, [uint32]$dllPathBytes.Length, [ref]0); $kernel32 = [DllInjector]::GetModuleHandle('kernel32.dll'); $loadLibrary = [DllInjector]::GetProcAddress($kernel32, 'LoadLibraryA'); [DllInjector]::CreateRemoteThread($handle, [IntPtr]::Zero, 0, $loadLibrary, $allocatedMemory, 0, [IntPtr]::Zero); }"";
+            const injectCmd = `powershell -Command "& { Add-Type -TypeDefinition 'using System; using System.Diagnostics; using System.Runtime.InteropServices; public class DllInjector { [DllImport(\\"kernel32.dll\\")] public static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId); [DllImport(\\"kernel32.dll\\", CharSet = CharSet.Auto)] public static extern IntPtr GetModuleHandle(string lpModuleName); [DllImport(\\"kernel32\\", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)] public static extern IntPtr GetProcAddress(IntPtr hModule, string procName); [DllImport(\\"kernel32.dll\\", SetLastError = true, ExactSpelling = true)] public static extern IntPtr VirtualAllocEx(IntPtr hProcess, IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect); [DllImport(\\"kernel32.dll\\", SetLastError = true)] public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, uint nSize, out UIntPtr lpNumberOfBytesWritten); [DllImport(\\"kernel32.dll\\")] public static extern IntPtr CreateRemoteThread(IntPtr hProcess, IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId); }'; $process = [System.Diagnostics.Process]::GetProcessById(${pid}); $handle = [DllInjector]::OpenProcess(0x1F0FFF, $false, ${pid}); $dllPathBytes = [System.Text.Encoding]::ASCII.GetBytes('${dllPath}'); $allocatedMemory = [DllInjector]::VirtualAllocEx($handle, [IntPtr]::Zero, [uint32]$dllPathBytes.Length, 0x1000, 0x40); [DllInjector]::WriteProcessMemory($handle, $allocatedMemory, $dllPathBytes, [uint32]$dllPathBytes.Length, [ref]0); $kernel32 = [DllInjector]::GetModuleHandle('kernel32.dll'); $loadLibrary = [DllInjector]::GetProcAddress($kernel32, 'LoadLibraryA'); [DllInjector]::CreateRemoteThread($handle, [IntPtr]::Zero, 0, $loadLibrary, $allocatedMemory, 0, [IntPtr]::Zero); }"`;
             
             await execAsync(injectCmd);
             
@@ -1197,7 +1198,7 @@ class HotPatchers {
     async hookProcessApi(pid, apiName, offset) {
         try {
             // Use PowerShell to hook API calls
-            const hookCmd = "powershell -Command "& { Add-Type -TypeDefinition 'using System; using System.Diagnostics; using System.Runtime.InteropServices; public class ApiHooker { [DllImport(\"kernel32.dll\")] public static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId); [DllImport(\"kernel32.dll\")] public static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int dwSize, out int lpNumberOfBytesRead); [DllImport(\"kernel32.dll\")] public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int dwSize, out int lpNumberOfBytesWritten); }'; $process = [System.Diagnostics.Process]::GetProcessById(${pid}); $handle = [ApiHooker]::OpenProcess(0x1F0FFF, $false, ${pid}); $originalBytes = New-Object byte[] 5; [ApiHooker]::ReadProcessMemory($handle, [IntPtr]${offset}, $originalBytes, 5, [ref]0); $hookBytes = [byte[]](0xE9, 0x00, 0x00, 0x00, 0x00); [ApiHooker]::WriteProcessMemory($handle, [IntPtr]" + offset + ", $hookBytes, 5, [ref]0); }"";
+            const hookCmd = `powershell -Command "& { Add-Type -TypeDefinition 'using System; using System.Diagnostics; using System.Runtime.InteropServices; public class ApiHooker { [DllImport(\\"kernel32.dll\\")] public static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId); [DllImport(\\"kernel32.dll\\")] public static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int dwSize, out int lpNumberOfBytesRead); [DllImport(\\"kernel32.dll\\")] public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int dwSize, out int lpNumberOfBytesWritten); }'; $process = [System.Diagnostics.Process]::GetProcessById(${pid}); $handle = [ApiHooker]::OpenProcess(0x1F0FFF, $false, ${pid}); $originalBytes = New-Object byte[] 5; [ApiHooker]::ReadProcessMemory($handle, [IntPtr]${offset}, $originalBytes, 5, [ref]0); $hookBytes = [byte[]](0xE9, 0x00, 0x00, 0x00, 0x00); [ApiHooker]::WriteProcessMemory($handle, [IntPtr]${offset}, $hookBytes, 5, [ref]0); }"`;
             
             await execAsync(hookCmd);
             
@@ -1219,7 +1220,7 @@ class HotPatchers {
     async modifyProcessMemory(pid, data, offset) {
         try {
             // Use PowerShell to modify process memory
-            const modifyCmd = "powershell -Command "& { Add-Type -TypeDefinition 'using System; using System.Diagnostics; using System.Runtime.InteropServices; public class MemoryModifier { [DllImport(\"kernel32.dll\")] public static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId); [DllImport(\"kernel32.dll\`)] public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int dwSize, out int lpNumberOfBytesWritten); }'; $process = [System.Diagnostics.Process]::GetProcessById(${pid}); $handle = [MemoryModifier]::OpenProcess(0x1F0FFF, $false, ${pid}); $dataBytes = [byte[]]@(data.map(b => `0x${b.toString(16).padStart(2, '0')`).join(', ')}); [MemoryModifier]::WriteProcessMemory($handle, [IntPtr]${offset}, $dataBytes, $dataBytes.Length, [ref]0); }"`;
+            const modifyCmd = `powershell -Command "& { Add-Type -TypeDefinition 'using System; using System.Diagnostics; using System.Runtime.InteropServices; public class MemoryModifier { [DllImport(\\"kernel32.dll\\")] public static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId); [DllImport(\\"kernel32.dll\\")] public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int dwSize, out int lpNumberOfBytesWritten); }'; $process = [System.Diagnostics.Process]::GetProcessById(${pid}); $handle = [MemoryModifier]::OpenProcess(0x1F0FFF, $false, ${pid}); $dataBytes = [byte[]]@(${JSON.stringify(data)}); [MemoryModifier]::WriteProcessMemory($handle, [IntPtr]${offset}, $dataBytes, $dataBytes.Length, [ref]0); }"`;
             
             await execAsync(modifyCmd);
             
@@ -1240,7 +1241,7 @@ class HotPatchers {
     // Get process information in Windows
     async getProcessInfo(pid) {
         try {
-            const infoCmd = "powershell -Command "Get-Process -Id " + pid + " | Select-Object Id, ProcessName, CPU, WorkingSet, VirtualMemorySize, HandleCount, StartTime | ConvertTo-Json"";
+            const infoCmd = `powershell -Command "Get-Process -Id ${pid} | Select-Object Id, ProcessName, CPU, WorkingSet, VirtualMemorySize, HandleCount, StartTime | ConvertTo-Json"`;
             const { stdout } = await execAsync(infoCmd);
             const processInfo = JSON.parse(stdout);
             
@@ -1513,7 +1514,7 @@ class HotPatchers {
             const { ip, port, protocol = 'TCP' } = data;
             
             // Use netsh to block connection
-            const blockCmd = "netsh advfirewall firewall add rule name="RawrZ Block ${target}` dir=out action=block protocol=${protocol} remoteip=${ip} remoteport=port`;
+            const blockCmd = `netsh advfirewall firewall add rule name="RawrZ Block ${target}" dir=out action=block protocol=${protocol} remoteip=${ip} remoteport=${port}`;
             await execAsync(blockCmd);
             
             return {
@@ -1562,7 +1563,7 @@ class HotPatchers {
             const { proxyServer, bypassList = '' } = data;
             
             // Use netsh to set proxy
-            const proxyCmd = "netsh winhttp set proxy proxy-server="${proxyServer}" bypass-list=`${bypassList}`";
+            const proxyCmd = `netsh winhttp set proxy proxy-server="${proxyServer}" bypass-list="${bypassList}"`;
             await execAsync(proxyCmd);
             
             return {
@@ -1585,11 +1586,11 @@ class HotPatchers {
             const { dnsServers } = data;
             
             // Use netsh to modify DNS
-            const dnsCmd = "netsh interface ip set dns "${target}` static ${dnsServers[0]}`;
+            const dnsCmd = `netsh interface ip set dns "${target}" static ${dnsServers[0]}`;
             await execAsync(dnsCmd);
             
             if (dnsServers.length > 1) {
-                const dnsCmd2 = "netsh interface ip add dns "${target}" " + dnsServers[1] + " index=2";
+                const dnsCmd2 = `netsh interface ip add dns "${target}" ${dnsServers[1]} index=2`;
                 await execAsync(dnsCmd2);
             }
             
@@ -2087,12 +2088,12 @@ class HotPatchers {
         try {
             if (os.platform() === 'win32') {
                 // Windows memory reading using PowerShell
-                const cmd = "powershell -Command "Get-Process -Id " + pid + " | Select-Object -ExpandProperty WorkingSet"";
+                const cmd = `powershell -Command "Get-Process -Id ${pid} | Select-Object -ExpandProperty WorkingSet"`;
                 const { stdout } = await execAsync(cmd);
                 return Buffer.from(stdout.trim());
             } else {
                 // Unix memory reading using /proc/[pid]/mem
-                const memPath = "/proc/" + pid + "/mem";
+                const memPath = `/proc/${pid}/mem`;
                 const fd = await fs.open(memPath, 'r');
                 const buffer = Buffer.alloc(size);
                 await fd.read(buffer, 0, size, address);
@@ -2109,11 +2110,11 @@ class HotPatchers {
         try {
             if (os.platform() === 'win32') {
                 // Windows memory writing using PowerShell
-                const cmd = "powershell -Command "Set-ProcessMemory -Id ${pid} -Address ${address} -Data '" + data.toString('hex') + "'"";
+                const cmd = `powershell -Command "Set-ProcessMemory -Id ${pid} -Address ${address} -Data '${data.toString('hex')}'"`;
                 await execAsync(cmd);
             } else {
                 // Unix memory writing using /proc/[pid]/mem
-                const memPath = "/proc/" + pid + "/mem";
+                const memPath = `/proc/${pid}/mem`;
                 const fd = await fs.open(memPath, 'w');
                 await fd.write(data, 0, data.length, address);
                 await fd.close();
@@ -2127,7 +2128,7 @@ class HotPatchers {
     async restoreRegistryValue(key, value, originalData) {
         try {
             if (os.platform() === 'win32') {
-                const cmd = "reg add "${key}" /v "${value}" /t REG_SZ /d `${originalData}` /f";
+                const cmd = `reg add "${key}" /v "${value}" /t REG_SZ /d "${originalData}" /f`;
                 await execAsync(cmd);
             } else {
                 // Unix config file restoration
@@ -2184,7 +2185,7 @@ class HotPatchers {
                         await execAsync(`netsh winhttp reset proxy`);
                         break;
                     case 'dns':
-                        await execAsync("netsh interface ip set dns "${originalConfig.interface}` static ${originalConfig.dns}`);
+                        await execAsync(`netsh interface ip set dns "${originalConfig.interface}" static ${originalConfig.dns}`);
                         break;
                 }
             } else {

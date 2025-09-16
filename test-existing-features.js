@@ -57,15 +57,15 @@ async function testExistingFeatures() {
         
         // Test FUD techniques
         const fudTechniques = advancedFUD.fudTechniques;
-        if (fudTechniques && fudTechniques.length > 0) {
-            console.log(`[INFO] FUD techniques available: ${fudTechniques.length}`);
+        if (fudTechniques && fudTechniques.size > 0) {
+            console.log(`[INFO] FUD techniques available: ${fudTechniques.size}`);
         } else {
             console.log('[INFO] FUD techniques missing');
         }
         
         // Test obfuscation levels
-        if (advancedFUD.obfuscationLevels && advancedFUD.obfuscationLevels.length > 0) {
-            console.log(`[INFO] Obfuscation levels available: ${advancedFUD.obfuscationLevels.length}`);
+        if (advancedFUD.obfuscationLevels && advancedFUD.obfuscationLevels.size > 0) {
+            console.log(`[INFO] Obfuscation levels available: ${advancedFUD.obfuscationLevels.size}`);
         } else {
             console.log('[INFO] Obfuscation levels missing');
         }

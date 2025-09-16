@@ -17,7 +17,7 @@ try {
     ps = require('ps-node');
 } catch (error) {
     // Fallback for systems without native modules
-    logger.warn('Some native modules not available, using fallback implementations');
+    logger.debug('Native modules not available, using fallback implementations');
 }
 
 const execAsync = promisify(exec);
@@ -31,7 +31,7 @@ class StealthEngine {
             const end = process.hrtime.bigint();
             const duration = Number(end - start) / 1000000; // Convert to milliseconds
             if (duration > 100) { // Log slow operations
-                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+                console.warn('[PERF] Slow operation: ' + duration.toFixed(2) + 'ms');
             }
             return result;
         }
@@ -92,20 +92,20 @@ class StealthEngine {
         
         try {
             if (!this.stealthModes[mode]) {
-                throw new Error(`Invalid stealth mode: ${mode}. Available modes: Object.keys(this.stealthModes).join(', ')`);
+                throw new Error('Invalid stealth mode: ' + mode + '. Available modes: ' + Object.keys(this.stealthModes).join(', '));
             }
             
             const modesToEnable = this.stealthModes[mode];
             const results = {};
             
-            logger.info(`Enabling stealth mode: ${mode}`, { modes: modesToEnable });
+            logger.info('Enabling stealth mode: ' + mode, { modes: modesToEnable });
             
             // Enable each stealth capability
             for (const stealthMode of modesToEnable) {
                 try {
                     const result = await this.enableStealthCapability(stealthMode);
                     results[stealthMode] = result;
-                    logger.info(`Stealth capability enabled: ${stealthMode}`);
+                    logger.info('Stealth capability enabled: ' + stealthMode);
                 } catch (error) {
                     logger.warn("Failed to enable stealth capability " + stealthMode + ":", error.message);
                     results[stealthMode] = { enabled: false, error: error.message };
@@ -156,7 +156,7 @@ class StealthEngine {
             case 'network-stealth':
                 return await this.enableNetworkStealth();
             default:
-                throw new Error(`Unknown stealth capability: ${capability}`);
+                throw new Error('Unknown stealth capability: ' + capability);
         }
     }
 
@@ -220,7 +220,7 @@ class StealthEngine {
                 const debuggerProcesses = ['windbg.exe', 'ollydbg.exe', 'x64dbg.exe', 'ida.exe', 'ghidra.exe'];
                 for (const process of debuggerProcesses) {
                     try {
-                        await execAsync("tasklist /FI `IMAGENAME eq ${process}`");
+                        await execAsync('tasklist /FI "IMAGENAME eq ' + process + '"');
                         return { detected: true, confidence: 0.95 };
                     } catch (e) {
                         // Process not found
@@ -330,7 +330,7 @@ class StealthEngine {
             const duration = Number(endTime - startTime) / 1000000; // Convert to milliseconds
             
             // If execution is too slow, might be under debugger
-            const detected = duration >` 10; // Threshold of 10ms
+            const detected = duration > 10; // Threshold of 10ms
             return { detected, confidence: detected ? 0.75 : 0.70, duration };
         } catch (error) {
             return { detected: false, confidence: 0.65 };
@@ -420,7 +420,7 @@ class StealthEngine {
             let detected = false;
             for (const key of vmKeys) {
                 try {
-                    const { stdout } = await execAsync("reg query `${key}` 2>nul");
+                    const { stdout } = await execAsync('reg query "' + key + '" 2>nul');
                     if (stdout) {
                         detected = true;
                         break;

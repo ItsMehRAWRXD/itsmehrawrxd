@@ -20,7 +20,7 @@ class ReverseEngineering extends EventEmitter {
             const end = process.hrtime.bigint();
             const duration = Number(end - start) / 1000000; // Convert to milliseconds
             if (duration > 100) { // Log slow operations
-                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+                console.warn('[PERF] Slow operation: ' + duration.toFixed(2) + 'ms');
             }
             return result;
         }
@@ -154,7 +154,7 @@ class ReverseEngineering extends EventEmitter {
         const analysisFunc = analysisTypes[analysisType];
         
         if (!analysisFunc) {
-            throw new Error(`Unknown reverse engineering analysis type: ${analysisType}`);
+            throw new Error('Unknown reverse engineering analysis type: ' + analysisType);
         }
         
         return await analysisFunc();
@@ -547,7 +547,7 @@ class ReverseEngineering extends EventEmitter {
                         indicators.push({
                             type: 'suspicious_import',
                             severity: 'medium',
-                            description: `Suspicious import: ${func}`,
+                            description: 'Suspicious import: ' + func,
                             function: func
                         });
                     }
@@ -562,7 +562,7 @@ class ReverseEngineering extends EventEmitter {
                         indicators.push({
                             type: 'suspicious_string',
                             severity: 'high',
-                            description: `Suspicious string found: ${str.string}`,
+                            description: 'Suspicious string found: ' + str.string,
                             string: str.string
                         });
                     }
@@ -644,17 +644,17 @@ class ReverseEngineering extends EventEmitter {
 
     // Generate analysis ID
     generateAnalysisId() {
-        return `analysis_${Date.now()}_Math.random().toString(36).substr(2, 9)`;
+        return 'analysis_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     }
 
     // Generate disassembly ID
     generateDisassemblyId() {
-        return `disasm_${Date.now()}_Math.random().toString(36).substr(2, 9)`;
+        return 'disasm_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     }
 
     // Generate decompilation ID
     generateDecompilationId() {
-        return `decomp_${Date.now()}_Math.random().toString(36).substr(2, 9)`;
+        return 'decomp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     }
 
     // Get reverse engineering report
@@ -908,7 +908,7 @@ class ReverseEngineering extends EventEmitter {
                 const size = sectionHeader.readUInt32LE(20);
                 
                 sections.push({
-                    name: `section_${i}`,
+                    name: 'section_' + i,
                     virtualAddress: address,
                     virtualSize: size,
                     rawAddress: offset,
@@ -977,7 +977,7 @@ class ReverseEngineering extends EventEmitter {
             for (let i = 0; i < data.length; i += chunkSize) {
                 const chunk = data.slice(i, i + chunkSize);
                 sections.push({
-                    name: `chunk_${i}`,
+                    name: 'chunk_' + i,
                     virtualAddress: i,
                     virtualSize: chunk.length,
                     rawAddress: i,
@@ -1000,7 +1000,7 @@ class ReverseEngineering extends EventEmitter {
             
             // Use objdump or similar tools
             try {
-                const { stdout } = await execAsync("objdump -p `${filePath}`");
+                const { stdout } = await execAsync('objdump -p "' + filePath + '"');
                 const lines = stdout.split('\n');
                 
                 for (const line of lines) {
@@ -1033,7 +1033,7 @@ class ReverseEngineering extends EventEmitter {
             
             // Use objdump or similar tools
             try {
-                const { stdout } = await execAsync("objdump -T `${filePath}`");
+                const { stdout } = await execAsync('objdump -T "' + filePath + '"');
                 const lines = stdout.split('\n');
                 
                 for (const line of lines) {
@@ -1073,7 +1073,7 @@ class ReverseEngineering extends EventEmitter {
             
             // Use objdump or similar tools
             try {
-                const { stdout } = await execAsync("objdump -p `${filePath}`");
+                const { stdout } = await execAsync('objdump -p "' + filePath + '"');
                 const lines = stdout.split('\n');
                 
                 for (const line of lines) {
@@ -1108,7 +1108,7 @@ class ReverseEngineering extends EventEmitter {
             
             // Use objdump or similar tools
             try {
-                const { stdout } = await execAsync("objdump -T `${filePath}`");
+                const { stdout } = await execAsync('objdump -T "' + filePath + '"');
                 const lines = stdout.split('\n');
                 
                 for (const line of lines) {
@@ -1148,7 +1148,7 @@ class ReverseEngineering extends EventEmitter {
             
             // Use objdump or similar tools
             try {
-                const { stdout } = await execAsync("objdump -d `${filePath}`");
+                const { stdout } = await execAsync('objdump -d "' + filePath + '"');
                 const lines = stdout.split('\n');
                 
                 for (const line of lines) {
@@ -1194,7 +1194,7 @@ class ReverseEngineering extends EventEmitter {
             
             // Use objdump or similar tools
             try {
-                const { stdout } = await execAsync("objdump -d `${filePath}`");
+                const { stdout } = await execAsync('objdump -d "' + filePath + '"');
                 const lines = stdout.split('\n');
                 
                 for (const line of lines) {
@@ -1240,7 +1240,7 @@ class ReverseEngineering extends EventEmitter {
             
             // Use objdump or similar tools
             try {
-                const { stdout } = await execAsync("objdump -d `${filePath}`");
+                const { stdout } = await execAsync('objdump -d "' + filePath + '"');
                 const lines = stdout.split('\n');
                 
                 for (const line of lines) {
@@ -1283,7 +1283,7 @@ class ReverseEngineering extends EventEmitter {
             
             // Use objdump or similar tools
             try {
-                const { stdout } = await execAsync("objdump -d `${filePath}`");
+                const { stdout } = await execAsync('objdump -d "' + filePath + '"');
                 const lines = stdout.split('\n');
                 
                 for (const line of lines) {
@@ -1324,7 +1324,7 @@ class ReverseEngineering extends EventEmitter {
         try {
             // Use decompiler tools
             try {
-                const { stdout } = await execAsync(`strings "${filePath}"`);
+                const { stdout } = await execAsync('strings "' + filePath + '"');
                 const strings = stdout.split('\n').filter(s => s.length > 4);
                 
                 return `
@@ -1366,12 +1366,11 @@ int main() {
         try {
             // Use decompiler tools
             try {
-                const { stdout } = await execAsync("strings `${filePath}`");
-                const strings = stdout.split('\n').filter(s =>` s.length > 4);
+                const { stdout } = await execAsync('strings "' + filePath + '"');
+                const strings = stdout.split('\n').filter(s => s.length > 4);
                 
-                return "
-int main() {
-    // Decompiled from ${filePath}
+                return 'int main() {\n' +
+                    '    // Decompiled from ' + filePath + '\n' +
     // Found strings: " + strings.slice(0, 5).join(', ') + "
     
     int var1 = 0;

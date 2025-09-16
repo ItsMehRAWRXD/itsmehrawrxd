@@ -23,9 +23,9 @@ class MutexEngine {
     constructor() {
         this.name = 'MutexEngine';
         this.version = '1.0.0';
-        this.activeMutexes = this.memoryManager.createManagedCollection('activeMutexes', 'Map', 100);
-        this.mutexPatterns = this.memoryManager.createManagedCollection('mutexPatterns', 'Map', 100);
-        this.stealthMutexes = this.memoryManager.createManagedCollection('stealthMutexes', 'Map', 100);
+        this.activeMutexes = new Map();
+        this.mutexPatterns = new Map();
+        this.stealthMutexes = new Map();
     }
 
     async initialize(config = {}) {
@@ -108,10 +108,10 @@ class MutexEngine {
         const stealthMode = options.stealth || false;
         const antiAnalysis = options.antiAnalysis || false;
         
-        return "
+        return `
 // Mutex implementation for process synchronization
-`#include <windows.h>`
-`#include <iostream>`
+#include <windows.h>
+#include <iostream>
 
 class MutexManager {
 private:
@@ -167,8 +167,8 @@ MutexManager* g_mutexManager = nullptr;
 
 // Initialize mutex
 bool initializeMutex() {
-    g_mutexManager = new MutexManager(`${mutexName}`);
-    return g_mutexManager->`isMutexOwner();
+    g_mutexManager = new MutexManager("${mutexName}");
+    return g_mutexManager->isMutexOwner();
 }
 
 // Cleanup mutex
@@ -178,12 +178,12 @@ void cleanupMutex() {
         g_mutexManager = nullptr;
     }
 }
-";
+`;
     }
 
     // C# mutex implementation
     generateCSharpMutexCode(mutexName, options) {
-        return "
+        return `
 using System;
 using System.Threading;
 using System.Runtime.InteropServices;
@@ -223,7 +223,7 @@ public static class GlobalMutex {
     private static MutexManager mutexManager;
     
     public static bool Initialize() {
-        mutexManager = new MutexManager(`${mutexName}`);
+        mutexManager = new MutexManager("${mutexName}");
         return mutexManager.IsOwner;
     }
     
@@ -231,12 +231,12 @@ public static class GlobalMutex {
         mutexManager?.Dispose();
     }
 }
-";
+`;
     }
 
     // Python mutex implementation
     generatePythonMutexCode(mutexName, options) {
-        return "
+        return `
 import threading
 import sys
 import os
@@ -273,7 +273,7 @@ mutex_manager = None
 
 def initialize_mutex():
     global mutex_manager
-    mutex_manager = MutexManager(`${mutexName}`)
+    mutex_manager = MutexManager("${mutexName}")
     return mutex_manager.is_mutex_owner
 
 def cleanup_mutex():
@@ -281,7 +281,7 @@ def cleanup_mutex():
     if mutex_manager:
         mutex_manager.__exit__(None, None, None)
         mutex_manager = None
-";
+`;
     }
 
     // JavaScript mutex implementation
@@ -440,7 +440,7 @@ function cleanupMutex() {
             case 'cpp':
                 // Insert after includes and before main function
                 const mainIndex = code.indexOf('int main()');
-                return mainIndex >` 0 ? mainIndex : 0;
+                return mainIndex > 0 ? mainIndex : 0;
             case 'csharp':
                 // Insert after using statements
                 const classIndex = code.indexOf('class ');

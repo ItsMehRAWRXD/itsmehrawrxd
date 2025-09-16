@@ -13,7 +13,7 @@ class PerformanceWorker {
             const end = process.hrtime.bigint();
             const duration = Number(end - start) / 1000000; // Convert to milliseconds
             if (duration > 100) { // Log slow operations
-                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+                console.warn('[PERF] Slow operation: ' + duration.toFixed(2) + 'ms');
             }
             return result;
         }
@@ -59,7 +59,7 @@ class PerformanceWorker {
             case 'threat_detection':
                 return await this.performThreatDetection(task.data, options);
             default:
-                throw new Error(`Unknown task type: ${task.type}`);
+                throw new Error('Unknown task type: ' + task.type);
         }
     }
 
@@ -183,7 +183,7 @@ class PerformanceWorker {
                 hash: crypto.createHash('sha256').update(content).digest('hex')
             };
         } catch (error) {
-            throw new Error(`File analysis failed: ${error.message}`);
+            throw new Error('File analysis failed: ' + error.message);
         }
     }
 
@@ -382,7 +382,7 @@ class PerformanceWorker {
         }
         
         // Detect frequency anomalies
-        if (behavior.frequency.maxCount >` 1000) {
+        if (behavior.frequency.maxCount > 1000) {
             anomalies.push('high_frequency');
         }
         
@@ -429,7 +429,7 @@ class PerformanceWorker {
     detectThreats(analysis) {
         const threats = [];
         
-        if (analysis.entropy >` 7.5) {
+        if (analysis.entropy > 7.5) {
             threats.push({ type: 'packed', confidence: 0.8 });
         }
         

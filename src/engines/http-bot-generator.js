@@ -216,85 +216,79 @@ int main() {
         if (features.includes('fileManager')) {
             init += '        initializeFileManager();\n';
             execute += '                executeFileManager();\n';
-            methods += `    void initializeFileManager() {
-        std::cout << "File Manager initialized" << std::endl;
-    }
-    
-    void executeFileManager() {
-        // File management operations
-    }
-    
-    `;
+            methods += '    void initializeFileManager() {\n' +
+                '        std::cout << "File Manager initialized" << std::endl;\n' +
+                '    }\n' +
+                '    \n' +
+                '    void executeFileManager() {\n' +
+                '        // File management operations\n' +
+                '    }\n' +
+                '    \n';
         }
         
         if (features.includes('processManager')) {
             init += '        initializeProcessManager();\n';
             execute += '                executeProcessManager();\n';
-            methods += `    void initializeProcessManager() {
-        std::cout << "Process Manager initialized" << std::endl;
-    }
-    
-    void executeProcessManager() {
-        // Process management operations
-    }
-    
-    `;
+            methods += '    void initializeProcessManager() {\n' +
+                '        std::cout << "Process Manager initialized" << std::endl;\n' +
+                '    }\n' +
+                '    \n' +
+                '    void executeProcessManager() {\n' +
+                '        // Process management operations\n' +
+                '    }\n' +
+                '    \n';
         }
         
         if (features.includes('systemInfo')) {
             init += '        initializeSystemInfo();\n';
             execute += '                executeSystemInfo();\n';
-            methods += `    void initializeSystemInfo() {
-        std::cout << "System Info initialized" << std::endl;
-    }
-    
-    void executeSystemInfo() {
-        // System information gathering
-    }
-    
-    `;
+            methods += '    void initializeSystemInfo() {\n' +
+                '        std::cout << "System Info initialized" << std::endl;\n' +
+                '    }\n' +
+                '    \n' +
+                '    void executeSystemInfo() {\n' +
+                '        // System information gathering\n' +
+                '    }\n' +
+                '    \n';
         }
         
         if (features.includes('keylogger')) {
             init += '        initializeKeylogger();\n';
             execute += '                executeKeylogger();\n';
-            methods += `    void initializeKeylogger() {
-        std::cout << "Keylogger initialized" << std::endl;
-    }
-    
-    void executeKeylogger() {
-        // Keylogging operations
-    }
-    
-    `;
+            methods += '    void initializeKeylogger() {\n' +
+                '        std::cout << "Keylogger initialized" << std::endl;\n' +
+                '    }\n' +
+                '    \n' +
+                '    void executeKeylogger() {\n' +
+                '        // Keylogging operations\n' +
+                '    }\n' +
+                '    \n';
         }
         
         if (features.includes('screenCapture')) {
             init += '        initializeScreenCapture();\n';
             execute += '                executeScreenCapture();\n';
-            methods += `    void initializeScreenCapture() {
-        std::cout << "Screen Capture initialized" << std::endl;
-    }
-    
-    void executeScreenCapture() {
-        // Screen capture operations
-    }
-    
-    `;
+            methods += '    void initializeScreenCapture() {\n' +
+                '        std::cout << "Screen Capture initialized" << std::endl;\n' +
+                '    }\n' +
+                '    \n' +
+                '    void executeScreenCapture() {\n' +
+                '        // Screen capture operations\n' +
+                '    }\n' +
+                '    \n';
         }
         
         if (features.includes('httpComm')) {
             init += '        initializeHTTPComm();\n';
             execute += '                executeHTTPComm();\n';
-            methods += `    void initializeHTTPComm() {
-        std::cout << "HTTP Communication initialized" << std::endl;
-    }
-    
-    void executeHTTPComm() {
-        // HTTP communication operations
-    }
-    
-`;
+            methods += '    void initializeHTTPComm() {\n' +
+                '        std::cout << "HTTP Communication initialized" << std::endl;\n' +
+                '    }\n' +
+                '    \n' +
+                '    void executeHTTPComm() {\n' +
+                '        // HTTP communication operations\n' +
+                '    }\n' +
+                '    \n';
     }
         
         return { init, execute, methods };
@@ -392,79 +386,73 @@ if __name__ == "__main__":
         if (features.includes('fileManager')) {
             init += '        self.initialize_file_manager()\n';
             execute += '                self.execute_file_manager()\n';
-            methods += `    def initialize_file_manager(self):
-        print("File Manager initialized")
-    
-    def execute_file_manager(self):
-        # File management operations
-        pass
-    
-    `;
+            methods += '    def initialize_file_manager(self):\n' +
+                '        print("File Manager initialized")\n' +
+                '    \n' +
+                '    def execute_file_manager(self):\n' +
+                '        # File management operations\n' +
+                '        pass\n' +
+                '    \n';
         }
         
         if (features.includes('processManager')) {
             init += '        self.initialize_process_manager()\n';
             execute += '                self.execute_process_manager()\n';
-            methods += `    def initialize_process_manager(self):
-        print("Process Manager initialized")
-    
-    def execute_process_manager(self):
-        # Process management operations
-        pass
-    
-    `;
+            methods += '    def initialize_process_manager(self):\n' +
+                '        print("Process Manager initialized")\n' +
+                '    \n' +
+                '    def execute_process_manager(self):\n' +
+                '        # Process management operations\n' +
+                '        pass\n' +
+                '    \n';
         }
         
         if (features.includes('systemInfo')) {
             init += '        self.initialize_system_info()\n';
             execute += '                self.execute_system_info()\n';
-            methods += `    def initialize_system_info(self):
-        print("System Info initialized")
-    
-    def execute_system_info(self):
-        # System information gathering
-        pass
-    
-    `;
+            methods += '    def initialize_system_info(self):\n' +
+                '        print("System Info initialized")\n' +
+                '    \n' +
+                '    def execute_system_info(self):\n' +
+                '        # System information gathering\n' +
+                '        pass\n' +
+                '    \n';
         }
         
         if (features.includes('keylogger')) {
             init += '        self.initialize_keylogger()\n';
             execute += '                self.execute_keylogger()\n';
-            methods += `    def initialize_keylogger(self):
-        print("Keylogger initialized")
-    
-    def execute_keylogger(self):
-        # Keylogging operations
-        pass
-    
-    `;
+            methods += '    def initialize_keylogger(self):\n' +
+                '        print("Keylogger initialized")\n' +
+                '    \n' +
+                '    def execute_keylogger(self):\n' +
+                '        # Keylogging operations\n' +
+                '        pass\n' +
+                '    \n';
         }
         
         if (features.includes('screenCapture')) {
             init += '        self.initialize_screen_capture()\n';
             execute += '                self.execute_screen_capture()\n';
-            methods += `    def initialize_screen_capture(self):
-        print("Screen Capture initialized")
-    
-    def execute_screen_capture(self):
-        # Screen capture operations
-        pass
-    
-    `;
+            methods += '    def initialize_screen_capture(self):\n' +
+                '        print("Screen Capture initialized")\n' +
+                '    \n' +
+                '    def execute_screen_capture(self):\n' +
+                '        # Screen capture operations\n' +
+                '        pass\n' +
+                '    \n';
         }
         
         if (features.includes('httpComm')) {
             init += '        self.initialize_http_comm()\n';
             execute += '                self.execute_http_comm()\n';
-            methods += `    def initialize_http_comm(self):
-        print("HTTP Communication initialized")
-    
-    def execute_http_comm(self):
-        # HTTP communication operations
-        pass
-    
-    `;
+            methods += '    def initialize_http_comm(self):\n' +
+                '        print("HTTP Communication initialized")\n' +
+                '    \n' +
+                '    def execute_http_comm(self):\n' +
+                '        # HTTP communication operations\n' +
+                '        pass\n' +
+                '    \n';
         }
         
         return { init, execute, methods };
@@ -589,85 +577,79 @@ bot.run().catch(console.error);`;
         if (features.includes('fileManager')) {
             init += '        this.initializeFileManager();\n';
             execute += '                await this.executeFileManager();\n';
-            methods += `    initializeFileManager() {
-        console.log("File Manager initialized");
-    }
-    
-    async executeFileManager() {
-        // File management operations
-    }
-    
-    `;
+            methods += '    initializeFileManager() {\n' +
+                '        console.log("File Manager initialized");\n' +
+                '    }\n' +
+                '    \n' +
+                '    async executeFileManager() {\n' +
+                '        // File management operations\n' +
+                '    }\n' +
+                '    \n';
         }
         
         if (features.includes('processManager')) {
             init += '        this.initializeProcessManager();\n';
             execute += '                await this.executeProcessManager();\n';
-            methods += `    initializeProcessManager() {
-        console.log("Process Manager initialized");
-    }
-    
-    async executeProcessManager() {
-        // Process management operations
-    }
-    
-    `;
+            methods += '    initializeProcessManager() {\n' +
+                '        console.log("Process Manager initialized");\n' +
+                '    }\n' +
+                '    \n' +
+                '    async executeProcessManager() {\n' +
+                '        // Process management operations\n' +
+                '    }\n' +
+                '    \n';
         }
         
         if (features.includes('systemInfo')) {
             init += '        this.initializeSystemInfo();\n';
             execute += '                await this.executeSystemInfo();\n';
-            methods += `    initializeSystemInfo() {
-        console.log("System Info initialized");
-    }
-    
-    async executeSystemInfo() {
-        // System information gathering
-    }
-    
-    `;
+            methods += '    initializeSystemInfo() {\n' +
+                '        console.log("System Info initialized");\n' +
+                '    }\n' +
+                '    \n' +
+                '    async executeSystemInfo() {\n' +
+                '        // System information gathering\n' +
+                '    }\n' +
+                '    \n';
         }
         
         if (features.includes('keylogger')) {
             init += '        this.initializeKeylogger();\n';
             execute += '                await this.executeKeylogger();\n';
-            methods += `    initializeKeylogger() {
-        console.log("Keylogger initialized");
-    }
-    
-    async executeKeylogger() {
-        // Keylogging operations
-    }
-    
-    `;
+            methods += '    initializeKeylogger() {\n' +
+                '        console.log("Keylogger initialized");\n' +
+                '    }\n' +
+                '    \n' +
+                '    async executeKeylogger() {\n' +
+                '        // Keylogging operations\n' +
+                '    }\n' +
+                '    \n';
         }
         
         if (features.includes('screenCapture')) {
             init += '        this.initializeScreenCapture();\n';
             execute += '                await this.executeScreenCapture();\n';
-            methods += `    initializeScreenCapture() {
-        console.log("Screen Capture initialized");
-    }
-    
-    async executeScreenCapture() {
-        // Screen capture operations
-    }
-    
-    `;
+            methods += '    initializeScreenCapture() {\n' +
+                '        console.log("Screen Capture initialized");\n' +
+                '    }\n' +
+                '    \n' +
+                '    async executeScreenCapture() {\n' +
+                '        // Screen capture operations\n' +
+                '    }\n' +
+                '    \n';
         }
         
         if (features.includes('httpComm')) {
             init += '        this.initializeHttpComm();\n';
             execute += '                await this.executeHttpComm();\n';
-            methods += `    initializeHttpComm() {
-        console.log("HTTP Communication initialized");
-    }
-    
-    async executeHttpComm() {
-        // HTTP communication operations
-    }
-    
-    `;
+            methods += '    initializeHttpComm() {\n' +
+                '        console.log("HTTP Communication initialized");\n' +
+                '    }\n' +
+                '    \n' +
+                '    async executeHttpComm() {\n' +
+                '        // HTTP communication operations\n' +
+                '    }\n' +
+                '    \n';
         }
         
         return { init, execute, methods };
@@ -803,7 +785,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if (features.includes('mobileLocation')) {
             init += '        setupLocationManager();\n';
             execute += '            updateLocation();\n';
-            methods += `    private func setupLocationManager() {
+            methods += '    private func setupLocationManager() {
         locationManager = CLLocationManager()
         locationManager?.delegate = self
         locationManager?.requestWhenInUseAuthorization()
@@ -814,13 +796,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Location tracking
     }
     
-    `;
+    ';
         }
         
         if (features.includes('mobileContacts')) {
             init += '        requestContactsPermission();\n';
             execute += '            syncContacts();\n';
-            methods += `    private func requestContactsPermission() {
+            methods += '    private func requestContactsPermission() {
         CNContactStore().requestAccess(for: .contacts) { granted, error in
             if granted {
                 print("Contacts access granted")
@@ -832,13 +814,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Contact synchronization
     }
     
-    `;
+    ';
         }
         
         if (features.includes('mobilePhotos')) {
             init += '        requestPhotosPermission();\n';
             execute += '            syncPhotos();\n';
-            methods += `    private func requestPhotosPermission() {
+            methods += '    private func requestPhotosPermission() {
         PHPhotoLibrary.requestAuthorization { status in
             if status == .authorized {
                 print("Photos access granted")
@@ -850,13 +832,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Photo synchronization
     }
     
-    `;
+    ';
         }
         
         if (features.includes('mobileDeviceInfo')) {
             init += '        gatherDeviceInfo();\n';
             execute += '            updateDeviceInfo();\n';
-            methods += `    private func gatherDeviceInfo() {
+            methods += '    private func gatherDeviceInfo() {
         let device = UIDevice.current
         print("Device: \\(device.name)")
         print("Model: \\(device.model)")
@@ -867,13 +849,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Device information updates
     }
     
-    `;
+    ';
         }
         
         if (features.includes('httpComm')) {
             init += '        initializeHTTPComm();\n';
             execute += '            executeHTTPComm();\n';
-            methods += `    private func initializeHTTPComm() {
+            methods += '    private func initializeHTTPComm() {
         print("HTTP Communication initialized")
     }
     
@@ -881,7 +863,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // HTTP communication operations
     }
     
-    `;
+    ';
         }
         
         return { init, execute, methods };
@@ -1000,7 +982,7 @@ class RawrZHTTPBot : Service() {
         if (features.includes('mobileLocation')) {
             init += '        setupLocationManager();\n';
             execute += '                updateLocation();\n';
-            methods += `    private fun setupLocationManager() {
+            methods += '    private fun setupLocationManager() {
         val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f) { location ->
@@ -1013,13 +995,13 @@ class RawrZHTTPBot : Service() {
         // Location tracking
     }
     
-    `;
+    ';
         }
         
         if (features.includes('mobileContacts')) {
             init += '        requestContactsPermission();\n';
             execute += '                syncContacts();\n';
-            methods += `    private fun requestContactsPermission() {
+            methods += '    private fun requestContactsPermission() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
             println("Contacts access granted")
         }
@@ -1029,13 +1011,13 @@ class RawrZHTTPBot : Service() {
         // Contact synchronization
     }
     
-    `;
+    ';
         }
         
         if (features.includes('mobilePhotos')) {
             init += '        requestPhotosPermission();\n';
             execute += '                syncPhotos();\n';
-            methods += `    private fun requestPhotosPermission() {
+            methods += '    private fun requestPhotosPermission() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             println("Photos access granted")
         }
@@ -1045,13 +1027,13 @@ class RawrZHTTPBot : Service() {
         // Photo synchronization
     }
     
-    `;
+    ';
         }
         
         if (features.includes('mobileDeviceInfo')) {
             init += '        gatherDeviceInfo();\n';
             execute += '                updateDeviceInfo();\n';
-            methods += `    private fun gatherDeviceInfo() {
+            methods += '    private fun gatherDeviceInfo() {
         println("Device: \${android.os.Build.MODEL}")
         println("Android: \${android.os.Build.VERSION.RELEASE}")
         println("SDK: \${android.os.Build.VERSION.SDK_INT}")
@@ -1061,13 +1043,13 @@ class RawrZHTTPBot : Service() {
         // Device information updates
     }
     
-    `;
+    ';
         }
         
         if (features.includes('httpComm')) {
             init += '        initializeHTTPComm();\n';
             execute += '                executeHTTPComm();\n';
-            methods += `    private fun initializeHTTPComm() {
+            methods += '    private fun initializeHTTPComm() {
         println("HTTP Communication initialized")
     }
     
@@ -1075,7 +1057,7 @@ class RawrZHTTPBot : Service() {
         // HTTP communication operations
     }
     
-    `;
+    ';
         }
         
         return { init, execute, methods };
@@ -1187,35 +1169,33 @@ public class RawrZHTTPBot {
         if (features.includes('fileManager')) {
             init += '        initializeFileManager();\n';
             execute += '                executeFileManager();\n';
-            methods += `    private void initializeFileManager() {
-        System.out.println("File Manager initialized");
-    }
-    
-    private void executeFileManager() {
-        // File management operations
-    }
-    
-    `;
+            methods += '    private void initializeFileManager() {\n' +
+                '        System.out.println("File Manager initialized");\n' +
+                '    }\n' +
+                '    \n' +
+                '    private void executeFileManager() {\n' +
+                '        // File management operations\n' +
+                '    }\n' +
+                '    \n';
         }
         
         if (features.includes('processManager')) {
             init += '        initializeProcessManager();\n';
             execute += '                executeProcessManager();\n';
-            methods += `    private void initializeProcessManager() {
-        System.out.println("Process Manager initialized");
-    }
-    
-    private void executeProcessManager() {
-        // Process management operations
-    }
-    
-    `;
+            methods += '    private void initializeProcessManager() {\n' +
+                '        System.out.println("Process Manager initialized");\n' +
+                '    }\n' +
+                '    \n' +
+                '    private void executeProcessManager() {\n' +
+                '        // Process management operations\n' +
+                '    }\n' +
+                '    \n';
         }
         
         if (features.includes('systemInfo')) {
             init += '        initializeSystemInfo();\n';
             execute += '                executeSystemInfo();\n';
-            methods += `    private void initializeSystemInfo() {
+            methods += '    private void initializeSystemInfo() {
         System.out.println("System Info initialized");
         System.out.println("OS: " + System.getProperty("os.name"));
         System.out.println("Version: " + System.getProperty("os.version"));
@@ -1226,13 +1206,13 @@ public class RawrZHTTPBot {
         // System information gathering
     }
     
-    `;
+    ';
         }
         
         if (features.includes('httpComm')) {
             init += '        initializeHTTPComm();\n';
             execute += '                executeHTTPComm();\n';
-            methods += `    private void initializeHTTPComm() {
+            methods += '    private void initializeHTTPComm() {
         System.out.println("HTTP Communication initialized");
     }
     
@@ -1240,7 +1220,7 @@ public class RawrZHTTPBot {
         // HTTP communication operations
     }
     
-    `;
+    ';
         }
         
         return { init, execute, methods };

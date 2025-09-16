@@ -22,11 +22,10 @@ class MobileTools extends EventEmitter {
         super();
         this.name = 'MobileTools';
         this.version = '2.0.0';
-        this.memoryManager = getMemoryManager();
-        this.deviceProfiles = this.memoryManager.createManagedCollection('deviceProfiles', 'Map', 100);
-        this.appAnalysis = this.memoryManager.createManagedCollection('appAnalysis', 'Map', 100);
-        this.securityChecks = this.memoryManager.createManagedCollection('securityChecks', 'Map', 100);
-        this.mobileThreats = this.memoryManager.createManagedCollection('mobileThreats', 'Map', 100);
+        this.deviceProfiles = new Map();
+        this.appAnalysis = new Map();
+        this.securityChecks = new Map();
+        this.mobileThreats = new Map();
         this.deviceInfo = {
             platform: 'unknown',
             version: 'unknown',
@@ -38,8 +37,8 @@ class MobileTools extends EventEmitter {
             ios: new Map(),
             windows: new Map()
         };
-        this.malwareSignatures = this.memoryManager.createManagedCollection('malwareSignatures', 'Map', 100);
-        this.vulnerabilityDatabase = this.memoryManager.createManagedCollection('vulnerabilityDatabase', 'Map', 100);
+        this.malwareSignatures = new Map();
+        this.vulnerabilityDatabase = new Map();
     }
 
     // Analyze mobile - main entry point for mobile analysis
@@ -331,7 +330,7 @@ class MobileTools extends EventEmitter {
     generateAppRecommendations(analysis) {
         const recommendations = [];
         
-        if (analysis.riskScore >` 80) {
+        if (analysis.riskScore > 80) {
             recommendations.push('Critical: High risk application detected. Do not install.');
         } else if (analysis.riskScore > 60) {
             recommendations.push('Warning: Medium-high risk application. Review permissions carefully.');
@@ -487,7 +486,7 @@ class MobileTools extends EventEmitter {
                 }
             }
 
-            if (threats.detectedThreats.length >` 3) {
+            if (threats.detectedThreats.length > 3) {
                 threats.riskLevel = 'high';
             } else if (threats.detectedThreats.length > 1) {
                 threats.riskLevel = 'medium';
@@ -504,17 +503,17 @@ class MobileTools extends EventEmitter {
 
     // Generate analysis ID
     generateAnalysisId() {
-        return `analysis_${Date.now()}_Math.random().toString(36).substr(2, 9)`;
+        return `analysis_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
 
     // Generate scan ID
     generateScanId() {
-        return `scan_${Date.now()}_Math.random().toString(36).substr(2, 9)`;
+        return `scan_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
 
     // Generate threat ID
     generateThreatId() {
-        return `threat_${Date.now()}_Math.random().toString(36).substr(2, 9)`;
+        return `threat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
 
     // Get mobile report

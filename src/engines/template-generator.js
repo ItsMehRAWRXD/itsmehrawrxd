@@ -18,9 +18,9 @@ class TemplateGenerator {
     constructor() {
         this.name = 'TemplateGenerator';
         this.version = '2.0.0';
-        this.templates = this.memoryManager.createManagedCollection('templates', 'Map', 100);
-        this.cryptorTemplates = this.memoryManager.createManagedCollection('cryptorTemplates', 'Map', 100);
-        this.stubTemplates = this.memoryManager.createManagedCollection('stubTemplates', 'Map', 100);
+        this.templates = new Map();
+        this.cryptorTemplates = new Map();
+        this.stubTemplates = new Map();
         this.isInitialized = false;
     }
 

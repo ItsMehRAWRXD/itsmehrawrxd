@@ -25,7 +25,7 @@ class PrivateVirusScanner {
             const end = process.hrtime.bigint();
             const duration = Number(end - start) / 1000000; // Convert to milliseconds
             if (duration > 100) { // Log slow operations
-                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+                console.warn('[PERF] Slow operation: ' + duration.toFixed(2) + 'ms');
             }
             return result;
         }
@@ -230,7 +230,7 @@ class PrivateVirusScanner {
                 return true;
             } else {
                 // For external commands, check if they're in PATH
-                await execAsync(`where ${engine.command}`);
+                await execAsync('where ' + engine.command);
                 return true;
             }
         } catch (error) {
@@ -254,7 +254,7 @@ class PrivateVirusScanner {
             // Validate file
             const fileInfo = await this.validateFile(filePath);
             if (!fileInfo.valid) {
-                throw new Error(`Invalid file: ${fileInfo.error}`);
+                throw new Error('Invalid file: ' + fileInfo.error);
             }
 
             // Add to scan queue
@@ -304,7 +304,7 @@ class PrivateVirusScanner {
             this.scanQueue.delete(scanId);
             this.activeScans--;
 
-            logger.info(`Scan completed for ${filePath} (ID: ${scanId}) - Result: overallResult.status`);
+            logger.info('Scan completed for ' + filePath + ' (ID: ' + scanId + ') - Result: ' + overallResult.status);
 
             return {
                 success: true,
@@ -343,7 +343,7 @@ class PrivateVirusScanner {
             const ext = path.extname(filePath).toLowerCase();
             const allowedExts = ['.exe', '.dll', '.sys', '.scr', '.com', '.bat', '.cmd', '.ps1', '.js', '.vbs', '.jar', '.zip', '.rar', '.7z'];
             if (!allowedExts.includes(ext)) {
-                return { valid: false, error: `Unsupported file type: ${ext}` };
+                return { valid: false, error: 'Unsupported file type: ' + ext };
             }
 
             return {
@@ -461,7 +461,7 @@ class PrivateVirusScanner {
 
     async runClamAVScan(filePath) {
         try {
-            const { stdout, stderr } = await execAsync("clamscan --no-summary --infected --remove=no `${filePath}`");
+            const { stdout, stderr } = await execAsync('clamscan --no-summary --infected --remove=no "' + filePath + '"');
             
             const isInfected = stdout.includes('FOUND') || stderr.includes('FOUND');
             const threats = this.parseClamAVOutput(stdout + stderr);
@@ -490,7 +490,7 @@ class PrivateVirusScanner {
     async runDefenderScan(filePath) {
         try {
             // Use PowerShell to run Windows Defender scan
-            const command = "powershell -Command "Start-MpScan -ScanType CustomScan -ScanPath '" + filePath + "' -AsJob | Wait-Job | Receive-Job"";
+            const command = 'powershell -Command "Start-MpScan -ScanType CustomScan -ScanPath \'' + filePath + '\' -AsJob | Wait-Job | Receive-Job"';
             const { stdout } = await execAsync(command);
             
             // Parse Defender output
@@ -515,7 +515,7 @@ class PrivateVirusScanner {
 
     async runYARAScan(filePath) {
         try {
-            const { stdout } = await execAsync("yara -r -w `${filePath}`");
+            const { stdout } = await execAsync('yara -r -w "' + filePath + '"');
             
             const isInfected = stdout.trim().length > 0;
             const threats = stdout.trim().split('\n').filter(line => line.trim());
@@ -716,7 +716,7 @@ class PrivateVirusScanner {
         
         let entropy = 0;
         for (let i = 0; i < 256; i++) {
-            if (freq[i] >` 0) {
+            if (freq[i] > 0) {
                 const p = freq[i] / data.length;
                 entropy -= p * Math.log2(p);
             }
@@ -890,7 +890,7 @@ class PrivateVirusScanner {
         };
         
         this.scanQueue.set(scanId, queueItem);
-        logger.info(`Added scan to queue: ${scanId} for filePath`);
+        logger.info('Added scan to queue: ' + scanId + ' for ' + filePath);
         
         // Process queue if not at max capacity
         if (this.activeScans < this.maxConcurrentScans) {
@@ -965,7 +965,7 @@ class PrivateVirusScanner {
     async cancelQueuedScan(scanId) {
         if (this.scanQueue.has(scanId)) {
             this.scanQueue.delete(scanId);
-            logger.info(`Cancelled queued scan: ${scanId}`);
+            logger.info('Cancelled queued scan: ' + scanId);
             return { success: true, message: 'Scan cancelled' };
         }
         return { success: false, message: 'Scan not found in queue' };
@@ -1182,11 +1182,11 @@ class PrivateVirusScanner {
             let score = 0;
             
             // File size analysis
-            if (features.fileSize >` 10000000) score += 0.2; // Large files
+            if (features.fileSize > 10000000) score += 0.2; // Large files
             if (features.fileSize < 1000) score += 0.3; // Very small files
             
             // Entropy analysis
-            if (features.entropy >` 7.5) score += 0.4; // High entropy
+            if (features.entropy > 7.5) score += 0.4; // High entropy
             
             // API analysis
             if (features.apiCount > 50) score += 0.2; // Many APIs
@@ -1291,7 +1291,7 @@ class PrivateVirusScanner {
             if (analysis.domains.length > 5) suspiciousScore += 0.2;
             if (analysis.ports.some(port => port > 1024 && port < 65536)) suspiciousScore += 0.1;
             
-            analysis.suspicious = suspiciousScore >` 0.4;
+            analysis.suspicious = suspiciousScore > 0.4;
             analysis.confidence = suspiciousScore;
             
             return analysis;

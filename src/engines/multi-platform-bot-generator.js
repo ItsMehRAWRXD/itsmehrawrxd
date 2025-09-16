@@ -14,7 +14,7 @@ class MultiPlatformBotGenerator extends EventEmitter {
             const end = process.hrtime.bigint();
             const duration = Number(end - start) / 1000000; // Convert to milliseconds
             if (duration > 100) { // Log slow operations
-                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+                console.warn('[PERF] Slow operation: ' + duration.toFixed(2) + 'ms');
             }
             return result;
         }
@@ -252,7 +252,7 @@ class MultiPlatformBotGenerator extends EventEmitter {
             const botId = crypto.randomUUID();
             const timestamp = new Date().toISOString();
             
-            logger.info(`Generating bot: ${config.name} for platform: config.platform`);
+            logger.info('Generating bot: ' + config.name + ' for platform: ' + config.platform);
             
             // Validate configuration
             await this.validateConfig(config);
@@ -260,13 +260,13 @@ class MultiPlatformBotGenerator extends EventEmitter {
             // Get platform adapter
             const adapter = this.platformAdapters.get(config.platform);
             if (!adapter) {
-                throw new Error(`Unsupported platform: ${config.platform}`);
+                throw new Error('Unsupported platform: ' + config.platform);
             }
             
             // Get bot template
             const template = this.botTemplates.get(config.template);
             if (!template) {
-                throw new Error(`Unknown template: ${config.template}`);
+                throw new Error('Unknown template: ' + config.template);
             }
             
             // Generate bot code
@@ -300,7 +300,7 @@ class MultiPlatformBotGenerator extends EventEmitter {
             this.generatedBots.set(botId, bot);
             this.emit('bot-generated', bot);
             
-            logger.info(`Bot generated successfully: ${botId}`);
+            logger.info('Bot generated successfully: ' + botId);
             return bot;
             
         } catch (error) {
@@ -314,16 +314,16 @@ class MultiPlatformBotGenerator extends EventEmitter {
         
         for (const field of required) {
             if (!config[field]) {
-                throw new Error(`Missing required field: ${field}`);
+                throw new Error('Missing required field: ' + field);
             }
         }
         
         if (!this.supportedPlatforms.has(config.platform)) {
-            throw new Error(`Unsupported platform: ${config.platform}`);
+            throw new Error('Unsupported platform: ' + config.platform);
         }
         
         if (!this.botTemplates.has(config.template)) {
-            throw new Error(`Unknown template: ${config.template}`);
+            throw new Error('Unknown template: ' + config.template);
         }
     }
 
@@ -388,29 +388,22 @@ class MultiPlatformBotGenerator extends EventEmitter {
     }
 
     generateReadme(config, template) {
-        return `# ${config.name}
-
-A ${template.name.toLowerCase()} bot for ${this.supportedPlatforms.get(config.platform).name}.
-
-## Features
-config.features.map(f => `- ${f`).join('\n')}
-
-## Installation
-\`\`\`bash
-npm install
-\`\`\`
-
-## Configuration
-Copy \`config.example.json\` to \`config.json\` and update the values.
-
-## Usage
-\`\`\`bash
-npm start
-\`\`\`
-
-## License
-MIT
-`;
+        return '# ' + config.name + '\n\n' +
+            'A ' + template.name.toLowerCase() + ' bot for ' + this.supportedPlatforms.get(config.platform).name + '.\n\n' +
+            '## Features\n' +
+            config.features.map(f => '- ' + f).join('\n') + '\n\n' +
+            '## Installation\n' +
+            '```bash\n' +
+            'npm install\n' +
+            '```\n\n' +
+            '## Configuration\n' +
+            'Copy `config.example.json` to `config.json` and update the values.\n\n' +
+            '## Usage\n' +
+            '```bash\n' +
+            'npm start\n' +
+            '```\n\n' +
+            '## License\n' +
+            'MIT';
     }
 
     generateAPIDocs(config) {
@@ -498,54 +491,52 @@ class DiscordAdapter {
             return this.generatePythonDiscordBot(name, features);
         }
         
-        throw new Error(`Unsupported language: ${language}`);
+        throw new Error('Unsupported language: ' + language);
     }
 
     generateJavaScriptDiscordBot(name, features) {
-        return "const { Client, GatewayIntentBits, EmbedBuilder, SlashCommandBuilder } = require('discord.js');
-
-class " + name + "Bot {
-    constructor() {
-        this.client = new Client({
-            intents: [
-                GatewayIntentBits.Guilds,
-                GatewayIntentBits.GuildMessages,
-                GatewayIntentBits.MessageContent
-            ]
-        });
-        
-        this.setupEventHandlers();
-        this.setupCommands();
-    }
-
-    setupEventHandlers() {
-        this.client.once('ready', () => {
-            console.log(\"\${this.client.user.tag} is online!\");
-        });
-
-        this.client.on('messageCreate', async (message) => {
-            if (message.author.bot) return;
-            
-            ${this.generateMessageHandling(features)}
-        });
-    }
-
-    setupCommands() {
-        ${this.generateSlashCommands(features)}
-    }
-
-    async start(token) {
-        await this.client.login(token);
-    }
-}
-
-module.exports = " + name + "Bot;";
+        return 'const { Client, GatewayIntentBits, EmbedBuilder, SlashCommandBuilder } = require(\'discord.js\');\n\n' +
+            'class ' + name + 'Bot {\n' +
+            '    constructor() {\n' +
+            '        this.client = new Client({\n' +
+            '            intents: [\n' +
+            '                GatewayIntentBits.Guilds,\n' +
+            '                GatewayIntentBits.GuildMessages,\n' +
+            '                GatewayIntentBits.MessageContent\n' +
+            '            ]\n' +
+            '        });\n' +
+            '        \n' +
+            '        this.setupEventHandlers();\n' +
+            '        this.setupCommands();\n' +
+            '    }\n' +
+            '\n' +
+            '    setupEventHandlers() {\n' +
+            '        this.client.once(\'ready\', () => {\n' +
+            '            console.log(this.client.user.tag + " is online!");\n' +
+            '        });\n' +
+            '\n' +
+            '        this.client.on(\'messageCreate\', async (message) => {\n' +
+            '            if (message.author.bot) return;\n' +
+            '            \n' +
+            '            // Message handling code here\n' +
+            '        });\n' +
+            '    }\n' +
+            '\n' +
+            '    setupCommands() {\n' +
+            '        // Slash commands code here\n' +
+            '    }\n' +
+            '\n' +
+            '    async start(token) {\n' +
+            '        await this.client.login(token);\n' +
+            '    }\n' +
+            '}\n' +
+            '\n' +
+            'module.exports = ' + name + 'Bot;';
     }
 
     generateTypeScriptDiscordBot(name, features) {
-        return "import { Client, GatewayIntentBits, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-
-export class " + name + "Bot {
+        return 'import { Client, GatewayIntentBits, EmbedBuilder, SlashCommandBuilder } from \'discord.js\';\n\n' +
+            'export class ' + name + 'Bot {\n' +
     private client: Client;
 
     constructor() {
@@ -742,7 +733,7 @@ class TelegramAdapter {
             return this.generatePythonTelegramBot(name, features);
         }
         
-        throw new Error(`Unsupported language: ${language}`);
+        throw new Error('Unsupported language: ' + language);
     }
 
     generateJavaScriptTelegramBot(name, features) {
@@ -865,7 +856,7 @@ if __name__ == '__main__':
 class SlackAdapter {
     async generateBotCode(config) {
         // Slack bot implementation
-        return `// Slack bot implementation for ${config.name}`;
+        return '// Slack bot implementation for ' + config.name;
     }
 
     async generateConfigFiles(config) {
@@ -881,7 +872,7 @@ class SlackAdapter {
 class IRCAdapter {
     async generateBotCode(config) {
         // IRC bot implementation (existing)
-        return `// IRC bot implementation for ${config.name}`;
+        return '// IRC bot implementation for ' + config.name;
     }
 
     async generateConfigFiles(config) {
@@ -897,7 +888,7 @@ class IRCAdapter {
 class MatrixAdapter {
     async generateBotCode(config) {
         // Matrix bot implementation
-        return `// Matrix bot implementation for ${config.name}`;
+        return '// Matrix bot implementation for ' + config.name;
     }
 
     async generateConfigFiles(config) {
@@ -913,7 +904,7 @@ class MatrixAdapter {
 class WhatsAppAdapter {
     async generateBotCode(config) {
         // WhatsApp bot implementation
-        return `// WhatsApp bot implementation for ${config.name}`;
+        return '// WhatsApp bot implementation for ' + config.name;
     }
 
     async generateConfigFiles(config) {
@@ -929,7 +920,7 @@ class WhatsAppAdapter {
 class TeamsAdapter {
     async generateBotCode(config) {
         // Teams bot implementation
-        return `// Teams bot implementation for ${config.name}`;
+        return '// Teams bot implementation for ' + config.name;
     }
 
     async generateConfigFiles(config) {

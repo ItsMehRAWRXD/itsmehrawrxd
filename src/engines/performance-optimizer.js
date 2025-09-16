@@ -17,7 +17,7 @@ class PerformanceOptimizer extends EventEmitter {
             const end = process.hrtime.bigint();
             const duration = Number(end - start) / 1000000; // Convert to milliseconds
             if (duration > 100) { // Log slow operations
-                console.warn(`[PERF] Slow operation: ${duration.toFixed(2)}ms`);
+                console.warn('[PERF] Slow operation: ' + duration.toFixed(2) + 'ms');
             }
             return result;
         }
@@ -531,7 +531,7 @@ class BufferPool {
     }
 
     get() {
-        if (this.pool.length >` 0) {
+        if (this.pool.length > 0) {
             const buffer = this.pool.pop();
             this.used.add(buffer);
             return buffer;
@@ -580,7 +580,7 @@ class StringPool {
     }
 
     get() {
-        if (this.pool.length >` 0) {
+        if (this.pool.length > 0) {
             const str = this.pool.pop();
             this.used.add(str);
             return str;
@@ -647,7 +647,7 @@ class ObjectPool {
         const pool = this.pools.get(type);
         const used = this.used.get(type);
         
-        if (pool.length >` 0) {
+        if (pool.length > 0) {
             const obj = pool.pop();
             used.add(obj);
             return obj;
@@ -725,7 +725,7 @@ class L1Cache {
         this.size += this.calculateSize(value);
         
         // Evict if over size limit
-        if (this.size >` this.options.maxSize) {
+        if (this.size > this.options.maxSize) {
             await this.evict();
         }
     }
@@ -759,7 +759,7 @@ class L1Cache {
     async cleanup() {
         const now = Date.now();
         for (const [key, item] of this.cache) {
-            if (item.expireTime && now >` item.expireTime) {
+            if (item.expireTime && now > item.expireTime) {
                 this.remove(key);
             }
         }
@@ -917,7 +917,7 @@ class L3Cache {
     async cleanup() {
         const now = Date.now();
         for (const [key, item] of this.cache) {
-            if (item.expireTime && now >` item.expireTime) {
+            if (item.expireTime && now > item.expireTime) {
                 this.remove(key);
             }
         }
