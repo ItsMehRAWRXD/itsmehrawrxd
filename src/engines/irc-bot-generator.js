@@ -324,6 +324,35 @@ bot.run();`;
         }
     }
 
+    // Missing methods for API endpoints
+    async getCustomFeatures(featureName = null) {
+        if (featureName) {
+            const feature = this.customFeatures.get(featureName);
+            if (!feature) {
+                throw new Error(`Custom feature '${featureName}' not found`);
+            }
+            return feature;
+        }
+        return Array.from(this.customFeatures.entries()).map(([name, feature]) => ({
+            name,
+            ...feature
+        }));
+    }
+
+    async getFeatureTemplates(templateName = null) {
+        if (templateName) {
+            const template = this.featureTemplates.get(templateName);
+            if (!template) {
+                throw new Error(`Feature template '${templateName}' not found`);
+            }
+            return template;
+        }
+        return Array.from(this.featureTemplates.entries()).map(([name, template]) => ({
+            name,
+            ...template
+        }));
+    }
+
     async removeCustomFeature(featureName) {
         try {
             if (!this.customFeatures.has(featureName)) {
@@ -336,6 +365,22 @@ bot.run();`;
             return { success: true, message: "Custom feature '" + featureName + "' removed" };
         } catch (error) {
             logger.error("Failed to remove custom feature '" + featureName + "':", error);
+            throw error;
+        }
+    }
+
+    async removeFeatureTemplate(templateName) {
+        try {
+            if (!this.featureTemplates.has(templateName)) {
+                throw new Error(`Feature template '${templateName}' not found`);
+            }
+
+            this.featureTemplates.delete(templateName);
+            logger.info(`Feature template '${templateName}' removed successfully`);
+            
+            return { success: true, message: `Feature template '${templateName}' removed` };
+        } catch (error) {
+            logger.error(`Failed to remove feature template '${templateName}':`, error);
             throw error;
         }
     }

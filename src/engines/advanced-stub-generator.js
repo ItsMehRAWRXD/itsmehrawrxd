@@ -634,10 +634,12 @@ class AdvancedStubGenerator {
             let cipher;
             switch (algorithm) {
                 case 'rawrz-aes-256':
-                    cipher = crypto.createCipher('aes-256-cbc', key);
+                    const keyHash = crypto.createHash('sha256').update(key).digest();
+                    cipher = crypto.createCipheriv('aes-256-cbc', keyHash, iv);
                     break;
                 case 'rawrz-chacha20':
-                    cipher = crypto.createCipher('chacha20-poly1305', key);
+                    const keyHash2 = crypto.createHash('sha256').update(key).digest();
+                    cipher = crypto.createCipheriv('chacha20-poly1305', keyHash2, iv);
                     break;
                 case 'rawrz-serpent':
                     // Custom Serpent implementation
@@ -648,7 +650,8 @@ class AdvancedStubGenerator {
                     cipher = this.createCustomCipher('twofish', key, iv);
                     break;
                 default:
-                    cipher = crypto.createCipher('aes-256-cbc', key);
+                    const keyHash3 = crypto.createHash('sha256').update(key).digest();
+                    cipher = crypto.createCipheriv('aes-256-cbc', keyHash3, iv);
             }
 
             let encrypted = cipher.update(stub, 'utf8', 'hex');
@@ -1604,7 +1607,8 @@ class RawrZStub {
         try {
             const key = crypto.scryptSync(this.encryptionKey, 'salt', 32);
             const iv = crypto.randomBytes(16);
-            const cipher = crypto.createCipher(this.algorithm, key);
+            const keyHash = crypto.createHash('sha256').update(key).digest();
+            const cipher = crypto.createCipheriv(this.algorithm, keyHash, iv);
             
             let encrypted = cipher.update(data, 'utf8', 'hex');
             encrypted += cipher.final('hex');
@@ -2814,7 +2818,9 @@ stub.start();
             let packed = stub;
             for (let i = 0; i < 3; i++) {
                 const key = crypto.randomBytes(32);
-                const cipher = crypto.createCipher('aes-256-cbc', key);
+                const keyHash = crypto.createHash('sha256').update(key).digest();
+                const iv = crypto.randomBytes(16);
+                const cipher = crypto.createCipheriv('aes-256-cbc', keyHash, iv);
                 packed = Buffer.concat([cipher.update(packed), cipher.final()]);
             }
             return Buffer.concat([Buffer.from('THEMIDA_PACKED_'), packed]);
@@ -2828,7 +2834,9 @@ stub.start();
         try {
             // Apply VM protection simulation
             const key = crypto.randomBytes(32);
-            const cipher = crypto.createCipher('chacha20-poly1305', key);
+            const keyHash = crypto.createHash('sha256').update(key).digest();
+            const iv = crypto.randomBytes(12);
+            const cipher = crypto.createCipheriv('chacha20-poly1305', keyHash, iv);
             const encrypted = Buffer.concat([cipher.update(stub), cipher.final()]);
             return Buffer.concat([Buffer.from('VMPROTECT_PACKED_'), encrypted]);
         } catch (error) {
@@ -2841,7 +2849,9 @@ stub.start();
         try {
             // Apply Enigma-style encryption
             const key = crypto.randomBytes(32);
-            const cipher = crypto.createCipher('aes-256-gcm', key);
+            const keyHash = crypto.createHash('sha256').update(key).digest();
+            const iv = crypto.randomBytes(12);
+            const cipher = crypto.createCipheriv('aes-256-gcm', keyHash, iv);
             const encrypted = Buffer.concat([cipher.update(stub), cipher.final()]);
             return Buffer.concat([Buffer.from('ENIGMA_PACKED_'), encrypted]);
         } catch (error) {
@@ -2876,7 +2886,9 @@ stub.start();
         try {
             // Apply RawrZ custom packing
             const key = crypto.randomBytes(32);
-            const cipher = crypto.createCipher('aes-256-ctr', key);
+            const keyHash = crypto.createHash('sha256').update(key).digest();
+            const iv = crypto.randomBytes(16);
+            const cipher = crypto.createCipheriv('aes-256-ctr', keyHash, iv);
             const encrypted = Buffer.concat([cipher.update(stub), cipher.final()]);
             const compressed = zlib.gzipSync(encrypted);
             return Buffer.concat([Buffer.from('RAWRZ_CUSTOM_PACKED_'), compressed]);

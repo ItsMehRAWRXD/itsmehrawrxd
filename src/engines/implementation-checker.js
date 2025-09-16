@@ -23,10 +23,10 @@ class ImplementationChecker extends EventEmitter {
         super();
         this.name = 'ImplementationChecker';
         this.version = '1.0.0';
-        this.memoryManager = getMemoryManager();
-        this.checks = this.memoryManager.createManagedCollection('checks', 'Map', 100);
-        this.healthStatus = this.memoryManager.createManagedCollection('healthStatus', 'Map', 100);
-        this.moduleRegistry = this.memoryManager.createManagedCollection('moduleRegistry', 'Map', 100);
+        this.memoryManager = new Map();
+        this.checks = new Map();
+        this.healthStatus = new Map();
+        this.moduleRegistry = new Map();
         this.checkHistory = [];
         this.autoUpdateInterval = null;
         this.checkInterval = 30000; // 30 seconds
@@ -759,6 +759,31 @@ class ImplementationChecker extends EventEmitter {
             this.startAutoUpdate();
         }
         logger.info("Check interval updated to " + newInterval + "ms");
+    }
+
+    // Get modules information
+    async getModules() {
+        try {
+            const modules = Array.from(this.moduleRegistry.entries()).map(([name, module]) => ({
+                name,
+                status: this.healthStatus.get(name)?.healthy ? 'healthy' : 'unhealthy',
+                lastCheck: this.healthStatus.get(name)?.lastCheck,
+                requirements: this.expectedModules[name] || {},
+                methods: module.methods || [],
+                properties: module.properties || [],
+                type: module.type || 'unknown'
+            }));
+
+            return {
+                total: modules.length,
+                healthy: modules.filter(m => m.status === 'healthy').length,
+                unhealthy: modules.filter(m => m.status === 'unhealthy').length,
+                modules: modules
+            };
+        } catch (error) {
+            logger.error('Failed to get modules:', error);
+            throw error;
+        }
     }
 
     // Cleanup and shutdown

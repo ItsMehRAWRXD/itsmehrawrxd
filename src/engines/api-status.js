@@ -19,8 +19,9 @@ class APIStatus extends EventEmitter {
     }
     constructor() {
         super();
-        this.apis = this.memoryManager.createManagedCollection('apis', 'Map', 100);
-        this.statusChecks = this.memoryManager.createManagedCollection('statusChecks', 'Map', 100);
+        this.memoryManager = new Map();
+        this.apis = new Map();
+        this.statusChecks = new Map();
         this.healthMetrics = {
             totalChecks: 0,
             successfulChecks: 0,

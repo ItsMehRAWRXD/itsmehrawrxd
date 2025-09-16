@@ -1,0 +1,3731 @@
+{
+  "totalEndpoints": 294,
+  "categories": {
+    "API": 38,
+    "Panel": 5,
+    "Health": 5,
+    "Bot Generation": 54,
+    "Analysis": 35,
+    "Security": 2,
+    "Crypto": 9,
+    "Network": 4,
+    "Utility": 5,
+    "Other": 137
+  },
+  "endpoints": [
+    {
+      "method": "GET",
+      "endpoint": "/health",
+      "category": "Health",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/health",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/status",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/algorithms",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/engines",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/features",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/crypto/algorithms",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/crypto/modes",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/crypto/key-sizes",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/bots/languages",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/bots/features",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/bots/templates",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/analysis/tools",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/analysis/engines",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/compile/languages",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/compile/targets",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/network/ports",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/network/protocols",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/rebuild",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/panel",
+      "category": "Panel",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/irc-bot-builder",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/http-bot-panel",
+      "category": "Panel",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/stub-generator-panel",
+      "category": "Panel",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/health-dashboard",
+      "category": "Panel",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/bot-manager",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/unified",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/dashboard/stats",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/bots/status",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/irc/channels",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/irc/connect",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/irc/disconnect",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/irc/join",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/irc/leave",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/irc/message",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/security/scan",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        },
+        "body": {
+          "target": "localhost",
+          "ports": [
+            80,
+            443
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/security/fud-analysis",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        },
+        "body": {
+          "file": "test.exe",
+          "type": "malware"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/security/vulnerability-check",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/security/threat-detection",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/security/stealth-mode",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/security/anti-detection",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/crypto/test-algorithm",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        },
+        "body": {
+          "algorithm": "aes-256",
+          "mode": "gcm",
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/crypto/generate-report",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        },
+        "body": {
+          "type": "test",
+          "options": {}
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/analysis/malware",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        },
+        "body": {
+          "file": "test.exe",
+          "type": "malware"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/analysis/digital-forensics",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        },
+        "body": {
+          "file": "test.exe",
+          "type": "malware"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/analysis/network",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        },
+        "body": {
+          "file": "test.exe",
+          "type": "malware"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/analysis/reverse-engineering",
+      "category": "API",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-token"
+        },
+        "body": {
+          "file": "test.exe",
+          "type": "malware"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/",
+      "category": "Health",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/irc-bot/generate",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/http-bot/generate",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/http-bot/test",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/http-bot/compile",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/http-bot/templates",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/http-bot/features",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/http-bot/status",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/http-bot/connect",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/http-bot/disconnect",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/http-bot/command",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/http-bot/heartbeat",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/http-bot/logs/:botId",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "endpoint": "/http-bot/logs/test-id"
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/http-bot/exfiltrate",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/http-bot/stop-exfiltration",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/http-bot/data/:botId",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "endpoint": "/http-bot/data/test-id"
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/http-bot/download/:botId",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        },
+        "endpoint": "/http-bot/download/test-id"
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/http-bot/upload/:botId",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        },
+        "endpoint": "/http-bot/upload/test-id"
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/http-bot/screenshot/:botId",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        },
+        "endpoint": "/http-bot/screenshot/test-id"
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/http-bot/keylog/:botId",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        },
+        "endpoint": "/http-bot/keylog/test-id"
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/http-bot/webcam/:botId",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        },
+        "endpoint": "/http-bot/webcam/test-id"
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/http-bot/audio/:botId",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        },
+        "endpoint": "/http-bot/audio/test-id"
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/http-bot/browser-data/:botId",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "endpoint": "/http-bot/browser-data/test-id"
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/http-bot/crypto-wallets/:botId",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "endpoint": "/http-bot/crypto-wallets/test-id"
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/http-bot/processes/:botId",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "endpoint": "/http-bot/processes/test-id"
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/http-bot/files/:botId",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "endpoint": "/http-bot/files/test-id"
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/http-bot/system-info/:botId",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "endpoint": "/http-bot/system-info/test-id"
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/bot/heartbeat",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/bot/commands/:botId",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "endpoint": "/bot/commands/test-id"
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/bot/status",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/irc-bot/generate-stub",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/irc-bot/encrypt-stub",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/irc-bot/save-encrypted-stub",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/irc-bot/burn-encrypt",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/irc-bot/generate-burner-stub",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/irc-bot/generate-fud-stub",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/irc-bot/burner-status",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/irc-bot/fud-score",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/irc-bot/templates",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/irc-bot/test",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/irc-bot/compile",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/irc-bot/templates",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/irc-bot/features",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/irc-bot/custom-features/add",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/irc-bot/custom-features/update/:featureName",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        },
+        "endpoint": "/irc-bot/custom-features/update/test-id"
+      }
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/irc-bot/custom-features/remove/:featureName",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "endpoint": "/irc-bot/custom-features/remove/test-id"
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/irc-bot/custom-features/:featureName",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "endpoint": "/irc-bot/custom-features/test-id"
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/irc-bot/custom-features",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/irc-bot/feature-templates/create",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "server": "test-server",
+          "channel": "#test",
+          "features": [
+            "basic"
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/irc-bot/feature-templates/:templateName",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "endpoint": "/irc-bot/feature-templates/test-id"
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/irc-bot/feature-templates",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/irc-bot/feature-templates/:templateName",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "endpoint": "/irc-bot/feature-templates/test-id"
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/hash",
+      "category": "Crypto",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/encrypt",
+      "category": "Crypto",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test data",
+          "algorithm": "aes-256-gcm",
+          "key": "test-key"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/encrypt-file",
+      "category": "Crypto",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test data",
+          "algorithm": "aes-256-gcm",
+          "key": "test-key"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/decrypt-file",
+      "category": "Crypto",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/decrypt",
+      "category": "Crypto",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/dns",
+      "category": "Network",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/ping",
+      "category": "Network",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/files",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/upload",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/download",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/cli",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/stub",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/compile-asm",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "source": "test code",
+          "language": "cpp",
+          "target": "windows"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/compile-js",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "source": "test code",
+          "language": "cpp",
+          "target": "windows"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/keygen",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/advancedcrypto",
+      "category": "Crypto",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "algorithm": "aes-256",
+          "mode": "gcm",
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/sign",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/verify",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/base64encode",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/base64decode",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/hexencode",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/hexdecode",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/urlencode",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/urldecode",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/random",
+      "category": "Utility",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/uuid",
+      "category": "Utility",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/password",
+      "category": "Utility",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/analyze",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/sysinfo",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/processes",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/portscan",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "target": "localhost",
+          "ports": [
+            80,
+            443
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/traceroute",
+      "category": "Network",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/whois",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/fileops",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/textops",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/validate",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/time",
+      "category": "Utility",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/math",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/download-file",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/read-file",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/read-local-file",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/stealth-mode",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/anti-detection",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/polymorphic",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/mutex/generate",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "type": "test",
+          "options": {}
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/mutex/apply",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/mutex/options",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/upx/pack",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/upx/methods",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/upx/status",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/hot-patch",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/patch-rollback",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/mobile-scan",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "target": "localhost",
+          "ports": [
+            80,
+            443
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/app-analysis",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "file": "test.exe",
+          "type": "malware"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/device-forensics",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api-status",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/performance-monitor",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/memory-info",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/garbage-collect",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/memory-cleanup",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/cpu-usage",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/disk-usage",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/network-stats",
+      "category": "Network",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/file-signature",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/backup",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/restore",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/backup-list",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/behavior-analysis",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "file": "test.exe",
+          "type": "malware"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/signature-check",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/forensics-scan",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "target": "localhost",
+          "ports": [
+            80,
+            443
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/data-recovery",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/timeline-analysis",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "file": "test.exe",
+          "type": "malware"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/disassembly",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/decompilation",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/string-extraction",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/memory-analysis",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "file": "test.exe",
+          "type": "malware"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/process-dump",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/heap-analysis",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "file": "test.exe",
+          "type": "malware"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/random-math",
+      "category": "Utility",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/data-conversion",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/compress",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/decompress",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/qr-generate",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "type": "test",
+          "options": {}
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/barcode-generate",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "type": "test",
+          "options": {}
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/network-scan",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "target": "localhost",
+          "ports": [
+            80,
+            443
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/service-detection",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/vulnerability-scan",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "target": "localhost",
+          "ports": [
+            80,
+            443
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/packet-capture",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/traffic-analysis",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "file": "test.exe",
+          "type": "malware"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/protocol-analysis",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "file": "test.exe",
+          "type": "malware"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/file-analysis",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "file": "test.exe",
+          "type": "malware"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/file-hash",
+      "category": "Crypto",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/security-scan",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "target": "localhost",
+          "ports": [
+            80,
+            443
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/threat-detection",
+      "category": "Security",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/vulnerability-check",
+      "category": "Security",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/malware-scan",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "target": "localhost",
+          "ports": [
+            80,
+            443
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/openssl/config",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/openssl/algorithms",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/openssl/openssl-algorithms",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/openssl/custom-algorithms",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/openssl/toggle-openssl",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/openssl/toggle-custom",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/openssl-management/status",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/openssl-management/toggle",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/openssl-management/test",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/openssl-management/preset",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/openssl-management/report",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/implementation-check/status",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/implementation-check/run",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/implementation-check/results",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/implementation-check/modules",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/implementation-check/force",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/health-monitor/dashboard",
+      "category": "Panel",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/health-monitor/status",
+      "category": "Health",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/health-monitor/toggle",
+      "category": "Health",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/health-monitor/interval",
+      "category": "Health",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/red-killer/status",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/red-killer/detect",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/red-killer/execute",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/red-killer/extract",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/red-killer/loot",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/red-killer/loot/:id",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "endpoint": "/red-killer/loot/test-id"
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/red-killer/wifi-dump",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/red-killer/kills",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/ev-cert/status",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ev-cert/generate",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "type": "test",
+          "options": {}
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/ev-cert/certificates",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/ev-cert/encrypt-stub",
+      "category": "Crypto",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test data",
+          "algorithm": "aes-256-gcm",
+          "key": "test-key"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/ev-cert/stubs",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/ev-cert/templates",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/ev-cert/languages",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/ev-cert/algorithms",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/beaconism/status",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/beaconism/generate-payload",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "type": "test",
+          "options": {}
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/beaconism/deploy",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/beaconism/payloads",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/beaconism/targets",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/beaconism/scan-target",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "target": "localhost",
+          "ports": [
+            80,
+            443
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/red-shells/status",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/red-shells/create",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/red-shells/:id/execute",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        },
+        "endpoint": "/red-shells/test-id/execute"
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/red-shells",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/red-shells/:id/history",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "endpoint": "/red-shells/test-id/history"
+      }
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/red-shells/:id",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "endpoint": "/red-shells/test-id"
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/red-shells/stats",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/advanced-features",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/stub-generator/status",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/stub-generator/templates",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/stub-generator/active",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/stub-generator/packing-methods",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/stub-generator/fud-techniques",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/stub-generator/auto-regeneration/status",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/stub-generator/unpacked",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/stub-generator/repack-history",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/stub-generator/comprehensive-stats",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/stub-generator/export-stats/:format",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "endpoint": "/stub-generator/export-stats/test-id"
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/native-compiler/stats",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/native-compiler/supported-languages",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/native-compiler/available-compilers",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/jotti/info",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/jotti/test-connection",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/jotti/active-scans",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/jotti/scan-history",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/jotti/scan-status/:jobId",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "endpoint": "/jotti/scan-status/test-id"
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/private-scanner/queue-status",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/private-scanner/engines",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/private-scanner/stats",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/private-scanner/result/:scanId",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "endpoint": "/private-scanner/result/test-id"
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/private-scanner/history",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/implementation-check/results",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/stub-generator/generate",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "type": "test",
+          "options": {}
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/stub-generator/regenerate",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "type": "test",
+          "options": {}
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/native-compiler/regenerate",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "type": "test",
+          "options": {}
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/stub-generator/analyze",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/jotti/scan",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "target": "localhost",
+          "ports": [
+            80,
+            443
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/jotti/scan-multiple",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "target": "localhost",
+          "ports": [
+            80,
+            443
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/jotti/cancel-scan",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "target": "localhost",
+          "ports": [
+            80,
+            443
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/private-scanner/scan",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "target": "localhost",
+          "ports": [
+            80,
+            443
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/private-scanner/queue",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "target": "localhost",
+          "ports": [
+            80,
+            443
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "endpoint": "/stub-generator/encryption-methods",
+      "category": "Crypto",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/stub-generator/trigger-regeneration",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/stub-generator/unpack",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/stub-generator/repack",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/native-compiler/compile",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "source": "test code",
+          "language": "cpp",
+          "target": "windows"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/stub-generator/auto-regeneration/enable",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/stub-generator/auto-regeneration/disable",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/stub-generator/process-scheduled",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/stub-generator/reset-stats",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "data": "test"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/private-scanner/cancel/:scanId",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "target": "localhost",
+          "ports": [
+            80,
+            443
+          ]
+        },
+        "endpoint": "/private-scanner/cancel/test-id"
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/private-scanner/clear-queue",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "target": "localhost",
+          "ports": [
+            80,
+            443
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "endpoint": "/private-scanner/queue-settings",
+      "category": "Analysis",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "target": "localhost",
+          "ports": [
+            80,
+            443
+          ]
+        }
+      }
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/stub-generator/clear/all",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/stub-generator/unpacked/:unpackId",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "endpoint": "/stub-generator/unpacked/test-id"
+      }
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/stub-generator/unpacked/clear/all",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/stub-generator/:botId",
+      "category": "Bot Generation",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "endpoint": "/stub-generator/test-id"
+      }
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/red-shells/:id",
+      "category": "Other",
+      "testParams": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "endpoint": "/red-shells/test-id"
+      }
+    }
+  ]
+}

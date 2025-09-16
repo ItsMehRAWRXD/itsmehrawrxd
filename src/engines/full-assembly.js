@@ -50,7 +50,8 @@ class FullAssembly {
             }
         };
         
-        this.assembledCode = this.memoryManager.createManagedCollection('assembledCode', 'Map', 100);
+        this.memoryManager = new Map();
+        this.assembledCode = new Map();
         this.assemblyStats = {
             totalAssembled: 0,
             successfulAssemblies: 0,

@@ -5,7 +5,7 @@ const path = require('path');
 const crypto = require('crypto');
 const zlib = require('zlib');
 const { promisify } = require('util');
-const { getMemoryManager } = require('../utils/memory-manager');
+// const { getMemoryManager } = require('../utils/memory-manager');
 
 class BackupSystem extends EventEmitter {
     // Performance monitoring
@@ -25,9 +25,9 @@ class BackupSystem extends EventEmitter {
         super();
         this.name = 'BackupSystem';
         this.version = '2.0.0';
-        this.memoryManager = getMemoryManager();
-        this.backups = this.memoryManager.createManagedCollection('backups', 'Map', 100);
-        this.backupPolicies = this.memoryManager.createManagedCollection('backupPolicies', 'Map', 100);
+        this.memoryManager = new Map();
+        this.backups = new Map();
+        this.backupPolicies = new Map();
         this.compressionSettings = {
             enabled: true,
             algorithm: 'gzip',
@@ -37,11 +37,11 @@ class BackupSystem extends EventEmitter {
             enabled: true,
             algorithm: 'aes-256-gcm'
         };
-        this.storageLocations = this.memoryManager.createManagedCollection('storageLocations', 'Map', 100);
+        this.storageLocations = new Map();
         this.backupHistory = [];
-        this.retentionPolicies = this.memoryManager.createManagedCollection('retentionPolicies', 'Map', 100);
-        this.incrementalBackups = this.memoryManager.createManagedCollection('incrementalBackups', 'Map', 100);
-        this.backupSchedules = this.memoryManager.createManagedCollection('backupSchedules', 'Map', 100);
+        this.retentionPolicies = new Map();
+        this.incrementalBackups = new Map();
+        this.backupSchedules = new Map();
     }
 
     // Initialize backup system

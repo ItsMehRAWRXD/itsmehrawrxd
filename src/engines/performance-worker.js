@@ -68,7 +68,8 @@ class PerformanceWorker {
         const key = options.key || crypto.randomBytes(32);
         const iv = options.iv || crypto.randomBytes(16);
         
-        const cipher = crypto.createCipher(algorithm, key);
+        const keyHash = crypto.createHash('sha256').update(key).digest();
+        const cipher = crypto.createCipheriv(algorithm, keyHash, iv);
         let encrypted = cipher.update(JSON.stringify(data), 'utf8', 'hex');
         encrypted += cipher.final('hex');
         
@@ -500,7 +501,8 @@ class PerformanceWorker {
         const key = options.key || crypto.randomBytes(32);
         const iv = options.iv || crypto.randomBytes(16);
         
-        const cipher = crypto.createCipher(algorithm, key);
+        const keyHash = crypto.createHash('sha256').update(key).digest();
+        const cipher = crypto.createCipheriv(algorithm, keyHash, iv);
         let encrypted = cipher.update(content);
         encrypted = Buffer.concat([encrypted, cipher.final()]);
         

@@ -51,6 +51,55 @@ class MemoryManager extends EventEmitter {
         };
     }
 
+    // Create managed collection for other modules
+    createManagedCollection(name, type = 'Map', maxSize = 1000) {
+        const collection = type === 'Map' ? new Map() : new Set();
+        const managedCollection = {
+            collection,
+            name,
+            type,
+            maxSize,
+            size: 0,
+            add: (key, value) => {
+                if (managedCollection.size >= maxSize) {
+                    // Remove oldest entry
+                    if (type === 'Map') {
+                        const firstKey = collection.keys().next().value;
+                        collection.delete(firstKey);
+                    } else {
+                        const firstValue = collection.values().next().value;
+                        collection.delete(firstValue);
+                    }
+                    managedCollection.size--;
+                }
+                if (type === 'Map') {
+                    collection.set(key, value);
+                } else {
+                    collection.add(value);
+                }
+                managedCollection.size++;
+            },
+            get: (key) => type === 'Map' ? collection.get(key) : collection.has(key),
+            delete: (key) => {
+                const existed = type === 'Map' ? collection.delete(key) : collection.delete(key);
+                if (existed) managedCollection.size--;
+                return existed;
+            },
+            clear: () => {
+                collection.clear();
+                managedCollection.size = 0;
+            },
+            size: () => managedCollection.size,
+            has: (key) => type === 'Map' ? collection.has(key) : collection.has(key),
+            keys: () => collection.keys(),
+            values: () => collection.values(),
+            entries: () => collection.entries()
+        };
+        
+        this.memoryPools.set(name, managedCollection);
+        return managedCollection;
+    }
+
     // Manage memory - main entry point for memory operations
     async manageMemory(operation, options = {}) {
         const operations = {

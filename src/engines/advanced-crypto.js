@@ -469,17 +469,23 @@ class AdvancedCrypto {
         let encrypted = data;
         
         // First encryption
-        const cipher1 = crypto.createCipher('aes-128-cbc', key1);
+        const keyHash1 = crypto.createHash('sha256').update(key1).digest();
+        const iv1 = crypto.randomBytes(16);
+        const cipher1 = crypto.createCipheriv('aes-128-cbc', keyHash1, iv1);
         let temp1 = cipher1.update(encrypted, 'utf8', 'hex');
         temp1 += cipher1.final('hex');
         
         // Second encryption
-        const cipher2 = crypto.createCipher('aes-128-cbc', key2);
+        const keyHash2 = crypto.createHash('sha256').update(key2).digest();
+        const iv2 = crypto.randomBytes(16);
+        const cipher2 = crypto.createCipheriv('aes-128-cbc', keyHash2, iv2);
         let temp2 = cipher2.update(temp1, 'hex', 'hex');
         temp2 += cipher2.final('hex');
         
         // Third encryption
-        const cipher3 = crypto.createCipher('aes-128-cbc', key3);
+        const keyHash3 = crypto.createHash('sha256').update(key3).digest();
+        const iv3 = crypto.randomBytes(16);
+        const cipher3 = crypto.createCipheriv('aes-128-cbc', keyHash3, iv3);
         let temp3 = cipher3.update(temp2, 'hex', 'hex');
         temp3 += cipher3.final('hex');
         

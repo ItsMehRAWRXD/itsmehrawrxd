@@ -5,7 +5,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
-const { getMemoryManager } = require('../utils/memory-manager');
+// const { getMemoryManager } = require('../utils/memory-manager');
 const os = require('os');
 const { logger } = require('../utils/logger');
 
@@ -29,19 +29,19 @@ class ReverseEngineering extends EventEmitter {
         super();
         this.name = 'ReverseEngineering';
         this.version = '2.0.0';
-        this.memoryManager = getMemoryManager();
-        this.analysisResults = this.memoryManager.createManagedCollection('analysisResults', 'Map', 100);
-        this.disassemblyResults = this.memoryManager.createManagedCollection('disassemblyResults', 'Map', 100);
-        this.decompilationResults = this.memoryManager.createManagedCollection('decompilationResults', 'Map', 100);
-        this.stringAnalysis = this.memoryManager.createManagedCollection('stringAnalysis', 'Map', 100);
-        this.functionAnalysis = this.memoryManager.createManagedCollection('functionAnalysis', 'Map', 100);
-        this.importAnalysis = this.memoryManager.createManagedCollection('importAnalysis', 'Map', 100);
-        this.exportAnalysis = this.memoryManager.createManagedCollection('exportAnalysis', 'Map', 100);
-        this.sectionAnalysis = this.memoryManager.createManagedCollection('sectionAnalysis', 'Map', 100);
-        this.entropyAnalysis = this.memoryManager.createManagedCollection('entropyAnalysis', 'Map', 100);
-        this.packingDetection = this.memoryManager.createManagedCollection('packingDetection', 'Map', 100);
-        this.obfuscationDetection = this.memoryManager.createManagedCollection('obfuscationDetection', 'Map', 100);
-        this.malwareIndicators = this.memoryManager.createManagedCollection('malwareIndicators', 'Map', 100);
+        this.memoryManager = new Map();
+        this.analysisResults = new Map();
+        this.disassemblyResults = new Map();
+        this.decompilationResults = new Map();
+        this.stringAnalysis = new Map();
+        this.functionAnalysis = new Map();
+        this.importAnalysis = new Map();
+        this.exportAnalysis = new Map();
+        this.sectionAnalysis = new Map();
+        this.entropyAnalysis = new Map();
+        this.packingDetection = new Map();
+        this.obfuscationDetection = new Map();
+        this.malwareIndicators = new Map();
     }
 
     // Initialize reverse engineering engine

@@ -11,9 +11,12 @@
     "test:unit": "node test-unit.js",
     "test:performance": "node test-performance.js",
     "test:comprehensive": "node test-comprehensive.js",
-    "test:all": "node test-runner.js"
+    "test:all": "node test-runner.js",
+    "payload-cli": "node cli/payload-cli.js",
+    "payloads": "node cli/payload-cli.js"
   },
   "dependencies": {
+    "axios": "^1.12.2",
     "cors": "^2.8.5",
     "crc32": "^0.2.2",
     "dotenv": "^16.3.1",
@@ -21,7 +24,8 @@
     "form-data": "^4.0.4",
     "helmet": "^8.1.0",
     "multer": "^2.0.2",
-    "node-fetch": "^2.7.0"
+    "node-fetch": "^2.7.0",
+    "uuid": "^13.0.0"
   },
   "keywords": [
     "security",

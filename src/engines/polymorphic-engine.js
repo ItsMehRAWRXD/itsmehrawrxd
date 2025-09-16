@@ -50,7 +50,8 @@ class PolymorphicEngine {
             }
         };
         
-        this.mutatedCode = this.memoryManager.createManagedCollection('mutatedCode', 'Map', 100);
+        this.memoryManager = new Map();
+        this.mutatedCode = new Map();
         this.mutationStats = {
             totalMutations: 0,
             successfulMutations: 0,

@@ -5,7 +5,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
-const { getMemoryManager } = require('../utils/memory-manager');
+// const { getMemoryManager } = require('../utils/memory-manager');
 const os = require('os');
 const zlib = require('zlib');
 const { logger } = require('../utils/logger');
@@ -28,8 +28,9 @@ class DualGenerators extends EventEmitter {
     }
     constructor() {
         super();
-        this.generators = this.memoryManager.createManagedCollection('generators', 'Map', 100);
-        this.activeOperations = this.memoryManager.createManagedCollection('activeOperations', 'Map', 100);
+        this.memoryManager = new Map();
+        this.generators = new Map();
+        this.activeOperations = new Map();
         this.generationStats = {
             totalGenerated: 0,
             successfulGenerations: 0,
@@ -720,9 +721,9 @@ class DualGenerators extends EventEmitter {
         try {
             const algorithm = 'chacha20-poly1305';
             const key = crypto.randomBytes(32);
-            const iv = crypto.randomBytes(12);
-            
-            const cipher = crypto.createCipher(algorithm, key);
+            const keyHash = crypto.createHash('sha256').update(key).digest();
+            const iv = crypto.randomBytes(16);
+            const cipher = crypto.createCipheriv(algorithm, keyHash, iv);
             cipher.setAAD(Buffer.from('RawrZ'));
             
             let encrypted = cipher.update(data);

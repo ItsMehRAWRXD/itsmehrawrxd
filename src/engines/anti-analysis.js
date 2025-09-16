@@ -6,7 +6,7 @@ const path = require('path');
 const os = require('os');
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
-const memoryManager = require('./memory-manager');
+// const memoryManager = require('./memory-manager');
 
 const execAsync = promisify(exec);
 
@@ -28,7 +28,7 @@ class AntiAnalysis extends EventEmitter {
         super();
         this.name = 'AntiAnalysis';
         this.version = '2.0.0';
-        this.memoryManager = memoryManager;
+        this.memoryManager = new Map();
         this.techniques = new Map();
         this.obfuscationMethods = new Map();
         this.antiDebugging = new Map();
@@ -544,6 +544,10 @@ class AntiAnalysis extends EventEmitter {
     }
 
     // Check for sandbox
+    async checkSandbox() {
+        return await this.checkForSandbox();
+    }
+
     async checkForSandbox() {
         try {
             const checks = [];

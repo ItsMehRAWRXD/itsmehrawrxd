@@ -1,7 +1,7 @@
 // RawrZ Compression Engine - Advanced compression with multiple algorithms
 const zlib = require('zlib');
 const { promisify } = require('util');
-const { getMemoryManager } = require('../utils/memory-manager');
+// const { getMemoryManager } = require('../utils/memory-manager');
 const crypto = require('crypto');
 const { logger } = require('../utils/logger');
 

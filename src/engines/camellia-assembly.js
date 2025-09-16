@@ -140,14 +140,18 @@ class CamelliaAssemblyEngine {
       encrypt: (data, key, iv) => {
         // Use Node.js crypto for Camellia if available, otherwise use AES as fallback
         try {
-          const cipher = crypto.createCipher('camellia-256-cbc', key);
+          const keyHash = crypto.createHash('sha256').update(key).digest();
+          const iv = crypto.randomBytes(16);
+          const cipher = crypto.createCipheriv('camellia-256-cbc', keyHash, iv);
           cipher.setAutoPadding(true);
           let encrypted = cipher.update(data, 'utf8', 'hex');
           encrypted += cipher.final('hex');
           return encrypted;
         } catch (error) {
           // Fallback to AES if Camellia not supported
-          const cipher = crypto.createCipher('aes-256-cbc', key);
+          const keyHash = crypto.createHash('sha256').update(key).digest();
+          const iv = crypto.randomBytes(16);
+          const cipher = crypto.createCipheriv('aes-256-cbc', keyHash, iv);
           cipher.setAutoPadding(true);
           let encrypted = cipher.update(data, 'utf8', 'hex');
           encrypted += cipher.final('hex');
