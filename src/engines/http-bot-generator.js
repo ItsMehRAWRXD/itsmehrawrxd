@@ -3,7 +3,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
-const { getMemoryManager } = require('../utils/memory-manager');
+// const { getMemoryManager } = require('../utils/memory-manager'); // Removed - using Map instead
 const os = require('os');
 const crypto = require('crypto');
 const { logger } = require('../utils/logger');
@@ -36,7 +36,7 @@ class HTTPBotGenerator {
             'mobilePhotos', 'mobileVideos', 'mobileApps', 'mobileDeviceInfo',
             'mobileNetworkInfo', 'mobileBatteryInfo', 'mobileStorageInfo'
         ];
-        this.templates = this.memoryManager.createManagedCollection('templates', 'Map', 100);
+        this.templates = new Map();
         this.botStats = {
             totalGenerated: 0,
             successfulGenerations: 0,
