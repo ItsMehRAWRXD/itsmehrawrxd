@@ -4954,6 +4954,245 @@ Examples:
             
             showStatus('Custom command deleted successfully', 'success');
         }
+
+        // Interactive CLI Terminal Functions
+        function initializeInteractiveCLI() {
+            const cliTerminal = document.getElementById('cliTerminal');
+            if (!cliTerminal) return;
+
+            // Add keyboard event listener
+            cliTerminal.addEventListener('keydown', handleCLIKeyDown);
+            cliTerminal.addEventListener('input', handleCLIInput);
+            
+            // Focus the terminal
+            cliTerminal.focus();
+        }
+
+        function handleCLIKeyDown(event) {
+            const cliTerminal = document.getElementById('cliTerminal');
+            
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                executeCurrentLine();
+            } else if (event.key === 'Backspace') {
+                // Handle backspace to prevent deleting prompt
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    const currentLine = getCurrentLineElement();
+                    if (currentLine && range.startContainer.parentElement === currentLine) {
+                        const promptSpan = currentLine.querySelector('.cli-prompt');
+                        if (promptSpan && range.startOffset <= promptSpan.textContent.length) {
+                            event.preventDefault();
+                            return;
+                        }
+                    }
+                }
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                navigateHistory(-1);
+            } else if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                navigateHistory(1);
+            }
+        }
+
+        function handleCLIInput(event) {
+            // Auto-scroll to bottom
+            const cliTerminal = document.getElementById('cliTerminal');
+            cliTerminal.scrollTop = cliTerminal.scrollHeight;
+        }
+
+        function getCurrentLineElement() {
+            const cliTerminal = document.getElementById('cliTerminal');
+            const lines = cliTerminal.querySelectorAll('.cli-line');
+            return lines[lines.length - 1];
+        }
+
+        function executeCurrentLine() {
+            const currentLine = getCurrentLineElement();
+            if (!currentLine) return;
+
+            const promptSpan = currentLine.querySelector('.cli-prompt');
+            const textSpan = currentLine.querySelector('.cli-text');
+            
+            if (!textSpan) return;
+
+            const command = textSpan.textContent.trim();
+            if (!command) {
+                addNewCLILine();
+                return;
+            }
+
+            // Add command to history
+            addToCLIHistory(command, 'Executing...');
+
+            // Execute the command
+            executeCLICommand(command);
+
+            // Add new line for next command
+            addNewCLILine();
+        }
+
+        function executeCLICommand(command) {
+            // Parse and execute the command
+            const parts = command.split(' ');
+            const cmd = parts[0].toLowerCase();
+            const args = parts.slice(1);
+
+            switch (cmd) {
+                case 'help':
+                    showCLIHelp();
+                    break;
+                case 'clear':
+                    clearCLI();
+                    break;
+                case 'encrypt':
+                    if (args.length >= 2) {
+                        const algorithm = args[0];
+                        const text = args.slice(1).join(' ');
+                        executeQuickCommand(`encrypt ${algorithm} ${text}`);
+                    } else {
+                        addCLILine('Usage: encrypt <algorithm> <text>');
+                    }
+                    break;
+                case 'hash':
+                    if (args.length >= 2) {
+                        const text = args[0];
+                        const algorithm = args[1];
+                        executeQuickCommand(`hash ${text} ${algorithm}`);
+                    } else {
+                        addCLILine('Usage: hash <text> <algorithm>');
+                    }
+                    break;
+                case 'ping':
+                    if (args.length >= 1) {
+                        executeQuickCommand(`ping ${args[0]}`);
+                    } else {
+                        addCLILine('Usage: ping <host>');
+                    }
+                    break;
+                case 'dns':
+                    if (args.length >= 1) {
+                        executeQuickCommand(`dns ${args[0]}`);
+                    } else {
+                        addCLILine('Usage: dns <domain>');
+                    }
+                    break;
+                case 'sysinfo':
+                    executeQuickCommand('sysinfo');
+                    break;
+                case 'processes':
+                    executeQuickCommand('processes');
+                    break;
+                case 'files':
+                    if (args.length >= 1) {
+                        executeQuickCommand(`files ${args[0]}`);
+                    } else {
+                        executeQuickCommand('files');
+                    }
+                    break;
+                case 'uuid':
+                    executeQuickCommand('uuid');
+                    break;
+                case 'keygen':
+                    if (args.length >= 1) {
+                        executeQuickCommand(`keygen ${args[0]}`);
+                    } else {
+                        addCLILine('Usage: keygen <algorithm>');
+                    }
+                    break;
+                case 'analyze':
+                    if (args.length >= 1) {
+                        executeQuickCommand(`analyze ${args[0]}`);
+                    } else {
+                        addCLILine('Usage: analyze <filepath>');
+                    }
+                    break;
+                case 'base64encode':
+                    if (args.length >= 1) {
+                        executeQuickCommand(`base64encode ${args.join(' ')}`);
+                    } else {
+                        addCLILine('Usage: base64encode <text>');
+                    }
+                    break;
+                case 'validate':
+                    if (args.length >= 2) {
+                        executeQuickCommand(`validate ${args[0]} ${args[1]}`);
+                    } else {
+                        addCLILine('Usage: validate <value> <type>');
+                    }
+                    break;
+                case 'portscan':
+                    if (args.length >= 2) {
+                        executeQuickCommand(`portscan ${args[0]} ${args[1]}`);
+                    } else {
+                        addCLILine('Usage: portscan <host> <ports>');
+                    }
+                    break;
+                default:
+                    addCLILine(`Unknown command: ${cmd}. Type 'help' for available commands.`);
+            }
+        }
+
+        function addNewCLILine() {
+            const cliTerminal = document.getElementById('cliTerminal');
+            const newLine = document.createElement('div');
+            newLine.className = 'cli-line';
+            newLine.innerHTML = `
+                <span class="cli-prompt">RawrZ@Security:~$</span>
+                <span class="cli-text"></span>
+            `;
+            cliTerminal.appendChild(newLine);
+            
+            // Focus on the new line
+            const textSpan = newLine.querySelector('.cli-text');
+            const range = document.createRange();
+            const selection = window.getSelection();
+            range.setStart(textSpan, 0);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            
+            cliTerminal.scrollTop = cliTerminal.scrollHeight;
+        }
+
+        function addCLILine(text) {
+            const cliTerminal = document.getElementById('cliTerminal');
+            const newLine = document.createElement('div');
+            newLine.className = 'cli-line';
+            newLine.innerHTML = `
+                <span class="cli-text" style="color: #a0aec0;">${text}</span>
+            `;
+            cliTerminal.appendChild(newLine);
+            cliTerminal.scrollTop = cliTerminal.scrollHeight;
+        }
+
+        // CLI History navigation
+        let cliTerminalHistoryIndex = -1;
+        let cliCommandHistory = [];
+
+        function navigateHistory(direction) {
+            if (cliCommandHistory.length === 0) return;
+            
+            cliTerminalHistoryIndex += direction;
+            
+            if (cliTerminalHistoryIndex < 0) {
+                cliTerminalHistoryIndex = -1;
+                return;
+            }
+            
+            if (cliTerminalHistoryIndex >= cliCommandHistory.length) {
+                cliTerminalHistoryIndex = cliCommandHistory.length - 1;
+                return;
+            }
+            
+            const currentLine = getCurrentLineElement();
+            const textSpan = currentLine.querySelector('.cli-text');
+            if (textSpan) {
+                textSpan.textContent = cliCommandHistory[cliTerminalHistoryIndex];
+            }
+        }
         
         function addToCLIHistory(command, result) {
             const cliHistory = document.getElementById('cliHistory');
@@ -8589,6 +8828,7 @@ Examples:
             initializeOpenSSLManager();
             initializeInteractiveControls();
             loadCustomCommands(); // Load custom commands on page load
+            initializeInteractiveCLI(); // Initialize interactive CLI terminal
             
             // Force UI update after a short delay to ensure elements are loaded
             setTimeout(() => {
