@@ -1,5 +1,5 @@
-# Use Node.js 18 LTS
-FROM node:18-alpine
+# Use Node.js 20 LTS (more recent and secure)
+FROM node:20-alpine
 
 # Install system dependencies for RawrZ platform functionality
 RUN apk add --no-cache \
