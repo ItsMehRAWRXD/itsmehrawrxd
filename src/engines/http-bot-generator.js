@@ -656,17 +656,16 @@ class HTTPBotGenerator {
     }
 
     generateDefaultHTTPBot(config, features, timestamp, botId) {
-        return `// RawrZ HTTP Bot - Default Implementation
-// Generated: ${timestamp}
-// Bot ID: ${botId}
-
-// Basic HTTP bot implementation
-// Features: ${features.join(', ')}
-
-console.log("RawrZ HTTP Bot ${botId} - Default Implementation");
-console.log("Server: ${config.server || 'http://localhost:8080'}");
-console.log("Features: ${features.join(', ')}");
-`;
+        return '// RawrZ HTTP Bot - Default Implementation\n' +
+            '// Generated: ' + timestamp + '\n' +
+            '// Bot ID: ' + botId + '\n' +
+            '\n' +
+            '// Basic HTTP bot implementation\n' +
+            '// Features: ' + features.join(', ') + '\n' +
+            '\n' +
+            'console.log("RawrZ HTTP Bot ' + botId + ' - Default Implementation");\n' +
+            'console.log("Server: ' + (config.server || 'http://localhost:8080') + '");\n' +
+            'console.log("Features: ' + features.join(', ') + '");';
     }
 
     generateSwiftHTTPBot(config, features, timestamp, botId) {
