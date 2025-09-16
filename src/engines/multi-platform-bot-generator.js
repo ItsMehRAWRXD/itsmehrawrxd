@@ -537,76 +537,76 @@ class DiscordAdapter {
     generateTypeScriptDiscordBot(name, features) {
         return 'import { Client, GatewayIntentBits, EmbedBuilder, SlashCommandBuilder } from \'discord.js\';\n\n' +
             'export class ' + name + 'Bot {\n' +
-    private client: Client;
-
-    constructor() {
-        this.client = new Client({
-            intents: [
-                GatewayIntentBits.Guilds,
-                GatewayIntentBits.GuildMessages,
-                GatewayIntentBits.MessageContent
-            ]
-        });
-        
-        this.setupEventHandlers();
-        this.setupCommands();
-    }
-
-    private setupEventHandlers(): void {
-        this.client.once('ready', () => {
-            console.log(\"\${this.client.user?.tag} is online!\");
-        });
-
-        this.client.on('messageCreate', async (message) => {
-            if (message.author.bot) return;
-            
-            ${this.generateMessageHandling(features)}
-        });
-    }
-
-    private setupCommands(): void {
-        " + this.generateSlashCommands(features) + "
-    }
-
-    public async start(token: string): Promise<void>` {
-        await this.client.login(token);
-    }
-}";
+            '    private client: Client;\n' +
+            '\n' +
+            '    constructor() {\n' +
+            '        this.client = new Client({\n' +
+            '            intents: [\n' +
+            '                GatewayIntentBits.Guilds,\n' +
+            '                GatewayIntentBits.GuildMessages,\n' +
+            '                GatewayIntentBits.MessageContent\n' +
+            '            ]\n' +
+            '        });\n' +
+            '        \n' +
+            '        this.setupEventHandlers();\n' +
+            '        this.setupCommands();\n' +
+            '    }\n' +
+            '\n' +
+            '    private setupEventHandlers(): void {\n' +
+            '        this.client.once(\'ready\', () => {\n' +
+            '            console.log(`${this.client.user?.tag} is online!`);\n' +
+            '        });\n' +
+            '\n' +
+            '        this.client.on(\'messageCreate\', async (message) => {\n' +
+            '            if (message.author.bot) return;\n' +
+            '            \n' +
+            '            ' + this.generateMessageHandling(features) + '\n' +
+            '        });\n' +
+            '    }\n' +
+            '\n' +
+            '    private setupCommands(): void {\n' +
+            '        ' + this.generateSlashCommands(features) + '\n' +
+            '    }\n' +
+            '\n' +
+            '    public async start(token: string): Promise<void> {\n' +
+            '        await this.client.login(token);\n' +
+            '    }\n' +
+            '}';
     }
 
     generatePythonDiscordBot(name, features) {
-        return "import discord
-from discord.ext import commands
-import asyncio
-
-class ${name}Bot(commands.Bot):
-    def __init__(self):
-        intents = discord.Intents.default()
-        intents.message_content = True
-        super().__init__(command_prefix='!', intents=intents)
-        
-        self.setup_commands()
-
-    async def on_ready(self):
-        print(f'{self.user} is online!')
-
-    async def on_message(self, message):
-        if message.author == self.user:
-            return
-            
-        ${this.generatePythonMessageHandling(features)}
-        
-        await self.process_commands(message)
-
-    def setup_commands(self):
-        ${this.generatePythonCommands(features)}
-
-    async def start_bot(self, token):
-        await self.start(token)
-
-if __name__ == '__main__':
-    bot = " + name + "Bot()
-    bot.run('YOUR_BOT_TOKEN')";
+        return 'import discord\n' +
+            'from discord.ext import commands\n' +
+            'import asyncio\n' +
+            '\n' +
+            'class ' + name + 'Bot(commands.Bot):\n' +
+            '    def __init__(self):\n' +
+            '        intents = discord.Intents.default()\n' +
+            '        intents.message_content = True\n' +
+            '        super().__init__(command_prefix=\'!\', intents=intents)\n' +
+            '        \n' +
+            '        self.setup_commands()\n' +
+            '\n' +
+            '    async def on_ready(self):\n' +
+            '        print(f\'{self.user} is online!\')\n' +
+            '\n' +
+            '    async def on_message(self, message):\n' +
+            '        if message.author == self.user:\n' +
+            '            return\n' +
+            '            \n' +
+            '        ' + this.generatePythonMessageHandling(features) + '\n' +
+            '        \n' +
+            '        await self.process_commands(message)\n' +
+            '\n' +
+            '    def setup_commands(self):\n' +
+            '        ' + this.generatePythonCommands(features) + '\n' +
+            '\n' +
+            '    async def start_bot(self, token):\n' +
+            '        await self.start(token)\n' +
+            '\n' +
+            'if __name__ == \'__main__\':\n' +
+            '    bot = ' + name + 'Bot()\n' +
+            '    bot.run(\'YOUR_BOT_TOKEN\')';
     }
 
     generateMessageHandling(features) {
@@ -737,53 +737,53 @@ class TelegramAdapter {
     }
 
     generateJavaScriptTelegramBot(name, features) {
-        return "const TelegramBot = require('node-telegram-bot-api');
-
-class ${name}Bot {
-    constructor(token) {
-        this.bot = new TelegramBot(token, { polling: true });
-        this.setupHandlers();
-    }
-
-    setupHandlers() {
-        this.bot.on('message', (msg) => {
-            const chatId = msg.chat.id;
-            const text = msg.text;
-
-            ${this.generateTelegramMessageHandling(features)}
-        });
-
-        ${this.generateTelegramCommands(features)}
-    }
-
-    async start() {
-        console.log('${name} Bot is running...');
-    }
-}
-
-module.exports = " + name + "Bot;";
+        return 'const TelegramBot = require(\'node-telegram-bot-api\');\n' +
+            '\n' +
+            'class ' + name + 'Bot {\n' +
+            '    constructor(token) {\n' +
+            '        this.bot = new TelegramBot(token, { polling: true });\n' +
+            '        this.setupHandlers();\n' +
+            '    }\n' +
+            '\n' +
+            '    setupHandlers() {\n' +
+            '        this.bot.on(\'message\', (msg) => {\n' +
+            '            const chatId = msg.chat.id;\n' +
+            '            const text = msg.text;\n' +
+            '\n' +
+            '            ' + this.generateTelegramMessageHandling(features) + '\n' +
+            '        });\n' +
+            '\n' +
+            '        ' + this.generateTelegramCommands(features) + '\n' +
+            '    }\n' +
+            '\n' +
+            '    async start() {\n' +
+            '        console.log(\'' + name + ' Bot is running...\');\n' +
+            '    }\n' +
+            '}\n' +
+            '\n' +
+            'module.exports = ' + name + 'Bot;';
     }
 
     generatePythonTelegramBot(name, features) {
-        return "import logging
-from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
-
-class ${name}Bot:
-    def __init__(self, token):
-        self.application = Application.builder().token(token).build()
-        self.setup_handlers()
-
-    def setup_handlers(self):
-        ${this.generatePythonTelegramHandlers(features)}
-
-    async def start_bot(self):
-        print('${name} Bot is running...')
-        await self.application.run_polling()
-
-if __name__ == '__main__':
-    bot = " + name + "Bot('YOUR_BOT_TOKEN')
-    bot.start_bot()";
+        return 'import logging\n' +
+            'from telegram import Update\n' +
+            'from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes\n' +
+            '\n' +
+            'class ' + name + 'Bot:\n' +
+            '    def __init__(self, token):\n' +
+            '        self.application = Application.builder().token(token).build()\n' +
+            '        self.setup_handlers()\n' +
+            '\n' +
+            '    def setup_handlers(self):\n' +
+            '        ' + this.generatePythonTelegramHandlers(features) + '\n' +
+            '\n' +
+            '    async def start_bot(self):\n' +
+            '        print(\'' + name + ' Bot is running...\')\n' +
+            '        await self.application.run_polling()\n' +
+            '\n' +
+            'if __name__ == \'__main__\':\n' +
+            '    bot = ' + name + 'Bot(\'YOUR_BOT_TOKEN\')\n' +
+            '    bot.start_bot()';
     }
 
     generateTelegramMessageHandling(features) {

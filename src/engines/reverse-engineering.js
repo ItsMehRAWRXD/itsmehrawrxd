@@ -1327,34 +1327,32 @@ class ReverseEngineering extends EventEmitter {
                 const { stdout } = await execAsync('strings "' + filePath + '"');
                 const strings = stdout.split('\n').filter(s => s.length > 4);
                 
-                return `
-int main() {
-    // Decompiled from ${filePath}
-    // Found strings: ${strings.slice(0, 5).join(', ')}
-    
-    int var1 = 0;
-    int var2 = 10;
-    
-    if (var1 < var2) {
-        var1 = var1 + 1;
-    }
-    
-    return var1;
-}";
+                return 'int main() {\n' +
+                    '    // Decompiled from ' + filePath + '\n' +
+                    '    // Found strings: ' + strings.slice(0, 5).join(', ') + '\n' +
+                    '    \n' +
+                    '    int var1 = 0;\n' +
+                    '    int var2 = 10;\n' +
+                    '    \n' +
+                    '    if (var1 < var2) {\n' +
+                    '        var1 = var1 + 1;\n' +
+                    '    }\n' +
+                    '    \n' +
+                    '    return var1;\n' +
+                    '}';
             } catch (error) {
                 // Fallback to manual decompilation
-                return `
-int main() {
-    // Fallback decompilation
-    int var1 = 0;
-    int var2 = 10;
-    
-    if (var1 < var2) {
-        var1 = var1 + 1;
-    }
-    
-    return var1;
-}`;
+                return 'int main() {\n' +
+                    '    // Fallback decompilation\n' +
+                    '    int var1 = 0;\n' +
+                    '    int var2 = 10;\n' +
+                    '    \n' +
+                    '    if (var1 < var2) {\n' +
+                    '        var1 = var1 + 1;\n' +
+                    '    }\n' +
+                    '    \n' +
+                    '    return var1;\n' +
+                    '}';
             }
         } catch (error) {
             logger.error('Windows decompilation failed:', error.message);
@@ -1371,31 +1369,30 @@ int main() {
                 
                 return 'int main() {\n' +
                     '    // Decompiled from ' + filePath + '\n' +
-    // Found strings: " + strings.slice(0, 5).join(', ') + "
-    
-    int var1 = 0;
-    int var2 = 10;
-    
-    if (var1 < var2) {
-        var1 = var1 + 1;
-    }
-    
-    return var1;
-}";
+                    '    // Found strings: ' + strings.slice(0, 5).join(', ') + '\n' +
+                    '    \n' +
+                    '    int var1 = 0;\n' +
+                    '    int var2 = 10;\n' +
+                    '    \n' +
+                    '    if (var1 < var2) {\n' +
+                    '        var1 = var1 + 1;\n' +
+                    '    }\n' +
+                    '    \n' +
+                    '    return var1;\n' +
+                    '}';
             } catch (error) {
                 // Fallback to manual decompilation
-                return `
-int main() {
-    // Fallback decompilation
-    int var1 = 0;
-    int var2 = 10;
-    
-    if (var1 < var2) {
-        var1 = var1 + 1;
-    }
-    
-    return var1;
-}`;
+                return 'int main() {\n' +
+                    '    // Fallback decompilation\n' +
+                    '    int var1 = 0;\n' +
+                    '    int var2 = 10;\n' +
+                    '    \n' +
+                    '    if (var1 < var2) {\n' +
+                    '        var1 = var1 + 1;\n' +
+                    '    }\n' +
+                    '    \n' +
+                    '    return var1;\n' +
+                    '}';
             }
         } catch (error) {
             logger.error('Unix decompilation failed:', error.message);
