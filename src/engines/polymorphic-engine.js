@@ -16,7 +16,15 @@ class PolymorphicEngine {
             return result;
         }
     }
+    
     constructor() {
+        // Engine properties
+        this.name = 'polymorphic-engine';
+        this.version = '1.0.0';
+        this.description = 'Advanced polymorphic code transformation engine';
+        this.enabled = true;
+        this.autoStart = false;
+        this.status = 'stopped';
         this.mutationTypes = {
             'instruction-substitution': {
                 name: 'Instruction Substitution',
@@ -60,9 +68,34 @@ class PolymorphicEngine {
         };
     }
 
-    async initialize(config) {
+    async initialize(config = {}) {
         this.config = config;
+        this.status = 'initialized';
         logger.info('Polymorphic Engine initialized');
+        return { success: true, message: 'Polymorphic Engine initialized' };
+    }
+
+    async start() {
+        this.status = 'running';
+        logger.info('Polymorphic Engine started');
+        return { success: true, message: 'Polymorphic Engine started' };
+    }
+
+    async stop() {
+        this.status = 'stopped';
+        logger.info('Polymorphic Engine stopped');
+        return { success: true, message: 'Polymorphic Engine stopped' };
+    }
+
+    getStatus() {
+        return {
+            name: this.name,
+            version: this.version,
+            status: this.status,
+            enabled: this.enabled,
+            mutations: this.mutationStats,
+            memory: this.mutatedCode.size
+        };
     }
 
     // Transform - main entry point for polymorphic transformation
@@ -84,6 +117,34 @@ class PolymorphicEngine {
 
     async transform(target, options = {}) {
         return await this.polymorphize(target, options);
+    }
+
+    // Alias for transform method (used by server)
+    async transformCode(code, options = {}) {
+        return await this.transform(code, options);
+    }
+
+    // Test method for polymorphic engine
+    async test(target, options = {}) {
+        try {
+            const result = await this.transform(target, options);
+            return {
+                success: true,
+                result: {
+                    originalSize: target.length,
+                    transformedSize: result.mutatedCode.length,
+                    mutations: result.appliedMutations.length,
+                    duration: result.duration,
+                    sample: result.mutatedCode.substring(0, 200) + '...'
+                }
+            };
+        } catch (error) {
+            logger.error('Polymorphic test failed:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
     }
 
     // Polymorphize code

@@ -5080,16 +5080,62 @@ app.post('/mutex/test', requireAuth, async (req, res) => {
     }
 });
 
-// Polymorphic Engine endpoints
+// Polymorphic Engine Interactive Endpoints
+app.get('/polymorphic/status', requireAuth, async (req, res) => {
+    try {
+        const status = realModules.polymorphicEngine.getStatus();
+        res.json({ success: true, result: status });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/polymorphic/mutation-types', requireAuth, async (req, res) => {
+    try {
+        const mutationTypes = realModules.polymorphicEngine.getSupportedMutationTypes();
+        res.json({ success: true, result: mutationTypes });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/polymorphic/stats', requireAuth, async (req, res) => {
+    try {
+        const stats = realModules.polymorphicEngine.getMutationStats();
+        res.json({ success: true, result: stats });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 app.post('/polymorphic/transform', requireAuth, async (req, res) => {
     try {
-        const { target, options = {} } = req.body || {};
-        if (!target) {
-            return res.status(400).json({ error: 'target is required' });
+        const { target, source, level, language, mutationTypes, options = {} } = req.body || {};
+        const code = target || source; // Support both parameter names
+        if (!code) {
+            return res.status(400).json({ error: 'target/source is required' });
         }
         
-        const result = await realModules.polymorphicEngine.transform(target, options);
-        res.json({ success: true, result });
+        // Map panel parameters to engine options
+        const engineOptions = {
+            ...options,
+            intensity: level || 'medium',
+            language: language || 'javascript',
+            mutationTypes: mutationTypes || ['instruction-substitution', 'register-reallocation']
+        };
+        
+        const result = await realModules.polymorphicEngine.transform(code, engineOptions);
+        res.json({ 
+            success: true, 
+            result: {
+                ...result,
+                transformed: result.mutatedCode,
+                originalSize: result.originalSize,
+                transformedSize: result.mutatedSize,
+                mutations: result.appliedMutations,
+                duration: result.duration
+            }
+        });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
@@ -5097,12 +5143,206 @@ app.post('/polymorphic/transform', requireAuth, async (req, res) => {
 
 app.post('/polymorphic/test', requireAuth, async (req, res) => {
     try {
-        const { target, options = {} } = req.body || {};
-        if (!target) {
-            return res.status(400).json({ error: 'target is required' });
+        const { target, source, options = {} } = req.body || {};
+        const code = target || source; // Support both parameter names
+        if (!code) {
+            return res.status(400).json({ error: 'target/source is required' });
         }
         
-        const result = await realModules.polymorphicEngine.test(target, options);
+        const result = await realModules.polymorphicEngine.test(code, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/polymorphic/preview', requireAuth, async (req, res) => {
+    try {
+        const { target, source, mutationType, options = {} } = req.body || {};
+        const code = target || source;
+        if (!code) {
+            return res.status(400).json({ error: 'target/source is required' });
+        }
+        if (!mutationType) {
+            return res.status(400).json({ error: 'mutationType is required' });
+        }
+        
+        const result = await realModules.polymorphicEngine.applyMutation(code, mutationType, options);
+        res.json({ 
+            success: true, 
+            result: {
+                original: code,
+                mutated: result.code,
+                changes: result.changes,
+                duration: result.duration,
+                mutationType
+            }
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/polymorphic/mutations', requireAuth, async (req, res) => {
+    try {
+        const mutations = realModules.polymorphicEngine.getAllMutatedCode();
+        res.json({ success: true, result: mutations });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.delete('/polymorphic/mutations/:id', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await realModules.polymorphicEngine.deleteMutatedCode(id);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Stealth Engine Interactive Endpoints
+app.get('/stealth/status', requireAuth, async (req, res) => {
+    try {
+        const status = realModules.stealthEngine.getStatus();
+        res.json({ success: true, result: status });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/stealth/modes', requireAuth, async (req, res) => {
+    try {
+        const modes = realModules.stealthEngine.stealthModes;
+        res.json({ success: true, result: modes });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/stealth/apply', requireAuth, async (req, res) => {
+    try {
+        const { target, mode, options = {} } = req.body || {};
+        const data = target || req.body.data;
+        if (!data) {
+            return res.status(400).json({ error: 'target/data is required' });
+        }
+        
+        const result = await realModules.stealthEngine.applyStealth(data, { mode, ...options });
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/stealth/test', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        const data = target || req.body.data;
+        if (!data) {
+            return res.status(400).json({ error: 'target/data is required' });
+        }
+        
+        const result = await realModules.stealthEngine.testStealth(data, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Compression Engine Interactive Endpoints
+app.get('/compression/status', requireAuth, async (req, res) => {
+    try {
+        const status = realModules.compressionEngine.getStatus();
+        res.json({ success: true, result: status });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/compression/algorithms', requireAuth, async (req, res) => {
+    try {
+        const algorithms = Object.keys(realModules.compressionEngine.algorithms);
+        res.json({ success: true, result: algorithms });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/compression/compress', requireAuth, async (req, res) => {
+    try {
+        const { target, algorithm, level, options = {} } = req.body || {};
+        const data = target || req.body.data;
+        if (!data) {
+            return res.status(400).json({ error: 'target/data is required' });
+        }
+        
+        const result = await realModules.compressionEngine.compress(data, algorithm || 'gzip', { level, ...options });
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/compression/decompress', requireAuth, async (req, res) => {
+    try {
+        const { target, algorithm, options = {} } = req.body || {};
+        const data = target || req.body.data;
+        if (!data) {
+            return res.status(400).json({ error: 'target/data is required' });
+        }
+        
+        const result = await realModules.compressionEngine.decompress(data, algorithm || 'gzip', options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Anti-Analysis Engine Interactive Endpoints
+app.get('/anti-analysis/status', requireAuth, async (req, res) => {
+    try {
+        const status = realModules.antiAnalysis.getStatus();
+        res.json({ success: true, result: status });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/anti-analysis/techniques', requireAuth, async (req, res) => {
+    try {
+        const techniques = Array.from(realModules.antiAnalysis.techniques.keys());
+        res.json({ success: true, result: techniques });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/anti-analysis/check', requireAuth, async (req, res) => {
+    try {
+        const { target, level, options = {} } = req.body || {};
+        const data = target || req.body.data;
+        if (!data) {
+            return res.status(400).json({ error: 'target/data is required' });
+        }
+        
+        const result = await realModules.antiAnalysis.enableAntiAnalysis(level || 'full', { data, ...options });
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/anti-analysis/test', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        const data = target || req.body.data;
+        if (!data) {
+            return res.status(400).json({ error: 'target/data is required' });
+        }
+        
+        const result = await realModules.antiAnalysis.testAntiAnalysis(data, options);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });

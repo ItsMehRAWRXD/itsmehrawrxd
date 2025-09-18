@@ -37,6 +37,14 @@ class StealthEngine {
         }
     }
     constructor() {
+        // Engine properties
+        this.name = 'stealth-engine';
+        this.version = '1.0.0';
+        this.description = 'Advanced stealth and anti-detection engine';
+        this.enabled = true;
+        this.autoStart = false;
+        this.status = 'stopped';
+        
         this.stealthModes = {
             basic: ['anti-debug', 'anti-vm'],
             standard: ['anti-debug', 'anti-vm', 'anti-sandbox'],
@@ -83,7 +91,21 @@ class StealthEngine {
 
     async initialize(config = {}) {
         this.config = config.stealth || {};
+        this.status = 'initialized';
         logger.info('Stealth Engine initialized');
+        return { success: true, message: 'Stealth Engine initialized' };
+    }
+
+    async start() {
+        this.status = 'running';
+        logger.info('Stealth Engine started');
+        return { success: true, message: 'Stealth Engine started' };
+    }
+
+    async stop() {
+        this.status = 'stopped';
+        logger.info('Stealth Engine stopped');
+        return { success: true, message: 'Stealth Engine stopped' };
     }
 
     // Main encrypt method for compatibility
@@ -945,10 +967,139 @@ class StealthEngine {
     // Get stealth status
     getStatus() {
         return {
-            ...this.stealthStatus,
+            name: this.name,
+            version: this.version,
+            status: this.status,
+            enabled: this.enabled,
             availableModes: Object.keys(this.stealthModes),
             detectionMethods: this.detectionMethods
         };
+    }
+
+    // Apply stealth techniques to data
+    async applyStealth(data, options = {}) {
+        try {
+            const { mode = 'standard' } = options;
+            const techniques = this.stealthModes[mode] || this.stealthModes.standard;
+            
+            let processedData = data;
+            const appliedTechniques = [];
+            
+            for (const technique of techniques) {
+                try {
+                    const result = await this.applyTechnique(processedData, technique, options);
+                    processedData = result.data;
+                    appliedTechniques.push({
+                        technique,
+                        success: true,
+                        changes: result.changes
+                    });
+                } catch (error) {
+                    appliedTechniques.push({
+                        technique,
+                        success: false,
+                        error: error.message
+                    });
+                }
+            }
+            
+            return {
+                original: data,
+                processed: processedData,
+                appliedTechniques,
+                mode,
+                success: true
+            };
+        } catch (error) {
+            logger.error('Stealth application failed:', error);
+            throw error;
+        }
+    }
+
+    // Test stealth techniques
+    async testStealth(data, options = {}) {
+        try {
+            const result = await this.applyStealth(data, options);
+            return {
+                success: true,
+                result: {
+                    originalSize: data.length,
+                    processedSize: result.processed.length,
+                    techniques: result.appliedTechniques.length,
+                    successful: result.appliedTechniques.filter(t => t.success).length,
+                    failed: result.appliedTechniques.filter(t => !t.success).length
+                }
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    // Apply individual technique
+    async applyTechnique(data, technique, options = {}) {
+        switch (technique) {
+            case 'anti-debug':
+                return await this.applyAntiDebug(data, options);
+            case 'anti-vm':
+                return await this.applyAntiVM(data, options);
+            case 'anti-sandbox':
+                return await this.applyAntiSandbox(data, options);
+            case 'anti-analysis':
+                return await this.applyAntiAnalysis(data, options);
+            case 'process-hiding':
+                return await this.applyProcessHiding(data, options);
+            case 'memory-protection':
+                return await this.applyMemoryProtection(data, options);
+            case 'network-stealth':
+                return await this.applyNetworkStealth(data, options);
+            default:
+                return { data, changes: 0 };
+        }
+    }
+
+    async applyAntiDebug(data, options) {
+        // Simple anti-debug obfuscation
+        const obfuscated = data.replace(/debugger/g, 'debug_ger');
+        return { data: obfuscated, changes: 1 };
+    }
+
+    async applyAntiVM(data, options) {
+        // Simple anti-VM obfuscation
+        const obfuscated = data.replace(/vmware|virtualbox|qemu/gi, 'vm_detected');
+        return { data: obfuscated, changes: 1 };
+    }
+
+    async applyAntiSandbox(data, options) {
+        // Simple anti-sandbox obfuscation
+        const obfuscated = data.replace(/sandbox/gi, 'sand_box');
+        return { data: obfuscated, changes: 1 };
+    }
+
+    async applyAntiAnalysis(data, options) {
+        // Simple anti-analysis obfuscation
+        const obfuscated = data.replace(/analysis/gi, 'anal_ysis');
+        return { data: obfuscated, changes: 1 };
+    }
+
+    async applyProcessHiding(data, options) {
+        // Simple process hiding obfuscation
+        const obfuscated = data.replace(/process/gi, 'proc_ess');
+        return { data: obfuscated, changes: 1 };
+    }
+
+    async applyMemoryProtection(data, options) {
+        // Simple memory protection obfuscation
+        const obfuscated = data.replace(/memory/gi, 'mem_ory');
+        return { data: obfuscated, changes: 1 };
+    }
+
+    async applyNetworkStealth(data, options) {
+        // Simple network stealth obfuscation
+        const obfuscated = data.replace(/network/gi, 'net_work');
+        return { data: obfuscated, changes: 1 };
     }
 
     // Disable stealth mode

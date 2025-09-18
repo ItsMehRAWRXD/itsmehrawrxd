@@ -20,6 +20,14 @@ class CompressionEngine {
         }
     }
     constructor() {
+        // Engine properties
+        this.name = 'compression-engine';
+        this.version = '1.0.0';
+        this.description = 'Advanced compression engine with multiple algorithms';
+        this.enabled = true;
+        this.autoStart = false;
+        this.status = 'stopped';
+        
         this.algorithms = {
             gzip: {
                 compress: promisify(zlib.gzip),
@@ -48,7 +56,32 @@ class CompressionEngine {
 
     async initialize(config = {}) {
         this.config = config.compression || {};
+        this.status = 'initialized';
         logger.info('Compression Engine initialized');
+        return { success: true, message: 'Compression Engine initialized' };
+    }
+
+    async start() {
+        this.status = 'running';
+        logger.info('Compression Engine started');
+        return { success: true, message: 'Compression Engine started' };
+    }
+
+    async stop() {
+        this.status = 'stopped';
+        logger.info('Compression Engine stopped');
+        return { success: true, message: 'Compression Engine stopped' };
+    }
+
+    getStatus() {
+        return {
+            name: this.name,
+            version: this.version,
+            status: this.status,
+            enabled: this.enabled,
+            algorithms: Object.keys(this.algorithms),
+            stats: this.compressionStats
+        };
     }
 
     // Compress data with specified algorithm

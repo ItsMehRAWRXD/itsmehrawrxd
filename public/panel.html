@@ -706,7 +706,7 @@
         .cli-btn:hover {
             background: #4a5568;
         }
-
+        
         /* File Manager Styles */
         .file-manager-container {
             margin-top: 1rem;
@@ -1792,10 +1792,10 @@
                     
                     <div class="input-method-content">
                         <div class="input-method-text active">
-                            <div class="form-group">
-                                <label>Input (text or file:filename)</label>
-                                <textarea id="encInput" rows="3" placeholder="Enter text to encrypt or file:filename"></textarea>
-                            </div>
+                    <div class="form-group">
+                        <label>Input (text or file:filename)</label>
+                        <textarea id="encInput" rows="3" placeholder="Enter text to encrypt or file:filename"></textarea>
+                    </div>
                         </div>
                         <div class="input-method-payload">
                             <div id="encryption-payload-container"></div>
@@ -2920,7 +2920,7 @@
                         <div class="form-row">
                             <input type="text" id="ircServer" placeholder="irc.example.com">
                             <input type="number" id="ircPort" placeholder="Port">
-                        </div>
+                    </div>
                     </div>
                     
                     <div class="form-group">
@@ -3214,8 +3214,9 @@
                                 <span class="cli-prompt">RawrZ@Security:~$</span>
                                 <span class="cli-text">Type commands directly or use quick commands below</span>
                             </div>
-                            <div class="cli-line">
+                            <div class="cli-line" id="currentCLILine">
                                 <span class="cli-prompt">RawrZ@Security:~$</span>
+                                <span class="cli-text" contenteditable="true" id="cliInput"></span>
                                 <span class="cli-cursor" id="cliCursor">_</span>
                             </div>
                         </div>
@@ -5349,8 +5350,6 @@ Results: ${JSON.stringify(result.data.result, null, 2)}`, 'success');
         }
         
         // Embedded CLI System
-        let cliHistory = [];
-        let cliHistoryIndex = -1;
         
         function initializeCLI() {
             const cliInput = document.getElementById('cliInput');
@@ -5682,14 +5681,26 @@ Examples:
         // Interactive CLI Terminal Functions
         function initializeInteractiveCLI() {
             const cliTerminal = document.getElementById('cliTerminal');
-            if (!cliTerminal) return;
+            const cliInput = document.getElementById('cliInput');
+            if (!cliTerminal || !cliInput) return;
 
-            // Add keyboard event listener
-            cliTerminal.addEventListener('keydown', handleCLIKeyDown);
-            cliTerminal.addEventListener('input', handleCLIInput);
+            // Add keyboard event listener to the input element
+            cliInput.addEventListener('keydown', handleCLIKeyDown);
+            cliInput.addEventListener('input', handleCLIInput);
+            cliInput.addEventListener('paste', handleCLIPaste);
             
-            // Focus the terminal
-            cliTerminal.focus();
+            // Focus the input element
+            cliInput.focus();
+            
+            // Make sure the input is editable
+            cliInput.contentEditable = true;
+            
+            // Add click handler to focus input when terminal is clicked
+            cliTerminal.addEventListener('click', () => {
+                cliInput.focus();
+            });
+            
+            console.log('CLI initialized and focused');
         }
 
         function handleCLIKeyDown(event) {
@@ -5725,6 +5736,29 @@ Examples:
             // Auto-scroll to bottom
             const cliTerminal = document.getElementById('cliTerminal');
             cliTerminal.scrollTop = cliTerminal.scrollHeight;
+            
+            // Update cursor position
+            updateCLICursor();
+        }
+        
+        function handleCLIPaste(event) {
+            event.preventDefault();
+            const text = (event.clipboardData || window.clipboardData).getData('text');
+            const cliInput = document.getElementById('cliInput');
+            if (cliInput) {
+                cliInput.textContent += text;
+                updateCLICursor();
+            }
+        }
+        
+        function updateCLICursor() {
+            const cliCursor = document.getElementById('cliCursor');
+            if (cliCursor) {
+                cliCursor.style.animation = 'none';
+                setTimeout(() => {
+                    cliCursor.style.animation = 'blink 1s infinite';
+                }, 10);
+            }
         }
 
         function getCurrentLineElement() {
@@ -5734,15 +5768,10 @@ Examples:
         }
 
         function executeCurrentLine() {
-            const currentLine = getCurrentLineElement();
-            if (!currentLine) return;
+            const cliInput = document.getElementById('cliInput');
+            if (!cliInput) return;
 
-            const promptSpan = currentLine.querySelector('.cli-prompt');
-            const textSpan = currentLine.querySelector('.cli-text');
-            
-            if (!textSpan) return;
-
-            const command = textSpan.textContent.trim();
+            const command = cliInput.textContent.trim();
             if (!command) {
                 addNewCLILine();
                 return;
@@ -5754,7 +5783,8 @@ Examples:
             // Execute the command
             executeCLICommand(command);
 
-            // Add new line for next command
+            // Clear the input and add new line for next command
+            cliInput.textContent = '';
             addNewCLILine();
         }
 
@@ -5861,23 +5891,35 @@ Examples:
 
         function addNewCLILine() {
             const cliTerminal = document.getElementById('cliTerminal');
+            if (!cliTerminal) return;
+
+            // Remove the current line's id
+            const currentLine = document.getElementById('currentCLILine');
+            if (currentLine) {
+                currentLine.removeAttribute('id');
+            }
+
             const newLine = document.createElement('div');
             newLine.className = 'cli-line';
+            newLine.id = 'currentCLILine';
             newLine.innerHTML = `
                 <span class="cli-prompt">RawrZ@Security:~$</span>
-                <span class="cli-text"></span>
+                <span class="cli-text" contenteditable="true" id="cliInput"></span>
+                <span class="cli-cursor" id="cliCursor">_</span>
             `;
+            
             cliTerminal.appendChild(newLine);
             
-            // Focus on the new line
-            const textSpan = newLine.querySelector('.cli-text');
-            const range = document.createRange();
-            const selection = window.getSelection();
-            range.setStart(textSpan, 0);
-            range.collapse(true);
-            selection.removeAllRanges();
-            selection.addRange(range);
+            // Re-initialize the CLI input
+            const newInput = newLine.querySelector('#cliInput');
+            if (newInput) {
+                newInput.addEventListener('keydown', handleCLIKeyDown);
+                newInput.addEventListener('input', handleCLIInput);
+                newInput.addEventListener('paste', handleCLIPaste);
+                newInput.focus();
+            }
             
+            // Auto-scroll to bottom
             cliTerminal.scrollTop = cliTerminal.scrollHeight;
         }
 
@@ -5891,10 +5933,83 @@ Examples:
             cliTerminal.appendChild(newLine);
             cliTerminal.scrollTop = cliTerminal.scrollHeight;
         }
-
-        // CLI History navigation
-        let cliTerminalHistoryIndex = -1;
-        let cliCommandHistory = [];
+        
+        // CLI History Management
+        let cliHistory = [];
+        let cliHistoryIndex = -1;
+        
+        function addToCLIHistory(command, status) {
+            cliHistory.push({ command, status, timestamp: new Date() });
+            cliHistoryIndex = cliHistory.length;
+        }
+        
+        function navigateHistory(direction) {
+            if (cliHistory.length === 0) return;
+            
+            cliHistoryIndex += direction;
+            
+            if (cliHistoryIndex < 0) {
+                cliHistoryIndex = 0;
+            } else if (cliHistoryIndex >= cliHistory.length) {
+                cliHistoryIndex = cliHistory.length;
+            }
+            
+            const cliInput = document.getElementById('cliInput');
+            if (cliInput) {
+                if (cliHistoryIndex < cliHistory.length) {
+                    cliInput.textContent = cliHistory[cliHistoryIndex].command;
+                } else {
+                    cliInput.textContent = '';
+                }
+            }
+        }
+        
+        function showCLIHelp() {
+            addCLILine('RawrZ Security Platform - CLI Commands:');
+            addCLILine('');
+            addCLILine('Basic Commands:');
+            addCLILine('  help          - Show this help message');
+            addCLILine('  clear         - Clear the terminal');
+            addCLILine('  sysinfo       - Show system information');
+            addCLILine('  processes     - List running processes');
+            addCLILine('');
+            addCLILine('Cryptography:');
+            addCLILine('  encrypt <algorithm> <text> - Encrypt text');
+            addCLILine('  hash <text> <algorithm>    - Hash text');
+            addCLILine('  keygen <algorithm>         - Generate key');
+            addCLILine('  uuid                        - Generate UUID');
+            addCLILine('');
+            addCLILine('Network:');
+            addCLILine('  ping <host>                 - Ping host');
+            addCLILine('  dns <domain>                - DNS lookup');
+            addCLILine('');
+            addCLILine('File Operations:');
+            addCLILine('  files [path]                - List files');
+            addCLILine('');
+            addCLILine('Use arrow keys to navigate command history.');
+        }
+        
+        function clearCLI() {
+            const cliTerminal = document.getElementById('cliTerminal');
+            if (cliTerminal) {
+                cliTerminal.innerHTML = `
+                    <div class="cli-line">
+                        <span class="cli-prompt">RawrZ@Security:~$</span>
+                        <span class="cli-text">RawrZ Security Platform - Interactive CLI</span>
+                    </div>
+                    <div class="cli-line">
+                        <span class="cli-prompt">RawrZ@Security:~$</span>
+                        <span class="cli-text">Type commands directly or use quick commands below</span>
+                    </div>
+                    <div class="cli-line" id="currentCLILine">
+                        <span class="cli-prompt">RawrZ@Security:~$</span>
+                        <span class="cli-text" contenteditable="true" id="cliInput"></span>
+                        <span class="cli-cursor" id="cliCursor">_</span>
+                    </div>
+                `;
+                initializeInteractiveCLI();
+            }
+        }
 
         function navigateHistory(direction) {
             if (cliCommandHistory.length === 0) return;
@@ -9715,6 +9830,8 @@ Examples:
             initializeInteractiveControls();
             loadCustomCommands(); // Load custom commands on page load
             initializeInteractiveCLI(); // Initialize interactive CLI terminal
+            initializePolymorphicEngine(); // Initialize polymorphic engine
+            initializeStealthEngine(); // Initialize stealth engine
             
             // Force UI update after a short delay to ensure elements are loaded
             setTimeout(() => {
@@ -10535,6 +10652,363 @@ Examples:
             }
         }
 
+        // Polymorphic Engine Functions
+        async function loadPolymorphicStatus() {
+            try {
+                const response = await fetch('/polymorphic/status', {
+                    headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('authToken') || 'test-token') }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    const status = result.result;
+                    const indicator = document.getElementById('polymorphic-status-indicator');
+                    const text = document.getElementById('polymorphic-status-text');
+                    
+                    indicator.className = 'status-indicator ' + (status.status === 'running' ? 'active' : 'inactive');
+                    text.textContent = `${status.name} v${status.version} - ${status.status}`;
+                }
+            } catch (error) {
+                console.error('Failed to load polymorphic status:', error);
+            }
+        }
+
+        async function polymorphCode() {
+            const source = document.getElementById('polymorphicSource').value || 'console.log("hello world");';
+            const level = document.getElementById('polymorphicLevel').value;
+            const language = document.getElementById('polymorphicLanguage').value;
+            const mutationTypes = getSelectedMutationTypes();
+            
+            if (mutationTypes.length === 0) {
+                showStatus('Please select at least one mutation type', 'error', 'polymorphic-result');
+                return;
+            }
+            
+            showStatus('Polymorphizing code...', 'info', 'polymorphic-result');
+            
+            try {
+                const response = await fetch('/polymorphic/transform', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('authToken') || 'test-token') },
+                    body: JSON.stringify({ source, level, language, mutationTypes })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    const data = result.result;
+                    showStatus(`Code polymorphized successfully! Applied ${data.mutations.length} mutations in ${data.duration}ms`, 'success', 'polymorphic-result');
+                    
+                    // Show the transformed code
+                    document.getElementById('polymorphic-original').textContent = source;
+                    document.getElementById('polymorphic-mutated').textContent = data.transformed;
+                    document.getElementById('polymorphic-preview').style.display = 'block';
+                } else {
+                    showStatus('Polymorphism failed: ' + result.error, 'error', 'polymorphic-result');
+                }
+            } catch (error) {
+                showStatus('Polymorphism error: ' + error.message, 'error', 'polymorphic-result');
+            }
+        }
+
+        async function testPolymorphic() {
+            const source = document.getElementById('polymorphicSource').value || 'console.log("hello world");';
+            
+            if (!source.trim()) {
+                showStatus('Please enter code to test', 'error', 'polymorphic-result');
+                return;
+            }
+            
+            showStatus('Testing polymorphic engine...', 'info', 'polymorphic-result');
+            
+            try {
+                const response = await fetch('/polymorphic/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('authToken') || 'test-token') },
+                    body: JSON.stringify({ source })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    const data = result.result;
+                    showStatus(`Test completed! Original: ${data.originalSize} bytes, Transformed: ${data.transformedSize} bytes, Mutations: ${data.mutations}`, 'success', 'polymorphic-result');
+                } else {
+                    showStatus('Polymorphic test failed: ' + result.error, 'error', 'polymorphic-result');
+                }
+            } catch (error) {
+                showStatus('Polymorphic test error: ' + error.message, 'error', 'polymorphic-result');
+            }
+        }
+
+        async function previewMutation() {
+            const source = document.getElementById('polymorphicSource').value || 'console.log("hello world");';
+            const mutationTypes = getSelectedMutationTypes();
+            
+            if (mutationTypes.length === 0) {
+                showStatus('Please select at least one mutation type', 'error', 'polymorphic-result');
+                return;
+            }
+            
+            if (!source.trim()) {
+                showStatus('Please enter code to preview', 'error', 'polymorphic-result');
+                return;
+            }
+            
+            showStatus('Generating preview...', 'info', 'polymorphic-result');
+            
+            try {
+                const mutationType = mutationTypes[0]; // Preview first selected type
+                const response = await fetch('/polymorphic/preview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('authToken') || 'test-token') },
+                    body: JSON.stringify({ source, mutationType })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    const data = result.result;
+                    showStatus(`Preview generated! ${data.changes} changes applied in ${data.duration}ms`, 'success', 'polymorphic-result');
+                    
+                    document.getElementById('polymorphic-original').textContent = data.original;
+                    document.getElementById('polymorphic-mutated').textContent = data.mutated;
+                    document.getElementById('polymorphic-preview').style.display = 'block';
+                } else {
+                    showStatus('Preview failed: ' + result.error, 'error', 'polymorphic-result');
+                }
+            } catch (error) {
+                showStatus('Preview error: ' + error.message, 'error', 'polymorphic-result');
+            }
+        }
+
+        async function loadPolymorphicStats() {
+            try {
+                const response = await fetch('/polymorphic/stats', {
+                    headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('authToken') || 'test-token') }
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    const stats = result.result;
+                    document.getElementById('total-mutations').textContent = stats.totalMutations;
+                    document.getElementById('successful-mutations').textContent = stats.successfulMutations;
+                    document.getElementById('failed-mutations').textContent = stats.failedMutations;
+                    document.getElementById('avg-mutation-time').textContent = Math.round(stats.averageMutationTime) + 'ms';
+                    
+                    document.getElementById('polymorphic-stats').style.display = 'block';
+                    showStatus('Statistics loaded', 'success', 'polymorphic-result');
+                } else {
+                    showStatus('Failed to load statistics: ' + result.error, 'error', 'polymorphic-result');
+                }
+            } catch (error) {
+                showStatus('Statistics error: ' + error.message, 'error', 'polymorphic-result');
+            }
+        }
+
+        function getSelectedMutationTypes() {
+            const checkboxes = document.querySelectorAll('#polymorphicMutationTypes input[type="checkbox"]:checked');
+            return Array.from(checkboxes).map(cb => cb.value);
+        }
+
+        // Initialize polymorphic engine
+        function initializePolymorphicEngine() {
+            console.log('Initializing polymorphic engine...');
+            
+            // Load engine status
+            loadPolymorphicStatus();
+            
+            // Add event listeners for mutation type checkboxes
+            const mutationCheckboxes = document.querySelectorAll('#polymorphicMutationTypes input[type="checkbox"]');
+            mutationCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const selectedTypes = getSelectedMutationTypes();
+                    console.log('Selected mutation types:', selectedTypes);
+                    
+                    // Update UI feedback
+                    if (selectedTypes.length === 0) {
+                        showStatus('Please select at least one mutation type', 'warning', 'polymorphic-result');
+                    } else {
+                        showStatus(`${selectedTypes.length} mutation type(s) selected`, 'info', 'polymorphic-result');
+                    }
+                });
+            });
+            
+            // Add event listeners for level and language changes
+            const levelSelect = document.getElementById('polymorphicLevel');
+            const languageSelect = document.getElementById('polymorphicLanguage');
+            
+            if (levelSelect) {
+                levelSelect.addEventListener('change', function() {
+                    console.log('Polymorphism level changed to:', this.value);
+                });
+            }
+            
+            if (languageSelect) {
+                languageSelect.addEventListener('change', function() {
+                    console.log('Target language changed to:', this.value);
+                });
+            }
+            
+            // Add real-time validation for source code
+            const sourceTextarea = document.getElementById('polymorphicSource');
+            if (sourceTextarea) {
+                sourceTextarea.addEventListener('input', function() {
+                    const code = this.value.trim();
+                    if (code.length > 0) {
+                        // Show character count
+                        const charCount = code.length;
+                        if (charCount > 1000) {
+                            showStatus(`Code length: ${charCount} characters (large code may take longer to process)`, 'info', 'polymorphic-result');
+                        }
+                    }
+                });
+            }
+            
+            console.log('Polymorphic engine initialized successfully');
+        }
+
+        // Stealth Engine Functions
+        async function loadStealthStatus() {
+            try {
+                const response = await fetch('/stealth/status', {
+                    headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('authToken') || 'test-token') }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    const status = result.result;
+                    const indicator = document.getElementById('stealth-status-dot');
+                    const text = document.getElementById('stealth-status-text');
+                    
+                    indicator.className = 'status-indicator ' + (status.status === 'running' ? 'active' : 'inactive');
+                    text.textContent = `${status.name} v${status.version} - ${status.status}`;
+                }
+            } catch (error) {
+                console.error('Failed to load stealth status:', error);
+            }
+        }
+
+        async function applyStealth() {
+            const source = document.getElementById('stealthSource').value || 'console.log("test data");';
+            const mode = document.getElementById('stealthMode').value;
+            const techniques = getSelectedStealthTechniques();
+            
+            if (techniques.length === 0) {
+                showStatus('Please select at least one stealth technique', 'error', 'stealth-result');
+                return;
+            }
+            
+            showStatus('Applying stealth techniques...', 'info', 'stealth-result');
+            
+            try {
+                const response = await fetch('/stealth/apply', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('authToken') || 'test-token') },
+                    body: JSON.stringify({ target: source, mode, techniques })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    const data = result.result;
+                    showStatus(`Stealth applied successfully! Applied ${data.appliedTechniques.length} techniques`, 'success', 'stealth-result');
+                    
+                    // Show the processed data
+                    document.getElementById('stealth-original').textContent = data.original;
+                    document.getElementById('stealth-processed').textContent = data.processed;
+                    document.getElementById('stealth-preview').style.display = 'block';
+                } else {
+                    showStatus('Stealth application failed: ' + result.error, 'error', 'stealth-result');
+                }
+            } catch (error) {
+                showStatus('Stealth application error: ' + error.message, 'error', 'stealth-result');
+            }
+        }
+
+        async function testStealth() {
+            const source = document.getElementById('stealthSource').value || 'console.log("test data");';
+            
+            if (!source.trim()) {
+                showStatus('Please enter data to test', 'error', 'stealth-result');
+                return;
+            }
+            
+            showStatus('Testing stealth engine...', 'info', 'stealth-result');
+            
+            try {
+                const response = await fetch('/stealth/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('authToken') || 'test-token') },
+                    body: JSON.stringify({ target: source })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    const data = result.result;
+                    showStatus(`Test completed! Original: ${data.originalSize} bytes, Processed: ${data.processedSize} bytes, Techniques: ${data.techniques}`, 'success', 'stealth-result');
+                } else {
+                    showStatus('Stealth test failed: ' + result.error, 'error', 'stealth-result');
+                }
+            } catch (error) {
+                showStatus('Stealth test error: ' + error.message, 'error', 'stealth-result');
+            }
+        }
+
+        async function loadStealthModes() {
+            try {
+                const response = await fetch('/stealth/modes', {
+                    headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('authToken') || 'test-token') }
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    const modes = result.result;
+                    const modesCount = Object.keys(modes).length;
+                    document.getElementById('stealth-modes-count').textContent = modesCount;
+                    document.getElementById('stealth-stats').style.display = 'block';
+                    showStatus('Stealth modes loaded', 'success', 'stealth-result');
+                } else {
+                    showStatus('Failed to load stealth modes: ' + result.error, 'error', 'stealth-result');
+                }
+            } catch (error) {
+                showStatus('Stealth modes error: ' + error.message, 'error', 'stealth-result');
+            }
+        }
+
+        function getSelectedStealthTechniques() {
+            const checkboxes = document.querySelectorAll('#stealthTechniques input[type="checkbox"]:checked');
+            return Array.from(checkboxes).map(cb => cb.value);
+        }
+
+        // Initialize stealth engine
+        function initializeStealthEngine() {
+            console.log('Initializing stealth engine...');
+            
+            // Load engine status
+            loadStealthStatus();
+            
+            // Add event listeners for technique checkboxes
+            const techniqueCheckboxes = document.querySelectorAll('#stealthTechniques input[type="checkbox"]');
+            techniqueCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const selectedTechniques = getSelectedStealthTechniques();
+                    console.log('Selected stealth techniques:', selectedTechniques);
+                    
+                    // Update UI feedback
+                    if (selectedTechniques.length === 0) {
+                        showStatus('Please select at least one stealth technique', 'warning', 'stealth-result');
+                    } else {
+                        showStatus(`${selectedTechniques.length} stealth technique(s) selected`, 'info', 'stealth-result');
+                    }
+                });
+            });
+            
+            // Add event listeners for mode changes
+            const modeSelect = document.getElementById('stealthMode');
+            if (modeSelect) {
+                modeSelect.addEventListener('change', function() {
+                    console.log('Stealth mode changed to:', this.value);
+                });
+            }
+            
+            console.log('Stealth engine initialized successfully');
+        }
+
         // Compression Engine Functions
         async function compressData() {
             const type = document.getElementById('compressionType').value;
@@ -10711,7 +11185,7 @@ Examples:
                     <div class="form-row">
                         <input type="url" id="httpBotServer" placeholder="https://your-server.com/api">
                         <input type="text" id="httpBotEndpoint" placeholder="/bot">
-                    </div>
+                </div>
                 </div>
                 
                 <div class="form-group">
@@ -10719,7 +11193,7 @@ Examples:
                     <div class="form-row">
                         <input type="text" id="httpBotId" placeholder="Bot ID">
                         <input type="number" id="httpBotInterval" placeholder="Report Interval (seconds)">
-                    </div>
+                </div>
                 </div>
                 
                 <div class="form-group">
@@ -10846,21 +11320,79 @@ Examples:
         <div class="grid">
             <div class="card">
                 <h3>Stealth Engine</h3>
+                <div class="engine-status" id="stealth-status-indicator">
+                    <span class="status-indicator" id="stealth-status-dot">●</span>
+                    <span id="stealth-status-text">Loading...</span>
+                </div>
+                
+                <div class="form-group">
+                    <label>Source Data:</label>
+                    <textarea id="stealthSource" placeholder="Enter data to apply stealth techniques"></textarea>
+                </div>
+                
                 <div class="form-group">
                     <label>Stealth Mode:</label>
                     <select id="stealthMode">
                         <option value="basic">Basic Stealth</option>
-                        <option value="advanced">Advanced Stealth</option>
+                        <option value="standard" selected>Standard Stealth</option>
+                        <option value="full">Full Stealth</option>
                         <option value="maximum">Maximum Stealth</option>
                     </select>
                 </div>
+                
                 <div class="form-group">
-                    <label>Target Process:</label>
-                    <input type="text" id="stealthTargetConfig" placeholder="Process name or PID">
+                    <label>Stealth Techniques:</label>
+                    <div class="checkbox-group" id="stealthTechniques">
+                        <label><input type="checkbox" value="anti-debug" checked> Anti-Debug</label>
+                        <label><input type="checkbox" value="anti-vm" checked> Anti-VM</label>
+                        <label><input type="checkbox" value="anti-sandbox"> Anti-Sandbox</label>
+                        <label><input type="checkbox" value="anti-analysis"> Anti-Analysis</label>
+                        <label><input type="checkbox" value="process-hiding"> Process Hiding</label>
+                        <label><input type="checkbox" value="memory-protection"> Memory Protection</label>
+                        <label><input type="checkbox" value="network-stealth"> Network Stealth</label>
+                    </div>
                 </div>
-                <button onclick="activateStealth()">Activate Stealth</button>
-                <button onclick="deactivateStealth()">Deactivate Stealth</button>
-                <div id="stealth-status" class="status-display"></div>
+                
+                <div class="button-group">
+                    <button onclick="applyStealth()" class="primary">Apply Stealth</button>
+                    <button onclick="testStealth()">Test Stealth</button>
+                    <button onclick="loadStealthStatus()">View Status</button>
+                    <button onclick="loadStealthModes()">View Modes</button>
+                </div>
+                
+                <div id="stealth-result" class="status-display"></div>
+                
+                <div id="stealth-preview" class="preview-panel" style="display: none;">
+                    <h4>Stealth Preview</h4>
+                    <div class="preview-content">
+                        <div class="preview-section">
+                            <h5>Original:</h5>
+                            <pre id="stealth-original"></pre>
+                        </div>
+                        <div class="preview-section">
+                            <h5>Stealthed:</h5>
+                            <pre id="stealth-processed"></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="stealth-stats" class="stats-panel" style="display: none;">
+                    <h4>Engine Statistics</h4>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Available Modes:</span>
+                            <span class="stat-value" id="stealth-modes-count">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Active Detections:</span>
+                            <span class="stat-value" id="stealth-active-detections">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Detection Methods:</span>
+                            <span class="stat-value" id="stealth-detection-methods">0</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -11133,30 +11665,92 @@ Examples:
         <div class="grid">
             <div class="card">
                 <h3>Polymorphic Engine</h3>
+                <div class="engine-status" id="polymorphic-status">
+                    <span class="status-indicator" id="polymorphic-status-indicator">●</span>
+                    <span id="polymorphic-status-text">Loading...</span>
+                </div>
+                
                 <div class="form-group">
                     <label>Source Code:</label>
-                    <textarea id="polymorphicSource" placeholder="Enter code to polymorph"></textarea>
+                    <textarea id="polymorphicSource" placeholder="Enter code to polymorph (e.g., console.log('hello world');)"></textarea>
                 </div>
+                
+                <div class="form-group">
+                    <label>Mutation Types:</label>
+                    <div class="checkbox-group" id="polymorphicMutationTypes">
+                        <label><input type="checkbox" value="instruction-substitution" checked> Instruction Substitution</label>
+                        <label><input type="checkbox" value="register-reallocation" checked> Register Reallocation</label>
+                        <label><input type="checkbox" value="code-reordering"> Code Reordering</label>
+                        <label><input type="checkbox" value="junk-code-injection"> Junk Code Injection</label>
+                        <label><input type="checkbox" value="control-flow-flattening"> Control Flow Flattening</label>
+                        <label><input type="checkbox" value="string-encryption"> String Encryption</label>
+                    </div>
+                </div>
+                
                 <div class="form-group">
                     <label>Polymorphism Level:</label>
                     <select id="polymorphicLevel">
                         <option value="low">Low</option>
-                        <option value="medium">Medium</option>
+                        <option value="medium" selected>Medium</option>
                         <option value="high">High</option>
                         <option value="maximum">Maximum</option>
                     </select>
                 </div>
+                
                 <div class="form-group">
                     <label>Target Language:</label>
                     <select id="polymorphicLanguage">
-                        <option value="javascript">JavaScript</option>
+                        <option value="javascript" selected>JavaScript</option>
                         <option value="python">Python</option>
                         <option value="cpp">C++</option>
+                        <option value="csharp">C#</option>
                     </select>
                 </div>
-                <button onclick="polymorphCode()">Polymorph Code</button>
-                <button onclick="testPolymorphic()">Test Output</button>
+                
+                <div class="button-group">
+                    <button onclick="polymorphCode()" class="primary">Polymorph Code</button>
+                    <button onclick="testPolymorphic()">Test Output</button>
+                    <button onclick="previewMutation()">Preview Mutation</button>
+                    <button onclick="loadPolymorphicStats()">View Stats</button>
+                </div>
+                
                 <div id="polymorphic-result" class="status-display"></div>
+                
+                <div id="polymorphic-preview" class="preview-panel" style="display: none;">
+                    <h4>Mutation Preview</h4>
+                    <div class="preview-content">
+                        <div class="preview-section">
+                            <h5>Original:</h5>
+                            <pre id="polymorphic-original"></pre>
+                        </div>
+                        <div class="preview-section">
+                            <h5>Mutated:</h5>
+                            <pre id="polymorphic-mutated"></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="polymorphic-stats" class="stats-panel" style="display: none;">
+                    <h4>Engine Statistics</h4>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Total Mutations:</span>
+                            <span class="stat-value" id="total-mutations">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Successful:</span>
+                            <span class="stat-value" id="successful-mutations">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Failed:</span>
+                            <span class="stat-value" id="failed-mutations">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Avg Time:</span>
+                            <span class="stat-value" id="avg-mutation-time">0ms</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

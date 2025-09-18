@@ -71,8 +71,10 @@ class AntiAnalysis extends EventEmitter {
     }
 
     // Initialize anti-analysis engine
-    async initialize() {
+    async initialize(config = {}) {
         try {
+            this.config = config;
+            this.status = 'initialized';
             await this.loadTechniques();
             await this.initializeObfuscation();
             await this.setupAntiDebugging();
@@ -83,6 +85,53 @@ class AntiAnalysis extends EventEmitter {
         } catch (error) {
             this.emit('error', { engine: this.name, error: error.message });
             throw error;
+        }
+    }
+
+    async start() {
+        this.status = 'running';
+        this.emit('started');
+        return { success: true, message: 'Anti-analysis engine started' };
+    }
+
+    async stop() {
+        this.status = 'stopped';
+        this.emit('stopped');
+        return { success: true, message: 'Anti-analysis engine stopped' };
+    }
+
+    getStatus() {
+        return {
+            name: this.name,
+            version: this.version,
+            status: this.status,
+            enabled: this.enabled || true,
+            protectionLevel: this.protectionLevel,
+            activeProtections: Array.from(this.activeProtections),
+            techniques: this.techniques.size,
+            stealthMode: this.stealthMode
+        };
+    }
+
+    // Test anti-analysis techniques
+    async testAntiAnalysis(data, options = {}) {
+        try {
+            const result = await this.enableAntiAnalysis('full', { data, ...options });
+            return {
+                success: true,
+                result: {
+                    originalSize: data.length,
+                    protectedSize: result.protectedData ? result.protectedData.length : data.length,
+                    techniques: result.appliedTechniques ? result.appliedTechniques.length : 0,
+                    protectionLevel: this.protectionLevel,
+                    activeProtections: Array.from(this.activeProtections)
+                }
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message
+            };
         }
     }
 
