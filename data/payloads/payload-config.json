@@ -1,0 +1,63 @@
+{
+  "payloads": {
+    "beaconism-default": {
+      "id": "beaconism-default",
+      "name": "Default Beaconism Payload",
+      "type": "beaconism",
+      "description": "Standard beaconism DLL sideloading payload",
+      "config": {
+        "target": "notepad.exe",
+        "architecture": "x64",
+        "stealth": true,
+        "persistence": false,
+        "encryption": "aes-256"
+      },
+      "createdAt": "2025-09-18T14:20:29.386Z",
+      "updatedAt": "2025-09-18T14:20:29.386Z"
+    },
+    "red-shell-default": {
+      "id": "red-shell-default",
+      "name": "Default Red Shell",
+      "type": "red-shell",
+      "description": "Standard red shell payload",
+      "config": {
+        "shellType": "cmd",
+        "encoding": "base64",
+        "compression": true,
+        "encryption": "xor"
+      },
+      "createdAt": "2025-09-18T14:20:29.386Z",
+      "updatedAt": "2025-09-18T14:20:29.386Z"
+    },
+    "hot-patch-default": {
+      "id": "hot-patch-default",
+      "name": "Default Hot Patch",
+      "type": "hot-patch",
+      "description": "Standard hot patch payload",
+      "config": {
+        "target": "notepad.exe",
+        "patchType": "memory",
+        "stealth": true,
+        "rollback": true
+      },
+      "createdAt": "2025-09-18T14:20:29.386Z",
+      "updatedAt": "2025-09-18T14:20:29.386Z"
+    },
+    "stub-generator-default": {
+      "id": "stub-generator-default",
+      "name": "Default Stub Generator",
+      "type": "stub-generator",
+      "description": "Standard stub generator payload",
+      "config": {
+        "language": "csharp",
+        "architecture": "x64",
+        "encryption": "aes-256",
+        "packing": "upx",
+        "fud": true
+      },
+      "createdAt": "2025-09-18T14:20:29.386Z",
+      "updatedAt": "2025-09-18T14:20:29.386Z"
+    }
+  },
+  "lastUpdated": "2025-09-18T14:20:29.386Z"
+}
