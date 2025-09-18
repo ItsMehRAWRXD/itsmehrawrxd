@@ -1,7 +1,0 @@
-{
-  "shellType": "powershell",
-  "options": {
-    "redKillerEnabled": true,
-    "evCertEnabled": true
-  }
-}

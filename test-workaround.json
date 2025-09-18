@@ -1,9 +1,0 @@
-{
-  "sourceCode": "using System; using System.IO; class Program { static void Main() { Console.WriteLine(\"Testing workaround compilation...\"); File.WriteAllText(\"test_output.txt\", \"Workaround compilation successful!\"); Console.WriteLine(\"File created successfully!\"); } }",
-  "language": "csharp",
-  "options": {
-    "outputFormat": "exe",
-    "framework": ".NET Framework",
-    "optimization": "release"
-  }
-}

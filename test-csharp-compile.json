@@ -1,8 +1,0 @@
-{
-  "sourceCode": "using System; class Program { static void Main() { Console.WriteLine(\"Hello from RawrZ Native Compiler with Workaround!\"); Console.WriteLine(\"Current time: \" + DateTime.Now); } }",
-  "language": "csharp",
-  "options": {
-    "outputFormat": "exe",
-    "optimization": "release"
-  }
-}

@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "C:\\Users\\Garre\\.gradle\\daemon\\8.0\\com.android.simpleroot.app-merged_res-31:\\layout_activity_script_runner.xml.flat",
+        "source": "C:\\Users\\Garre\\.gradle\\daemon\\8.0\\com.android.simpleroot.app-main-33:\\layout\\activity_script_runner.xml"
+    },
+    {
+        "merged": "com.android.simpleroot.app-merged_res-31:/layout_activity_script_runner.xml.flat",
+        "source": "com.android.simpleroot.app-main-33:/layout/activity_script_runner.xml"
+    },
+    {
+        "merged": "C:\\Users\\Garre\\.gradle\\daemon\\8.0\\com.android.simpleroot.app-merged_res-31:\\layout_activity_main.xml.flat",
+        "source": "C:\\Users\\Garre\\.gradle\\daemon\\8.0\\com.android.simpleroot.app-main-33:\\layout\\activity_main.xml"
+    }
+]

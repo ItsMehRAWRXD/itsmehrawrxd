@@ -1,0 +1,15 @@
+R_DEF: Internal format may change without notice
+local
+id buttonLayout
+id button_layout
+id commandInput
+id outputText
+id output_scroll_view
+id output_text
+id scrollView
+id status_text
+layout activity_main
+layout activity_script_runner
+string app_name
+string start_button
+string status_ready

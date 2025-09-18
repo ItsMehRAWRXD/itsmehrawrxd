@@ -1,0 +1,739 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.android.simpleroot"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="21"
+9        android:targetSdkVersion="34" />
+10
+11    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+11-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:6:5-81
+11-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:6:22-78
+12    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+12-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:7:5-80
+12-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:7:22-77
+13    <uses-permission android:name="android.permission.INTERNET" />
+13-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:8:5-67
+13-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:8:22-64
+14    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+14-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:9:5-73
+14-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:9:22-70
+15    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+15-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:10:5-78
+15-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:10:22-75
+16    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+16-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:11:5-83
+16-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:11:22-80
+17    <uses-permission android:name="android.permission.DEVICE_POWER" />
+17-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:12:5-71
+17-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:12:22-68
+18    <uses-permission android:name="android.permission.REBOOT" />
+18-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:13:5-65
+18-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:13:22-62
+19    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
+19-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:14:5-84
+19-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:14:22-81
+20    <uses-permission android:name="android.permission.ACCESS_SUPERUSER" />
+20-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:15:5-75
+20-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:15:22-72
+21    <uses-permission android:name="android.permission.ACCESS_ROOT" />
+21-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:16:5-70
+21-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:16:22-67
+22    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+22-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:17:5-76
+22-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:17:22-73
+23    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+23-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:18:5-76
+23-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:18:22-73
+24    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+24-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:19:5-79
+24-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:19:22-76
+25    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+25-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:20:5-79
+25-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:20:22-76
+26    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+26-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:21:5-80
+26-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:21:22-77
+27    <uses-permission android:name="android.permission.WRITE_GLOBAL_SETTINGS" />
+27-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:22:5-80
+27-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:22:22-77
+28    <uses-permission android:name="android.permission.MODIFY_PHONE_STATE" />
+28-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:23:5-77
+28-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:23:22-74
+29    <uses-permission android:name="android.permission.CALL_PHONE" />
+29-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:24:5-69
+29-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:24:22-66
+30    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+30-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:25:5-75
+30-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:25:22-72
+31    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+31-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:26:5-79
+31-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:26:22-76
+32    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+32-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:27:5-81
+32-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:27:22-78
+33    <uses-permission android:name="android.permission.CAMERA" />
+33-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:28:5-65
+33-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:28:22-62
+34    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+34-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:29:5-71
+34-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:29:22-68
+35    <uses-permission android:name="android.permission.WAKE_LOCK" />
+35-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:30:5-68
+35-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:30:22-65
+36    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+36-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:31:5-75
+36-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:31:22-72
+37    <uses-permission android:name="android.permission.VIBRATE" />
+37-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:32:5-66
+37-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:32:22-63
+38    <uses-permission android:name="android.permission.BLUETOOTH" />
+38-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:33:5-68
+38-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:33:22-65
+39    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+39-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:34:5-74
+39-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:34:22-71
+40    <uses-permission android:name="android.permission.NFC" />
+40-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:35:5-62
+40-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:35:22-59
+41    <uses-permission android:name="android.permission.READ_LOGS" />
+41-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:36:5-68
+41-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:36:22-65
+42    <uses-permission android:name="android.permission.DUMP" />
+42-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:37:5-63
+42-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:37:22-60
+43    <uses-permission android:name="android.permission.SET_DEBUG_APP" />
+43-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:38:5-72
+43-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:38:22-69
+44    <uses-permission android:name="android.permission.SET_PROCESS_LIMIT" />
+44-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:39:5-76
+44-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:39:22-73
+45    <uses-permission android:name="android.permission.SET_ALWAYS_FINISH" />
+45-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:40:5-76
+45-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:40:22-73
+46    <uses-permission android:name="android.permission.SET_ANIMATION_SCALE" />
+46-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:41:5-78
+46-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:41:22-75
+47    <uses-permission android:name="android.permission.SET_POINTER_SPEED" />
+47-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:42:5-76
+47-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:42:22-73
+48    <uses-permission android:name="android.permission.SET_WALLPAPER" />
+48-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:43:5-72
+48-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:43:22-69
+49    <uses-permission android:name="android.permission.SET_WALLPAPER_HINTS" />
+49-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:44:5-78
+49-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:44:22-75
+50    <uses-permission android:name="android.permission.SET_TIME" />
+50-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:45:5-67
+50-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:45:22-64
+51    <uses-permission android:name="android.permission.SET_TIME_ZONE" />
+51-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:46:5-72
+51-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:46:22-69
+52    <uses-permission android:name="android.permission.MASTER_CLEAR" />
+52-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:47:5-71
+52-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:47:22-68
+53    <uses-permission android:name="android.permission.CALL_PRIVILEGED" />
+53-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:48:5-74
+53-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:48:22-71
+54    <uses-permission android:name="android.permission.PERFORM_CDMA_PROVISIONING" />
+54-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:49:5-84
+54-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:49:22-81
+55    <uses-permission android:name="android.permission.CONTROL_LOCATION_UPDATES" />
+55-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:50:5-83
+55-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:50:22-80
+56    <uses-permission android:name="android.permission.ACCESS_CHECKIN_PROPERTIES" />
+56-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:51:5-84
+56-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:51:22-81
+57    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
+57-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:52:5-78
+57-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:52:22-75
+58    <uses-permission android:name="android.permission.BATTERY_STATS" />
+58-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:53:5-72
+58-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:53:22-69
+59    <uses-permission android:name="android.permission.BACKUP" />
+59-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:54:5-65
+59-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:54:22-62
+60    <uses-permission android:name="android.permission.BIND_DEVICE_ADMIN" />
+60-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:55:5-76
+60-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:55:22-73
+61    <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" />
+61-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:56:5-85
+61-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:56:22-82
+62    <uses-permission android:name="android.permission.BIND_INPUT_METHOD" />
+62-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:57:5-76
+62-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:57:22-73
+63    <uses-permission android:name="android.permission.BIND_NFC_SERVICE" />
+63-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:58:5-75
+63-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:58:22-72
+64    <uses-permission android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE" />
+64-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:59:5-93
+64-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:59:22-90
+65    <uses-permission android:name="android.permission.BIND_PRINT_SERVICE" />
+65-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:60:5-77
+65-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:60:22-74
+66    <uses-permission android:name="android.permission.BIND_REMOTEVIEWS" />
+66-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:61:5-75
+66-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:61:22-72
+67    <uses-permission android:name="android.permission.BIND_TEXT_SERVICE" />
+67-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:62:5-76
+67-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:62:22-73
+68    <uses-permission android:name="android.permission.BIND_VPN_SERVICE" />
+68-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:63:5-75
+68-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:63:22-72
+69    <uses-permission android:name="android.permission.BIND_WALLPAPER" />
+69-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:64:5-73
+69-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:64:22-70
+70    <uses-permission android:name="android.permission.CLEAR_APP_CACHE" />
+70-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:65:5-74
+70-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:65:22-71
+71    <uses-permission android:name="android.permission.CLEAR_APP_USER_DATA" />
+71-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:66:5-78
+71-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:66:22-75
+72    <uses-permission android:name="android.permission.CONFIGURE_WIFI_DISPLAY" />
+72-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:67:5-81
+72-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:67:22-78
+73    <uses-permission android:name="android.permission.CONNECTIVITY_INTERNAL" />
+73-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:68:5-80
+73-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:68:22-77
+74    <uses-permission android:name="android.permission.COPY_PROTECTED_DATA" />
+74-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:69:5-78
+74-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:69:22-75
+75    <uses-permission android:name="android.permission.CRYPT_KEEPER" />
+75-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:70:5-71
+75-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:70:22-68
+76    <uses-permission android:name="android.permission.DELETE_CACHE_FILES" />
+76-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:71:5-77
+76-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:71:22-74
+77    <uses-permission android:name="android.permission.DELETE_PACKAGES" />
+77-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:72:5-74
+77-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:72:22-71
+78    <uses-permission android:name="android.permission.DEVICE_POWER" />
+78-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:12:5-71
+78-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:12:22-68
+79    <uses-permission android:name="android.permission.DIAGNOSTIC" />
+79-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:74:5-69
+79-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:74:22-66
+80    <uses-permission android:name="android.permission.DUMP" />
+80-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:37:5-63
+80-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:37:22-60
+81    <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
+81-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:76:5-76
+81-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:76:22-73
+82    <uses-permission android:name="android.permission.FACTORY_TEST" />
+82-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:77:5-71
+82-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:77:22-68
+83    <uses-permission android:name="android.permission.FORCE_BACK" />
+83-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:78:5-69
+83-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:78:22-66
+84    <uses-permission android:name="android.permission.FORCE_STOP_PACKAGES" />
+84-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:79:5-78
+84-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:79:22-75
+85    <uses-permission android:name="android.permission.FRAME_STATS" />
+85-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:80:5-70
+85-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:80:22-67
+86    <uses-permission android:name="android.permission.FREEZE_SCREEN" />
+86-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:81:5-72
+86-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:81:22-69
+87    <uses-permission android:name="android.permission.GET_APP_OPS_STATS" />
+87-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:82:5-76
+87-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:82:22-73
+88    <uses-permission android:name="android.permission.GET_DETAILED_TASKS" />
+88-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:83:5-77
+88-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:83:22-74
+89    <uses-permission android:name="android.permission.GET_TASKS" />
+89-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:84:5-68
+89-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:84:22-65
+90    <uses-permission android:name="android.permission.GLOBAL_SEARCH" />
+90-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:85:5-72
+90-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:85:22-69
+91    <uses-permission android:name="android.permission.GLOBAL_SEARCH_CONTROL" />
+91-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:86:5-80
+91-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:86:22-77
+92    <uses-permission android:name="android.permission.HARDWARE_TEST" />
+92-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:87:5-72
+92-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:87:22-69
+93    <uses-permission android:name="android.permission.INJECT_EVENTS" />
+93-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:88:5-72
+93-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:88:22-69
+94    <uses-permission android:name="android.permission.INSTALL_LOCATION_PROVIDER" />
+94-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:89:5-84
+94-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:89:22-81
+95    <uses-permission android:name="android.permission.INSTALL_PACKAGES" />
+95-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:90:5-75
+95-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:90:22-72
+96    <uses-permission android:name="android.permission.INTERNAL_SYSTEM_WINDOW" />
+96-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:91:5-81
+96-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:91:22-78
+97    <uses-permission android:name="android.permission.INTERNET" />
+97-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:8:5-67
+97-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:8:22-64
+98    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+98-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:93:5-84
+98-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:93:22-81
+99    <uses-permission android:name="android.permission.LOCATION_HARDWARE" />
+99-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:94:5-76
+99-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:94:22-73
+100    <uses-permission android:name="android.permission.LOOP_RADIO" />
+100-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:95:5-69
+100-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:95:22-66
+101    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
+101-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:96:5-74
+101-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:96:22-71
+102    <uses-permission android:name="android.permission.MANAGE_APP_TOKENS" />
+102-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:97:5-76
+102-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:97:22-73
+103    <uses-permission android:name="android.permission.MANAGE_DEVICE_ADMINS" />
+103-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:98:5-79
+103-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:98:22-76
+104    <uses-permission android:name="android.permission.MANAGE_DOCUMENTS" />
+104-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:99:5-75
+104-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:99:22-72
+105    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+105-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:100:5-82
+105-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:100:22-79
+106    <uses-permission android:name="android.permission.MANAGE_MEDIA_PROJECTION" />
+106-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:101:5-82
+106-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:101:22-79
+107    <uses-permission android:name="android.permission.MANAGE_NETWORK_POLICY" />
+107-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:102:5-80
+107-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:102:22-77
+108    <uses-permission android:name="android.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS" />
+108-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:103:5-91
+108-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:103:22-88
+109    <uses-permission android:name="android.permission.MANAGE_USB" />
+109-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:104:5-69
+109-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:104:22-66
+110    <uses-permission android:name="android.permission.MANAGE_USERS" />
+110-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:105:5-71
+110-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:105:22-68
+111    <uses-permission android:name="android.permission.MANAGE_VOICE_KEYPHRASES" />
+111-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:106:5-82
+111-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:106:22-79
+112    <uses-permission android:name="android.permission.MASTER_CLEAR" />
+112-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:47:5-71
+112-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:47:22-68
+113    <uses-permission android:name="android.permission.MEDIA_CONTENT_CONTROL" />
+113-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:108:5-80
+113-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:108:22-77
+114    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+114-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:109:5-80
+114-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:109:22-77
+115    <uses-permission android:name="android.permission.MODIFY_DAY_NIGHT_MODE" />
+115-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:110:5-80
+115-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:110:22-77
+116    <uses-permission android:name="android.permission.MODIFY_PHONE_STATE" />
+116-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:23:5-77
+116-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:23:22-74
+117    <uses-permission android:name="android.permission.MODIFY_SYSTEM_SETTINGS" />
+117-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:112:5-81
+117-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:112:22-78
+118    <uses-permission android:name="android.permission.MOUNT_FORMAT_FILESYSTEMS" />
+118-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:113:5-83
+118-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:113:22-80
+119    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
+119-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:14:5-84
+119-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:14:22-81
+120    <uses-permission android:name="android.permission.MOVE_PACKAGE" />
+120-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:115:5-71
+120-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:115:22-68
+121    <uses-permission android:name="android.permission.NET_ADMIN" />
+121-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:116:5-68
+121-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:116:22-65
+122    <uses-permission android:name="android.permission.NET_TUNNELING" />
+122-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:117:5-72
+122-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:117:22-69
+123    <uses-permission android:name="android.permission.OVERRIDE_WIFI_CONFIG" />
+123-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:118:5-79
+123-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:118:22-76
+124    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
+124-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:52:5-78
+124-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:52:22-75
+125    <uses-permission android:name="android.permission.PACKAGE_VERIFICATION_AGENT" />
+125-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:120:5-85
+125-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:120:22-82
+126    <uses-permission android:name="android.permission.PEERS_MAC_ADDRESS" />
+126-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:121:5-76
+126-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:121:22-73
+127    <uses-permission android:name="android.permission.PERFORM_CDMA_PROVISIONING" />
+127-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:49:5-84
+127-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:49:22-81
+128    <uses-permission android:name="android.permission.PERFORM_SIM_ACTIVATION" />
+128-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:123:5-81
+128-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:123:22-78
+129    <uses-permission android:name="android.permission.PERSISTENT_ACTIVITY" />
+129-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:124:5-78
+129-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:124:22-75
+130    <uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS" />
+130-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:125:5-81
+130-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:125:22-78
+131    <uses-permission android:name="android.permission.READ_BATTERY_STATS" />
+131-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:126:5-77
+131-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:126:22-74
+132    <uses-permission android:name="android.permission.READ_DREAM_STATE" />
+132-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:127:5-75
+132-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:127:22-72
+133    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+133-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:7:5-80
+133-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:7:22-77
+134    <uses-permission android:name="android.permission.READ_FRAME_BUFFER" />
+134-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:129:5-76
+134-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:129:22-73
+135    <uses-permission android:name="android.permission.READ_INPUT_STATE" />
+135-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:130:5-75
+135-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:130:22-72
+136    <uses-permission android:name="android.permission.READ_LOGS" />
+136-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:36:5-68
+136-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:36:22-65
+137    <uses-permission android:name="android.permission.READ_NETWORK_USAGE_HISTORY" />
+137-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:132:5-85
+137-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:132:22-82
+138    <uses-permission android:name="android.permission.READ_PRECISE_PHONE_STATE" />
+138-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:133:5-83
+138-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:133:22-80
+139    <uses-permission android:name="android.permission.READ_PRIVILEGED_PHONE_STATE" />
+139-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:134:5-86
+139-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:134:22-83
+140    <uses-permission android:name="android.permission.READ_SEARCH_INDEXABLES" />
+140-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:135:5-81
+140-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:135:22-78
+141    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+141-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:136:5-77
+141-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:136:22-74
+142    <uses-permission android:name="android.permission.READ_SYNC_STATS" />
+142-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:137:5-74
+142-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:137:22-71
+143    <uses-permission android:name="android.permission.READ_USER_DICTIONARY" />
+143-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:138:5-79
+143-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:138:22-76
+144    <uses-permission android:name="android.permission.REAL_GET_TASKS" />
+144-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:139:5-73
+144-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:139:22-70
+145    <uses-permission android:name="android.permission.REBOOT" />
+145-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:13:5-65
+145-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:13:22-62
+146    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+146-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:141:5-81
+146-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:141:22-78
+147    <uses-permission android:name="android.permission.RECEIVE_DATA_ACTIVITY_CHANGE" />
+147-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:142:5-87
+147-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:142:22-84
+148    <uses-permission android:name="android.permission.RECEIVE_EMERGENCY_BROADCAST" />
+148-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:143:5-86
+148-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:143:22-83
+149    <uses-permission android:name="android.permission.RECEIVE_MEDIA_RESOURCE_USAGE" />
+149-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:144:5-87
+149-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:144:22-84
+150    <uses-permission android:name="android.permission.RECEIVE_STK_COMMANDS" />
+150-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:145:5-79
+150-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:145:22-76
+151    <uses-permission android:name="android.permission.RECEIVE_WAP_PUSH" />
+151-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:146:5-75
+151-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:146:22-72
+152    <uses-permission android:name="android.permission.RECOVERY" />
+152-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:147:5-67
+152-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:147:22-64
+153    <uses-permission android:name="android.permission.REMOVE_TASKS" />
+153-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:148:5-71
+153-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:148:22-68
+154    <uses-permission android:name="android.permission.REORDER_TASKS" />
+154-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:149:5-72
+154-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:149:22-69
+155    <uses-permission android:name="android.permission.REQUEST_COMPANION_RUN_IN_BACKGROUND" />
+155-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:150:5-94
+155-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:150:22-91
+156    <uses-permission android:name="android.permission.REQUEST_COMPANION_START_FOREGROUND_SERVICES_FROM_BACKGROUND" />
+156-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:151:5-118
+156-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:151:22-115
+157    <uses-permission android:name="android.permission.REQUEST_COMPANION_USE_DATA_IN_BACKGROUND" />
+157-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:152:5-99
+157-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:152:22-96
+158    <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
+158-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:153:5-82
+158-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:153:22-79
+159    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+159-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:154:5-95
+159-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:154:22-92
+160    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+160-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:11:5-83
+160-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:11:22-80
+161    <uses-permission android:name="android.permission.REQUEST_PASSWORD_COMPLEXITY" />
+161-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:156:5-86
+161-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:156:22-83
+162    <uses-permission android:name="android.permission.RESET_PASSWORD" />
+162-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:157:5-73
+162-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:157:22-70
+163    <uses-permission android:name="android.permission.RESTART_PACKAGES" />
+163-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:158:5-75
+163-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:158:22-72
+164    <uses-permission android:name="android.permission.SEND_RESPOND_VIA_MESSAGE" />
+164-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:159:5-83
+164-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:159:22-80
+165    <uses-permission android:name="android.permission.SEND_SMS_NO_CONFIRMATION" />
+165-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:160:5-83
+165-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:160:22-80
+166    <uses-permission android:name="android.permission.SERIAL_PORT" />
+166-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:161:5-70
+166-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:161:22-67
+167    <uses-permission android:name="android.permission.SET_ACTIVITY_WATCHER" />
+167-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:162:5-79
+167-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:162:22-76
+168    <uses-permission android:name="android.permission.SET_ALWAYS_FINISH" />
+168-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:40:5-76
+168-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:40:22-73
+169    <uses-permission android:name="android.permission.SET_ANIMATION_SCALE" />
+169-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:41:5-78
+169-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:41:22-75
+170    <uses-permission android:name="android.permission.SET_DEBUG_APP" />
+170-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:38:5-72
+170-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:38:22-69
+171    <uses-permission android:name="android.permission.SET_INPUT_CALIBRATION" />
+171-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:166:5-80
+171-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:166:22-77
+172    <uses-permission android:name="android.permission.SET_KEYBOARD_LAYOUT" />
+172-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:167:5-78
+172-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:167:22-75
+173    <uses-permission android:name="android.permission.SET_ORIENTATION" />
+173-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:168:5-74
+173-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:168:22-71
+174    <uses-permission android:name="android.permission.SET_POINTER_SPEED" />
+174-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:42:5-76
+174-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:42:22-73
+175    <uses-permission android:name="android.permission.SET_PREFERRED_APPLICATIONS" />
+175-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:170:5-85
+175-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:170:22-82
+176    <uses-permission android:name="android.permission.SET_PROCESS_LIMIT" />
+176-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:39:5-76
+176-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:39:22-73
+177    <uses-permission android:name="android.permission.SET_SCREEN_COMPATIBILITY" />
+177-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:172:5-83
+177-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:172:22-80
+178    <uses-permission android:name="android.permission.SET_TIME" />
+178-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:45:5-67
+178-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:45:22-64
+179    <uses-permission android:name="android.permission.SET_TIME_ZONE" />
+179-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:46:5-72
+179-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:46:22-69
+180    <uses-permission android:name="android.permission.SET_WALLPAPER" />
+180-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:43:5-72
+180-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:43:22-69
+181    <uses-permission android:name="android.permission.SET_WALLPAPER_COMPONENT" />
+181-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:176:5-82
+181-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:176:22-79
+182    <uses-permission android:name="android.permission.SET_WALLPAPER_HINTS" />
+182-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:44:5-78
+182-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:44:22-75
+183    <uses-permission android:name="android.permission.SHUTDOWN" />
+183-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:178:5-67
+183-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:178:22-64
+184    <uses-permission android:name="android.permission.SIGNAL_PERSISTENT_PROCESSES" />
+184-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:179:5-86
+184-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:179:22-83
+185    <uses-permission android:name="android.permission.START_ANY_ACTIVITY" />
+185-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:180:5-77
+185-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:180:22-74
+186    <uses-permission android:name="android.permission.START_TASKS_FROM_RECENTS" />
+186-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:181:5-83
+186-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:181:22-80
+187    <uses-permission android:name="android.permission.STATUS_BAR" />
+187-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:182:5-69
+187-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:182:22-66
+188    <uses-permission android:name="android.permission.STOP_APP_SWITCHES" />
+188-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:183:5-76
+188-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:183:22-73
+189    <uses-permission android:name="android.permission.SUBSCRIBED_FEEDS_READ" />
+189-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:184:5-80
+189-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:184:22-77
+190    <uses-permission android:name="android.permission.SUBSCRIBED_FEEDS_WRITE" />
+190-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:185:5-81
+190-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:185:22-78
+191    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+191-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:10:5-78
+191-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:10:22-75
+192    <uses-permission android:name="android.permission.TABLET_MODE" />
+192-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:187:5-70
+192-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:187:22-67
+193    <uses-permission android:name="android.permission.TEMPORARY_ENABLE_ACCESSIBILITY" />
+193-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:188:5-89
+193-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:188:22-86
+194    <uses-permission android:name="android.permission.TRANSMIT_IR" />
+194-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:189:5-70
+194-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:189:22-67
+195    <uses-permission android:name="android.permission.TRUST_LISTENER" />
+195-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:190:5-73
+195-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:190:22-70
+196    <uses-permission android:name="android.permission.TV_INPUT_HARDWARE" />
+196-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:191:5-76
+196-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:191:22-73
+197    <uses-permission android:name="android.permission.UPDATE_APP_OPS_STATS" />
+197-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:192:5-79
+197-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:192:22-76
+198    <uses-permission android:name="android.permission.UPDATE_DEVICE_STATS" />
+198-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:193:5-78
+198-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:193:22-75
+199    <uses-permission android:name="android.permission.UPDATE_LOCK" />
+199-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:194:5-70
+199-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:194:22-67
+200    <uses-permission android:name="android.permission.USER_ACTIVITY" />
+200-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:195:5-72
+200-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:195:22-69
+201    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+201-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:196:5-74
+201-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:196:22-71
+202    <uses-permission android:name="android.permission.VIBRATE" />
+202-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:32:5-66
+202-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:32:22-63
+203    <uses-permission android:name="android.permission.WAKE_LOCK" />
+203-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:30:5-68
+203-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:30:22-65
+204    <uses-permission android:name="android.permission.WRITE_APN_SETTINGS" />
+204-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:199:5-77
+204-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:199:22-74
+205    <uses-permission android:name="android.permission.WRITE_DREAM_STATE" />
+205-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:200:5-76
+205-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:200:22-73
+206    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+206-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:6:5-81
+206-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:6:22-78
+207    <uses-permission android:name="android.permission.WRITE_GSERVICES" />
+207-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:202:5-74
+207-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:202:22-71
+208    <uses-permission android:name="android.permission.WRITE_MEDIA_STORAGE" />
+208-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:203:5-78
+208-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:203:22-75
+209    <uses-permission android:name="android.permission.WRITE_PROFILE" />
+209-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:204:5-72
+209-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:204:22-69
+210    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+210-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:21:5-80
+210-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:21:22-77
+211    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+211-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:9:5-73
+211-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:9:22-70
+212    <uses-permission android:name="android.permission.WRITE_SMS" />
+212-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:207:5-68
+212-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:207:22-65
+213    <uses-permission android:name="android.permission.WRITE_SOCIAL_STREAM" />
+213-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:208:5-78
+213-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:208:22-75
+214    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+214-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:209:5-78
+214-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:209:22-75
+215    <uses-permission android:name="android.permission.WRITE_USER_DICTIONARY" />
+215-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:210:5-80
+215-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:210:22-77
+216
+217    <permission
+217-->[androidx.core:core:1.9.0] C:\Users\Garre\.gradle\caches\transforms-3\caba9f8be4c832ea6558d94b2f3d267a\transformed\core-1.9.0\AndroidManifest.xml:22:5-24:47
+218        android:name="com.android.simpleroot.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+218-->[androidx.core:core:1.9.0] C:\Users\Garre\.gradle\caches\transforms-3\caba9f8be4c832ea6558d94b2f3d267a\transformed\core-1.9.0\AndroidManifest.xml:23:9-81
+219        android:protectionLevel="signature" />
+219-->[androidx.core:core:1.9.0] C:\Users\Garre\.gradle\caches\transforms-3\caba9f8be4c832ea6558d94b2f3d267a\transformed\core-1.9.0\AndroidManifest.xml:24:9-44
+220
+221    <uses-permission android:name="com.android.simpleroot.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+221-->[androidx.core:core:1.9.0] C:\Users\Garre\.gradle\caches\transforms-3\caba9f8be4c832ea6558d94b2f3d267a\transformed\core-1.9.0\AndroidManifest.xml:26:5-97
+221-->[androidx.core:core:1.9.0] C:\Users\Garre\.gradle\caches\transforms-3\caba9f8be4c832ea6558d94b2f3d267a\transformed\core-1.9.0\AndroidManifest.xml:26:22-94
+222
+223    <application
+223-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:212:5-228:19
+224        android:allowBackup="true"
+224-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:213:9-35
+225        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+225-->[androidx.core:core:1.9.0] C:\Users\Garre\.gradle\caches\transforms-3\caba9f8be4c832ea6558d94b2f3d267a\transformed\core-1.9.0\AndroidManifest.xml:28:18-86
+226        android:debuggable="true"
+227        android:extractNativeLibs="true"
+228        android:icon="@android:drawable/ic_dialog_info"
+228-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:214:9-56
+229        android:label="Script Runner"
+229-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:215:9-38
+230        android:theme="@android:style/Theme.Light" >
+230-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:216:9-51
+231        <activity
+231-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:218:9-226:20
+232            android:name="com.android.simpleroot.ScriptRunnerActivity"
+232-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:219:13-49
+233            android:exported="true"
+233-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:221:13-36
+234            android:label="Script Runner" >
+234-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:220:13-42
+235            <intent-filter>
+235-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:222:13-225:29
+236                <action android:name="android.intent.action.MAIN" />
+236-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:223:17-69
+236-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:223:25-66
+237
+238                <category android:name="android.intent.category.LAUNCHER" />
+238-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:224:17-77
+238-->C:\Users\Garre\Desktop\RawrZApp\complete-apk-build\app\src\main\AndroidManifest.xml:224:27-74
+239            </intent-filter>
+240        </activity>
+241
+242        <provider
+242-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Garre\.gradle\caches\transforms-3\3abf992305477ed8d1304361ed51f0e6\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:24:9-32:20
+243            android:name="androidx.startup.InitializationProvider"
+243-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Garre\.gradle\caches\transforms-3\3abf992305477ed8d1304361ed51f0e6\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:25:13-67
+244            android:authorities="com.android.simpleroot.androidx-startup"
+244-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Garre\.gradle\caches\transforms-3\3abf992305477ed8d1304361ed51f0e6\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:26:13-68
+245            android:exported="false" >
+245-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Garre\.gradle\caches\transforms-3\3abf992305477ed8d1304361ed51f0e6\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:27:13-37
+246            <meta-data
+246-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Garre\.gradle\caches\transforms-3\3abf992305477ed8d1304361ed51f0e6\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:29:13-31:52
+247                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+247-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Garre\.gradle\caches\transforms-3\3abf992305477ed8d1304361ed51f0e6\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:30:17-75
+248                android:value="androidx.startup" />
+248-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Garre\.gradle\caches\transforms-3\3abf992305477ed8d1304361ed51f0e6\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:31:17-49
+249            <meta-data
+249-->[androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\Garre\.gradle\caches\transforms-3\2bccb424d15bf82466863c7cf84f01e2\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:29:13-31:52
+250                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+250-->[androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\Garre\.gradle\caches\transforms-3\2bccb424d15bf82466863c7cf84f01e2\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:30:17-78
+251                android:value="androidx.startup" />
+251-->[androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\Garre\.gradle\caches\transforms-3\2bccb424d15bf82466863c7cf84f01e2\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:31:17-49
+252            <meta-data
+252-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Garre\.gradle\caches\transforms-3\8f2db9b0b08283adb05a93c727d71153\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:29:13-31:52
+253                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+253-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Garre\.gradle\caches\transforms-3\8f2db9b0b08283adb05a93c727d71153\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:30:17-85
+254                android:value="androidx.startup" />
+254-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Garre\.gradle\caches\transforms-3\8f2db9b0b08283adb05a93c727d71153\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:31:17-49
+255        </provider>
+256
+257        <receiver
+257-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Garre\.gradle\caches\transforms-3\8f2db9b0b08283adb05a93c727d71153\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:34:9-52:20
+258            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+258-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Garre\.gradle\caches\transforms-3\8f2db9b0b08283adb05a93c727d71153\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:35:13-76
+259            android:directBootAware="false"
+259-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Garre\.gradle\caches\transforms-3\8f2db9b0b08283adb05a93c727d71153\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:36:13-44
+260            android:enabled="true"
+260-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Garre\.gradle\caches\transforms-3\8f2db9b0b08283adb05a93c727d71153\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:37:13-35
+261            android:exported="true"
+261-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Garre\.gradle\caches\transforms-3\8f2db9b0b08283adb05a93c727d71153\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:38:13-36
+262            android:permission="android.permission.DUMP" >
+262-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Garre\.gradle\caches\transforms-3\8f2db9b0b08283adb05a93c727d71153\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:39:13-57
+263            <intent-filter>
+263-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Garre\.gradle\caches\transforms-3\8f2db9b0b08283adb05a93c727d71153\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:40:13-42:29
+264                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+264-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Garre\.gradle\caches\transforms-3\8f2db9b0b08283adb05a93c727d71153\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:41:17-91
+264-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Garre\.gradle\caches\transforms-3\8f2db9b0b08283adb05a93c727d71153\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:41:25-88
+265            </intent-filter>
+266            <intent-filter>
+266-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Garre\.gradle\caches\transforms-3\8f2db9b0b08283adb05a93c727d71153\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:43:13-45:29
+267                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+267-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Garre\.gradle\caches\transforms-3\8f2db9b0b08283adb05a93c727d71153\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:44:17-85
+267-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Garre\.gradle\caches\transforms-3\8f2db9b0b08283adb05a93c727d71153\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:44:25-82
+268            </intent-filter>
+269            <intent-filter>
+269-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Garre\.gradle\caches\transforms-3\8f2db9b0b08283adb05a93c727d71153\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:46:13-48:29
+270                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+270-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Garre\.gradle\caches\transforms-3\8f2db9b0b08283adb05a93c727d71153\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:47:17-88
+270-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Garre\.gradle\caches\transforms-3\8f2db9b0b08283adb05a93c727d71153\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:47:25-85
+271            </intent-filter>
+272            <intent-filter>
+272-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Garre\.gradle\caches\transforms-3\8f2db9b0b08283adb05a93c727d71153\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:49:13-51:29
+273                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+273-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Garre\.gradle\caches\transforms-3\8f2db9b0b08283adb05a93c727d71153\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:50:17-95
+273-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Garre\.gradle\caches\transforms-3\8f2db9b0b08283adb05a93c727d71153\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:50:25-92
+274            </intent-filter>
+275        </receiver>
+276    </application>
+277
+278</manifest>

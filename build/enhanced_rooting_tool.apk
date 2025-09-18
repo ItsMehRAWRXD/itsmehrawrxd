@@ -1,0 +1,14 @@
+PK
+[INFO] Enhanced Rooting Tool APK created successfully!
+
+APK Location: build\enhanced_rooting_tool.apk
+
+[WARNING] This is a basic APK structure for testing.
+[WARNING] For full functionality, install Android SDK and use the complete build script.
+
+[INFO] To install on your Samsung Galaxy Tab S10+ 5G:
+[INFO] 1. Enable USB debugging on your tablet
+[INFO] 2. Connect via USB
+[INFO] 3. Run: adb install -r build\enhanced_rooting_tool.apk
+
+[SUCCESS] Build completed!

@@ -1,8 +1,0 @@
-{
-  "config": {
-    "server": "localhost",
-    "port": 8080
-  },
-  "features": ["fileManager"],
-  "extensions": ["basic"]
-}
