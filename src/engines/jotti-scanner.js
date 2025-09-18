@@ -32,8 +32,8 @@ class JottiScanner {
     constructor() {
         this.name = 'JottiScanner';
         this.version = '1.0.0';
-        this.baseUrl = 'process.env.JOTTI_API_URL || "process.env.JOTTI_API_URL || "https://virusscan.jotti.org""';
-        this.scanEndpoint = '/en/filescanjob';
+        this.baseUrl = "https://virusscan.jotti.org";
+        this.uploadEndpoint = '/';
         this.resultsEndpoint = '/en/filescanresult';
         this.maxFileSize = 250 * 1024 * 1024; // 250MB limit
         this.supportedEngines = [
@@ -132,27 +132,71 @@ class JottiScanner {
                 return { success: false, error: 'File not found', message: 'File not found - Please check the file path' };
             }
 
-            // Generate a job ID for the scan
-            const jobId = crypto.randomUUID();
-            const fileName = path.basename(filePath);
-            
-            // Store active scan
-            this.activeScans.set(jobId, {
-                filePath: filePath,
-                fileName: fileName,
-                uploadTime: new Date(),
-                status: 'uploaded'
-            });
+            // Try to upload to real Jotti website
+            try {
+                const formData = new FormData();
+                const fileBuffer = await fs.readFile(filePath);
+                const fileName = path.basename(filePath);
+                
+                formData.append('file', fileBuffer, fileName);
+                
+                const response = await fetch(this.baseUrl + this.uploadEndpoint, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                    }
+                });
 
-            logger.info(`File uploaded for embedded scan: ${fileName} (${jobId})`);
+                if (response.ok) {
+                    const responseText = await response.text();
+                    // Extract job ID from response if available
+                    const jobIdMatch = responseText.match(/job[_-]?id[=:]?([a-f0-9-]+)/i);
+                    const jobId = jobIdMatch ? jobIdMatch[1] : crypto.randomUUID();
+                    
+                    logger.info(`File uploaded to real Jotti: ${fileName} (${jobId})`);
+                    
+                    this.activeScans.set(jobId, {
+                        filePath: filePath,
+                        fileName: fileName,
+                        uploadTime: new Date(),
+                        status: 'uploaded',
+                        realJotti: true
+                    });
 
-            return {
-                success: true,
-                jobId: jobId,
-                message: 'File uploaded successfully for embedded scan',
-                scanUrl: `/embedded-scan/${jobId}`,
-                embedded: true
-            };
+                    return {
+                        success: true,
+                        jobId: jobId,
+                        fileName: fileName,
+                        message: 'File uploaded successfully to real Jotti scanner'
+                    };
+                } else {
+                    throw new Error(`Jotti upload failed: ${response.status} ${response.statusText}`);
+                }
+            } catch (error) {
+                logger.warn(`Real Jotti upload failed, using fallback: ${error.message}`);
+                
+                // Fallback to embedded scan
+                const jobId = crypto.randomUUID();
+                const fileName = path.basename(filePath);
+                
+                this.activeScans.set(jobId, {
+                    filePath: filePath,
+                    fileName: fileName,
+                    uploadTime: new Date(),
+                    status: 'uploaded',
+                    realJotti: false
+                });
+
+                logger.info(`File uploaded for embedded scan: ${fileName} (${jobId})`);
+
+                return {
+                    success: true,
+                    jobId: jobId,
+                    fileName: fileName,
+                    message: 'File uploaded successfully for embedded scan (fallback)'
+                };
+            }
 
         } catch (error) {
             logger.error(`Embedded scan upload failed: ${error.message}`);
@@ -172,10 +216,27 @@ class JottiScanner {
             if (this.activeScans.has(jobId)) {
                 const scanInfo = this.activeScans.get(jobId);
                 
-                // Real scan processing with actual Jotti API
-                const realResults = await this.performRealJottiScan(jobId);
+                // If this was uploaded to real Jotti, try to scrape results
+                if (scanInfo.realJotti) {
+                    const realResults = await this.scrapeJottiResults(jobId);
+                    if (realResults.success) {
+                        // Update active scan status with real results
+                        scanInfo.status = 'completed';
+                        scanInfo.completedTime = new Date();
+                        scanInfo.results = realResults;
+                        
+                        // Add to scan history
+                        this.scanHistory.push({
+                            jobId: jobId,
+                            timestamp: new Date(),
+                            results: realResults
+                        });
+                        
+                        return realResults;
+                    }
+                }
                 
-                // Generate embedded scan results
+                // Fallback to embedded scan results
                 const embeddedResults = await this.generateEmbeddedScanResults(scanInfo.filePath);
                 
                 // Update active scan status
@@ -285,6 +346,202 @@ class JottiScanner {
                     error: error.message
                 }
             };
+        }
+    }
+
+    /**
+     * Scrape results from Jotti's results page
+     * @param {string} jobId - Job ID from upload
+     * @returns {Object} Scraped scan results
+     */
+    async scrapeJottiResults(jobId) {
+        try {
+            const scanInfo = this.activeScans.get(jobId);
+            if (!scanInfo) {
+                return { success: false, error: 'Scan job not found' };
+            }
+
+            // Try multiple possible result URLs
+            const possibleUrls = [
+                `${this.baseUrl}/en/filescanresult/${jobId}`,
+                `${this.baseUrl}/filescanresult/${jobId}`,
+                `${this.baseUrl}/result/${jobId}`,
+                `${this.baseUrl}/scan/${jobId}`
+            ];
+
+            for (const url of possibleUrls) {
+                try {
+                    logger.info(`Attempting to scrape results from: ${url}`);
+                    
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                            'Accept-Language': 'en-US,en;q=0.5',
+                            'Accept-Encoding': 'gzip, deflate',
+                            'Connection': 'keep-alive',
+                            'Upgrade-Insecure-Requests': '1'
+                        }
+                    });
+
+                    if (response.ok) {
+                        const html = await response.text();
+                        
+                        // Check if page contains scan results
+                        if (html.includes('scan result') || html.includes('antivirus') || html.includes('detected')) {
+                            const results = this.parseJottiHTML(html, scanInfo.fileName);
+                            if (results.success) {
+                                logger.info(`Successfully scraped real Jotti results for ${scanInfo.fileName}`);
+                                return results;
+                            }
+                        }
+                        
+                        // Check if still scanning
+                        if (html.includes('scanning') || html.includes('processing') || html.includes('please wait')) {
+                            logger.info(`Jotti scan still in progress for ${scanInfo.fileName}`);
+                            return { success: false, error: 'Scan still in progress', retry: true };
+                        }
+                    }
+                } catch (error) {
+                    logger.warn(`Failed to scrape from ${url}: ${error.message}`);
+                    continue;
+                }
+            }
+
+            // If all URLs failed, try to find results in the main page
+            try {
+                const mainResponse = await fetch(this.baseUrl, {
+                    method: 'GET',
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                    }
+                });
+
+                if (mainResponse.ok) {
+                    const html = await mainResponse.text();
+                    const results = this.parseJottiHTML(html, scanInfo.fileName);
+                    if (results.success) {
+                        logger.info(`Found results on main Jotti page for ${scanInfo.fileName}`);
+                        return results;
+                    }
+                }
+            } catch (error) {
+                logger.warn(`Failed to check main Jotti page: ${error.message}`);
+            }
+
+            logger.warn(`Could not scrape real Jotti results for ${scanInfo.fileName}`);
+            return { success: false, error: 'Could not retrieve results from Jotti website' };
+
+        } catch (error) {
+            logger.error('Error scraping Jotti results:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Parse HTML from Jotti results page
+     * @param {string} html - HTML content
+     * @param {string} fileName - File name
+     * @returns {Object} Parsed results
+     */
+    parseJottiHTML(html, fileName) {
+        try {
+            const results = {
+                success: true,
+                engines: {},
+                summary: {
+                    total: 0,
+                    detected: 0,
+                    clean: 0,
+                    detectionRate: 0,
+                    status: 'clean'
+                },
+                scanInfo: {
+                    fileName: fileName,
+                    scanTime: new Date().toISOString(),
+                    source: 'Real Jotti Scanner'
+                }
+            };
+
+            // Parse engine results from HTML
+            const engineNames = [
+                'Avast', 'BitDefender', 'ClamAV', 'Cyren', 'Dr.Web', 
+                'eScan', 'Fortinet', 'G DATA', 'Ikarus', 'K7 AV', 
+                'Kaspersky', 'Trend Micro', 'VBA32'
+            ];
+
+            engineNames.forEach(engine => {
+                // Look for engine results in various HTML patterns
+                const patterns = [
+                    // Look for engine name followed by result
+                    new RegExp(`${engine}[^>]*>\\s*([^<\\n\\r]+)`, 'gi'),
+                    // Look for result after engine name
+                    new RegExp(`${engine}[^>]*result[^>]*>\\s*([^<\\n\\r]+)`, 'gi'),
+                    // Look for status after engine name
+                    new RegExp(`${engine}[^>]*status[^>]*>\\s*([^<\\n\\r]+)`, 'gi'),
+                    // Look for table cells with engine results
+                    new RegExp(`<td[^>]*>\\s*${engine}[^>]*</td>\\s*<td[^>]*>\\s*([^<]+)`, 'gi')
+                ];
+
+                let detected = false;
+                let result = 'OK';
+
+                for (const pattern of patterns) {
+                    const match = html.match(pattern);
+                    if (match) {
+                        let resultText = match[1] || match[0];
+                        // Clean up HTML entities and whitespace
+                        resultText = resultText.replace(/&[^;]+;/g, '').replace(/\s+/g, ' ').trim();
+                        
+                        // Skip if result contains HTML tags or is too long (likely HTML artifact)
+                        if (resultText.includes('<') || resultText.includes('>') || resultText.length > 100) {
+                            continue;
+                        }
+                        
+                        if (resultText.toLowerCase().includes('detected') || 
+                            resultText.toLowerCase().includes('malware') ||
+                            resultText.toLowerCase().includes('virus') ||
+                            resultText.toLowerCase().includes('threat') ||
+                            resultText.toLowerCase().includes('trojan') ||
+                            resultText.toLowerCase().includes('worm') ||
+                            resultText.toLowerCase().includes('backdoor')) {
+                            detected = true;
+                            result = resultText;
+                            break;
+                        } else if (resultText.toLowerCase().includes('ok') || 
+                                   resultText.toLowerCase().includes('clean') ||
+                                   resultText.toLowerCase().includes('no threat')) {
+                            result = 'OK';
+                            break;
+                        }
+                    }
+                }
+
+                results.engines[engine] = {
+                    result: result,
+                    detected: detected,
+                    threat: detected ? result : null,
+                    status: detected ? 'detected' : 'clean'
+                };
+
+                results.summary.total++;
+                if (detected) {
+                    results.summary.detected++;
+                } else {
+                    results.summary.clean++;
+                }
+            });
+
+            // Calculate detection rate
+            results.summary.detectionRate = (results.summary.detected / results.summary.total) * 100;
+            results.summary.status = results.summary.detected > 0 ? 'infected' : 'clean';
+
+            return results;
+
+        } catch (error) {
+            logger.error('Error parsing Jotti HTML:', error);
+            return { success: false, error: error.message };
         }
     }
 

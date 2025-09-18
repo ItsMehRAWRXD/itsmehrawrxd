@@ -3353,7 +3353,7 @@
             try {
                 const response = await api('/openssl/toggle-openssl', 'POST', { enabled }, 3);
                 
-                if (response.success && response.result && response.result.success) {
+                if (response.data && response.data.success && response.data.result && response.data.result.success) {
                     // Local config already updated in event listener
                     showStatus(`OpenSSL mode ${enabled ? 'enabled' : 'disabled'}`, 'success');
                 } else {
@@ -3396,7 +3396,7 @@
             try {
                 const response = await api('/openssl/toggle-custom', 'POST', { enabled }, 3);
                 
-                if (response.success && response.result && response.result.success) {
+                if (response.data && response.data.success && response.data.result && response.data.result.success) {
                     // Update local config immediately
                     opensslConfig.allowCustomAlgorithms = enabled;
                     showStatus(`Custom algorithms ${enabled ? 'enabled' : 'disabled'}`, 'success');
@@ -3875,7 +3875,7 @@
             try {
                 const result = await api('/stub', 'POST', { target, options });
                 
-                if (result.success) {
+                if (result.data && result.data.success) {
                     showNotification('Advanced stub generated successfully!', 'success');
                     showStatus(`Advanced Stub Generated:
 Target: ${target}
@@ -3942,7 +3942,7 @@ Features: ${Object.entries(options).filter(([k,v]) => typeof v === 'boolean' && 
                     ...options 
                 });
                 
-                if (result.success) {
+                if (result.data && result.data.success) {
                     showNotification('Port scan completed successfully!', 'success');
                     showStatus(`Port Scan Results:
 Host: ${host}
@@ -3950,7 +3950,7 @@ Port Range: ${options.startPort}-${options.endPort}
 Scan Type: ${options.scanType.toUpperCase()}
 Speed: ${options.speed}
 Options: ${Object.entries(options).filter(([k,v]) => typeof v === 'boolean' && v).map(([k]) => k).join(', ') || 'None'}
-Results: ${JSON.stringify(result.result, null, 2)}`, 'success');
+Results: ${JSON.stringify(result.data.result, null, 2)}`, 'success');
                 } else {
                     showNotification('Port scan failed', 'error');
                 }
@@ -6487,14 +6487,14 @@ Examples:
                 }
                 
                 const response = await api('/openssl-management/test', 'POST', { algorithm, data });
-                const result = response.result;
+                const result = response.data.result;
                 
                 let resultsHtml = '<div class="test-results">';
                 resultsHtml += `<h4>Algorithm Test Results: ${algorithm}</h4>`;
                 resultsHtml += '<table class="results-table">';
                 resultsHtml += '<tr><th>Engine</th><th>Success</th><th>Duration (ms)</th><th>Key Size (bits)</th><th>IV Size (bits)</th></tr>';
                 
-                Object.entries(result.results).forEach(([engineName, engineResult]) => {
+                Object.entries(result.results || {}).forEach(([engineName, engineResult]) => {
                     resultsHtml += '<tr>';
                     resultsHtml += `<td>${engineName}</td>`;
                     resultsHtml += `<td>${engineResult.success ? 'Success' : 'Failed'}</td>`;
