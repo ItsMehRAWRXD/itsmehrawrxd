@@ -203,7 +203,7 @@ Examples:
   node rawrz-cli.js scan C:\\Windows\\System32\\calc.exe
 
 Available Engines:
-${Object.keys(this.engines).map(name => `  - ${name}`).join('\n')}
+${Object.keys(this.engines).map(name => `  - ` + name).join('\n')}
 `);
     }
 

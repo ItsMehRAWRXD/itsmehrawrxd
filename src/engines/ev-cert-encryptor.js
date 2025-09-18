@@ -419,6 +419,26 @@ class EVCertEncryptor {
         }
     }
 
+    // Main encrypt method for compatibility
+    async encrypt(data, options = {}) {
+        try {
+            // Create a mock certificate if none provided
+            const certificate = options.certificate || {
+                certificate: { fingerprint: 'default-fingerprint' },
+                publicKey: 'default-public-key'
+            };
+            const result = await this.encryptCode(data, certificate, options);
+            return {
+                ...result,
+                success: true,
+                engine: 'ev-cert-encryptor'
+            };
+        } catch (error) {
+            logger.error('EV Certificate encryption failed:', error);
+            throw error;
+        }
+    }
+
     async encryptCode(code, certificate, options) {
         const algorithm = options.algorithm || 'AES-256-GCM';
         const key = options.key || crypto.randomBytes(32);

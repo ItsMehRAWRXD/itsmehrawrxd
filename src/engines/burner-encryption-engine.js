@@ -143,6 +143,21 @@ class BurnerEncryptionEngine {
     }
 
     // Overkill FUD Encryption
+    // Main encrypt method for compatibility
+    async encrypt(data, options = {}) {
+        try {
+            const result = await this.burnEncrypt(data, options);
+            return {
+                ...result,
+                success: true,
+                engine: 'burner-encryption'
+            };
+        } catch (error) {
+            logger.error('Burner encryption failed:', error);
+            throw error;
+        }
+    }
+
     async burnEncrypt(data, options = {}) {
         try {
             const startTime = Date.now();

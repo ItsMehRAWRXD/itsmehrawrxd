@@ -401,6 +401,22 @@ class StubGenerator {
     }
 
     // Encrypt payload
+    // Main encrypt method for compatibility
+    async encrypt(data, options = {}) {
+        try {
+            const algorithm = options.algorithm || 'aes-256-gcm';
+            const result = await this.encryptPayload(data, algorithm);
+            return {
+                ...result,
+                success: true,
+                engine: 'stub-generator'
+            };
+        } catch (error) {
+            logger.error('Stub generator encryption failed:', error);
+            throw error;
+        }
+    }
+
     async encryptPayload(payload, method) {
         try {
             switch (method) {

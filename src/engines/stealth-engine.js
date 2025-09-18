@@ -86,6 +86,38 @@ class StealthEngine {
         logger.info('Stealth Engine initialized');
     }
 
+    // Main encrypt method for compatibility
+    async encrypt(data, options = {}) {
+        try {
+            // Apply stealth techniques to the data
+            const algorithm = options.algorithm || 'aes-256-gcm';
+            const key = options.key || crypto.randomBytes(32);
+            const iv = options.iv || crypto.randomBytes(12);
+            
+            // Convert data to buffer
+            const dataBuffer = Buffer.isBuffer(data) ? data : Buffer.from(data, 'utf8');
+            
+            // Apply stealth encryption
+            const cipher = crypto.createCipheriv(algorithm, key, iv);
+            let encrypted = cipher.update(dataBuffer);
+            encrypted = Buffer.concat([encrypted, cipher.final()]);
+            const authTag = cipher.getAuthTag();
+            
+            return {
+                algorithm: algorithm,
+                encrypted: encrypted.toString('hex'),
+                key: key.toString('hex'),
+                iv: iv.toString('hex'),
+                authTag: authTag.toString('hex'),
+                success: true,
+                engine: 'stealth'
+            };
+        } catch (error) {
+            logger.error('Stealth encryption failed:', error);
+            throw error;
+        }
+    }
+
     // Enable stealth mode
     async enableStealth(mode = 'standard') {
         const startTime = Date.now();

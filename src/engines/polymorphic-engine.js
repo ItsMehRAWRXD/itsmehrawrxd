@@ -66,6 +66,22 @@ class PolymorphicEngine {
     }
 
     // Transform - main entry point for polymorphic transformation
+    // Main encrypt method for compatibility
+    async encrypt(data, options = {}) {
+        try {
+            const result = await this.transform(data, options);
+            return {
+                ...result,
+                success: true,
+                engine: 'polymorphic',
+                encrypted: result.transformed || result.data
+            };
+        } catch (error) {
+            logger.error('Polymorphic encryption failed:', error);
+            throw error;
+        }
+    }
+
     async transform(target, options = {}) {
         return await this.polymorphize(target, options);
     }

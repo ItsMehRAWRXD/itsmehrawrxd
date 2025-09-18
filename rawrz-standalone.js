@@ -287,7 +287,7 @@ class RawrZStandalone {
                 uptime: Date.now() - this.startTime
             };
             
-            const logLine = `[${timestamp}] [${level}] ${message}${data ? ` | Data: ${JSON.stringify(data)}` : ''}\n`;
+            const logLine = `[${timestamp}] [${level}] ${message}${data ? ` | Data: ` + JSON.stringify(data) : ''}\n`;
             
             // Console output
             console.log(`[${level}] ${message}`);

