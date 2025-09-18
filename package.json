@@ -1,60 +1,43 @@
 {
-  "name": "rawr-security-platform",
+  "name": "rawrzapp",
   "version": "1.0.0",
-  "description": "RawR - Complete Standalone Security Platform - 294+ Endpoints with 100% Functionality",
+  "description": "RawrZ Security Platform - Advanced cybersecurity toolkit",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "start:standalone": "node rawrz-standalone.js",
-    "test": "node test-all-294-endpoints.js",
-    "test:simple": "node simple-endpoint-test.js",
-    "test:comprehensive": "node test-comprehensive.js",
-    "test:all": "node test-runner.js",
-    "payload-cli": "node cli/payload-cli.js",
-    "payloads": "node cli/payload-cli.js"
-  },
-  "dependencies": {
-    "axios": "^1.12.2",
-    "cors": "^2.8.5",
-    "crc32": "^0.2.2",
-    "dotenv": "^16.3.1",
-    "express": "^5.1.0",
-    "form-data": "^4.0.4",
-    "helmet": "^8.1.0",
-    "multer": "^2.0.2",
-    "node-fetch": "^2.7.0",
-    "uuid": "^13.0.0"
+    "dev": "nodemon server.js",
+    "test": "node test_all_stub_generators.js"
   },
   "keywords": [
+    "cybersecurity",
     "security",
     "encryption",
-    "cryptography",
-    "forensics",
-    "network-tools",
-    "file-analysis",
-    "standalone",
-    "cli",
-    "aes",
-    "camellia",
-    "aria",
-    "chacha20",
-    "anti-analysis",
-    "stealth",
-    "polymorphic",
     "malware-analysis",
-    "digital-forensics",
-    "reverse-engineering",
-    "hot-patching",
-    "memory-management",
-    "enterprise-security"
+    "penetration-testing",
+    "red-team"
   ],
-  "author": "RawR",
+  "author": "RawrZ Security Team",
   "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "multer": "^1.4.5-lts.1",
+    "dotenv": "^16.3.1",
+    "crypto": "^1.0.1",
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7",
+    "os": "^0.1.2",
+    "child_process": "^1.0.2",
+    "util": "^0.12.5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ItsMehRAWRXD/RawR.git"
+    "url": "https://github.com/ItsMehRAWRXD/itsmehrawrxd.git"
   },
-  "bin": {
-    "rawr": "./server.js"
-  }
+  "homepage": "https://github.com/ItsMehRAWRXD/itsmehrawrxd#readme"
 }
