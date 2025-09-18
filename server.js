@@ -687,7 +687,19 @@ const authToken = process.env.AUTH_TOKEN || '';
 // Middleware
 app.use(helmet());
 app.use(cors());
-app.use(express.json({ limit: '50mb' }));
+// Enhanced JSON parsing with error handling
+app.use(express.json({ 
+    limit: '50mb',
+    verify: (req, res, buf, encoding) => {
+        try {
+            JSON.parse(buf);
+        } catch (e) {
+            console.error('Invalid JSON received:', buf.toString());
+            res.status(400).json({ error: 'Invalid JSON format' });
+            return;
+        }
+    }
+}));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Authentication middleware
@@ -727,6 +739,97 @@ app.get('/health', (_req, res) => {
         timestamp: new Date().toISOString(),
         engines: Object.keys(realModules).length
     });
+});
+
+// Stub generation endpoint (alias for compatibility)
+app.post('/stub', requireAuth, async (req, res) => {
+    try {
+        const { target, options } = req.body;
+        
+        if (!target) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Target is required' 
+            });
+        }
+        
+        // Use the advanced stub generator
+        const result = await realModules.advancedStubGenerator.generateStub(target, options || {});
+        
+        res.json({
+            success: true,
+            result: result
+        });
+    } catch (error) {
+        console.error('Stub generation error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// Port scan endpoint (alias for compatibility)
+app.post('/portscan', requireAuth, async (req, res) => {
+    try {
+        const { host, startPort, endPort, scanType, speed, ...options } = req.body;
+        
+        if (!host) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Host is required' 
+            });
+        }
+        
+        // Use the network tools engine
+        const result = await realModules.networkTools.portScan(host, {
+            startPort: startPort || 1,
+            endPort: endPort || 1000,
+            scanType: scanType || 'tcp',
+            speed: speed || 'normal',
+            ...options
+        });
+        
+        res.json({
+            success: true,
+            result: result
+        });
+    } catch (error) {
+        console.error('Port scan error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// CLI endpoint (alias for compatibility)
+app.post('/cli', requireAuth, async (req, res) => {
+    try {
+        const { command, args } = req.body;
+        
+        if (!command) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Command is required' 
+            });
+        }
+        
+        // Execute CLI command using the CLI engine
+        const result = await realModules.cliEngine.executeCommand(command, args || []);
+        
+        res.json({
+            success: true,
+            output: result.output,
+            error: result.error
+        });
+    } catch (error) {
+        console.error('CLI execution error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
 });
 
 // Configuration endpoint
@@ -1011,10 +1114,32 @@ app.use(helmet({
     }
 }));
 
-app.use(cors());
-app.use(express.json({ limit: '5mb' }));
+// Static files (already set up above)
 app.use(express.static('public'));
-app.use(express.urlencoded({ extended: true }));
+
+// Catch-all route for API endpoints that don't exist
+app.use('/api/*', (req, res) => {
+    res.status(404).json({ 
+        error: 'API endpoint not found', 
+        path: req.path,
+        method: req.method 
+    });
+});
+
+// Catch-all route for other non-API endpoints
+app.use('*', (req, res) => {
+    // Only return JSON for API-like requests
+    if (req.path.startsWith('/api/') || req.headers.accept?.includes('application/json')) {
+        res.status(404).json({ 
+            error: 'Endpoint not found', 
+            path: req.path,
+            method: req.method 
+        });
+    } else {
+        // For regular web requests, serve the main page
+        res.sendFile(path.join(__dirname, 'public', 'panel.html'));
+    }
+});
 
 // Health check endpoint
 app.get('/health', (_req, res) => {
