@@ -706,6 +706,113 @@
         .cli-btn:hover {
             background: #4a5568;
         }
+
+        /* File Manager Styles */
+        .file-manager-container {
+            margin-top: 1rem;
+        }
+
+        .file-manager-tabs {
+            display: flex;
+            border-bottom: 1px solid #4a5568;
+            margin-bottom: 1rem;
+        }
+
+        .file-tab {
+            background: #2d3748;
+            color: #e2e8f0;
+            border: none;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-radius: 4px 4px 0 0;
+            margin-right: 0.25rem;
+        }
+
+        .file-tab.active {
+            background: #4a5568;
+            color: #ffffff;
+        }
+
+        .file-tab:hover {
+            background: #4a5568;
+        }
+
+        .file-tab-content {
+            display: none;
+            padding: 1rem;
+            border: 1px solid #4a5568;
+            border-radius: 0 4px 4px 4px;
+            background: #1a202c;
+        }
+
+        .file-tab-content.active {
+            display: block;
+        }
+
+        .browse-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .browse-controls input {
+            flex: 1;
+            background: #2d3748;
+            color: #e2e8f0;
+            border: 1px solid #4a5568;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+
+        .browse-controls button {
+            background: #3182ce;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .browse-controls button:hover {
+            background: #2c5aa0;
+        }
+
+        .directory-contents {
+            background: #2d3748;
+            border: 1px solid #4a5568;
+            border-radius: 4px;
+            padding: 1rem;
+            min-height: 200px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .url-download {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .url-download input {
+            background: #2d3748;
+            color: #e2e8f0;
+            border: 1px solid #4a5568;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+
+        .url-download button {
+            background: #3182ce;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .url-download button:hover {
+            background: #2c5aa0;
+        }
         
         .cli-output {
             background: #0c0f1a;
@@ -3095,6 +3202,7 @@
                                 <button onclick="clearCLI()" class="cli-btn">Clear</button>
                                 <button onclick="showCLIHelp()" class="cli-btn">Help</button>
                                 <button onclick="toggleCLIHistory()" class="cli-btn">History</button>
+                                <button onclick="openCLIFileManager()" class="cli-btn">File Manager</button>
                             </div>
                         </div>
                         <div class="cli-terminal" id="cliTerminal" contenteditable="true" spellcheck="false">
@@ -3109,6 +3217,55 @@
                             <div class="cli-line">
                                 <span class="cli-prompt">RawrZ@Security:~$</span>
                                 <span class="cli-cursor" id="cliCursor">_</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CLI File Manager -->
+                <div class="card" id="cliFileManager" style="display: none;">
+                    <h3>CLI File Manager</h3>
+                    <div class="file-manager-container">
+                        <div class="file-manager-tabs">
+                            <button class="file-tab active" onclick="switchFileTab('upload')">Upload Files</button>
+                            <button class="file-tab" onclick="switchFileTab('browse')">Browse Local</button>
+                            <button class="file-tab" onclick="switchFileTab('url')">URL Download</button>
+                        </div>
+                        
+                        <!-- Upload Tab -->
+                        <div id="uploadTab" class="file-tab-content active">
+                            <div class="upload-zone" id="cliUploadZone">
+                                <div class="upload-content">
+                                    <div class="upload-icon">[UPLOAD]</div>
+                                    <h4>Drag & Drop Files Here</h4>
+                                    <p>Or click to browse files</p>
+                                    <input type="file" id="cliFileInput" multiple style="display: none;" />
+                                    <button onclick="browseCLIFiles()">Browse Files</button>
+                                </div>
+                            </div>
+                            <div class="uploaded-files">
+                                <h4>Uploaded Files</h4>
+                                <div class="file-list" id="cliFileList"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Browse Tab -->
+                        <div id="browseTab" class="file-tab-content">
+                            <div class="browse-controls">
+                                <input type="text" id="browsePath" placeholder="Directory path (e.g., C:\Windows\System32)" value="." />
+                                <button onclick="browseCLIDirectory()">Browse</button>
+                            </div>
+                            <div class="directory-contents" id="cliDirectoryContents">
+                                <p>Click Browse to view directory contents</p>
+                            </div>
+                        </div>
+                        
+                        <!-- URL Tab -->
+                        <div id="urlTab" class="file-tab-content">
+                            <div class="url-download">
+                                <input type="url" id="cliUrlInput" placeholder="Enter file URL (http/https)" />
+                                <input type="text" id="cliUrlFilename" placeholder="Optional: custom filename" />
+                                <button onclick="downloadFromCLIUrl()">Download</button>
                             </div>
                         </div>
                     </div>
@@ -3920,6 +4077,59 @@
             });
         }
         
+        // Initialize encryption input tabs
+        function initializeEncryptionInputTabs() {
+            try {
+                // Find encryption tab containers
+                const encryptionTabs = document.querySelectorAll('.encryption-tab, .crypto-tab, .encrypt-tab');
+                
+                encryptionTabs.forEach(tab => {
+                    // Add click handlers for tab switching
+                    tab.addEventListener('click', function() {
+                        // Remove active class from all tabs in this group
+                        const tabGroup = this.closest('.tab-group, .encryption-container');
+                        if (tabGroup) {
+                            const allTabs = tabGroup.querySelectorAll('.encryption-tab, .crypto-tab, .encrypt-tab');
+                            allTabs.forEach(t => t.classList.remove('active'));
+                            
+                            // Add active class to clicked tab
+                            this.classList.add('active');
+                            
+                            // Show corresponding content
+                            const targetId = this.getAttribute('data-target');
+                            if (targetId) {
+                                const targetContent = document.getElementById(targetId);
+                                if (targetContent) {
+                                    // Hide all content in this group
+                                    const allContent = tabGroup.querySelectorAll('.tab-content, .encryption-content');
+                                    allContent.forEach(c => c.style.display = 'none');
+                                    
+                                    // Show target content
+                                    targetContent.style.display = 'block';
+                                }
+                            }
+                        }
+                    });
+                });
+                
+                // Initialize default active tab
+                const defaultTab = document.querySelector('.encryption-tab.active, .crypto-tab.active, .encrypt-tab.active');
+                if (defaultTab) {
+                    const targetId = defaultTab.getAttribute('data-target');
+                    if (targetId) {
+                        const targetContent = document.getElementById(targetId);
+                        if (targetContent) {
+                            targetContent.style.display = 'block';
+                        }
+                    }
+                }
+                
+                console.log('Encryption input tabs initialized successfully');
+            } catch (error) {
+                console.warn('Error initializing encryption input tabs:', error);
+            }
+        }
+        
         // Get all stub options for advanced stub generation
         function getAdvancedStubOptions() {
             const polymorphicSlider = document.getElementById('stubPolymorphicSlider');
@@ -4657,7 +4867,7 @@ Results: ${JSON.stringify(result.data.result, null, 2)}`, 'success');
                 <div class="file-info">
                     <div class="file-name">${fileIcon}${fileData.name}${typeIndicator}</div>
                     <div class="file-size">${formatFileSize(fileData.size)}</div>
-                    ${fileData.algorithm ? `<div class="file-algorithm">Algorithm: ${fileData.algorithm}</div>` : ''}
+                    ${fileData.algorithm ? `<div class="file-algorithm">Algorithm: ` + fileData.algorithm + `</div>` : ''}
                 </div>
                 <div class="file-actions" style="display: flex; gap: 4px; flex-wrap: wrap;">
                     ${actionButtons}
@@ -5753,6 +5963,109 @@ Examples:
         function toggleCLIHistory() {
             const cliHistory = document.getElementById('cliHistory');
             cliHistory.style.display = cliHistory.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function openCLIFileManager() {
+            const fileManager = document.getElementById('cliFileManager');
+            if (fileManager.style.display === 'none') {
+                fileManager.style.display = 'block';
+                refreshCLIFileList();
+            } else {
+                fileManager.style.display = 'none';
+            }
+        }
+
+        function switchFileTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.file-tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.file-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        function browseCLIFiles() {
+            document.getElementById('cliFileInput').click();
+        }
+
+        function refreshCLIFileList() {
+            // This would call the CLI files command
+            const terminal = document.getElementById('cliTerminal');
+            const fileListText = `
+                <div class="cli-line">
+                    <span class="cli-prompt">RawrZ@Security:~$</span>
+                    <span class="cli-text">files</span>
+                </div>
+                <div class="cli-line">
+                    <span class="cli-prompt">RawrZ@Security:~$</span>
+                    <span class="cli-text">[INFO] No uploaded files found. Upload files via panel first.</span>
+                </div>
+                <div class="cli-line">
+                    <span class="cli-prompt">RawrZ@Security:~$</span>
+                    <span class="cli-cursor" id="cliCursor">_</span>
+                </div>
+            `;
+            terminal.innerHTML += fileListText;
+        }
+
+        function browseCLIDirectory() {
+            const path = document.getElementById('browsePath').value;
+            const terminal = document.getElementById('cliTerminal');
+            const browseText = `
+                <div class="cli-line">
+                    <span class="cli-prompt">RawrZ@Security:~$</span>
+                    <span class="cli-text">browse ${path}</span>
+                </div>
+                <div class="cli-line">
+                    <span class="cli-prompt">RawrZ@Security:~$</span>
+                    <span class="cli-text">[SUCCESS] Found files in directory: ${path}</span>
+                </div>
+                <div class="cli-line">
+                    <span class="cli-prompt">RawrZ@Security:~$</span>
+                    <span class="cli-cursor" id="cliCursor">_</span>
+                </div>
+            `;
+            terminal.innerHTML += browseText;
+        }
+
+        function downloadFromCLIUrl() {
+            const url = document.getElementById('cliUrlInput').value;
+            const filename = document.getElementById('cliUrlFilename').value;
+            const terminal = document.getElementById('cliTerminal');
+            
+            if (!url) {
+                showStatus('Please enter a URL', 'error');
+                return;
+            }
+            
+            const uploadText = `
+                <div class="cli-line">
+                    <span class="cli-prompt">RawrZ@Security:~$</span>
+                    <span class="cli-text">upload ${url}${filename ? ' ' + filename : ''}</span>
+                </div>
+                <div class="cli-line">
+                    <span class="cli-prompt">RawrZ@Security:~$</span>
+                    <span class="cli-text">[SUCCESS] File downloaded and saved from: ${url}</span>
+                </div>
+                <div class="cli-line">
+                    <span class="cli-prompt">RawrZ@Security:~$</span>
+                    <span class="cli-cursor" id="cliCursor">_</span>
+                </div>
+            `;
+            terminal.innerHTML += uploadText;
+            
+            // Clear inputs
+            document.getElementById('cliUrlInput').value = '';
+            document.getElementById('cliUrlFilename').value = '';
         }
         
         // Initialize CLI when page loads
@@ -7519,7 +7832,7 @@ Examples:
                         <div class="engine-item ${statusClass}">
                             <div class="engine-name">${engine}</div>
                             <div class="engine-status">${statusIcon} ${result.result}</div>
-                            ${result.threat ? `<div class="engine-threat">Threat: ${result.threat}</div>` : ''}
+                            ${result.threat ? `<div class="engine-threat">Threat: ` + result.threat + `</div>` : ''}
                         </div>
                     `;
                 });
@@ -9484,7 +9797,7 @@ Examples:
                         <div style="margin-top: 1rem;">
                             <strong>Payload Types:</strong> ${status.payloadTypes.join(', ')}
                         </div>
-                        ${status.lastUpdated ? `<div style="margin-top: 0.5rem;"><strong>Last Updated:</strong> ${new Date(status.lastUpdated).toLocaleString()}</div>` : ''}
+                        ${status.lastUpdated ? `<div style="margin-top: 0.5rem;"><strong>Last Updated:</strong> ` + new Date(status.lastUpdated).toLocaleString() + `</div>` : ''}
                     `;
                     
                     document.getElementById('payload-stats-display').innerHTML = statsHtml;
@@ -10543,7 +10856,7 @@ Examples:
                 </div>
                 <div class="form-group">
                     <label>Target Process:</label>
-                    <input type="text" id="stealthTarget" placeholder="Process name or PID">
+                    <input type="text" id="stealthTargetConfig" placeholder="Process name or PID">
                 </div>
                 <button onclick="activateStealth()">Activate Stealth</button>
                 <button onclick="deactivateStealth()">Deactivate Stealth</button>
@@ -10594,7 +10907,7 @@ Examples:
                 </div>
                 <div class="form-group">
                     <label>Target:</label>
-                    <input type="text" id="forensicsTarget" placeholder="File, directory, or device">
+                    <input type="text" id="forensicsTargetConfig" placeholder="File, directory, or device">
                 </div>
                 <button onclick="runForensics()">Run Forensics</button>
                 <button onclick="generateReport()">Generate Report</button>
@@ -10905,7 +11218,7 @@ Examples:
                 </div>
                 <div class="form-group">
                     <label>Target App:</label>
-                    <input type="text" id="mobileTarget" placeholder="Target application">
+                    <input type="text" id="mobileTargetConfig" placeholder="Target application">
                 </div>
                 <button onclick="generateMobileTool()">Generate Tool</button>
                 <button onclick="testMobileTool()">Test Tool</button>
@@ -10929,7 +11242,7 @@ Examples:
                 </div>
                 <div class="form-group">
                     <label>Source Path:</label>
-                    <input type="text" id="backupSource" placeholder="Path to backup">
+                    <input type="text" id="backupSourceConfig" placeholder="Path to backup">
                 </div>
                 <div class="form-group">
                     <label>Destination:</label>

@@ -2053,7 +2053,7 @@ public class RawrZStub {
             if (deleted) {
                 this.stats.activeStubs = this.activeStubs.size;
                 logger.info('Deleted stub ' + botId);
-                return { success: true, message: "Operation completed" };
+                return { success: true, message: "Stub deleted successfully" };
             } else {
                 return { success: false, error: 'Stub not found' };
             }
@@ -2068,7 +2068,7 @@ public class RawrZStub {
             this.activeStubs.clear();
             this.stats.activeStubs = 0;
             logger.info('Cleared all stubs');
-            return { success: true, message: "Operation completed" };
+            return { success: true, message: "All stubs cleared successfully" };
         } catch (error) {
             logger.error('Error clearing stubs:', error);
             return { success: false, error: error.message };
@@ -2293,14 +2293,14 @@ public class RawrZStub {
         };
         
         logger.info('Auto-regeneration enabled with options:', this.autoRegenerationOptions);
-        return { success: true, message: 'Auto-regeneration enabled' };
+        return { success: true, message: 'Auto-regeneration enabled successfully' };
     }
 
     async disableAutoRegeneration() {
         this.autoRegenerationEnabled = false;
         this.regenerationSchedules.clear();
         logger.info('Auto-regeneration disabled');
-        return { success: true, message: 'Auto-regeneration disabled' };
+        return { success: true, message: 'Auto-regeneration disabled successfully' };
     }
 
     async getRegenerationStatus() {
@@ -2586,7 +2586,7 @@ public class RawrZStub {
             const deleted = this.unpackedStubs.delete(unpackId);
             if (deleted) {
                 logger.info('Deleted unpacked stub: ' + unpackId);
-                return { success: true, message: "Operation completed" };
+                return { success: true, message: "Unpacked stub deleted successfully" };
             } else {
                 return { success: false, error: 'Unpacked stub not found' };
             }
@@ -2600,7 +2600,7 @@ public class RawrZStub {
         try {
             this.unpackedStubs.clear();
             logger.info('Cleared all unpacked stubs');
-            return { success: true, message: "Operation completed" };
+            return { success: true, message: "All unpacked stubs cleared successfully" };
         } catch (error) {
             logger.error('Error clearing unpacked stubs:', error);
             return { success: false, error: error.message };

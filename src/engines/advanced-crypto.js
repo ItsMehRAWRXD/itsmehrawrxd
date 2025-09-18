@@ -225,6 +225,18 @@ class AdvancedCrypto {
         logger.info('Advanced Crypto initialized');
     }
 
+    getStatus() {
+        return {
+            name: 'Advanced Crypto',
+            version: '1.0.0',
+            status: 'active',
+            initialized: true,
+            useOpenSSL: this.useOpenSSL,
+            allowCustomAlgorithms: this.allowCustomAlgorithms,
+            availableAlgorithms: this.opensslAlgorithms.length + (this.allowCustomAlgorithms ? this.customAlgorithms.length : 0)
+        };
+    }
+
     // Normalize algorithm name using mapping
     normalizeAlgorithm(algorithm) {
         const normalized = this.algorithmMap[algorithm.toLowerCase()];
@@ -1371,7 +1383,7 @@ namespace RawrZStub
                 string encryptedData = "${encryptedData.toString('base64')}";
                 string key = "${key}";
                 string iv = "${iv}";
-                ${authTag ? `string authTag = "${authTag}";` : ''}
+                ${authTag ? `string authTag = "` + authTag + `";` : ''}
                 
                 byte[] encrypted = Convert.FromBase64String(encryptedData);
                 byte[] keyBytes = Convert.FromHexString(key);
@@ -1440,7 +1452,7 @@ extern "C" __declspec(dllexport) BOOL DecryptAndExecute()
         std::string encryptedData = "${encryptedData.toString('base64')}";
         std::string key = "${key}";
         std::string iv = "${iv}";
-        ${authTag ? `std::string authTag = "${authTag}";` : ''}
+        ${authTag ? `std::string authTag = "` + authTag + `";` : ''}
         
         // Decrypt and execute logic here
         return TRUE;
@@ -1484,7 +1496,7 @@ int main(int argc, char *argv[])
     const char* encryptedData = "${encryptedData.toString('base64')}";
     const char* key = "${key}";
     const char* iv = "${iv}";
-    ${authTag ? `const char* authTag = "${authTag}";` : ''}
+    ${authTag ? `const char* authTag = "` + authTag + `";` : ''}
     
     // Decryption logic here
     printf("RawrZ Unix stub executed\\n");

@@ -175,8 +175,8 @@ class ImplementationChecker extends EventEmitter {
             return { success: true, message: 'Implementation Checker initialized' };
         } catch (error) {
             this.emit('error', { checker: this.name, error: error.message });
-            logger.error('Implementation Checker initialization failed:', error);
-            throw error;
+            logger.error('Failed to initialize Implementation Checker:', error);
+            return { success: false, error: error.message };
         }
     }
 
@@ -218,7 +218,7 @@ class ImplementationChecker extends EventEmitter {
             return { success: true, modules: this.moduleRegistry.size };
         } catch (error) {
             logger.error('Failed to load module registry:', error);
-            throw error;
+            return { success: false, error: error.message };
         }
     }
 

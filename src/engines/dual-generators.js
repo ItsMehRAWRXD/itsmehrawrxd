@@ -191,8 +191,8 @@ class DualGenerators extends EventEmitter {
                 return { generator: generatorName, result, success: true };
                 
             } catch (error) {
-                logger.error(`Parallel generator failed: ${generatorName}`, { operationId, error: error.message });
-                return { generator: generatorName, error: error.message, success: false };
+                logger.error(`Parallel generator failed: ${generatorName}`, error);
+                return { generator: generatorName, success: false, error: error.message };
             }
         });
 

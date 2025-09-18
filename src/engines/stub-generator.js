@@ -2007,7 +2007,7 @@ decrypt_payload endp`;
     async applyPacking(executablePath, method) {
         const packingMethod = this.packingMethods[method];
         if (!packingMethod || packingMethod.compression === 0) {
-            return { success: true, message: 'No packing applied' };
+            return { success: false, error: 'No packing method available', message: 'No packing applied' };
         }
 
         try {

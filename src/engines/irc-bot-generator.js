@@ -297,7 +297,7 @@ bot.run();`;
             return { success: true, feature: customFeature };
         } catch (error) {
             logger.error("Failed to add custom feature '" + featureName + "':", error);
-            throw error;
+            return { success: false, error: error.message };
         }
     }
 
@@ -320,7 +320,7 @@ bot.run();`;
             return { success: true, feature: updatedFeature };
         } catch (error) {
             logger.error("Failed to update custom feature '" + featureName + "':", error);
-            throw error;
+            return { success: false, error: error.message };
         }
     }
 
@@ -365,6 +365,7 @@ bot.run();`;
             return { success: true, message: "Custom feature '" + featureName + "' removed" };
         } catch (error) {
             logger.error("Failed to remove custom feature '" + featureName + "':", error);
+            return { success: false, error: error.message };
             throw error;
         }
     }
@@ -381,6 +382,7 @@ bot.run();`;
             return { success: true, message: `Feature template '${templateName}' removed` };
         } catch (error) {
             logger.error(`Failed to remove feature template '${templateName}':`, error);
+            return { success: false, error: error.message };
             throw error;
         }
     }
@@ -395,6 +397,7 @@ bot.run();`;
             return { success: true, feature };
         } catch (error) {
             logger.error("Failed to get custom feature '" + featureName + "':", error);
+            return { success: false, error: error.message };
             throw error;
         }
     }
@@ -405,6 +408,7 @@ bot.run();`;
             return { success: true, features };
         } catch (error) {
             logger.error('Failed to list custom features:', error);
+            return { success: false, error: error.message };
             throw error;
         }
     }
@@ -429,6 +433,7 @@ bot.run();`;
             return { success: true, template };
         } catch (error) {
             logger.error("Failed to create feature template '" + templateName + "':", error);
+            return { success: false, error: error.message };
             throw error;
         }
     }
@@ -443,6 +448,7 @@ bot.run();`;
             return { success: true, template };
         } catch (error) {
             logger.error("Failed to get feature template '" + templateName + "':", error);
+            return { success: false, error: error.message };
             throw error;
         }
     }
@@ -453,6 +459,7 @@ bot.run();`;
             return { success: true, templates };
         } catch (error) {
             logger.error('Failed to list feature templates:', error);
+            return { success: false, error: error.message };
             throw error;
         }
     }
@@ -469,6 +476,7 @@ bot.run();`;
             return { success: true, message: "Feature template '" + templateName + "' deleted" };
         } catch (error) {
             logger.error("Failed to delete feature template '" + templateName + "':", error);
+            return { success: false, error: error.message };
             throw error;
         }
     }

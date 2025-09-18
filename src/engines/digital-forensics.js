@@ -125,6 +125,8 @@ class DigitalForensics extends EventEmitter {
             return { success: true, message: 'Digital Forensics initialized successfully' };
         } catch (error) {
             this.emit('error', { engine: this.name, error: error.message });
+            logger.error('Failed to initialize Digital Forensics:', error);
+            return { success: false, error: error.message };
             throw error;
         }
     }
@@ -173,6 +175,8 @@ class DigitalForensics extends EventEmitter {
             return { success: true, types: types.length };
         } catch (error) {
             this.emit('error', { engine: this.name, error: error.message });
+            logger.error('Failed to load analysis types:', error);
+            return { success: false, error: error.message };
             throw error;
         }
     }
@@ -226,6 +230,8 @@ class DigitalForensics extends EventEmitter {
             return { success: true, tools: tools.length };
         } catch (error) {
             this.emit('error', { engine: this.name, error: error.message });
+            logger.error('Failed to initialize tools:', error);
+            return { success: false, error: error.message };
             throw error;
         }
     }
@@ -262,6 +268,8 @@ class DigitalForensics extends EventEmitter {
             return { success: true, goodHashes: knownGoodHashes.length, badHashes: knownBadHashes.length };
         } catch (error) {
             this.emit('error', { engine: this.name, error: error.message });
+            logger.error('Failed to load hash database:', error);
+            return { success: false, error: error.message };
             throw error;
         }
     }
@@ -274,6 +282,8 @@ class DigitalForensics extends EventEmitter {
             return { success: true, message: 'Evidence chain initialized' };
         } catch (error) {
             this.emit('error', { engine: this.name, error: error.message });
+            logger.error('Failed to initialize evidence chain:', error);
+            return { success: false, error: error.message };
             throw error;
         }
     }
@@ -286,6 +296,8 @@ class DigitalForensics extends EventEmitter {
             return { success: true, message: 'Timeline analysis initialized' };
         } catch (error) {
             this.emit('error', { engine: this.name, error: error.message });
+            logger.error('Failed to initialize timeline analysis:', error);
+            return { success: false, error: error.message };
             throw error;
         }
     }
@@ -343,6 +355,8 @@ class DigitalForensics extends EventEmitter {
             return { success: true, analysisId, results: analysis.results, duration };
         } catch (error) {
             this.emit('error', { engine: this.name, error: error.message });
+            logger.error('File system analysis failed:', error);
+            return { success: false, error: error.message };
             throw error;
         }
     }
@@ -608,6 +622,8 @@ class DigitalForensics extends EventEmitter {
             return { success: true, analysisId, results: analysis.results, duration };
         } catch (error) {
             this.emit('error', { engine: this.name, error: error.message });
+            logger.error('Memory analysis failed:', error);
+            return { success: false, error: error.message };
             throw error;
         }
     }

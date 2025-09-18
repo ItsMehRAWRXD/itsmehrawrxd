@@ -893,7 +893,7 @@ class JottiScanner {
             this.activeScans.delete(jobId);
             return { success: true, message: `Scan ${jobId} cancelled` };
         }
-        return { success: false, message: `Scan ${jobId} not found` };
+        return { success: false, error: `Scan ${jobId} not found`, message: `Scan ${jobId} not found` };
     }
 
     /**
