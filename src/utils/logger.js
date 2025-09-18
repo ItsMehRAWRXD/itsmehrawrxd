@@ -15,7 +15,7 @@ class Logger {
             }
             return result;
         }
-    }
+    };
     constructor() {
         this.logLevel = process.env.LOG_LEVEL || 'info';
         this.logFile = path.join(__dirname, '../../logs/rawrz.log');
@@ -33,7 +33,7 @@ class Logger {
         }
 
         const timestamp = new Date().toISOString();
-        const logMessage = `[${timestamp}] [${level.toUpperCase()}] ${message} args.length ? args.join(' ') : ''`;
+        const logMessage = `[${timestamp}] [${level.toUpperCase()}] ${message}${args.length ? ' ' + args.join(' ') : ''}`;
         
         // Console output
         console.log(logMessage);

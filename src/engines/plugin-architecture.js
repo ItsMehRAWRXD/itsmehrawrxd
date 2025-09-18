@@ -23,17 +23,17 @@ class PluginArchitecture extends EventEmitter {
         super();
         this.name = 'PluginArchitecture';
         this.version = '1.0.0';
-        this.memoryManager = getMemoryManager();
-        this.plugins = this.memoryManager.createManagedCollection('plugins', 'Map', 100);
-        this.pluginRegistry = this.memoryManager.createManagedCollection('pluginRegistry', 'Map', 100);
-        this.pluginHooks = this.memoryManager.createManagedCollection('pluginHooks', 'Map', 100);
-        this.pluginEvents = this.memoryManager.createManagedCollection('pluginEvents', 'Map', 100);
-        this.pluginAPIs = this.memoryManager.createManagedCollection('pluginAPIs', 'Map', 100);
-        this.pluginDependencies = this.memoryManager.createManagedCollection('pluginDependencies', 'Map', 100);
-        this.pluginConfigs = this.memoryManager.createManagedCollection('pluginConfigs', 'Map', 100);
-        this.pluginSandboxes = this.memoryManager.createManagedCollection('pluginSandboxes', 'Map', 100);
-        this.pluginPermissions = this.memoryManager.createManagedCollection('pluginPermissions', 'Map', 100);
-        this.pluginLifecycle = this.memoryManager.createManagedCollection('pluginLifecycle', 'Map', 100);
+        this.memoryManager = new Map(); // Use simple Map for now
+        this.plugins = new Map();
+        this.pluginRegistry = new Map();
+        this.pluginHooks = new Map();
+        this.pluginEvents = new Map();
+        this.pluginAPIs = new Map();
+        this.pluginDependencies = new Map();
+        this.pluginConfigs = new Map();
+        this.pluginSandboxes = new Map();
+        this.pluginPermissions = new Map();
+        this.pluginLifecycle = new Map();
         this.initialized = false;
     }
 
@@ -1090,6 +1090,102 @@ class PluginSandbox {
             return { healthy: false, error: error.message };
         }
     }
+
+    // Panel Integration Methods
+    async getPanelConfig() {
+        return {
+            name: this.name,
+            version: this.version,
+            description: this.description || 'RawrZ Engine',
+            endpoints: this.getAvailableEndpoints(),
+            settings: this.getSettings(),
+            status: this.getStatus()
+        };
+    }
+    
+    getAvailableEndpoints() {
+        return [
+            { method: 'GET', path: '/api/' + this.name + '/status', description: 'Get engine status' },
+            { method: 'POST', path: '/api/' + this.name + '/initialize', description: 'Initialize engine' },
+            { method: 'POST', path: '/api/' + this.name + '/start', description: 'Start engine' },
+            { method: 'POST', path: '/api/' + this.name + '/stop', description: 'Stop engine' }
+        ];
+    }
+    
+    getSettings() {
+        return {
+            enabled: this.enabled || true,
+            autoStart: this.autoStart || false,
+            config: this.config || {}
+        };
+    }
+    
+    // CLI Integration Methods
+    async getCLICommands() {
+        return [
+            {
+                command: this.name + ' status',
+                description: 'Get engine status',
+                action: async () => {
+                    const status = this.getStatus();
+                    
+                    return status;
+                }
+            },
+            {
+                command: this.name + ' start',
+                description: 'Start engine',
+                action: async () => {
+                    const result = await this.start();
+                    
+                    return result;
+                }
+            },
+            {
+                command: this.name + ' stop',
+                description: 'Stop engine',
+                action: async () => {
+                    const result = await this.stop();
+                    
+                    return result;
+                }
+            },
+            {
+                command: this.name + ' config',
+                description: 'Get engine configuration',
+                action: async () => {
+                    const config = this.getConfig();
+                    
+                    return config;
+                }
+            }
+        ];
+    }
+    
+    getConfig() {
+        return {
+            name: this.name,
+            version: this.version,
+            enabled: this.enabled || true,
+            autoStart: this.autoStart || false,
+            settings: this.settings || {}
+        };
+    }
+
+    async getStatus() {
+        return {
+            name: this.name,
+            version: this.version,
+            status: this.initialized ? 'active' : 'inactive',
+            initialized: this.initialized,
+            plugins: this.plugins.size,
+            pluginRegistry: this.pluginRegistry.size,
+            pluginHooks: this.pluginHooks.size,
+            pluginEvents: this.pluginEvents.size,
+            pluginAPIs: this.pluginAPIs.size
+        };
+    }
+
 }
 
 module.exports = PluginArchitecture;

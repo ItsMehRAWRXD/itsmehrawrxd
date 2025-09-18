@@ -54,7 +54,9 @@ class DotNetWorkaround {
             { name: 'mono', command: 'mono --version', priority: 3 },
             { name: 'mcs', command: 'mcs --version', priority: 4 },
             { name: 'gmcs', command: 'gmcs --version', priority: 5 },
-            { name: 'roslyn', command: 'csc /version', priority: 6 }
+            { name: 'roslyn', command: 'csc /version', priority: 6 },
+            { name: 'java', command: 'java -version', priority: 7 },
+            { name: 'javac', command: 'javac -version', priority: 8 }
         ];
 
         for (const method of methods) {
@@ -193,6 +195,10 @@ class DotNetWorkaround {
                 return await this.compileWithGmcs(sourceCode, options);
             case 'roslyn':
                 return await this.compileWithRoslyn(sourceCode, options);
+            case 'java':
+                return await this.compileWithJava(sourceCode, options);
+            case 'javac':
+                return await this.compileWithJavac(sourceCode, options);
             default:
                 throw new Error(`Unknown compilation method: ${methodName}`);
         }
@@ -301,6 +307,41 @@ class DotNetWorkaround {
 
     async compileWithRoslyn(sourceCode, options) {
         return await this.compileWithCsc(sourceCode, options);
+    }
+
+    async compileWithJava(sourceCode, options) {
+        const tempDir = await this.createTempDirectory();
+        const sourceFile = path.join(tempDir, 'Main.java');
+        
+        try {
+            await fs.writeFile(sourceFile, sourceCode, 'utf8');
+            
+            // Compile Java source
+            const { stdout, stderr } = await execAsync(`javac "${sourceFile}"`);
+            
+            if (stderr && !stderr.includes('warning')) {
+                throw new Error(`Java compilation failed: ${stderr}`);
+            }
+
+            return {
+                success: true,
+                method: 'java',
+                outputPath: path.join(tempDir, 'Main.class'),
+                stdout,
+                stderr,
+                sourceFile
+            };
+        } catch (error) {
+            logger.error('Java compilation failed:', error);
+            throw error;
+        } finally {
+            // Clean up temporary directory
+            await fs.rm(tempDir, { recursive: true, force: true }).catch(() => {});
+        }
+    }
+
+    async compileWithJavac(sourceCode, options) {
+        return await this.compileWithJava(sourceCode, options);
     }
 
     async compileWithFallback(sourceCode, options) {
@@ -988,6 +1029,88 @@ pause
             supportedFrameworks: ['.NET Framework', '.NET Core', '.NET 5+', 'Mono']
         };
     }
+
+    // Panel Integration Methods
+    async getPanelConfig() {
+        return {
+            name: this.name,
+            version: this.version,
+            description: this.description || 'RawrZ Engine',
+            endpoints: this.getAvailableEndpoints(),
+            settings: this.getSettings(),
+            status: this.getStatus()
+        };
+    }
+    
+    getAvailableEndpoints() {
+        return [
+            { method: 'GET', path: '/api/' + this.name + '/status', description: 'Get engine status' },
+            { method: 'POST', path: '/api/' + this.name + '/initialize', description: 'Initialize engine' },
+            { method: 'POST', path: '/api/' + this.name + '/start', description: 'Start engine' },
+            { method: 'POST', path: '/api/' + this.name + '/stop', description: 'Stop engine' }
+        ];
+    }
+    
+    getSettings() {
+        return {
+            enabled: this.enabled || true,
+            autoStart: this.autoStart || false,
+            config: this.config || {}
+        };
+    }
+    
+    // CLI Integration Methods
+    async getCLICommands() {
+        return [
+            {
+                command: this.name + ' status',
+                description: 'Get engine status',
+                action: async () => {
+                    const status = this.getStatus();
+                    
+                    return status;
+                }
+            },
+            {
+                command: this.name + ' start',
+                description: 'Start engine',
+                action: async () => {
+                    const result = await this.start();
+                    
+                    return result;
+                }
+            },
+            {
+                command: this.name + ' stop',
+                description: 'Stop engine',
+                action: async () => {
+                    const result = await this.stop();
+                    
+                    return result;
+                }
+            },
+            {
+                command: this.name + ' config',
+                description: 'Get engine configuration',
+                action: async () => {
+                    const config = this.getConfig();
+                    
+                    return config;
+                }
+            }
+        ];
+    }
+    
+    getConfig() {
+        return {
+            name: this.name,
+            version: this.version,
+            enabled: this.enabled || true,
+            autoStart: this.autoStart || false,
+            settings: this.settings || {}
+        };
+    }
+
 }
 
 // Create and export instance

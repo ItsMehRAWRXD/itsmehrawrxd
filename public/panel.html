@@ -7164,7 +7164,7 @@ Examples:
                 const botType = document.getElementById('quickBotType').value;
                 const config = {
                     name: document.getElementById('quickBotName').value,
-                    server: botType === 'http' ? 'http://localhost:8080' : 'irc.rizon.net',
+                    server: botType === 'http' ? 'window.location.origin' : 'irc.rizon.net',
                     port: botType === 'http' ? 8080 : 6667,
                     channels: ['#test'],
                     username: 'rawrzuser',
@@ -9587,7 +9587,7 @@ Examples:
                 </div>
                 <div class="form-group">
                     <label>Server URL:</label>
-                    <input type="text" id="httpBotServer" placeholder="http://localhost:8080" value="http://localhost:8080">
+                    <input type="text" id="httpBotServer" placeholder="window.location.origin" value="window.location.origin">
                 </div>
                 <button onclick="connectHTTPBot()">Connect Bot</button>
                 <button onclick="disconnectHTTPBot()">Disconnect Bot</button>

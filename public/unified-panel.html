@@ -873,7 +873,7 @@
                 const botType = document.getElementById('botType').value;
                 const config = {
                     name: document.getElementById('botName').value,
-                    server: botType === 'http' ? 'http://localhost:8080' : 'irc.rizon.net',
+                    server: botType === 'http' ? 'window.location.origin' : 'irc.rizon.net',
                     port: botType === 'http' ? 8080 : 6667,
                     channels: ['#test'],
                     username: 'rawrzuser',

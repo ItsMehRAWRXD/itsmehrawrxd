@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const fs = require('fs').promises;
 const path = require('path');
 const { logger } = require('../utils/logger');
+const { getMemoryManager } = require('../utils/memory-manager');
 
 class AdvancedAnalyticsEngine extends EventEmitter {
     // Performance monitoring
@@ -18,7 +19,7 @@ class AdvancedAnalyticsEngine extends EventEmitter {
             }
             return result;
         }
-    }
+    };
     constructor() {
         super();
         this.name = 'AdvancedAnalyticsEngine';
@@ -261,7 +262,7 @@ class AdvancedAnalyticsEngine extends EventEmitter {
             timestamp,
             data,
             metadata: {
-                collectors: Array.from(this.dataCollectors.keys()),
+    collectors: Array.from(this.dataCollectors.keys()),
                 version: this.version
             }
         };
@@ -271,7 +272,7 @@ class AdvancedAnalyticsEngine extends EventEmitter {
         // Keep only last 1000 data points
         if (this.metrics.size > 1000) {
             const oldestKey = this.metrics.keys().next().value;
-            this.metrics.delete(oldestKey);
+        this.metrics.delete(oldestKey);
         }
     }
 
@@ -480,12 +481,12 @@ class AdvancedAnalyticsEngine extends EventEmitter {
         
         // Send alert notification
         await this.sendAlertNotification(alert);
-    }
+        }
 
     async sendAlertNotification(alert) {
         // Implement alert notification logic
         logger.info(`Alert triggered: ${alert.id} - alert.config.message`);
-    }
+        }
 
     getStatus() {
         return {
@@ -506,15 +507,15 @@ class AdvancedAnalyticsEngine extends EventEmitter {
 class SystemMetricsCollector {
     async collect() {
         const os = require('os');
-        
-        return {
+
+return {
             cpu: {
-                usage: process.cpuUsage(),
+    usage: process.cpuUsage(),
                 loadAverage: os.loadavg(),
                 cores: os.cpus().length
             },
             memory: {
-                used: process.memoryUsage(),
+    used: process.memoryUsage(),
                 total: os.totalmem(),
                 free: os.freemem()
             },
@@ -527,7 +528,7 @@ class SystemMetricsCollector {
 
 class SecurityEventsCollector {
     async collect() {
-        return {
+            return {
             threats: Math.floor(Math.random() * 10),
             blocked: Math.floor(Math.random() * 5),
             alerts: Math.floor(Math.random() * 3),
@@ -539,7 +540,7 @@ class SecurityEventsCollector {
 
 class PerformanceMetricsCollector {
     async collect() {
-        return {
+            return {
             responseTime: Math.random() * 1000,
             throughput: Math.random() * 1000,
             errorRate: Math.random() * 0.1,
@@ -551,7 +552,7 @@ class PerformanceMetricsCollector {
 
 class UserActivityCollector {
     async collect() {
-        return {
+            return {
             activeUsers: Math.floor(Math.random() * 100),
             newUsers: Math.floor(Math.random() * 10),
             sessions: Math.floor(Math.random() * 200),
@@ -563,7 +564,7 @@ class UserActivityCollector {
 
 class NetworkTrafficCollector {
     async collect() {
-        return {
+            return {
             bytesIn: Math.floor(Math.random() * 1000000),
             bytesOut: Math.floor(Math.random() * 1000000),
             packetsIn: Math.floor(Math.random() * 10000),
@@ -575,7 +576,7 @@ class NetworkTrafficCollector {
 
 class ThreatIntelligenceCollector {
     async collect() {
-        return {
+            return {
             newThreats: Math.floor(Math.random() * 5),
             updatedThreats: Math.floor(Math.random() * 10),
             blockedIps: Math.floor(Math.random() * 20),
@@ -587,7 +588,7 @@ class ThreatIntelligenceCollector {
 
 class BotActivityCollector {
     async collect() {
-        return {
+            return {
             activeBots: Math.floor(Math.random() * 10),
             messagesSent: Math.floor(Math.random() * 1000),
             commandsExecuted: Math.floor(Math.random() * 500),
@@ -599,7 +600,7 @@ class BotActivityCollector {
 
 class APIUsageCollector {
     async collect() {
-        return {
+            return {
             requests: Math.floor(Math.random() * 1000),
             errors: Math.floor(Math.random() * 50),
             responseTime: Math.random() * 500,
@@ -613,8 +614,8 @@ class APIUsageCollector {
 class TimeSeriesAnalyzer {
     async analyze(data, options) {
         const timeSeries = [];
-        
-        for (const [id, dataPoint] of data) {
+
+for (const [id, dataPoint] of data) {
             timeSeries.push({
                 timestamp: dataPoint.timestamp,
                 value: this.extractValue(dataPoint.data, options.metric)
@@ -868,7 +869,7 @@ class ExecutiveReportGenerator {
             recommendations: this.generateRecommendations(data),
             timestamp: new Date().toISOString()
         };
-    }
+}
 
     generateExecutiveSummary(data) {
         return {
@@ -1006,7 +1007,7 @@ class ChartVisualizationEngine {
             data: this.prepareChartData(data, options),
             config: this.getChartConfig(options)
         };
-    }
+}
 
     prepareChartData(data, options) {
         const chartData = [];
@@ -1025,7 +1026,7 @@ class ChartVisualizationEngine {
         return {
             responsive: true,
             scales: {
-                x: { type: 'time' },
+    x: { type: 'time' },
                 y: { beginAtZero: true }
             }
         };
@@ -1076,7 +1077,7 @@ class PatternRecognitionEngine {
             anomalies: this.identifyAnomalies(data),
             trends: this.identifyTrends(data)
         };
-    }
+}
 
     identifyPatterns(data) {
         return ['daily_cycle', 'weekly_pattern', 'seasonal_variation'];
@@ -1127,7 +1128,7 @@ class ExecutiveDashboard {
     async update(data) {
         // Update executive dashboard
     }
-
+    
     async getData(data, options) {
         return {
             type: 'executive',
@@ -1164,6 +1165,105 @@ class RealTimeDashboard {
 class CustomDashboard {
     async update(data) {}
     async getData(data, options) { return { type: 'custom' }; }
+
+    // Panel Integration Methods
+    async getPanelConfig() {
+        return {
+            name: this.name,
+            version: this.version,
+            description: this.description || 'RawrZ Engine',
+            endpoints: this.getAvailableEndpoints(),
+            settings: this.getSettings(),
+            status: this.getStatus()
+        };
+    }
+    
+    getAvailableEndpoints() {
+        return [
+            { method: 'GET', path: '/api/' + this.name + '/status', description: 'Get engine status' },
+            { method: 'POST', path: '/api/' + this.name + '/initialize', description: 'Initialize engine' },
+            { method: 'POST', path: '/api/' + this.name + '/start', description: 'Start engine' },
+            { method: 'POST', path: '/api/' + this.name + '/stop', description: 'Stop engine' }
+        ];
+    }
+    
+    getSettings() {
+        return {
+            enabled: this.enabled || true,
+            autoStart: this.autoStart || false,
+            config: this.config || {}
+        };
+    }
+    
+    // CLI Integration Methods
+    async getCLICommands() {
+        return [
+            {
+                command: this.name + ' status',
+                description: 'Get engine status',
+                action: async () => {
+                    const status = this.getStatus();
+                    
+                    return status;
+                }
+            },
+            {
+                command: this.name + ' start',
+                description: 'Start engine',
+                action: async () => {
+                    const result = await this.start();
+                    
+                    return result;
+                }
+            },
+            {
+                command: this.name + ' stop',
+                description: 'Stop engine',
+                action: async () => {
+                    const result = await this.stop();
+                    
+                    return result;
+                }
+            },
+            {
+                command: this.name + ' config',
+                description: 'Get engine configuration',
+                action: async () => {
+                    const config = this.getConfig();
+                    
+                    return config;
+                }
+            }
+        ];
+    }
+    
+    async getStatus() {
+        return {
+            name: this.name,
+            version: this.version,
+            status: this.initialized ? 'active' : 'inactive',
+            initialized: this.initialized,
+            dataCollectors: this.dataCollectors.size,
+            analyzers: this.analyzers.size,
+            reportGenerators: this.reportGenerators.size,
+            visualizationEngines: this.visualizationEngines.size,
+            insightEngines: this.insightEngines.size,
+            dashboards: this.dashboards.size,
+            metrics: this.metrics.size,
+            alerts: this.alerts.size
+        };
+    }
+
+    getConfig() {
+        return {
+            name: this.name,
+            version: this.version,
+            enabled: this.enabled || true,
+            autoStart: this.autoStart || false,
+            settings: this.settings || {}
+        };
+    }
+
 }
 
 module.exports = AdvancedAnalyticsEngine;

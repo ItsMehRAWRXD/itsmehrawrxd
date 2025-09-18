@@ -23,11 +23,11 @@ class AIThreatDetector extends EventEmitter {
         super();
         this.name = 'AIThreatDetector';
         this.version = '1.0.0';
-        this.memoryManager = getMemoryManager();
-        this.models = this.memoryManager.createManagedCollection('models', 'Map', 100);
-        this.featureExtractors = this.memoryManager.createManagedCollection('featureExtractors', 'Map', 100);
-        this.threatIntelligence = this.memoryManager.createManagedCollection('threatIntelligence', 'Map', 100);
-        this.behaviorProfiles = this.memoryManager.createManagedCollection('behaviorProfiles', 'Map', 100);
+        this.memoryManager = new Map(); // Use simple Map for now
+        this.models = new Map();
+        this.featureExtractors = new Map();
+        this.threatIntelligence = new Map();
+        this.behaviorProfiles = new Map();
         this.anomalyThresholds = {
             low: 0.3,
             medium: 0.6,
@@ -927,6 +927,101 @@ class NetworkBehaviorProfile {
             expectedDestinations: ['google.com', 'microsoft.com', 'cloudflare.com']
         };
     }
+
+    // Panel Integration Methods
+    async getPanelConfig() {
+        return {
+            name: this.name,
+            version: this.version,
+            description: this.description || 'RawrZ Engine',
+            endpoints: this.getAvailableEndpoints(),
+            settings: this.getSettings(),
+            status: this.getStatus()
+        };
+    }
+    
+    getAvailableEndpoints() {
+        return [
+            { method: 'GET', path: '/api/' + this.name + '/status', description: 'Get engine status' },
+            { method: 'POST', path: '/api/' + this.name + '/initialize', description: 'Initialize engine' },
+            { method: 'POST', path: '/api/' + this.name + '/start', description: 'Start engine' },
+            { method: 'POST', path: '/api/' + this.name + '/stop', description: 'Stop engine' }
+        ];
+    }
+    
+    getSettings() {
+        return {
+            enabled: this.enabled || true,
+            autoStart: this.autoStart || false,
+            config: this.config || {}
+        };
+    }
+    
+    // CLI Integration Methods
+    async getCLICommands() {
+        return [
+            {
+                command: this.name + ' status',
+                description: 'Get engine status',
+                action: async () => {
+                    const status = this.getStatus();
+                    
+                    return status;
+                }
+            },
+            {
+                command: this.name + ' start',
+                description: 'Start engine',
+                action: async () => {
+                    const result = await this.start();
+                    
+                    return result;
+                }
+            },
+            {
+                command: this.name + ' stop',
+                description: 'Stop engine',
+                action: async () => {
+                    const result = await this.stop();
+                    
+                    return result;
+                }
+            },
+            {
+                command: this.name + ' config',
+                description: 'Get engine configuration',
+                action: async () => {
+                    const config = this.getConfig();
+                    
+                    return config;
+                }
+            }
+        ];
+    }
+    
+    getConfig() {
+        return {
+            name: this.name,
+            version: this.version,
+            enabled: this.enabled || true,
+            autoStart: this.autoStart || false,
+            settings: this.settings || {}
+        };
+    }
+
+    async getStatus() {
+        return {
+            name: this.name,
+            version: this.version,
+            status: this.initialized ? 'active' : 'inactive',
+            initialized: this.initialized,
+            models: this.models.size,
+            featureExtractors: this.featureExtractors.size,
+            threatIntelligence: this.threatIntelligence.size,
+            behaviorProfiles: this.behaviorProfiles.size
+        };
+    }
+
 }
 
 module.exports = AIThreatDetector;

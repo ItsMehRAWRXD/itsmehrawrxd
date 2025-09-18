@@ -285,7 +285,7 @@ public class MainActivity extends Activity {
                     appendOutput("• " + script + "\n");
                 }
                 appendOutput("\nUse 'Run Selected Script' button to execute.\n");
-            } else {
+        } else {
                 appendOutput("No scripts selected.\n");
             }
             appendOutput("=== Selection Complete ===\n\n");
@@ -342,7 +342,7 @@ public class MainActivity extends Activity {
                                 output.append("  ✓ ").append(file.getName())
                                       .append(" (").append(file.length()).append(" bytes)\n");
                             }
-                        } else {
+                    } else {
                             output.append("  (no scripts found)\n");
                         }
                     } else {
@@ -621,7 +621,7 @@ public class MainActivity extends Activity {
                             info.append(prop).append(": unknown\n");
                         }
                         process.waitFor();
-                    } catch (Exception e) {
+        } catch (Exception e) {
                         info.append(prop).append(": error\n");
                     }
                 }
@@ -635,20 +635,20 @@ public class MainActivity extends Activity {
                         info.append("Kernel: ").append(kernel).append("\n");
                     }
                     process.waitFor();
-                } catch (Exception e) {
+        } catch (Exception e) {
                     info.append("Kernel: error\n");
-                }
-                
+    }
+    
                 // Get current user info
-                try {
+        try {
                     Process process = Runtime.getRuntime().exec("id");
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                     String user = reader.readLine();
                     if (user != null) {
                         info.append("Current User: ").append(user).append("\n");
-                    }
-                    process.waitFor();
-                } catch (Exception e) {
+            }
+            process.waitFor();
+        } catch (Exception e) {
                     info.append("Current User: error\n");
                 }
                 
@@ -657,7 +657,7 @@ public class MainActivity extends Activity {
                     appendOutput("=== System Info Complete ===\n\n");
                 });
                 
-            } catch (Exception e) {
+        } catch (Exception e) {
                 mainHandler.post(() -> {
                     appendOutput("Error getting system info: " + e.getMessage() + "\n");
                     appendOutput("=== System Info Failed ===\n\n");
@@ -677,8 +677,8 @@ public class MainActivity extends Activity {
         outputText.setText("");
         appendOutput("=== Output Cleared ===\n\n");
     }
-    
-    @Override
+        
+        @Override
     protected void onDestroy() {
         super.onDestroy();
         if (executor != null) {

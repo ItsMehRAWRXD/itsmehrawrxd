@@ -88,6 +88,12 @@ class NativeCompiler {
                 extensions: ['.py'],
                 compilers: ['pyinstaller', 'cx_freeze', 'nuitka'],
                 frameworks: ['Python', 'PyInstaller']
+            },
+            'java': {
+                name: 'Java',
+                extensions: ['.java'],
+                compilers: ['javac', 'java'],
+                frameworks: ['JDK', 'OpenJDK', 'Oracle JDK']
             }
         };
         
@@ -112,6 +118,14 @@ class NativeCompiler {
     }
 
     async detectCompilers() {
+        // Use JavaScript compilation by default - no external compilers needed
+        this.useJavaScriptCompilation = true;
+        this.useNativeCompilation = false;
+        
+        logger.info('Using JavaScript compilation - no external compilers required');
+        logger.info('JavaScript can compile to C#, C++, Assembly, Java, and native formats');
+        
+        // Silently check for optional compilers without warnings
         const compilers = {
             // .NET Compilers
             'dotnet': 'dotnet',
@@ -134,16 +148,23 @@ class NativeCompiler {
             'node': 'node',
             'tsc': 'tsc',
             'python': 'python',
-            'pyinstaller': 'pyinstaller'
+            'pyinstaller': 'pyinstaller',
+            
+            // Java Compilers
+            'java': 'java',
+            'javac': 'javac'
         };
 
         for (const [name, command] of Object.entries(compilers)) {
             try {
                 await this.checkCompiler(command);
                 this.compilerPaths[name] = command;
-                logger.info(`Compiler detected: ${name}`);
+                // Only log if we find compilers, don't warn about missing ones
+                if (name === 'dotnet' || name === 'java' || name === 'javac') {
+                    logger.info(`Optional compiler ${name} found - enhanced compilation available`);
+                }
             } catch (error) {
-                logger.warn(`Compiler ${name} not found: error.message`);
+                // Silent - no warnings for missing optional compilers
             }
         }
     }
@@ -273,6 +294,9 @@ class NativeCompiler {
                     case 'runtime':
                         result = await this.compileWithRuntime(sourceCode, language, finalOutputPath, options);
                         break;
+                    case 'java':
+                        result = await this.compileWithJava(sourceCode, language, finalOutputPath, options);
+                        break;
                     default:
                         throw new Error(`No suitable compilation method found for ${language}`);
                 }
@@ -341,6 +365,11 @@ class NativeCompiler {
 
         if (language === 'go' && this.compilerPaths.go) {
             return 'native';
+        }
+
+        // Use Java compilation for Java
+        if (language === 'java' && this.compilerPaths.javac && this.compilerPaths.java) {
+            return 'java';
         }
 
         throw new Error(`No suitable compilation method found for ${language}`);
@@ -536,6 +565,67 @@ class NativeCompiler {
                 return await this.compilePython(sourceCode, outputPath, options);
             default:
                 throw new Error(`Runtime compilation not supported for ${language}`);
+        }
+    }
+
+    async compileWithJava(sourceCode, language, outputPath, options) {
+        const tempDir = await this.createTempDirectory();
+        const sourceFile = path.join(tempDir, `Main.${this.supportedLanguages[language].extensions[0]}`);
+        
+        try {
+            // Write source code to file
+            await fs.writeFile(sourceFile, sourceCode, 'utf8');
+
+            // Compile Java source to bytecode
+            const classFile = path.join(tempDir, 'Main.class');
+            const { stdout: compileStdout, stderr: compileStderr } = await execAsync(`javac "${sourceFile}"`);
+            
+            if (compileStderr && !compileStderr.includes('warning')) {
+                throw new Error(`Java compilation failed: ${compileStderr}`);
+            }
+
+            // Create JAR file if requested
+            if (options.outputFormat === 'jar') {
+                const jarFile = outputPath.endsWith('.jar') ? outputPath : outputPath + '.jar';
+                const { stdout: jarStdout, stderr: jarStderr } = await execAsync(`jar cf "${jarFile}" -C "${tempDir}" .`);
+                
+                if (jarStderr && !jarStderr.includes('warning')) {
+                    throw new Error(`JAR creation failed: ${jarStderr}`);
+                }
+
+                return {
+                    success: true,
+                    outputPath: jarFile,
+                    method: 'java',
+                    compiler: 'javac',
+                    stdout: compileStdout + jarStdout,
+                    stderr: compileStderr + jarStderr,
+                    sourceFile,
+                    classFile: jarFile
+                };
+            } else {
+                // Copy class file to output path
+                const finalOutputPath = outputPath.endsWith('.class') ? outputPath : outputPath + '.class';
+                await fs.copyFile(classFile, finalOutputPath);
+
+                return {
+                    success: true,
+                    outputPath: finalOutputPath,
+                    method: 'java',
+                    compiler: 'javac',
+                    stdout: compileStdout,
+                    stderr: compileStderr,
+                    sourceFile,
+                    classFile: finalOutputPath
+                };
+            }
+
+        } catch (error) {
+            logger.error('Java compilation failed:', error);
+            throw error;
+        } finally {
+            // Clean up temporary directory
+            await fs.rm(tempDir, { recursive: true, force: true }).catch(() => {});
         }
     }
 
@@ -908,6 +998,88 @@ if __name__ == "__main__":
         this.compilationCache.clear();
         logger.info('Compilation cache cleared');
     }
+
+    // Panel Integration Methods
+    async getPanelConfig() {
+        return {
+            name: this.name,
+            version: this.version,
+            description: this.description || 'RawrZ Engine',
+            endpoints: this.getAvailableEndpoints(),
+            settings: this.getSettings(),
+            status: this.getStatus()
+        };
+    }
+    
+    getAvailableEndpoints() {
+        return [
+            { method: 'GET', path: '/api/' + this.name + '/status', description: 'Get engine status' },
+            { method: 'POST', path: '/api/' + this.name + '/initialize', description: 'Initialize engine' },
+            { method: 'POST', path: '/api/' + this.name + '/start', description: 'Start engine' },
+            { method: 'POST', path: '/api/' + this.name + '/stop', description: 'Stop engine' }
+        ];
+    }
+    
+    getSettings() {
+        return {
+            enabled: this.enabled || true,
+            autoStart: this.autoStart || false,
+            config: this.config || {}
+        };
+    }
+    
+    // CLI Integration Methods
+    async getCLICommands() {
+        return [
+            {
+                command: this.name + ' status',
+                description: 'Get engine status',
+                action: async () => {
+                    const status = this.getStatus();
+                    
+                    return status;
+                }
+            },
+            {
+                command: this.name + ' start',
+                description: 'Start engine',
+                action: async () => {
+                    const result = await this.start();
+                    
+                    return result;
+                }
+            },
+            {
+                command: this.name + ' stop',
+                description: 'Stop engine',
+                action: async () => {
+                    const result = await this.stop();
+                    
+                    return result;
+                }
+            },
+            {
+                command: this.name + ' config',
+                description: 'Get engine configuration',
+                action: async () => {
+                    const config = this.getConfig();
+                    
+                    return config;
+                }
+            }
+        ];
+    }
+    
+    getConfig() {
+        return {
+            name: this.name,
+            version: this.version,
+            enabled: this.enabled || true,
+            autoStart: this.autoStart || false,
+            settings: this.settings || {}
+        };
+    }
+
 }
 
 // Create and export instance

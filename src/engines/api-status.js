@@ -44,7 +44,7 @@ class APIStatus extends EventEmitter {
         // Core RawrZ APIs
         this.apis.set('rawrz-engine', {
             name: 'RawrZ Engine',
-            url: 'http://localhost:3000/api/engine/status',
+            url: `${process.env.API_BASE_URL || 'http://localhost:3000'}/api/engine/status`,
             type: 'internal',
             critical: true,
             timeout: 5000,
@@ -57,7 +57,7 @@ class APIStatus extends EventEmitter {
 
         this.apis.set('compression-engine', {
             name: 'Compression Engine',
-            url: 'http://localhost:3000/api/compression/status',
+            url: `${process.env.API_BASE_URL || 'http://localhost:3000'}/api/compression/status`,
             type: 'internal',
             critical: true,
             timeout: 3000,
@@ -70,7 +70,7 @@ class APIStatus extends EventEmitter {
 
         this.apis.set('stealth-engine', {
             name: 'Stealth Engine',
-            url: 'http://localhost:3000/api/stealth/status',
+            url: `${process.env.API_BASE_URL || 'http://localhost:3000'}/api/stealth/status`,
             type: 'internal',
             critical: true,
             timeout: 3000,
@@ -83,7 +83,7 @@ class APIStatus extends EventEmitter {
 
         this.apis.set('stub-generator', {
             name: 'Stub Generator',
-            url: 'http://localhost:3000/api/stub/status',
+            url: `${process.env.API_BASE_URL || 'http://localhost:3000'}/api/stub/status`,
             type: 'internal',
             critical: true,
             timeout: 5000,
@@ -96,7 +96,7 @@ class APIStatus extends EventEmitter {
 
         this.apis.set('dual-generators', {
             name: 'Dual Generators',
-            url: 'http://localhost:3000/api/dual-generators/status',
+            url: `${process.env.API_BASE_URL || 'http://localhost:3000'}/api/dual-generators/status`,
             type: 'internal',
             critical: true,
             timeout: 5000,
@@ -109,7 +109,7 @@ class APIStatus extends EventEmitter {
 
         this.apis.set('hot-patchers', {
             name: 'Hot Patchers',
-            url: 'http://localhost:3000/api/patchers/status',
+            url: `${process.env.API_BASE_URL || 'http://localhost:3000'}/api/patchers/status`,
             type: 'internal',
             critical: true,
             timeout: 3000,
@@ -122,7 +122,7 @@ class APIStatus extends EventEmitter {
 
         this.apis.set('full-assembly', {
             name: 'Full Assembly',
-            url: 'http://localhost:3000/api/assembly/status',
+            url: `${process.env.API_BASE_URL || 'http://localhost:3000'}/api/assembly/status`,
             type: 'internal',
             critical: true,
             timeout: 5000,
@@ -135,7 +135,7 @@ class APIStatus extends EventEmitter {
 
         this.apis.set('polymorphic-engine', {
             name: 'Polymorphic Engine',
-            url: 'http://localhost:3000/api/polymorphic/status',
+            url: `${process.env.API_BASE_URL || 'http://localhost:3000'}/api/polymorphic/status`,
             type: 'internal',
             critical: false,
             timeout: 5000,
@@ -148,7 +148,7 @@ class APIStatus extends EventEmitter {
 
         this.apis.set('anti-analysis', {
             name: 'Anti-Analysis',
-            url: 'http://localhost:3000/api/anti-analysis/status',
+            url: `${process.env.API_BASE_URL || 'http://localhost:3000'}/api/anti-analysis/status`,
             type: 'internal',
             critical: false,
             timeout: 3000,
@@ -161,7 +161,7 @@ class APIStatus extends EventEmitter {
 
         this.apis.set('memory-manager', {
             name: 'Memory Manager',
-            url: 'http://localhost:3000/api/memory/status',
+            url: `${process.env.API_BASE_URL || 'http://localhost:3000'}/api/memory/status`,
             type: 'internal',
             critical: true,
             timeout: 3000,
@@ -174,7 +174,7 @@ class APIStatus extends EventEmitter {
 
         this.apis.set('backup-system', {
             name: 'Backup System',
-            url: 'http://localhost:3000/api/backup/status',
+            url: `${process.env.API_BASE_URL || 'http://localhost:3000'}/api/backup/status`,
             type: 'internal',
             critical: false,
             timeout: 5000,
@@ -187,7 +187,7 @@ class APIStatus extends EventEmitter {
 
         this.apis.set('mobile-tools', {
             name: 'Mobile Tools',
-            url: 'http://localhost:3000/api/mobile/status',
+            url: `${process.env.API_BASE_URL || 'http://localhost:3000'}/api/mobile/status`,
             type: 'internal',
             critical: false,
             timeout: 5000,
@@ -200,7 +200,7 @@ class APIStatus extends EventEmitter {
 
         this.apis.set('network-tools', {
             name: 'Network Tools',
-            url: 'http://localhost:3000/api/network/status',
+            url: `${process.env.API_BASE_URL || 'http://localhost:3000'}/api/network/status`,
             type: 'internal',
             critical: false,
             timeout: 3000,
@@ -213,7 +213,7 @@ class APIStatus extends EventEmitter {
 
         this.apis.set('advanced-crypto', {
             name: 'Advanced Crypto',
-            url: 'http://localhost:3000/api/crypto/status',
+            url: `${process.env.API_BASE_URL || 'http://localhost:3000'}/api/crypto/status`,
             type: 'internal',
             critical: true,
             timeout: 3000,
@@ -226,7 +226,7 @@ class APIStatus extends EventEmitter {
 
         this.apis.set('reverse-engineering', {
             name: 'Reverse Engineering',
-            url: 'http://localhost:3000/api/reverse/status',
+            url: `${process.env.API_BASE_URL || 'http://localhost:3000'}/api/reverse/status`,
             type: 'internal',
             critical: false,
             timeout: 5000,
@@ -239,7 +239,7 @@ class APIStatus extends EventEmitter {
 
         this.apis.set('digital-forensics', {
             name: 'Digital Forensics',
-            url: 'http://localhost:3000/api/forensics/status',
+            url: `${process.env.API_BASE_URL || 'http://localhost:3000'}/api/forensics/status`,
             type: 'internal',
             critical: false,
             timeout: 5000,
@@ -252,7 +252,7 @@ class APIStatus extends EventEmitter {
 
         this.apis.set('malware-analysis', {
             name: 'Malware Analysis',
-            url: 'http://localhost:3000/api/malware/status',
+            url: `${process.env.API_BASE_URL || 'http://localhost:3000'}/api/malware/status`,
             type: 'internal',
             critical: false,
             timeout: 5000,
@@ -266,7 +266,7 @@ class APIStatus extends EventEmitter {
         // External APIs
         this.apis.set('openai-api', {
             name: 'OpenAI API',
-            url: 'https://api.openai.com/v1/models',
+            url: 'process.env.OPENAI_API_URL || "https://api.openai.com"/v1/models',
             type: 'external',
             critical: false,
             timeout: 10000,
@@ -279,7 +279,7 @@ class APIStatus extends EventEmitter {
 
         this.apis.set('github-api', {
             name: 'GitHub API',
-            url: 'https://api.github.com/zen',
+            url: 'process.env.GITHUB_API_URL || "https://api.github.com"/zen',
             type: 'external',
             critical: false,
             timeout: 5000,
@@ -705,6 +705,88 @@ class APIStatus extends EventEmitter {
         this.statusChecks.clear();
         logger.info('API Status cleanup completed');
     }
+
+    // Panel Integration Methods
+    async getPanelConfig() {
+        return {
+            name: this.name,
+            version: this.version,
+            description: this.description || 'RawrZ Engine',
+            endpoints: this.getAvailableEndpoints(),
+            settings: this.getSettings(),
+            status: this.getStatus()
+        };
+    }
+    
+    getAvailableEndpoints() {
+        return [
+            { method: 'GET', path: '/api/' + this.name + '/status', description: 'Get engine status' },
+            { method: 'POST', path: '/api/' + this.name + '/initialize', description: 'Initialize engine' },
+            { method: 'POST', path: '/api/' + this.name + '/start', description: 'Start engine' },
+            { method: 'POST', path: '/api/' + this.name + '/stop', description: 'Stop engine' }
+        ];
+    }
+    
+    getSettings() {
+        return {
+            enabled: this.enabled || true,
+            autoStart: this.autoStart || false,
+            config: this.config || {}
+        };
+    }
+    
+    // CLI Integration Methods
+    async getCLICommands() {
+        return [
+            {
+                command: this.name + ' status',
+                description: 'Get engine status',
+                action: async () => {
+                    const status = this.getStatus();
+                    
+                    return status;
+                }
+            },
+            {
+                command: this.name + ' start',
+                description: 'Start engine',
+                action: async () => {
+                    const result = await this.start();
+                    
+                    return result;
+                }
+            },
+            {
+                command: this.name + ' stop',
+                description: 'Stop engine',
+                action: async () => {
+                    const result = await this.stop();
+                    
+                    return result;
+                }
+            },
+            {
+                command: this.name + ' config',
+                description: 'Get engine configuration',
+                action: async () => {
+                    const config = this.getConfig();
+                    
+                    return config;
+                }
+            }
+        ];
+    }
+    
+    getConfig() {
+        return {
+            name: this.name,
+            version: this.version,
+            enabled: this.enabled || true,
+            autoStart: this.autoStart || false,
+            settings: this.settings || {}
+        };
+    }
+
 }
 
 // Create and export instance

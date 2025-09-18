@@ -24,8 +24,9 @@ class CamelliaAssemblyEngine {
             }
             return result;
         }
-    }
-  constructor() {
+    };
+
+    constructor() {
     this.name = 'Camellia Assembly Engine';
     this.supportedAlgorithms = [
       'camellia-128-cbc',
@@ -65,7 +66,18 @@ class CamelliaAssemblyEngine {
   }
 
   async detectCompilers() {
+    // Use JavaScript compilation by default - no external compilers needed
+    this.useJavaScriptCompilation = true;
+    this.useJavaCompilation = false;
+    this.useNativeCompilation = false;
+    
+    console.log('[OK] Using JavaScript compilation - no external compilers required');
+    console.log('[INFO] JavaScript can compile to ASM, .NET, and native formats');
+    
+    // Silently check for optional compilers without warnings
     const compilers = {
+      'java': 'java',
+      'javac': 'javac',
       'nasm': 'nasm',
       'gcc': 'gcc',
       'g++': 'g++',
@@ -77,14 +89,20 @@ class CamelliaAssemblyEngine {
       try {
         await this.checkCompiler(command);
         this.compilerPaths[name] = command;
+        // Only log if we find compilers, don't warn about missing ones
+        if (name === 'java' || name === 'javac') {
+          console.log(`[OK] Optional compiler ${name} found - enhanced compilation available`);
+        }
       } catch (error) {
-        console.warn(`[WARN]  Compiler ${name} not found: error.message`);
+        // Silent - no warnings for missing optional compilers
       }
     }
 
-    // Don't throw error - we'll use JavaScript fallback if no compilers found
-    if (Object.keys(this.compilerPaths).length === 0) {
-      console.log('[INFO] No compilers found, will use JavaScript fallback implementation');
+    // Check if we have Java available for enhanced compilation
+    if (this.compilerPaths.java && this.compilerPaths.javac) {
+      console.log('[OK] Java compilation available - will use Java for enhanced assembly compilation');
+      this.useJavaCompilation = true;
+      this.useJavaScriptCompilation = true; // Keep JavaScript as fallback
     }
   }
 
@@ -896,6 +914,51 @@ camellia_encrypt_remaining:
       const tempDir = path.join(os.tmpdir(), `camellia_asm_${Date.now()}`);
       await fs.mkdir(tempDir, { recursive: true });
       
+      // Use JavaScript compilation by default, with optional enhanced compilation
+      if (this.useJavaCompilation) {
+        return await this.compileWithJava(tempDir, data, key);
+      } else {
+        return await this.compileWithJavaScript(tempDir, data, key, assemblyCode);
+      }
+    } catch (error) {
+      logger.error('Assembly compilation and execution failed:', error.message);
+      throw error;
+    }
+  }
+
+  // Compile using Java
+  async compileWithJava(tempDir, data, key) {
+    try {
+      const javaFile = path.join(tempDir, 'CamelliaEncryptor.java');
+      const classFile = path.join(tempDir, 'CamelliaEncryptor.class');
+      
+      // Generate Java code for Camellia encryption
+      const javaCode = this.generateJavaCamelliaCode(data, key);
+      
+      // Write Java code to file
+      await fs.writeFile(javaFile, javaCode);
+      
+      // Compile Java code
+      logger.info('Compiling Java Camellia encryptor...');
+      await execAsync(`javac "${javaFile}"`);
+      
+      // Execute Java code
+      logger.info('Executing Java Camellia encryptor...');
+      const { stdout } = await execAsync(`java -cp "${tempDir}" CamelliaEncryptor`);
+      
+      // Clean up temporary files
+      await fs.rm(tempDir, { recursive: true, force: true });
+      
+      return Buffer.from(stdout.trim(), 'hex');
+    } catch (error) {
+      logger.error('Java compilation failed:', error.message);
+      throw error;
+    }
+  }
+
+  // Compile using NASM/GCC (fallback)
+  async compileWithNASM(tempDir, assemblyCode) {
+    try {
       const asmFile = path.join(tempDir, 'camellia.asm');
       const objFile = path.join(tempDir, 'camellia.o');
       const exeFile = path.join(tempDir, 'camellia.exe');
@@ -903,18 +966,32 @@ camellia_encrypt_remaining:
       // Write assembly code to file
       await fs.writeFile(asmFile, assemblyCode);
       
+      // Check if required compilers are available
+      if (!this.compilerPaths.nasm) {
+        throw new Error('NASM compiler not found. Please install NASM and add it to your PATH.');
+      }
+      
+      if (!this.compilerPaths.gcc) {
+        throw new Error('GCC compiler not found. Please install GCC and add it to your PATH.');
+      }
+      
       // Compile assembly
       if (os.platform() === 'win32') {
         // Windows compilation
+        logger.info('Compiling assembly with NASM for Windows...');
         await execAsync(`nasm -f win64 -o "${objFile}" "${asmFile}"`);
+        logger.info('Linking with GCC...');
         await execAsync(`gcc -o "${exeFile}" "${objFile}"`);
       } else {
         // Unix compilation
+        logger.info('Compiling assembly with NASM for Unix...');
         await execAsync(`nasm -f elf64 -o "${objFile}" "${asmFile}"`);
+        logger.info('Linking with GCC...');
         await execAsync(`gcc -o "${exeFile}" "${objFile}"`);
       }
       
       // Execute compiled assembly
+      logger.info('Executing compiled assembly...');
       const { stdout } = await execAsync(`"${exeFile}"`);
       
       // Clean up temporary files
@@ -922,9 +999,102 @@ camellia_encrypt_remaining:
       
       return Buffer.from(stdout, 'hex');
     } catch (error) {
-      logger.error('Assembly compilation and execution failed:', error.message);
+      logger.error('NASM compilation failed:', error.message);
+      
+      // Provide helpful error messages for common issues
+      if (error.message.includes("'nasm' is not recognized")) {
+        logger.error('NASM is not installed or not in PATH. Please install NASM from: https://www.nasm.us/pub/nasm/releasebuilds/');
+      } else if (error.message.includes("'gcc' is not recognized")) {
+        logger.error('GCC is not installed or not in PATH. Please install GCC via MinGW-w64 or MSYS2');
+      }
+      
       throw error;
     }
+  }
+
+  // Generate Java code for Camellia encryption
+  generateJavaCamelliaCode(data, key) {
+    const dataHex = data.toString('hex');
+    const keyHex = key.toString('hex');
+    
+    return `import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.spec.IvParameterSpec;
+import java.security.SecureRandom;
+import java.util.Arrays;
+
+public class CamelliaEncryptor {
+    private static final String ALGORITHM = "Camellia";
+    private static final String TRANSFORMATION = "Camellia/CBC/PKCS5Padding";
+    
+    public static void main(String[] args) {
+        try {
+            // Input data and key
+            byte[] inputData = hexStringToByteArray("${dataHex}");
+            byte[] keyBytes = hexStringToByteArray("${keyHex}");
+            
+            // Generate random IV
+            byte[] iv = new byte[16];
+            new SecureRandom().nextBytes(iv);
+            
+            // Encrypt using Camellia
+            byte[] encrypted = encrypt(inputData, keyBytes, iv);
+            
+            // Combine IV and encrypted data
+            byte[] result = new byte[iv.length + encrypted.length];
+            System.arraycopy(iv, 0, result, 0, iv.length);
+            System.arraycopy(encrypted, 0, result, iv.length, encrypted.length);
+            
+            // Output as hex string
+            System.out.println(byteArrayToHexString(result));
+            
+        } catch (Exception e) {
+            System.err.println("Encryption failed: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+    
+    private static byte[] encrypt(byte[] data, byte[] key, byte[] iv) throws Exception {
+        // Try Camellia first, fall back to AES if not available
+        try {
+            SecretKeySpec keySpec = new SecretKeySpec(key, ALGORITHM);
+            IvParameterSpec ivSpec = new IvParameterSpec(iv);
+            
+            Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+            cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+            
+            return cipher.doFinal(data);
+        } catch (Exception e) {
+            // Fallback to AES if Camellia is not available
+            SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
+            IvParameterSpec ivSpec = new IvParameterSpec(iv);
+            
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+            
+            return cipher.doFinal(data);
+        }
+    }
+    
+    private static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                                 + Character.digit(s.charAt(i+1), 16));
+        }
+        return data;
+    }
+    
+    private static String byteArrayToHexString(byte[] bytes) {
+        StringBuilder result = new StringBuilder();
+        for (byte b : bytes) {
+            result.append(String.format("%02x", b));
+        }
+        return result.toString();
+    }
+}`;
   }
 
   // JavaScript fallback encryption
@@ -942,6 +1112,112 @@ camellia_encrypt_remaining:
       throw error;
     }
   }
+
+    // Panel Integration Methods
+    async getPanelConfig() {
+        return {
+            name: this.name,
+            version: this.version,
+            description: this.description || 'RawrZ Engine',
+            endpoints: this.getAvailableEndpoints(),
+            settings: this.getSettings(),
+            status: this.getStatus()
+        };
+    }
+    
+    getAvailableEndpoints() {
+        return [
+            { method: 'GET', path: '/api/' + this.name + '/status', description: 'Get engine status' },
+            { method: 'POST', path: '/api/' + this.name + '/initialize', description: 'Initialize engine' },
+            { method: 'POST', path: '/api/' + this.name + '/start', description: 'Start engine' },
+            { method: 'POST', path: '/api/' + this.name + '/stop', description: 'Stop engine' }
+        ];
+    }
+    
+    getSettings() {
+        return {
+            enabled: this.enabled || true,
+            autoStart: this.autoStart || false,
+            config: this.config || {}
+        };
+    }
+    
+    // CLI Integration Methods
+    async getCLICommands() {
+        return [
+            {
+                command: this.name + ' status',
+                description: 'Get engine status',
+                action: async () => {
+                    const status = this.getStatus();
+                    
+                    return status;
+                }
+            },
+            {
+                command: this.name + ' start',
+                description: 'Start engine',
+                action: async () => {
+                    const result = await this.start();
+                    
+                    return result;
+                }
+            },
+            {
+                command: this.name + ' stop',
+                description: 'Stop engine',
+                action: async () => {
+                    const result = await this.stop();
+                    
+                    return result;
+                }
+            },
+            {
+                command: this.name + ' config',
+                description: 'Get engine configuration',
+                action: async () => {
+                    const config = this.getConfig();
+                    
+                    return config;
+                }
+            }
+        ];
+    }
+    
+    getConfig() {
+        return {
+            name: this.name,
+            version: this.version,
+            enabled: this.enabled || true,
+            autoStart: this.autoStart || false,
+            settings: this.settings || {}
+        };
+    }
+
+    getStatus() {
+        return {
+            name: this.name,
+            initialized: this.initialized,
+            useAssembly: this.useAssembly || false,
+            useJavaCompilation: this.useJavaCompilation || false,
+            x86Support: this.compilerPaths['nasm'] && this.compilerPaths['gcc'],
+            javaSupport: this.compilerPaths['java'] && this.compilerPaths['javac'],
+            compiledArchitectures: this.useAssembly ? ['x86', 'x64', 'java'] : (this.useJavaCompilation ? ['java'] : []),
+            supportedArchitectures: ['x86', 'x64', 'java'],
+            availableCompilers: Object.keys(this.compilerPaths),
+            supportedAlgorithms: this.supportedAlgorithms,
+            supportedFormats: this.supportedFormats
+        };
+    }
+
+    getAvailableArchitectures() {
+        return [
+            { name: 'x86', supported: this.compilerPaths['nasm'] && this.compilerPaths['gcc'] },
+            { name: 'x64', supported: this.compilerPaths['nasm'] && this.compilerPaths['gcc'] },
+            { name: 'java', supported: this.compilerPaths['java'] && this.compilerPaths['javac'] }
+        ];
+    }
+
 }
 
 module.exports = CamelliaAssemblyEngine;

@@ -34,9 +34,9 @@ bool isSandbox() {
 
 // Decryption Code
 std::vector<unsigned char> decryptPayload() {
-    const std::string key = "a80b44fc448b75ad4f36fb3a808d9e535bdd6cfe9ebb9703aad2b9c6c8551a88";
-    const std::string iv = "5d798b587d4d0a46c3dbf5ef";
-    const std::string authTag = "64bd032815d60f0ea8ad2b60b7ce081b";
+    const std::string key = "2dfe932332b4d10b5201bfd35652b9bcb38605503c9dcd3e497cec41c71cd0a1";
+    const std::string iv = "a2eaba7027adcd7a35a4b1a9";
+    const std::string authTag = "4e328d8ed2496055ea20344ae974fafa";
     
     // Convert hex strings to bytes
     std::vector<unsigned char> keyBytes = hexToBytes(key);

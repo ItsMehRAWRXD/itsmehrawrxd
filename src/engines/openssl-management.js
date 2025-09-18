@@ -47,7 +47,7 @@ try {
             return algorithm;
         }
         updateAlgorithmPreference(algorithm, fallback) {
-            return { success: true };
+            return { success: true, message: "OpenSSL operation completed" };
         }
         getOpenSSLAlgorithms() { 
             return [
@@ -360,8 +360,8 @@ class OpenSSLManagement extends EventEmitter {
     // Toggle OpenSSL mode
     async toggleOpenSSLMode(enabled) {
         try {
-            const success = await this.manager.toggleOpenSSLMode(enabled);
-            if (success) {
+            const result = await this.manager.toggleOpenSSLMode(enabled);
+            if (result && result.success) {
                 this.emit('configuration-changed', { 
                     type: 'openssl-mode', 
                     enabled,
@@ -369,7 +369,7 @@ class OpenSSLManagement extends EventEmitter {
                 });
                 logger.info('OpenSSL mode ' + (enabled ? 'enabled' : 'disabled'));
             }
-            return success;
+            return result;
         } catch (error) {
             logger.error('Failed to toggle OpenSSL mode:', error);
             throw error;
@@ -723,6 +723,88 @@ class OpenSSLManagement extends EventEmitter {
             throw error;
         }
     }
+
+    // Panel Integration Methods
+    async getPanelConfig() {
+        return {
+            name: this.name,
+            version: this.version,
+            description: this.description || 'RawrZ Engine',
+            endpoints: this.getAvailableEndpoints(),
+            settings: this.getSettings(),
+            status: this.getStatus()
+        };
+    }
+    
+    getAvailableEndpoints() {
+        return [
+            { method: 'GET', path: '/api/' + this.name + '/status', description: 'Get engine status' },
+            { method: 'POST', path: '/api/' + this.name + '/initialize', description: 'Initialize engine' },
+            { method: 'POST', path: '/api/' + this.name + '/start', description: 'Start engine' },
+            { method: 'POST', path: '/api/' + this.name + '/stop', description: 'Stop engine' }
+        ];
+    }
+    
+    getSettings() {
+        return {
+            enabled: this.enabled || true,
+            autoStart: this.autoStart || false,
+            config: this.config || {}
+        };
+    }
+    
+    // CLI Integration Methods
+    async getCLICommands() {
+        return [
+            {
+                command: this.name + ' status',
+                description: 'Get engine status',
+                action: async () => {
+                    const status = this.getStatus();
+                    
+                    return status;
+                }
+            },
+            {
+                command: this.name + ' start',
+                description: 'Start engine',
+                action: async () => {
+                    const result = await this.start();
+                    
+                    return result;
+                }
+            },
+            {
+                command: this.name + ' stop',
+                description: 'Stop engine',
+                action: async () => {
+                    const result = await this.stop();
+                    
+                    return result;
+                }
+            },
+            {
+                command: this.name + ' config',
+                description: 'Get engine configuration',
+                action: async () => {
+                    const config = this.getConfig();
+                    
+                    return config;
+                }
+            }
+        ];
+    }
+    
+    getConfig() {
+        return {
+            name: this.name,
+            version: this.version,
+            enabled: this.enabled || true,
+            autoStart: this.autoStart || false,
+            settings: this.settings || {}
+        };
+    }
+
 }
 
 module.exports = new OpenSSLManagement();

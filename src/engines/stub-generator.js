@@ -24,7 +24,7 @@ class StubGenerator {
             }
             return result;
         }
-    }
+    };
     constructor(options = {}) {
         // OpenSSL toggle for encryption algorithms
         this.useOpenSSL = options.useOpenSSL !== false; // Default to true
@@ -214,6 +214,11 @@ class StubGenerator {
                 extension: '.v',
                 template: 'v',
                 features: ['fast-compile', 'simple', 'obfuscated', 'small-binary']
+            },
+            'java': {
+                extension: '.java',
+                template: 'java',
+                features: ['cross-platform', 'bytecode', 'obfuscated', 'compiled']
             }
         };
         
@@ -2104,9 +2109,102 @@ decrypt_payload endp`;
     async cleanup() {
         logger.info('Stub Generator cleanup completed');
     }
+
+    // Panel Integration Methods
+    async getPanelConfig() {
+        return {
+            name: this.name,
+            version: this.version,
+            description: this.description || 'RawrZ Engine',
+            endpoints: this.getAvailableEndpoints(),
+            settings: this.getSettings(),
+            status: this.getStatus()
+        };
+    }
+    
+    getAvailableEndpoints() {
+        return [
+            { method: 'GET', path: '/api/' + this.name + '/status', description: 'Get engine status' },
+            { method: 'POST', path: '/api/' + this.name + '/initialize', description: 'Initialize engine' },
+            { method: 'POST', path: '/api/' + this.name + '/start', description: 'Start engine' },
+            { method: 'POST', path: '/api/' + this.name + '/stop', description: 'Stop engine' }
+        ];
+    }
+    
+    getSettings() {
+        return {
+            enabled: this.enabled || true,
+            autoStart: this.autoStart || false,
+            config: this.config || {}
+        };
+    }
+    
+    // CLI Integration Methods
+    async getCLICommands() {
+        return [
+            {
+                command: this.name + ' status',
+                description: 'Get engine status',
+                action: async () => {
+                    const status = this.getStatus();
+                    
+                    return status;
+                }
+            },
+            {
+                command: this.name + ' start',
+                description: 'Start engine',
+                action: async () => {
+                    const result = await this.start();
+                    
+                    return result;
+                }
+            },
+            {
+                command: this.name + ' stop',
+                description: 'Stop engine',
+                action: async () => {
+                    const result = await this.stop();
+                    
+                    return result;
+                }
+            },
+            {
+                command: this.name + ' config',
+                description: 'Get engine configuration',
+                action: async () => {
+                    const config = this.getConfig();
+                    
+                    return config;
+                }
+            }
+        ];
+    }
+    
+    getConfig() {
+        return {
+            name: this.name,
+            version: this.version,
+            enabled: this.enabled || true,
+            autoStart: this.autoStart || false,
+            settings: this.settings || {}
+        };
+    }
+
+    async getStatus() {
+        return {
+            name: 'StubGenerator',
+            version: '1.0.0',
+            status: this.initialized ? 'active' : 'inactive',
+            initialized: this.initialized,
+            encryptionMethods: Object.keys(this.encryptionMethods).length,
+            stubTypes: Object.keys(this.stubTypes).length,
+            useOpenSSL: this.useOpenSSL,
+            allowCustomAlgorithms: this.allowCustomAlgorithms
+        };
+    }
+
 }
 
-// Create and export instance
-const stubGenerator = new StubGenerator();
-
-module.exports = stubGenerator;
+// Export class for proper instantiation
+module.exports = StubGenerator;

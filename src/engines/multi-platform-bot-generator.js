@@ -23,12 +23,12 @@ class MultiPlatformBotGenerator extends EventEmitter {
         super();
         this.name = 'MultiPlatformBotGenerator';
         this.version = '1.0.0';
-        this.memoryManager = getMemoryManager();
-        this.supportedPlatforms = this.memoryManager.createManagedCollection('supportedPlatforms', 'Map', 100);
-        this.botTemplates = this.memoryManager.createManagedCollection('botTemplates', 'Map', 100);
-        this.platformAdapters = this.memoryManager.createManagedCollection('platformAdapters', 'Map', 100);
-        this.featureModules = this.memoryManager.createManagedCollection('featureModules', 'Map', 100);
-        this.generatedBots = this.memoryManager.createManagedCollection('generatedBots', 'Map', 100);
+        this.memoryManager = new Map(); // Use simple Map for now
+        this.supportedPlatforms = new Map();
+        this.botTemplates = new Map();
+        this.platformAdapters = new Map();
+        this.featureModules = new Map();
+        this.generatedBots = new Map();
         this.initialized = false;
     }
 
@@ -1127,6 +1127,102 @@ class DataProcessingModule {
         // Add data processing features to code
         return code;
     }
+
+    // Panel Integration Methods
+    async getPanelConfig() {
+        return {
+            name: this.name,
+            version: this.version,
+            description: this.description || 'RawrZ Engine',
+            endpoints: this.getAvailableEndpoints(),
+            settings: this.getSettings(),
+            status: this.getStatus()
+        };
+    }
+    
+    getAvailableEndpoints() {
+        return [
+            { method: 'GET', path: '/api/' + this.name + '/status', description: 'Get engine status' },
+            { method: 'POST', path: '/api/' + this.name + '/initialize', description: 'Initialize engine' },
+            { method: 'POST', path: '/api/' + this.name + '/start', description: 'Start engine' },
+            { method: 'POST', path: '/api/' + this.name + '/stop', description: 'Stop engine' }
+        ];
+    }
+    
+    getSettings() {
+        return {
+            enabled: this.enabled || true,
+            autoStart: this.autoStart || false,
+            config: this.config || {}
+        };
+    }
+    
+    // CLI Integration Methods
+    async getCLICommands() {
+        return [
+            {
+                command: this.name + ' status',
+                description: 'Get engine status',
+                action: async () => {
+                    const status = this.getStatus();
+                    
+                    return status;
+                }
+            },
+            {
+                command: this.name + ' start',
+                description: 'Start engine',
+                action: async () => {
+                    const result = await this.start();
+                    
+                    return result;
+                }
+            },
+            {
+                command: this.name + ' stop',
+                description: 'Stop engine',
+                action: async () => {
+                    const result = await this.stop();
+                    
+                    return result;
+                }
+            },
+            {
+                command: this.name + ' config',
+                description: 'Get engine configuration',
+                action: async () => {
+                    const config = this.getConfig();
+                    
+                    return config;
+                }
+            }
+        ];
+    }
+    
+    getConfig() {
+        return {
+            name: this.name,
+            version: this.version,
+            enabled: this.enabled || true,
+            autoStart: this.autoStart || false,
+            settings: this.settings || {}
+        };
+    }
+
+    async getStatus() {
+        return {
+            name: this.name,
+            version: this.version,
+            status: this.initialized ? 'active' : 'inactive',
+            initialized: this.initialized,
+            supportedPlatforms: this.supportedPlatforms.size,
+            botTemplates: this.botTemplates.size,
+            platformAdapters: this.platformAdapters.size,
+            featureModules: this.featureModules.size,
+            generatedBots: this.generatedBots.size
+        };
+    }
+
 }
 
 module.exports = MultiPlatformBotGenerator;
