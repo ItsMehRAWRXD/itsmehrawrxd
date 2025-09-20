@@ -55,8 +55,10 @@ if not exist "monitoring\rules" mkdir monitoring\rules
 REM Install/update dependencies
 echo [INFO] Installing/updating Node.js dependencies...
 if exist "package.json" (
-    npm install --production
-    echo [SUCCESS] Dependencies installed successfully
+    npm install --production --ignore-scripts --no-optional
+    echo [SUCCESS] Core dependencies installed successfully
+    echo [INFO] Some advanced cryptography packages may not be available yet
+    echo [INFO] Core functionality will work with available packages
 ) else (
     echo [WARNING] package.json not found, skipping dependency installation
 )

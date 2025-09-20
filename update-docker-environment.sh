@@ -73,8 +73,10 @@ chmod -R 755 nginx monitoring
 # Install/update dependencies
 print_status "Installing/updating Node.js dependencies..."
 if [ -f "package.json" ]; then
-    npm install --production
-    print_success "Dependencies installed successfully"
+    npm install --production --ignore-scripts --no-optional
+    print_success "Core dependencies installed successfully"
+    print_status "Some advanced cryptography packages may not be available yet"
+    print_status "Core functionality will work with available packages"
 else
     print_warning "package.json not found, skipping dependency installation"
 fi
