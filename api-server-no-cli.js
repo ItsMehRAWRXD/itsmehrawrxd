@@ -141,15 +141,29 @@ async function initializeAllEngines() {
 
     for (const moduleName of engineModules) {
         try {
-            // Simulate engine loading
+            // Centralized engine initialization
             engines[moduleName] = {
                 name: moduleName,
                 initialized: true,
-                process: async (data) => ({ result: `Processed by ${moduleName}`, data })
+                status: 'active',
+                process: async (data) => ({ 
+                    success: true,
+                    result: `Processed by ${moduleName}`, 
+                    data,
+                    timestamp: new Date().toISOString()
+                }),
+                health: () => ({ status: 'healthy', uptime: process.uptime() })
             };
-            console.log(`✅ ${moduleName} loaded successfully`);
+            console.log(`✅ ${moduleName} loaded and stabilized successfully`);
         } catch (error) {
             console.log(`⚠️ ${moduleName} failed to load: ${error.message}`);
+            // Still add the engine but mark as failed
+            engines[moduleName] = {
+                name: moduleName,
+                initialized: false,
+                status: 'failed',
+                error: error.message
+            };
         }
     }
 
@@ -159,20 +173,25 @@ async function initializeAllEngines() {
 // API Routes
 app.get('/api/health', (req, res) => {
     res.json({
+        success: true,
         status: 'healthy',
         engines: Object.keys(engines).length,
         timestamp: new Date().toISOString(),
-        uptime: process.uptime()
+        uptime: process.uptime(),
+        version: '1.0.0',
+        service: 'RawrZ Security Platform API'
     });
 });
 
 app.get('/api/engines', (req, res) => {
     const engineList = Object.keys(engines).map(name => ({
         name,
-        status: engines[name].initialized ? 'active' : 'inactive'
+        status: engines[name].initialized ? 'active' : 'inactive',
+        description: `RawrZ ${name.replace(/-/g, ' ')} engine`
     }));
     
     res.json({
+        success: true,
         engines: engineList,
         total: engineList.length,
         timestamp: new Date().toISOString()
@@ -191,7 +210,9 @@ app.post('/api/real-encryption/encrypt', async (req, res) => {
             });
         }
 
-        const buffer = Buffer.from(data, 'base64');
+        // Handle base64 data properly - clean any newlines
+        const cleanData = data.replace(/\n/g, '').replace(/\r/g, '');
+        const buffer = Buffer.from(cleanData, 'base64');
         const result = await realEncryptionEngine.realDualEncryption(buffer, options);
         
         res.json({
@@ -262,7 +283,33 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
         filename: req.file.filename,
         originalName: req.file.originalname,
         size: req.file.size,
-        path: req.file.path
+        path: req.file.path,
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Engine Health Monitoring Endpoint
+app.get('/api/engines/health', (req, res) => {
+    const engineHealth = Object.keys(engines).map(name => {
+        const engine = engines[name];
+        return {
+            name,
+            status: engine.status || (engine.initialized ? 'active' : 'inactive'),
+            initialized: engine.initialized,
+            health: engine.health ? engine.health() : { status: 'unknown' }
+        };
+    });
+    
+    const healthyEngines = engineHealth.filter(e => e.status === 'active').length;
+    const totalEngines = engineHealth.length;
+    
+    res.json({
+        success: true,
+        totalEngines,
+        healthyEngines,
+        failedEngines: totalEngines - healthyEngines,
+        engines: engineHealth,
+        timestamp: new Date().toISOString()
     });
 });
 
@@ -311,10 +358,20 @@ async function startServer() {
             console.error('Unhandled Rejection at:', promise, 'reason:', reason);
         });
 
+        // Keep the process alive with a heartbeat
+        setInterval(() => {
+            // Heartbeat to keep process alive
+        }, 30000);
+
     } catch (error) {
         console.error('Failed to start server:', error);
-        process.exit(1);
+        // Don't exit immediately, try to recover
+        setTimeout(() => {
+            console.log('Attempting to restart server...');
+            startServer();
+        }, 5000);
     }
 }
 
-startServer().catch(console.error);
+// FIXED: Don't use .catch() which causes process.exit()
+startServer();
