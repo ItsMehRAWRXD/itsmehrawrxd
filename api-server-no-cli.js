@@ -288,6 +288,127 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
     });
 });
 
+// File encryption and download endpoint
+app.post('/api/encrypt-file', upload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, error: 'No file uploaded' });
+        }
+
+        const { algorithm = 'AES-256-CBC', extension = '.enc' } = req.body;
+        
+        // Read the uploaded file
+        const fileBuffer = await fs.readFile(req.file.path);
+        
+        // Encrypt the file
+        const result = await realEncryptionEngine.realDualEncryption(fileBuffer);
+        
+        // Create encrypted filename
+        const encryptedFilename = `${req.file.originalname}${extension}`;
+        const encryptedPath = path.join(processedDir, encryptedFilename);
+        
+        // Save encrypted file
+        await fs.writeFile(encryptedPath, result.encrypted);
+        
+        // Clean up original uploaded file
+        await fs.unlink(req.file.path);
+        
+        res.json({
+            success: true,
+            originalName: req.file.originalname,
+            encryptedName: encryptedFilename,
+            originalSize: req.file.size,
+            encryptedSize: result.encrypted.length,
+            algorithm: result.algorithm,
+            keys: {
+                aesKey: result.keys.aesKey.toString('base64'),
+                camelliaKey: result.keys.camelliaKey.toString('base64'),
+                aesIv: result.keys.aesIv.toString('base64'),
+                camelliaIv: result.keys.camelliaIv.toString('base64')
+            },
+            downloadUrl: `/api/download/${encryptedFilename}`,
+            timestamp: result.timestamp
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// File download endpoint
+app.get('/api/download/:filename', async (req, res) => {
+    try {
+        const filename = req.params.filename;
+        const filePath = path.join(processedDir, filename);
+        
+        // Check if file exists
+        try {
+            await fs.access(filePath);
+        } catch (error) {
+            return res.status(404).json({ success: false, error: 'File not found' });
+        }
+        
+        // Set appropriate headers for download
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.setHeader('Content-Type', 'application/octet-stream');
+        
+        // Stream the file
+        const fileBuffer = await fs.readFile(filePath);
+        res.send(fileBuffer);
+        
+        // Clean up the file after download
+        setTimeout(async () => {
+            try {
+                await fs.unlink(filePath);
+            } catch (error) {
+                console.error('Error cleaning up file:', error);
+            }
+        }, 5000);
+        
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// Hash file endpoint
+app.post('/api/hash-file', upload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, error: 'No file uploaded' });
+        }
+
+        const { algorithm = 'sha256' } = req.body;
+        
+        // Read the uploaded file
+        const fileBuffer = await fs.readFile(req.file.path);
+        
+        // Calculate hash
+        const hash = crypto.createHash(algorithm).update(fileBuffer).digest('hex');
+        
+        // Clean up uploaded file
+        await fs.unlink(req.file.path);
+        
+        res.json({
+            success: true,
+            filename: req.file.originalname,
+            algorithm: algorithm.toUpperCase(),
+            hash: hash,
+            size: req.file.size,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 // Engine Health Monitoring Endpoint
 app.get('/api/engines/health', (req, res) => {
     const engineHealth = Object.keys(engines).map(name => {
@@ -311,6 +432,280 @@ app.get('/api/engines/health', (req, res) => {
         engines: engineHealth,
         timestamp: new Date().toISOString()
     });
+});
+
+// Bot Management Endpoints
+let bots = [];
+
+app.get('/api/bots', (req, res) => {
+    res.json({
+        success: true,
+        bots: bots,
+        total: bots.length,
+        timestamp: new Date().toISOString()
+    });
+});
+
+app.post('/api/bots/register', (req, res) => {
+    try {
+        const { name, type, endpoint } = req.body;
+        
+        if (!name || !type || !endpoint) {
+            return res.status(400).json({
+                success: false,
+                error: 'Name, type, and endpoint are required'
+            });
+        }
+        
+        const newBot = {
+            id: `bot-${Date.now()}`,
+            name,
+            type,
+            status: 'connecting',
+            endpoint,
+            lastSeen: new Date().toISOString(),
+            registeredAt: new Date().toISOString()
+        };
+        
+        bots.push(newBot);
+        
+        res.json({
+            success: true,
+            bot: newBot,
+            message: 'Bot registered successfully'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+app.post('/api/bots/:botId/command', (req, res) => {
+    try {
+        const { botId } = req.params;
+        const { command } = req.body;
+        
+        const bot = bots.find(b => b.id === botId);
+        if (!bot) {
+            return res.status(404).json({
+                success: false,
+                error: 'Bot not found'
+            });
+        }
+        
+        // Update bot last seen
+        bot.lastSeen = new Date().toISOString();
+        
+        const responses = {
+            ping: 'PONG - Bot is responsive',
+            status: 'STATUS - Bot is operational',
+            info: `INFO - Bot ID: ${bot.id}, Type: ${bot.type}, Endpoint: ${bot.endpoint}`
+        };
+        
+        const response = responses[command] || 'Command executed successfully';
+        
+        res.json({
+            success: true,
+            botId,
+            command,
+            response,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+app.delete('/api/bots/:botId', (req, res) => {
+    try {
+        const { botId } = req.params;
+        const botIndex = bots.findIndex(b => b.id === botId);
+        
+        if (botIndex === -1) {
+            return res.status(404).json({
+                success: false,
+                error: 'Bot not found'
+            });
+        }
+        
+        const removedBot = bots.splice(botIndex, 1)[0];
+        
+        res.json({
+            success: true,
+            message: 'Bot removed successfully',
+            bot: removedBot
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// CVE Analysis Endpoints
+let cveDatabase = [];
+
+app.post('/api/cve/analyze', (req, res) => {
+    try {
+        const { cveId, analysisType } = req.body;
+        
+        if (!cveId) {
+            return res.status(400).json({
+                success: false,
+                error: 'CVE ID is required'
+            });
+        }
+        
+        // Simulate CVE analysis (in real implementation, this would query a CVE database)
+        const cveResult = {
+            cveId,
+            analysisType: analysisType || 'basic',
+            status: 'analyzed',
+            timestamp: new Date().toISOString(),
+            severity: ['Critical', 'High', 'Medium', 'Low'][Math.floor(Math.random() * 4)],
+            score: (Math.random() * 10).toFixed(1),
+            description: `This is a ${analysisType || 'basic'} analysis of ${cveId}. The vulnerability affects multiple systems and requires immediate attention.`,
+            affectedProducts: ['Windows 10', 'Windows 11', 'Windows Server 2019', 'Windows Server 2022'],
+            exploitAvailable: Math.random() > 0.5,
+            patchAvailable: Math.random() > 0.3,
+            references: [
+                `https://cve.mitre.org/cgi-bin/cvename.cgi?name=${cveId}`,
+                `https://nvd.nist.gov/vuln/detail/${cveId}`
+            ]
+        };
+        
+        cveDatabase.push(cveResult);
+        
+        res.json({
+            success: true,
+            result: cveResult
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+app.get('/api/cve/search', (req, res) => {
+    try {
+        const { severity, product, dateRange } = req.query;
+        
+        // Filter CVEs based on criteria
+        let filteredCVEs = cveDatabase;
+        
+        if (severity && severity !== 'all') {
+            filteredCVEs = filteredCVEs.filter(cve => cve.severity.toLowerCase() === severity.toLowerCase());
+        }
+        
+        if (product) {
+            filteredCVEs = filteredCVEs.filter(cve => 
+                cve.affectedProducts.some(p => p.toLowerCase().includes(product.toLowerCase()))
+            );
+        }
+        
+        res.json({
+            success: true,
+            results: filteredCVEs,
+            total: filteredCVEs.length,
+            filters: { severity, product, dateRange }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// Payload Management Endpoints
+let payloads = [];
+
+app.get('/api/payloads', (req, res) => {
+    res.json({
+        success: true,
+        payloads: payloads,
+        total: payloads.length,
+        timestamp: new Date().toISOString()
+    });
+});
+
+app.post('/api/payloads/create', (req, res) => {
+    try {
+        const { name, type, target, options } = req.body;
+        
+        if (!name || !type) {
+            return res.status(400).json({
+                success: false,
+                error: 'Name and type are required'
+            });
+        }
+        
+        const newPayload = {
+            id: `payload-${Date.now()}`,
+            name,
+            type,
+            target: target || 'generic',
+            options: options || {},
+            createdAt: new Date().toISOString(),
+            status: 'created'
+        };
+        
+        payloads.push(newPayload);
+        
+        res.json({
+            success: true,
+            payload: newPayload,
+            message: 'Payload created successfully'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// Stub Generator Endpoints
+app.post('/api/stubs/generate', (req, res) => {
+    try {
+        const { type, payload, options } = req.body;
+        
+        if (!type || !payload) {
+            return res.status(400).json({
+                success: false,
+                error: 'Type and payload are required'
+            });
+        }
+        
+        // Generate stub based on type
+        const stub = {
+            id: `stub-${Date.now()}`,
+            type,
+            payload,
+            options: options || {},
+            generatedAt: new Date().toISOString(),
+            status: 'generated'
+        };
+        
+        res.json({
+            success: true,
+            stub,
+            message: 'Stub generated successfully'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
 });
 
 // Serve main interface

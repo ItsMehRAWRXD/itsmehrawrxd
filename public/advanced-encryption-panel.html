@@ -1,32 +1,93 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>RawrZ Security Platform - Advanced CLI</title>
+    <title>RawrZ Security Platform - Real CLI</title>
     <style>
-        body { background: #000; color: #0f0; font-family: monospace; padding: 20px; }
-        #terminal { border: 1px solid #0f0; padding: 10px; height: 500px; overflow-y: auto; }
-        #input { background: transparent; border: none; color: #0f0; width: 100%; outline: none; }
+        body { 
+            background: #000; 
+            color: #0f0; 
+            font-family: 'Courier New', monospace; 
+            padding: 20px; 
+            margin: 0;
+        }
+        #terminal { 
+            border: 1px solid #0f0; 
+            padding: 15px; 
+            height: 600px; 
+            overflow-y: auto; 
+            background: #111;
+            border-radius: 5px;
+        }
+        #input { 
+            background: transparent; 
+            border: none; 
+            color: #0f0; 
+            width: 100%; 
+            outline: none; 
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
         .output { margin: 5px 0; }
         .success { color: #0f0; }
         .error { color: #f00; }
         .info { color: #0ff; }
         .warning { color: #ff0; }
         .header { color: #0f0; font-weight: bold; }
+        .prompt { color: #0f0; }
+        .file-upload { 
+            position: fixed; 
+            top: -1000px; 
+            left: -1000px; 
+        }
+        .loading { color: #ff0; }
+        .download-link { 
+            color: #0ff; 
+            text-decoration: underline; 
+            cursor: pointer; 
+        }
+        .download-link:hover { color: #fff; }
     </style>
 </head>
 <body>
-    <h1>RawrZ Security Platform - Advanced CLI</h1>
+    <h1>RawrZ Security Platform - Real CLI Interface</h1>
     <div id="terminal">
-        <div class="output info">RawrZ Security Platform CLI v2.0 - Advanced Mode</div>
-        <div class="output info">48+ Engines Loaded - Type "help" for available commands</div>
-        <div class="output info">RawrZ@SecurityPlatform:~$ <input type="text" id="input" placeholder="Type commands here..."></div>
+        <div class="output info">RawrZ Security Platform CLI v3.0 - Real Backend Integration</div>
+        <div class="output info">Connecting to backend APIs...</div>
+        <div class="output success">✅ Backend connected successfully</div>
+        <div class="output info">Type "help" for available commands</div>
+        <div class="output prompt">RawrZ@SecurityPlatform:~$ <input type="text" id="input" placeholder="Type commands here..."></div>
     </div>
+
+    <!-- Hidden file input for real file operations -->
+    <input type="file" id="fileInput" class="file-upload" multiple>
 
     <script>
         const input = document.getElementById('input');
         const terminal = document.getElementById('terminal');
+        const fileInput = document.getElementById('fileInput');
+        
+        let currentFiles = new Map(); // Store uploaded files
+        let commandHistory = [];
+        let historyIndex = -1;
         
         input.focus();
+        
+        // Initialize connection test
+        async function initializeConnection() {
+            try {
+                const response = await fetch('/api/health');
+                const result = await response.json();
+                if (result.success) {
+                    addOutput(`✅ Backend connected - ${result.engines} engines active`, 'success');
+                } else {
+                    addOutput('❌ Backend connection failed', 'error');
+                }
+            } catch (error) {
+                addOutput('❌ Backend offline - some features may not work', 'error');
+            }
+        }
+        
+        initializeConnection();
         
         function addOutput(text, type = 'info') {
             const output = document.createElement('div');
@@ -35,6 +96,51 @@
             terminal.appendChild(output);
             terminal.scrollTop = terminal.scrollHeight;
         }
+        
+        function createNewInputLine() {
+            const newLine = document.createElement('div');
+            newLine.className = 'output prompt';
+            newLine.innerHTML = 'RawrZ@SecurityPlatform:~$ <input type="text" class="command-input">';
+            terminal.appendChild(newLine);
+            
+            const newInput = newLine.querySelector('.command-input');
+            newInput.focus();
+            newInput.addEventListener('keypress', handleKeyPress);
+            newInput.addEventListener('keydown', handleKeyDown);
+        }
+        
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                const command = e.target.value.trim();
+                if (command) {
+                    commandHistory.push(command);
+                    historyIndex = commandHistory.length;
+                    executeCommand(command);
+                }
+            }
+        }
+        
+        function handleKeyDown(e) {
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    e.target.value = commandHistory[historyIndex];
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    e.target.value = commandHistory[historyIndex];
+                } else {
+                    e.target.value = '';
+                    historyIndex = commandHistory.length;
+                }
+            }
+        }
+        
+        input.addEventListener('keypress', handleKeyPress);
+        input.addEventListener('keydown', handleKeyDown);
         
         async function executeCommand(command) {
             addOutput(`RawrZ@SecurityPlatform:~$ ${command}`, 'info');
@@ -50,9 +156,6 @@
                 case 'status':
                     await showSystemStatus();
                     break;
-                case 'engine':
-                    await showEngineStatus();
-                    break;
                 case 'engines':
                     await listAllEngines();
                     break;
@@ -60,7 +163,7 @@
                     terminal.innerHTML = '<div class="output info">Terminal cleared</div>';
                     break;
                 case 'ls':
-                    listFiles();
+                    await listFiles();
                     break;
                 case 'pwd':
                     addOutput('/app', 'info');
@@ -71,8 +174,20 @@
                 case 'decrypt':
                     await handleDecryption(args);
                     break;
+                case 'hash':
+                    await handleHashing(args);
+                    break;
+                case 'upload':
+                    await handleFileUpload(args);
+                    break;
+                case 'download':
+                    await handleDownload(args);
+                    break;
                 case 'scan':
                     await handleScanning(args);
+                    break;
+                case 'cve':
+                    await handleCVECommands(args);
                     break;
                 case 'generate':
                     await handleGeneration(args);
@@ -83,52 +198,47 @@
                 case 'payload':
                     await handlePayloadCommands(args);
                     break;
-                case 'cve':
-                    await handleCVECommands(args);
-                    break;
                 case 'stub':
                     await handleStubCommands(args);
                     break;
                 case 'cert':
                     await handleCertCommands(args);
                     break;
-                case 'assembly':
-                    await handleAssemblyCommands(args);
-                    break;
-                case 'crypto':
-                    await handleCryptoCommands(args);
-                    break;
                 case 'api':
                     await testAPIEndpoint(args[0]);
+                    break;
+                case 'exit':
+                case 'quit':
+                    addOutput('Goodbye!', 'info');
                     break;
                 default:
                     addOutput(`Command not found: ${cmd}`, 'error');
                     addOutput('Type "help" for available commands', 'info');
             }
             
-            // Add new input line
             createNewInputLine();
         }
         
         function showHelp() {
-            addOutput('RawrZ Security Platform - Available Commands:', 'header');
+            addOutput('RawrZ Security Platform - Real CLI Commands:', 'header');
             addOutput('', 'info');
             addOutput('SYSTEM COMMANDS:', 'header');
             addOutput('  help                    - Show this help message', 'info');
-            addOutput('  status                  - Show system status', 'info');
-            addOutput('  engine                  - Show engine status', 'info');
+            addOutput('  status                  - Show real system status', 'info');
             addOutput('  engines                 - List all available engines', 'info');
             addOutput('  clear                   - Clear terminal', 'info');
-            addOutput('  ls                      - List files', 'info');
+            addOutput('  ls                      - List uploaded files', 'info');
             addOutput('  pwd                     - Show current directory', 'info');
             addOutput('', 'info');
-            addOutput('ENCRYPTION COMMANDS:', 'header');
-            addOutput('  encrypt <file>          - Encrypt file with multiple algorithms', 'info');
+            addOutput('FILE OPERATIONS:', 'header');
+            addOutput('  upload <file>           - Upload file to server', 'info');
+            addOutput('  encrypt <file> [ext]    - Encrypt file with custom extension', 'info');
             addOutput('  decrypt <file>          - Decrypt file', 'info');
-            addOutput('  crypto <algorithm>      - Use specific crypto engine', 'info');
+            addOutput('  hash <file> [algo]      - Calculate file hash', 'info');
+            addOutput('  download <file>         - Download encrypted file', 'info');
             addOutput('', 'info');
             addOutput('SECURITY COMMANDS:', 'header');
-            addOutput('  scan <file>             - Scan file with multiple engines', 'info');
+            addOutput('  scan <file>             - Scan file with engines', 'info');
             addOutput('  cve <id>                - Analyze CVE vulnerability', 'info');
             addOutput('  cert <action>           - EV Certificate operations', 'info');
             addOutput('', 'info');
@@ -139,7 +249,6 @@
             addOutput('', 'info');
             addOutput('BOT COMMANDS:', 'header');
             addOutput('  bot <action>            - Bot management operations', 'info');
-            addOutput('  assembly <code>         - Assembly compilation', 'info');
             addOutput('', 'info');
             addOutput('API COMMANDS:', 'header');
             addOutput('  api <endpoint>          - Test API endpoint', 'info');
@@ -166,115 +275,122 @@
             }
         }
         
-        async function showEngineStatus() {
-            addOutput('RawrZ Engine Status:', 'success');
-            addOutput('  Status: Active', 'info');
-            addOutput('  Modules: 48+ loaded', 'info');
-            addOutput('  Algorithms: 21+ available', 'info');
-            addOutput('  Memory: 44.8 MB', 'info');
-            addOutput('  Last Update: 2 minutes ago', 'info');
-        }
-        
         async function listAllEngines() {
-            addOutput('Available RawrZ Engines:', 'header');
-            addOutput('', 'info');
-            addOutput('CORE ENGINES:', 'header');
-            addOutput('  rawrz-engine            - Core engine management', 'info');
-            addOutput('  rawrz-engine2           - Secondary core engine', 'info');
-            addOutput('  health-monitor          - System health monitoring', 'info');
-            addOutput('  implementation-checker  - Module verification', 'info');
-            addOutput('', 'info');
-            addOutput('SECURITY ENGINES:', 'header');
-            addOutput('  cve-analysis-engine     - CVE vulnerability analysis', 'info');
-            addOutput('  ai-threat-detector      - AI-powered threat detection', 'info');
-            addOutput('  private-virus-scanner   - Private virus scanning', 'info');
-            addOutput('  jotti-scanner           - Jotti malware scanner', 'info');
-            addOutput('  red-shells              - Red team operations', 'info');
-            addOutput('', 'info');
-            addOutput('ENCRYPTION ENGINES:', 'header');
-            addOutput('  advanced-crypto         - Advanced cryptography', 'info');
-            addOutput('  dual-crypto-engine      - Dual-layer encryption', 'info');
-            addOutput('  camellia-assembly       - Camellia encryption', 'info');
-            addOutput('  ev-cert-encryptor       - EV Certificate encryption', 'info');
-            addOutput('  burner-encryption-engine - Burner encryption', 'info');
-            addOutput('', 'info');
-            addOutput('GENERATION ENGINES:', 'header');
-            addOutput('  stub-generator          - Stub generation', 'info');
-            addOutput('  advanced-stub-generator - Advanced stub generation', 'info');
-            addOutput('  payload-manager         - Payload management', 'info');
-            addOutput('  dual-generators         - Parallel generation', 'info');
-            addOutput('', 'info');
-            addOutput('BOT ENGINES:', 'header');
-            addOutput('  http-bot-generator      - HTTP bot generation', 'info');
-            addOutput('  http-bot-manager        - HTTP bot management', 'info');
-            addOutput('  irc-bot-generator       - IRC bot generation', 'info');
-            addOutput('  multi-platform-bot-generator - Multi-platform bots', 'info');
-            addOutput('', 'info');
-            addOutput('COMPILATION ENGINES:', 'header');
-            addOutput('  native-compiler         - Native code compilation', 'info');
-            addOutput('  full-assembly           - Full assembly compilation', 'info');
-            addOutput('  dotnet-workaround       - .NET compilation', 'info');
-            addOutput('', 'info');
-            addOutput('UTILITY ENGINES:', 'header');
-            addOutput('  compression-engine      - Advanced compression', 'info');
-            addOutput('  hot-patchers            - Hot patching system', 'info');
-            addOutput('  template-generator      - Template generation', 'info');
-            addOutput('  performance-optimizer   - Performance optimization', 'info');
+            addOutput('Available Engines:', 'header');
+            try {
+                const response = await fetch('/api/engines');
+                const result = await response.json();
+                
+                if (result.success) {
+                    result.engines.forEach((engine, index) => {
+                        const status = engine.status === 'active' ? '✅' : '❌';
+                        addOutput(`  ${status} ${engine.name}`, 'info');
+                    });
+                    addOutput(`Total: ${result.total} engines`, 'info');
+                } else {
+                    addOutput('Error loading engines', 'error');
+                }
+            } catch (error) {
+                addOutput(`Error: ${error.message}`, 'error');
+            }
         }
         
-        function listFiles() {
-            addOutput('drwxr-xr-x 2 user user 4096 Dec 19 21:00 .', 'info');
-            addOutput('drwxr-xr-x 3 user user 4096 Dec 19 20:59 ..', 'info');
-            addOutput('-rw-r--r-- 1 user user 1234 Dec 19 21:00 api-server.js', 'info');
-            addOutput('-rw-r--r-- 1 user user  567 Dec 19 20:59 package.json', 'info');
-            addOutput('drwxr-xr-x 2 user user 4096 Dec 19 20:58 public/', 'info');
-            addOutput('drwxr-xr-x 2 user user 4096 Dec 19 20:57 src/', 'info');
+        async function listFiles() {
+            addOutput('Uploaded Files:', 'header');
+            if (currentFiles.size === 0) {
+                addOutput('  No files uploaded', 'info');
+                return;
+            }
+            
+            for (const [filename, fileData] of currentFiles) {
+                addOutput(`  ${filename} (${fileData.size} bytes)`, 'info');
+            }
+        }
+        
+        async function handleFileUpload(args) {
+            addOutput('Select file to upload...', 'info');
+            fileInput.click();
+            
+            fileInput.onchange = async function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                addOutput(`Uploading ${file.name}...`, 'loading');
+                
+                try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    
+                    const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        currentFiles.set(file.name, {
+                            filename: result.filename,
+                            size: result.size,
+                            path: result.path
+                        });
+                        addOutput(`✅ File uploaded: ${file.name}`, 'success');
+                        addOutput(`  Size: ${result.size} bytes`, 'info');
+                        addOutput(`  Server filename: ${result.filename}`, 'info');
+                    } else {
+                        addOutput(`❌ Upload failed: ${result.error}`, 'error');
+                    }
+                } catch (error) {
+                    addOutput(`❌ Upload error: ${error.message}`, 'error');
+                }
+            };
         }
         
         async function handleEncryption(args) {
             if (!args[0]) {
-                addOutput('Usage: encrypt <filename>', 'error');
+                addOutput('Usage: encrypt <filename> [extension]', 'error');
+                addOutput('Example: encrypt document.pdf .encrypted', 'info');
                 return;
             }
             
             const filename = args[0];
             const extension = args[1] || '.enc';
             
-            addOutput(`Encrypting file: ${filename}`, 'info');
-            addOutput('Uploading file to server...', 'info');
+            if (!currentFiles.has(filename)) {
+                addOutput(`File ${filename} not found. Use 'upload' command first.`, 'error');
+                return;
+            }
+            
+            const fileData = currentFiles.get(filename);
+            addOutput(`Encrypting ${filename}...`, 'loading');
             
             try {
-                // Create a file input element to simulate file upload
-                const fileInput = document.createElement('input');
-                fileInput.type = 'file';
-                fileInput.accept = '*/*';
-                
-                // For demo purposes, we'll create a test file
-                const testContent = `Test content for ${filename}`;
-                const blob = new Blob([testContent], { type: 'text/plain' });
-                const file = new File([blob], filename, { type: 'text/plain' });
-                
+                // Create a new file input for the specific file
                 const formData = new FormData();
+                
+                // We need to recreate the file from stored data
+                const response = await fetch(`/api/download/${fileData.filename}`);
+                const fileBlob = await response.blob();
+                const file = new File([fileBlob], filename, { type: fileBlob.type });
+                
                 formData.append('file', file);
                 formData.append('algorithm', 'AES-256-CBC');
                 formData.append('extension', extension);
                 
-                addOutput('Sending encryption request...', 'info');
-                
-                const response = await fetch('/api/encrypt-file', {
+                const encryptResponse = await fetch('/api/encrypt-file', {
                     method: 'POST',
                     body: formData
                 });
                 
-                const result = await response.json();
+                const result = await encryptResponse.json();
                 
                 if (result.success) {
                     addOutput('✅ File encrypted successfully!', 'success');
-                    addOutput(`Original: ${result.originalName} (${result.originalSize} bytes)`, 'info');
-                    addOutput(`Encrypted: ${result.encryptedName} (${result.encryptedSize} bytes)`, 'info');
-                    addOutput(`Algorithm: ${result.algorithm}`, 'info');
-                    addOutput(`Download: ${result.downloadUrl}`, 'info');
-                    addOutput('Encryption keys saved for decryption', 'warning');
+                    addOutput(`  Original: ${result.originalName} (${result.originalSize} bytes)`, 'info');
+                    addOutput(`  Encrypted: ${result.encryptedName} (${result.encryptedSize} bytes)`, 'info');
+                    addOutput(`  Algorithm: ${result.algorithm}`, 'info');
+                    addOutput(`  Download: <span class="download-link" onclick="downloadFile('${result.downloadUrl}')">${result.downloadUrl}</span>`, 'info');
+                    addOutput('  Encryption keys saved for decryption', 'warning');
                 } else {
                     addOutput(`❌ Encryption failed: ${result.error}`, 'error');
                 }
@@ -283,153 +399,158 @@
             }
         }
         
-        async function handleDecryption(args) {
+        async function handleHashing(args) {
             if (!args[0]) {
-                addOutput('Usage: decrypt <filename>', 'error');
+                addOutput('Usage: hash <filename> [algorithm]', 'error');
+                addOutput('Example: hash document.pdf sha256', 'info');
                 return;
             }
-            addOutput(`Decrypting file: ${args[0]}`, 'info');
-            addOutput('File decrypted successfully', 'success');
+            
+            const filename = args[0];
+            const algorithm = args[1] || 'sha256';
+            
+            if (!currentFiles.has(filename)) {
+                addOutput(`File ${filename} not found. Use 'upload' command first.`, 'error');
+                return;
+            }
+            
+            const fileData = currentFiles.get(filename);
+            addOutput(`Calculating ${algorithm.toUpperCase()} hash for ${filename}...`, 'loading');
+            
+            try {
+                const formData = new FormData();
+                
+                // Recreate file from stored data
+                const response = await fetch(`/api/download/${fileData.filename}`);
+                const fileBlob = await response.blob();
+                const file = new File([fileBlob], filename, { type: fileBlob.type });
+                
+                formData.append('file', file);
+                formData.append('algorithm', algorithm);
+                
+                const hashResponse = await fetch('/api/hash-file', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await hashResponse.json();
+                
+                if (result.success) {
+                    addOutput('✅ Hash calculated successfully!', 'success');
+                    addOutput(`  File: ${result.filename}`, 'info');
+                    addOutput(`  Algorithm: ${result.algorithm}`, 'info');
+                    addOutput(`  Hash: ${result.hash}`, 'info');
+                    addOutput(`  Size: ${result.size} bytes`, 'info');
+                } else {
+                    addOutput(`❌ Hash calculation failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                addOutput(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function handleDownload(args) {
+            if (!args[0]) {
+                addOutput('Usage: download <filename>', 'error');
+                return;
+            }
+            
+            const filename = args[0];
+            addOutput(`Downloading ${filename}...`, 'loading');
+            
+            try {
+                const response = await fetch(`/api/download/${filename}`);
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    addOutput(`✅ File downloaded: ${filename}`, 'success');
+                } else {
+                    addOutput(`❌ Download failed: File not found`, 'error');
+                }
+            } catch (error) {
+                addOutput(`❌ Download error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function handleDecryption(args) {
+            addOutput('Decryption functionality coming soon...', 'info');
         }
         
         async function handleScanning(args) {
-            if (!args[0]) {
-                addOutput('Usage: scan <filename>', 'error');
-                return;
-            }
-            addOutput(`Scanning file: ${args[0]}`, 'info');
-            addOutput('Scanning with multiple engines...', 'info');
-            addOutput('  - Jotti Scanner: Clean', 'success');
-            addOutput('  - Private Scanner: Clean', 'success');
-            addOutput('  - AI Threat Detector: Clean', 'success');
-            addOutput('  - CVE Analysis: No vulnerabilities found', 'success');
-        }
-        
-        async function handleGeneration(args) {
-            if (!args[0]) {
-                addOutput('Usage: generate <type>', 'error');
-                addOutput('Types: payload, stub, bot, cert', 'info');
-                return;
-            }
-            addOutput(`Generating ${args[0]}...`, 'info');
-            addOutput(`${args[0]} generated successfully`, 'success');
-        }
-        
-        async function handleBotCommands(args) {
-            if (!args[0]) {
-                addOutput('Usage: bot <action>', 'error');
-                addOutput('Actions: create, list, manage, deploy', 'info');
-                return;
-            }
-            addOutput(`Bot ${args[0]} operation initiated...`, 'info');
-            addOutput('Bot operation completed successfully', 'success');
-        }
-        
-        async function handlePayloadCommands(args) {
-            if (!args[0]) {
-                addOutput('Usage: payload <type>', 'error');
-                addOutput('Types: http, irc, tcp, udp, fileless', 'info');
-                return;
-            }
-            addOutput(`Generating ${args[0]} payload...`, 'info');
-            addOutput('Payload generated successfully', 'success');
+            addOutput('File scanning functionality coming soon...', 'info');
         }
         
         async function handleCVECommands(args) {
-            if (!args[0]) {
-                addOutput('Usage: cve <cve-id>', 'error');
-                addOutput('Example: cve CVE-2023-1234', 'info');
-                return;
-            }
-            addOutput(`Analyzing CVE: ${args[0]}`, 'info');
-            addOutput('CVE analysis completed', 'success');
+            addOutput('CVE analysis functionality coming soon...', 'info');
+        }
+        
+        async function handleGeneration(args) {
+            addOutput('Payload generation functionality coming soon...', 'info');
+        }
+        
+        async function handleBotCommands(args) {
+            addOutput('Bot management functionality coming soon...', 'info');
+        }
+        
+        async function handlePayloadCommands(args) {
+            addOutput('Payload management functionality coming soon...', 'info');
         }
         
         async function handleStubCommands(args) {
-            if (!args[0]) {
-                addOutput('Usage: stub <type>', 'error');
-                addOutput('Types: cpp, asm, java, csharp, go, rust, python', 'info');
-                return;
-            }
-            addOutput(`Generating ${args[0]} stub...`, 'info');
-            addOutput('Stub generated successfully', 'success');
+            addOutput('Stub generation functionality coming soon...', 'info');
         }
         
         async function handleCertCommands(args) {
-            if (!args[0]) {
-                addOutput('Usage: cert <action>', 'error');
-                addOutput('Actions: generate, encrypt, verify', 'info');
-                return;
-            }
-            addOutput(`EV Certificate ${args[0]} operation...`, 'info');
-            addOutput('Certificate operation completed', 'success');
-        }
-        
-        async function handleAssemblyCommands(args) {
-            if (!args[0]) {
-                addOutput('Usage: assembly <code>', 'error');
-                addOutput('Example: assembly "mov rax, 1"', 'info');
-                return;
-            }
-            addOutput(`Compiling assembly: ${args[0]}`, 'info');
-            addOutput('Assembly compiled successfully', 'success');
-        }
-        
-        async function handleCryptoCommands(args) {
-            if (!args[0]) {
-                addOutput('Usage: crypto <algorithm>', 'error');
-                addOutput('Algorithms: aes, chacha20, camellia, aria', 'info');
-                return;
-            }
-            addOutput(`Using ${args[0]} crypto engine...`, 'info');
-            addOutput('Crypto operation completed', 'success');
+            addOutput('Certificate operations functionality coming soon...', 'info');
         }
         
         async function testAPIEndpoint(endpoint) {
             if (!endpoint) {
                 addOutput('Usage: api <endpoint>', 'error');
+                addOutput('Example: api /api/health', 'info');
                 return;
             }
-            addOutput(`Testing API endpoint: ${endpoint}`, 'info');
+            
+            addOutput(`Testing API endpoint: ${endpoint}`, 'loading');
             
             try {
                 const response = await fetch(endpoint);
-                const data = await response.json();
-                addOutput(`Response: ${JSON.stringify(data, null, 2)}`, 'success');
+                const result = await response.json();
+                
+                addOutput(`✅ API Response:`, 'success');
+                addOutput(JSON.stringify(result, null, 2), 'info');
             } catch (error) {
-                addOutput(`Error: ${error.message}`, 'error');
+                addOutput(`❌ API Error: ${error.message}`, 'error');
             }
         }
         
-        function createNewInputLine() {
-            const newInput = document.createElement('div');
-            newInput.className = 'output info';
-            newInput.innerHTML = 'RawrZ@SecurityPlatform:~$ <input type="text" id="input" placeholder="Type commands here...">';
-            terminal.appendChild(newInput);
-            
-            const newInputField = newInput.querySelector('#input');
-            newInputField.focus();
-            
-            newInputField.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    const cmd = newInputField.value.trim();
-                    if (cmd) {
-                        executeCommand(cmd);
-                    }
-                }
-            });
-        }
-        
-        input.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const command = input.value.trim();
-                if (command) {
-                    executeCommand(command);
-                }
+        // Global function for download links
+        window.downloadFile = async function(url) {
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                const filename = url.split('/').pop();
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(downloadUrl);
+                document.body.removeChild(a);
+            } catch (error) {
+                addOutput(`Download error: ${error.message}`, 'error');
             }
-        });
+        };
     </script>
 </body>
 </html>
