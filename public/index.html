@@ -501,9 +501,13 @@
 
             if (e.key === 'Enter') {
                 e.preventDefault();
+                e.stopPropagation();
                 const command = input.value.trim();
                 if (command) {
                     executeCommand(command);
+                } else {
+                    // Create new line even for empty commands
+                    createNewInputLine();
                 }
             } else if (e.key === 'ArrowUp') {
                 e.preventDefault();
@@ -533,6 +537,21 @@
             terminal.appendChild(newLine);
             
             const input = newLine.querySelector('.terminal-input');
+            
+            // Add direct event listener to input
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const command = input.value.trim();
+                    if (command) {
+                        executeCommand(command);
+                    } else {
+                        createNewInputLine();
+                    }
+                }
+            });
+            
             input.focus();
             
             // Auto-scroll to bottom
@@ -1210,6 +1229,9 @@
             const input = document.querySelector('.terminal-input');
             if (input) {
                 input.focus();
+            } else {
+                // Create input if it doesn't exist
+                createNewInputLine();
             }
         }
 
