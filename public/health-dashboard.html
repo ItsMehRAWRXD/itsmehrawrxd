@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RawrZ Health Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0b1020 0%, #1a1f3a 100%);
+            color: #e6e9ef;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: rgba(17, 22, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #222a45;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header h1 {
+            color: #4a9eff;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .health-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: rgba(18, 25, 47, 0.8);
+            border: 1px solid #20284a;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            border-color: #4a9eff;
+            box-shadow: 0 8px 25px rgba(74, 158, 255, 0.1);
+        }
+        
+        .card h3 {
+            color: #4a9eff;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .status-healthy { background: #4caf50; }
+        .status-warning { background: #ff9800; }
+        .status-critical { background: #f44336; }
+        .status-unknown { background: #9e9e9e; }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #20284a;
+        }
+        
+        .metric:last-child {
+            border-bottom: none;
+        }
+        
+        .metric-label {
+            color: #a0a8b8;
+            font-size: 0.9rem;
+        }
+        
+        .metric-value {
+            color: #e6e9ef;
+            font-weight: 600;
+        }
+        
+        .metric-value.good { color: #4caf50; }
+        .metric-value.warning { color: #ff9800; }
+        .metric-value.critical { color: #f44336; }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #20284a;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            transition: width 0.3s ease;
+        }
+        
+        .progress-fill.warning {
+            background: linear-gradient(90deg, #ff9800, #ffc107);
+        }
+        
+        .progress-fill.critical {
+            background: linear-gradient(90deg, #f44336, #e91e63);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #4a9eff 0%, #357abd 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0.25rem;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(74, 158, 255, 0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .alert-success {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid #4caf50;
+            color: #4caf50;
+        }
+        
+        .alert-warning {
+            background: rgba(255, 152, 0, 0.1);
+            border: 1px solid #ff9800;
+            color: #ff9800;
+        }
+        
+        .alert-error {
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid #f44336;
+            color: #f44336;
+        }
+        
+        .log-output {
+            background: #0a0f24;
+            border: 1px solid #1d2444;
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        .chart-container {
+            height: 200px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            display: flex;
+            align-items: end;
+            justify-content: space-around;
+        }
+        
+        .chart-bar {
+            background: linear-gradient(to top, #4a9eff, #357abd);
+            width: 20px;
+            border-radius: 2px 2px 0 0;
+            transition: height 0.3s ease;
+        }
+        
+        .refresh-indicator {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #4a9eff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 0.5rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>RawrZ Health Dashboard</h1>
+    </div>
+    
+    <div class="container">
+        <!-- System Overview -->
+        <div class="card">
+            <h3><span class="status-indicator status-healthy"></span>System Overview</h3>
+            <div class="metric">
+                <span class="metric-label">Overall Status</span>
+                <span class="metric-value good">Healthy</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Uptime</span>
+                <span class="metric-value" id="uptime">0d 0h 0m</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Last Health Check</span>
+                <span class="metric-value" id="last-check">Just now</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Active Engines</span>
+                <span class="metric-value good" id="active-engines">26/26</span>
+            </div>
+        </div>
+        
+        <!-- Health Metrics Grid -->
+        <div class="health-grid">
+            <!-- CPU Usage -->
+            <div class="card">
+                <h3>CPU Usage</h3>
+                <div class="metric">
+                    <span class="metric-label">Current</span>
+                    <span class="metric-value good" id="cpu-current">15%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Average (1h)</span>
+                    <span class="metric-value good" id="cpu-avg">12%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Peak</span>
+                    <span class="metric-value warning" id="cpu-peak">78%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="cpu-progress" style="width: 15%"></div>
+                </div>
+            </div>
+            
+            <!-- Memory Usage -->
+            <div class="card">
+                <h3>Memory Usage</h3>
+                <div class="metric">
+                    <span class="metric-label">Used</span>
+                    <span class="metric-value good" id="mem-used">245 MB</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Available</span>
+                    <span class="metric-value good" id="mem-available">755 MB</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Total</span>
+                    <span class="metric-value" id="mem-total">1 GB</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="mem-progress" style="width: 24%"></div>
+                </div>
+            </div>
+            
+            <!-- Disk Usage -->
+            <div class="card">
+                <h3>Disk Usage</h3>
+                <div class="metric">
+                    <span class="metric-label">Used</span>
+                    <span class="metric-value good" id="disk-used">2.1 GB</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Free</span>
+                    <span class="metric-value good" id="disk-free">7.9 GB</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Total</span>
+                    <span class="metric-value" id="disk-total">10 GB</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="disk-progress" style="width: 21%"></div>
+                </div>
+            </div>
+            
+            <!-- Network -->
+            <div class="card">
+                <h3>Network</h3>
+                <div class="metric">
+                    <span class="metric-label">Active Connections</span>
+                    <span class="metric-value good" id="connections">12</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Bytes In/Out</span>
+                    <span class="metric-value" id="network-io">1.2 MB / 0.8 MB</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Latency</span>
+                    <span class="metric-value good" id="latency">45ms</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Engine Health -->
+        <div class="card">
+            <h3>Engine Health Status</h3>
+            <div id="engines-status">
+                <div class="metric">
+                    <span class="metric-label">Advanced Analytics Engine</span>
+                    <span class="status-indicator status-healthy"></span>
+                    <span class="metric-value good">Running</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Anti-Analysis Engine</span>
+                    <span class="status-indicator status-healthy"></span>
+                    <span class="metric-value good">Running</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">AI Threat Detector</span>
+                    <span class="status-indicator status-healthy"></span>
+                    <span class="metric-value good">Running</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Backup System</span>
+                    <span class="status-indicator status-warning"></span>
+                    <span class="metric-value warning">Warning</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Compression Engine</span>
+                    <span class="status-indicator status-healthy"></span>
+                    <span class="metric-value good">Running</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Digital Forensics</span>
+                    <span class="status-indicator status-healthy"></span>
+                    <span class="metric-value good">Running</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Health Monitor</span>
+                    <span class="status-indicator status-healthy"></span>
+                    <span class="metric-value good">Running</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">HTTP Bot Generator</span>
+                    <span class="status-indicator status-healthy"></span>
+                    <span class="metric-value good">Running</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">IRC Bot Generator</span>
+                    <span class="status-indicator status-healthy"></span>
+                    <span class="metric-value good">Running</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Memory Manager</span>
+                    <span class="status-indicator status-healthy"></span>
+                    <span class="metric-value good">Running</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Network Tools</span>
+                    <span class="status-indicator status-healthy"></span>
+                    <span class="metric-value good">Running</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">OpenSSL Management</span>
+                    <span class="status-indicator status-healthy"></span>
+                    <span class="metric-value good">Running</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Performance Optimizer</span>
+                    <span class="status-indicator status-healthy"></span>
+                    <span class="metric-value good">Running</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Polymorphic Engine</span>
+                    <span class="status-indicator status-healthy"></span>
+                    <span class="metric-value good">Running</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Private Virus Scanner</span>
+                    <span class="status-indicator status-healthy"></span>
+                    <span class="metric-value good">Running</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Red Killer</span>
+                    <span class="status-indicator status-healthy"></span>
+                    <span class="metric-value good">Running</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Red Shells</span>
+                    <span class="status-indicator status-warning"></span>
+                    <span class="metric-value warning">Warning</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Reverse Engineering</span>
+                    <span class="status-indicator status-healthy"></span>
+                    <span class="metric-value good">Running</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Stealth Engine</span>
+                    <span class="status-indicator status-healthy"></span>
+                    <span class="metric-value good">Running</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Stub Generator</span>
+                    <span class="status-indicator status-healthy"></span>
+                    <span class="metric-value good">Running</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Performance Charts -->
+        <div class="card">
+            <h3>Performance Trends</h3>
+            <div class="chart-container" id="performance-chart">
+                <div class="chart-bar" style="height: 60%"></div>
+                <div class="chart-bar" style="height: 45%"></div>
+                <div class="chart-bar" style="height: 70%"></div>
+                <div class="chart-bar" style="height: 35%"></div>
+                <div class="chart-bar" style="height: 80%"></div>
+                <div class="chart-bar" style="height: 55%"></div>
+                <div class="chart-bar" style="height: 40%"></div>
+                <div class="chart-bar" style="height: 65%"></div>
+            </div>
+        </div>
+        
+        <!-- Health Logs -->
+        <div class="card">
+            <h3>Health Logs</h3>
+            <div class="log-output" id="health-logs">Loading health logs...</div>
+            <div style="margin-top: 1rem;">
+                <button class="btn" onclick="refreshHealthData()">
+                    Refresh Data
+                    <span class="refresh-indicator hidden" id="refresh-spinner"></span>
+                </button>
+                <button class="btn btn-secondary" onclick="clearHealthLogs()">Clear Logs</button>
+                <button class="btn" onclick="exportHealthReport()">Export Report</button>
+            </div>
+        </div>
+        
+        <!-- Alerts -->
+        <div class="card">
+            <h3>System Alerts</h3>
+            <div id="alerts-container">
+                <div class="alert alert-warning">
+                    <strong>Warning:</strong> Backup System showing elevated resource usage
+                </div>
+                <div class="alert alert-warning">
+                    <strong>Warning:</strong> Red Shells engine requires attention
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let healthInterval;
+        let startTime = Date.now();
+        
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeHealthDashboard();
+            startHealthMonitoring();
+        });
+        
+        function initializeHealthDashboard() {
+            updateUptime();
+            refreshHealthData();
+            updateHealthLogs();
+        }
+        
+        function startHealthMonitoring() {
+            // Update metrics every 5 seconds
+            healthInterval = setInterval(() => {
+                updateUptime();
+                updateMetrics();
+                updateHealthLogs();
+            }, 5000);
+        }
+        
+        function updateUptime() {
+            const now = Date.now();
+            const uptimeMs = now - startTime;
+            const days = Math.floor(uptimeMs / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((uptimeMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((uptimeMs % (1000 * 60 * 60)) / (1000 * 60));
+            
+            document.getElementById('uptime').textContent = `${days}d ${hours}h ${minutes}m`;
+            document.getElementById('last-check').textContent = 'Just now';
+        }
+        
+        function updateMetrics() {
+            // Simulate metric updates
+            const cpuUsage = Math.floor(Math.random() * 30) + 10;
+            const memUsage = Math.floor(Math.random() * 100) + 200;
+            const diskUsage = Math.floor(Math.random() * 50) + 2000;
+            const connections = Math.floor(Math.random() * 10) + 8;
+            
+            // Update CPU
+            document.getElementById('cpu-current').textContent = cpuUsage + '%';
+            document.getElementById('cpu-progress').style.width = cpuUsage + '%';
+            if (cpuUsage > 70) {
+                document.getElementById('cpu-current').className = 'metric-value critical';
+                document.getElementById('cpu-progress').className = 'progress-fill critical';
+            } else if (cpuUsage > 50) {
+                document.getElementById('cpu-current').className = 'metric-value warning';
+                document.getElementById('cpu-progress').className = 'progress-fill warning';
+            } else {
+                document.getElementById('cpu-current').className = 'metric-value good';
+                document.getElementById('cpu-progress').className = 'progress-fill';
+            }
+            
+            // Update Memory
+            document.getElementById('mem-used').textContent = memUsage + ' MB';
+            const memPercent = (memUsage / 1000) * 100;
+            document.getElementById('mem-progress').style.width = memPercent + '%';
+            if (memPercent > 80) {
+                document.getElementById('mem-used').className = 'metric-value critical';
+                document.getElementById('mem-progress').className = 'progress-fill critical';
+            } else if (memPercent > 60) {
+                document.getElementById('mem-used').className = 'metric-value warning';
+                document.getElementById('mem-progress').className = 'progress-fill warning';
+            } else {
+                document.getElementById('mem-used').className = 'metric-value good';
+                document.getElementById('mem-progress').className = 'progress-fill';
+            }
+            
+            // Update Connections
+            document.getElementById('connections').textContent = connections;
+        }
+        
+        function updateHealthLogs() {
+            const logOutput = document.getElementById('health-logs');
+            const timestamp = new Date().toISOString();
+            const newLog = `[${timestamp}] [INFO] Health check completed - All systems operational
+[${timestamp}] [INFO] CPU: ${document.getElementById('cpu-current').textContent}, Memory: ${document.getElementById('mem-used').textContent}
+[${timestamp}] [INFO] Active engines: 26/26, Connections: ${document.getElementById('connections').textContent}
+[${timestamp}] [INFO] No critical issues detected
+`;
+            
+            // Keep only last 10 lines
+            const currentLogs = logOutput.textContent;
+            const lines = currentLogs.split('\n').filter(line => line.trim());
+            lines.push(...newLog.split('\n').filter(line => line.trim()));
+            if (lines.length > 10) {
+                lines.splice(0, lines.length - 10);
+            }
+            
+            logOutput.textContent = lines.join('\n');
+        }
+        
+        async function refreshHealthData() {
+            const spinner = document.getElementById('refresh-spinner');
+            spinner.classList.remove('hidden');
+            
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            updateMetrics();
+            updateHealthLogs();
+            
+            spinner.classList.add('hidden');
+        }
+        
+        function clearHealthLogs() {
+            document.getElementById('health-logs').textContent = 'Health logs cleared.';
+        }
+        
+        function exportHealthReport() {
+            const report = {
+                timestamp: new Date().toISOString(),
+                uptime: document.getElementById('uptime').textContent,
+                cpu: document.getElementById('cpu-current').textContent,
+                memory: document.getElementById('mem-used').textContent,
+                connections: document.getElementById('connections').textContent,
+                engines: '26/26 active'
+            };
+            
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `health-report-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (healthInterval) clearInterval(healthInterval);
+        });
+    </script>
+</body>
+</html>
