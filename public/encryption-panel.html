@@ -161,6 +161,21 @@
         .form-group input[type="number"] {
             width: 100%;
         }
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            background: #111;
+            color: #0f0;
+            border: 1px solid #0f0;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+        }
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #0ff;
+            box-shadow: 0 0 5px rgba(0,255,255,0.3);
+        }
         .btn-group {
             display: flex;
             flex-wrap: wrap;
@@ -220,18 +235,18 @@
         <h1>🔐 RawrZ Security Platform - File Encryption Panel</h1>
         
         <div class="grid">
-            <div class="panel">
+        <div class="panel">
                 <h3>📁 File Upload</h3>
-                <div class="file-drop" id="fileDrop">
-                    📁 Drag & Drop Files Here or Click to Browse
-                    <input type="file" id="fileInput" style="display: none;" multiple>
-                </div>
-                <div class="file-list" id="fileList">No files selected</div>
-                <button class="btn" onclick="clearFiles()">Clear Files</button>
-                <button class="btn" onclick="uploadFiles()">Upload Files</button>
+            <div class="file-drop" id="fileDrop">
+                📁 Drag & Drop Files Here or Click to Browse
+                <input type="file" id="fileInput" style="display: none;" multiple>
             </div>
-            
-            <div class="panel">
+            <div class="file-list" id="fileList">No files selected</div>
+            <button class="btn" onclick="clearFiles()">Clear Files</button>
+                <button class="btn" onclick="uploadFiles()">Upload Files</button>
+        </div>
+        
+        <div class="panel">
                 <h3>🔧 Advanced Encryption Settings</h3>
                 
                 <div class="form-group">
@@ -279,7 +294,7 @@
                         <option value="128">128-bit</option>
                         <option value="512">512-bit (Ultra Secure)</option>
                     </select>
-                </div>
+                    </div>
                 
                 <div class="form-group">
                     <label for="mode">Encryption Mode:</label>
@@ -297,7 +312,7 @@
                     <label>
                         <input type="checkbox" id="compress" checked> Compress before encryption
                     </label>
-                </div>
+                    </div>
                 
                 <div class="form-group">
                     <label>
@@ -309,11 +324,241 @@
                     <label>
                         <input type="checkbox" id="stealth" checked> Stealth mode (hide encryption)
                     </label>
-                </div>
+                    </div>
                 
                 <div class="form-group">
                     <label for="iterations">Key Derivation Iterations:</label>
                     <input type="number" id="iterations" value="100000" min="1000" max="1000000">
+                </div>
+                
+                <div class="advanced-options">
+                    <h4>⚠️ Advanced/Dangerous Features</h4>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="evasion"> Anti-Virus Evasion (AV Killer)
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="adr"> Anti-Debug/Reverse Engineering
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="upx"> UPX Packing/Compression
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="mutex"> Mutex Creation (Process Locking)
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="persistence"> Persistence Mechanisms
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="injection"> Code Injection Capabilities
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="network"> Network Communication
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="privilege"> Privilege Escalation
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="sandbox"> Sandbox Evasion
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="obfuscation"> Advanced Code Obfuscation
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="polymorphic"> Polymorphic Engine
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="metamorphic"> Metamorphic Engine
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="advanced-options">
+                    <h4>💻 PowerShell Features</h4>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="psBypass"> PowerShell Execution Policy Bypass
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="psObfuscation"> PowerShell Obfuscation
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="psAMSI"> AMSI Bypass
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="psETW"> ETW Bypass
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="psLogging"> Disable PowerShell Logging
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="psMemory"> In-Memory Execution
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="psReflection"> Reflection Loading
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="psDotNet"> .NET Assembly Loading
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="advanced-options">
+                    <h4>🎯 Payload Customization</h4>
+                    <div class="form-group">
+                        <label for="payloadType">Payload Type:</label>
+                        <select id="payloadType">
+                            <option value="generic">Generic Payload</option>
+                            <option value="reverse_shell">Reverse Shell</option>
+                            <option value="bind_shell">Bind Shell</option>
+                            <option value="meterpreter">Meterpreter</option>
+                            <option value="beacon">Cobalt Strike Beacon</option>
+                            <option value="keylogger">Keylogger</option>
+                            <option value="screenshot">Screenshot Capture</option>
+                            <option value="file_stealer">File Stealer</option>
+                            <option value="credential_harvester">Credential Harvester</option>
+                            <option value="lateral_movement">Lateral Movement</option>
+                            <option value="persistence">Persistence</option>
+                            <option value="custom">Custom Payload</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="targetOS">Target OS:</label>
+                        <select id="targetOS">
+                            <option value="windows">Windows</option>
+                            <option value="linux">Linux</option>
+                            <option value="macos">macOS</option>
+                            <option value="cross_platform">Cross Platform</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="targetArch">Target Architecture:</label>
+                        <select id="targetArch">
+                            <option value="x64">x64</option>
+                            <option value="x86">x86</option>
+                            <option value="arm64">ARM64</option>
+                            <option value="any">Any</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="listenerIP">Listener IP:</label>
+                        <input type="text" id="listenerIP" placeholder="192.168.1.100" value="198.199.70.153">
+                    </div>
+                    <div class="form-group">
+                        <label for="listenerPort">Listener Port:</label>
+                        <input type="number" id="listenerPort" placeholder="4444" value="4444">
+                    </div>
+                    <div class="form-group">
+                        <label for="customPayload">Custom Payload Code:</label>
+                        <textarea id="customPayload" rows="5" placeholder="Enter your custom payload code here..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="advanced-options">
+                    <h4>🔧 Stub Generation</h4>
+                    <div class="form-group">
+                        <label for="stubType">Stub Type:</label>
+                        <select id="stubType">
+                            <option value="exe">Windows Executable (.exe)</option>
+                            <option value="dll">Dynamic Library (.dll)</option>
+                            <option value="xll">Excel Add-in (.xll)</option>
+                            <option value="scr">Screensaver (.scr)</option>
+                            <option value="com">Command File (.com)</option>
+                            <option value="bat">Batch File (.bat)</option>
+                            <option value="cmd">Command Script (.cmd)</option>
+                            <option value="ps1">PowerShell (.ps1)</option>
+                            <option value="vbs">VBScript (.vbs)</option>
+                            <option value="js">JavaScript (.js)</option>
+                            <option value="jar">Java Archive (.jar)</option>
+                            <option value="elf">Linux Executable (.elf)</option>
+                            <option value="macho">macOS Executable (.macho)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="stubArchitecture">Architecture:</label>
+                        <select id="stubArchitecture">
+                            <option value="x64">x64 (64-bit)</option>
+                            <option value="x86">x86 (32-bit)</option>
+                            <option value="arm64">ARM64</option>
+                            <option value="any">Any</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="stubSize">Stub Size (KB):</label>
+                        <input type="number" id="stubSize" value="50" min="1" max="1024">
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="stubObfuscation"> Stub Obfuscation
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="stubPacking"> Stub Packing
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="stubAntiDebug"> Anti-Debug Protection
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="stubAntiVM"> Anti-VM Protection
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label for="stubIcon">Custom Icon (Base64):</label>
+                        <textarea id="stubIcon" rows="3" placeholder="Paste base64 encoded icon data here..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="stubVersion">Version Info:</label>
+                        <input type="text" id="stubVersion" placeholder="1.0.0.0" value="1.0.0.0">
+                    </div>
+                    <div class="form-group">
+                        <label for="stubDescription">Description:</label>
+                        <input type="text" id="stubDescription" placeholder="Application Description" value="RawrZ Security Application">
+                    </div>
+                    <div class="form-group">
+                        <label for="stubCompany">Company:</label>
+                        <input type="text" id="stubCompany" placeholder="Company Name" value="RawrZ Security">
+                    </div>
                 </div>
                 
                 <div class="btn-group">
@@ -321,6 +566,7 @@
                     <button class="btn" onclick="decryptFiles()">🔓 Decrypt Files</button>
                     <button class="btn" onclick="hashFiles()"># Hash Files</button>
                     <button class="btn" onclick="analyzeFiles()">🔍 Analyze Files</button>
+                    <button class="btn" onclick="generateStub()">🔧 Generate Stub</button>
                     <button class="btn" onclick="batchProcess()">⚡ Batch Process</button>
                 </div>
             </div>
@@ -355,7 +601,7 @@
                 <button class="btn" onclick="encryptAll()">🔒 Encrypt All Files</button>
                 <button class="btn" onclick="decryptAll()">🔓 Decrypt All Files</button>
                 <button class="btn" onclick="hashAll()"># Hash All Files</button>
-            </div>
+        </div>
         </div>
     </div>
 
@@ -363,13 +609,13 @@
         let uploadedFiles = [];
         let encryptedFiles = [];
         
-        const fileDrop = document.getElementById('fileDrop');
-        const fileInput = document.getElementById('fileInput');
+            const fileDrop = document.getElementById('fileDrop');
+            const fileInput = document.getElementById('fileInput');
         const fileList = document.getElementById('fileList');
         const status = document.getElementById('status');
-        
+
         // File drop functionality
-        fileDrop.addEventListener('click', () => fileInput.click());
+            fileDrop.addEventListener('click', () => fileInput.click());
         fileDrop.addEventListener('dragover', handleDragOver);
         fileDrop.addEventListener('dragleave', handleDragLeave);
         fileDrop.addEventListener('drop', handleDrop);
@@ -387,7 +633,7 @@
         }
         
         function handleDrop(e) {
-            e.preventDefault();
+                e.preventDefault();
             fileDrop.classList.remove('dragover');
             const files = Array.from(e.dataTransfer.files);
             addFiles(files);
@@ -403,7 +649,7 @@
             updateFileList();
             addStatus(`Added ${files.length} file(s)`, 'info');
         }
-        
+
         function updateFileList() {
             if (uploadedFiles.length === 0) {
                 fileList.innerHTML = 'No files selected';
@@ -417,7 +663,7 @@
                 </div>
             `).join('');
         }
-        
+
         function selectFile(index) {
             // Remove selection from all items
             document.querySelectorAll('.file-item').forEach(item => {
@@ -426,7 +672,7 @@
             // Add selection to clicked item
             document.querySelectorAll('.file-item')[index].classList.add('selected');
         }
-        
+
         function clearFiles() {
             uploadedFiles = [];
             encryptedFiles = [];
@@ -480,6 +726,38 @@
             const stealth = document.getElementById('stealth').checked;
             const iterations = document.getElementById('iterations').value;
             
+            // Advanced/Dangerous Features
+            const evasion = document.getElementById('evasion').checked;
+            const adr = document.getElementById('adr').checked;
+            const upx = document.getElementById('upx').checked;
+            const mutex = document.getElementById('mutex').checked;
+            const persistence = document.getElementById('persistence').checked;
+            const injection = document.getElementById('injection').checked;
+            const network = document.getElementById('network').checked;
+            const privilege = document.getElementById('privilege').checked;
+            const sandbox = document.getElementById('sandbox').checked;
+            const obfuscation = document.getElementById('obfuscation').checked;
+            const polymorphic = document.getElementById('polymorphic').checked;
+            const metamorphic = document.getElementById('metamorphic').checked;
+            
+            // PowerShell Features
+            const psBypass = document.getElementById('psBypass').checked;
+            const psObfuscation = document.getElementById('psObfuscation').checked;
+            const psAMSI = document.getElementById('psAMSI').checked;
+            const psETW = document.getElementById('psETW').checked;
+            const psLogging = document.getElementById('psLogging').checked;
+            const psMemory = document.getElementById('psMemory').checked;
+            const psReflection = document.getElementById('psReflection').checked;
+            const psDotNet = document.getElementById('psDotNet').checked;
+            
+            // Payload Customization
+            const payloadType = document.getElementById('payloadType').value;
+            const targetOS = document.getElementById('targetOS').value;
+            const targetArch = document.getElementById('targetArch').value;
+            const listenerIP = document.getElementById('listenerIP').value;
+            const listenerPort = document.getElementById('listenerPort').value;
+            const customPayload = document.getElementById('customPayload').value;
+            
             addStatus(`🔒 Advanced Encryption: ${uploadedFiles.length} file(s) with ${algorithm}`, 'loading');
             addStatus(`   Key Size: ${keySize}-bit | Mode: ${mode} | Iterations: ${iterations}`, 'info');
             addStatus(`   Options: Compress=${compress}, Obfuscate=${obfuscate}, Stealth=${stealth}`, 'info');
@@ -500,6 +778,38 @@
                     formData.append('stealth', stealth);
                     formData.append('iterations', iterations);
                     
+                    // Advanced/Dangerous Features
+                    formData.append('evasion', evasion);
+                    formData.append('adr', adr);
+                    formData.append('upx', upx);
+                    formData.append('mutex', mutex);
+                    formData.append('persistence', persistence);
+                    formData.append('injection', injection);
+                    formData.append('network', network);
+                    formData.append('privilege', privilege);
+                    formData.append('sandbox', sandbox);
+                    formData.append('obfuscation', obfuscation);
+                    formData.append('polymorphic', polymorphic);
+                    formData.append('metamorphic', metamorphic);
+                    
+                    // PowerShell Features
+                    formData.append('psBypass', psBypass);
+                    formData.append('psObfuscation', psObfuscation);
+                    formData.append('psAMSI', psAMSI);
+                    formData.append('psETW', psETW);
+                    formData.append('psLogging', psLogging);
+                    formData.append('psMemory', psMemory);
+                    formData.append('psReflection', psReflection);
+                    formData.append('psDotNet', psDotNet);
+                    
+                    // Payload Customization
+                    formData.append('payloadType', payloadType);
+                    formData.append('targetOS', targetOS);
+                    formData.append('targetArch', targetArch);
+                    formData.append('listenerIP', listenerIP);
+                    formData.append('listenerPort', listenerPort);
+                    formData.append('customPayload', customPayload);
+                    
                     const response = await fetch('/api/encrypt-file', {
                         method: 'POST',
                         body: formData
@@ -513,7 +823,7 @@
                         addStatus(`   Size: ${result.originalSize} → ${result.encryptedSize} bytes`, 'info');
                         addStatus(`   Algorithm: ${result.algorithm}`, 'info');
                         addStatus(`   Download: <a href="${result.downloadUrl}" class="download-link" target="_blank">${result.encryptedName}</a>`, 'info');
-                    } else {
+            } else {
                         addStatus(`❌ Encryption failed: ${file.name} - ${result.error}`, 'error');
                     }
                 } catch (error) {
@@ -531,7 +841,7 @@
                 addStatus('No files to hash', 'error');
                 return;
             }
-            
+
             addStatus(`Calculating hashes for ${uploadedFiles.length} file(s)...`, 'loading');
             
             for (const file of uploadedFiles) {
@@ -585,9 +895,9 @@
             for (let i = 0; i < uploadedFiles.length; i++) {
                 const file = uploadedFiles[i];
                 try {
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    
+            const formData = new FormData();
+            formData.append('file', file);
+
                     const response = await fetch('/api/real-encryption/decrypt', {
                         method: 'POST',
                         body: formData
@@ -624,11 +934,11 @@
                     formData.append('file', file);
                     
                     const response = await fetch('/api/analyze-file', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    
-                    const result = await response.json();
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
                     
                     if (result.success) {
                         addStatus(`✅ Analysis: ${file.name}`, 'success');
@@ -675,7 +985,7 @@
                 });
                 
                 const result = await response.json();
-                
+
                 if (result.success) {
                     addStatus('✅ New keys generated successfully', 'success');
                     addStatus(`   Key ID: ${result.keyId}`, 'info');
@@ -855,9 +1165,65 @@
             await hashFiles();
         }
         
+        // Stub Generation Function
+        async function generateStub() {
+            addStatus('🔧 Generating custom stub...', 'loading');
+            
+            try {
+                const stubType = document.getElementById('stubType').value;
+                const stubArchitecture = document.getElementById('stubArchitecture').value;
+                const stubSize = document.getElementById('stubSize').value;
+                const stubObfuscation = document.getElementById('stubObfuscation').checked;
+                const stubPacking = document.getElementById('stubPacking').checked;
+                const stubAntiDebug = document.getElementById('stubAntiDebug').checked;
+                const stubAntiVM = document.getElementById('stubAntiVM').checked;
+                const stubIcon = document.getElementById('stubIcon').value;
+                const stubVersion = document.getElementById('stubVersion').value;
+                const stubDescription = document.getElementById('stubDescription').value;
+                const stubCompany = document.getElementById('stubCompany').value;
+                
+                const stubData = {
+                    type: stubType,
+                    architecture: stubArchitecture,
+                    size: stubSize,
+                    obfuscation: stubObfuscation,
+                    packing: stubPacking,
+                    antiDebug: stubAntiDebug,
+                    antiVM: stubAntiVM,
+                    icon: stubIcon,
+                    version: stubVersion,
+                    description: stubDescription,
+                    company: stubCompany
+                };
+                
+                const response = await fetch('/api/stubs/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(stubData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    addStatus('✅ Stub generated successfully', 'success');
+                    addStatus(`   Type: ${result.stub.type}`, 'info');
+                    addStatus(`   Architecture: ${result.stub.architecture}`, 'info');
+                    addStatus(`   Size: ${result.stub.size}KB`, 'info');
+                    addStatus(`   Download: <a href="${result.downloadUrl}" class="download-link" target="_blank">${result.stub.filename}</a>`, 'info');
+                } else {
+                    addStatus(`❌ Stub generation failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                addStatus(`❌ Stub generation error: ${error.message}`, 'error');
+            }
+        }
+        
         // Initialize
         addStatus('🔐 RawrZ Advanced Encryption Panel loaded successfully', 'success');
         addStatus('✅ All advanced features enabled', 'success');
+        addStatus('✅ PowerShell features enabled', 'success');
+        addStatus('✅ Payload customization enabled', 'success');
+        addStatus('✅ Stub generation enabled', 'success');
         addStatus('Ready for advanced file operations', 'info');
     </script>
 </body>
