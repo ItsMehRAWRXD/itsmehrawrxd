@@ -2,6 +2,8 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs').promises;
+const multer = require('multer');
 const RawrZEngine = require('./src/engines/rawrz-engine');
 const RealEncryptionEngine = require('./src/engines/real-encryption-engine');
 
@@ -54,7 +56,7 @@ app.use(express.static('.'));
 
 // Root route - serve main panel
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'panel.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Stub generation endpoint
@@ -1399,7 +1401,6 @@ app.post('/payload-encrypt', async (req, res) => {
         await initializeEngine();
         
         // Handle multipart form data for file uploads
-        const multer = require('multer');
         const upload = multer({ 
             storage: multer.memoryStorage(),
             limits: {
@@ -1456,7 +1457,6 @@ app.post('/payload-encrypt', async (req, res) => {
             
             try {
                 // Real encryption implementation
-                const crypto = require('crypto');
                 let fileBuffer = file.buffer;
                 
                 // Compression if requested
@@ -1680,7 +1680,6 @@ app.post('/payload-encrypt', async (req, res) => {
 
 // Helper function to generate fileless keys
 function generateFilelessKey(autoKey, systemEntropy) {
-    const crypto = require('crypto');
     
     if (systemEntropy) {
         // Use system entropy for maximum security - combine multiple entropy sources
@@ -1709,7 +1708,6 @@ function generateFilelessKey(autoKey, systemEntropy) {
 
 // Helper function to generate secure keys
 function generateSecureKey() {
-    const crypto = require('crypto');
     return crypto.randomBytes(32);
 }
 
@@ -1720,7 +1718,6 @@ function cleanupMemoryOnlyKey(key) {
         try {
             // Overwrite the key data with random bytes
             if (key.data) {
-                const crypto = require('crypto');
                 const randomData = crypto.randomBytes(key.data.length);
                 key.data.fill(randomData);
                 key.data.fill(0); // Zero out the buffer
@@ -1761,7 +1758,6 @@ function xorEncrypt(data, key) {
 
 // Data obfuscation implementation
 function obfuscateData(data) {
-    const crypto = require('crypto');
     // Simple obfuscation by XORing with a pattern
     const obfuscationKey = crypto.createHash('sha256').update('RawrZ-Obfuscation').digest();
     return xorEncrypt(data, obfuscationKey);
@@ -1789,7 +1785,6 @@ app.post('/ev-encrypt', async (req, res) => {
         // await initializeEngine();
         
         // Handle multipart form data for file uploads
-        const multer = require('multer');
         const upload = multer({ 
             storage: multer.memoryStorage(),
             limits: {
@@ -1839,7 +1834,6 @@ app.post('/ev-encrypt', async (req, res) => {
                 console.log('EV Encrypt: Algorithm:', algorithm);
                 
                 // Real EV Certificate encryption implementation
-                const crypto = require('crypto');
                 let inputData;
                 
                 if (file) {
@@ -2116,7 +2110,6 @@ app.post('/ev-decrypt', async (req, res) => {
         }
         
         try {
-            const crypto = require('crypto');
             
             // Parse the encrypted data based on format
             let encryptedBuffer;
@@ -2174,7 +2167,6 @@ app.post('/ev-decrypt', async (req, res) => {
 
 // Helper function to generate EV certificate key
 function generateEVCertificateKey(certificate, keyLength) {
-    const crypto = require('crypto');
     const hash = crypto.createHash('sha256');
     hash.update(certificate + 'RawrZ-EV-Certificate-Salt');
     return hash.digest().slice(0, keyLength);
@@ -2258,7 +2250,6 @@ app.post('/advanced-encrypt', async (req, res) => {
             let result;
             
             try {
-                const crypto = require('crypto');
                 let fileBuffer = file.buffer;
                 
                 // Advanced encryption implementation - Generate full encrypted payload with proper PE structure
@@ -2384,8 +2375,6 @@ app.post('/advanced-encrypt-binary', async (req, res) => {
     try {
         await initializeEngine();
         
-        const multer = require('multer');
-        const crypto = require('crypto');
         const upload = multer({ 
             storage: multer.memoryStorage(),
             limits: { fileSize: 1024 * 1024 * 1024 } // 1GB limit
@@ -2960,8 +2949,6 @@ app.post('/api/real-encryption/disguise-file', async (req, res) => {
 // COMPREHENSIVE FILE MANAGEMENT SYSTEM
 
 // Create uploads directory if it doesn't exist
-const fs = require('fs').promises;
-const path = require('path');
 const uploadsDir = path.join(__dirname, 'uploads');
 const processedDir = path.join(__dirname, 'processed');
 
@@ -2969,9 +2956,9 @@ async function ensureDirectories() {
     try {
         await fs.mkdir(uploadsDir, { recursive: true });
         await fs.mkdir(processedDir, { recursive: true });
-        console.log('✅ Upload directories created');
+        console.log('[OK] Upload directories created');
     } catch (error) {
-        console.error('❌ Failed to create upload directories:', error);
+        console.error('[ERROR] Failed to create upload directories:', error);
     }
 }
 
@@ -2983,7 +2970,6 @@ app.post('/api/files/upload', async (req, res) => {
     try {
         await initializeEngine();
         
-        const multer = require('multer');
         const upload = multer({ 
             dest: uploadsDir,
             limits: { 
@@ -3499,7 +3485,6 @@ app.post('/api/test-engine', async (req, res) => {
 // Hotpatcher endpoint
 app.post('/api/hotpatcher/inject', async (req, res) => {
     try {
-        const crypto = require('crypto');
         const {
             fileName,
             fileSize,
