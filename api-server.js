@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const RawrZEngine = require('./src/engines/rawrz-engine');
+const RealEncryptionEngine = require('./src/engines/real-encryption-engine');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -115,10 +116,15 @@ async function initializeEngine() {
         try {
             console.log('Initializing RawrZ Engine...');
             await RawrZEngine.initializeModules();
+            
+            console.log('Initializing Real Encryption Engine...');
+            realEncryptionEngine = new RealEncryptionEngine();
+            await realEncryptionEngine.initialize();
+            
             engineInitialized = true;
-            console.log('RawrZ Engine initialized successfully');
+            console.log('All engines initialized successfully');
         } catch (error) {
-            console.error('Failed to initialize RawrZ Engine:', error);
+            console.error('Failed to initialize engines:', error);
             console.error('Error stack:', error.stack);
             throw error;
         }
@@ -2666,6 +2672,616 @@ app.get('/health', (req, res) => {
 });
 
 // API health check endpoint for container health checks
+// Real Encryption Endpoints
+
+// Real dual encryption endpoint
+app.post('/api/real-encryption/dual-encrypt', async (req, res) => {
+    try {
+        await initializeEngine();
+        
+        const multer = require('multer');
+        const upload = multer({ 
+            storage: multer.memoryStorage(),
+            limits: { fileSize: 1024 * 1024 * 1024 } // 1GB limit
+        });
+        
+        upload.single('file')(req, res, async (err) => {
+            if (err) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'File upload error: ' + err.message
+                });
+            }
+            
+            try {
+                const file = req.file;
+                if (!file) {
+                    return res.status(400).json({
+                        success: false,
+                        error: 'No file provided'
+                    });
+                }
+                
+                // Perform real dual encryption
+                const result = await realEncryptionEngine.realDualEncryption(file.buffer);
+                
+                // Set response headers for file download
+                const filename = realEncryptionEngine.generateOutputFilename(
+                    file.originalname, 
+                    'dual-encrypted', 
+                    '.enc'
+                );
+                
+                res.json({
+                    success: true,
+                    data: {
+                        filename: filename,
+                        originalSize: result.originalSize,
+                        encryptedSize: result.encryptedSize,
+                        keys: {
+                            aes: result.keys.aes.toString('hex'),
+                            camellia: result.keys.camellia.toString('hex')
+                        },
+                        ivs: {
+                            aes: result.ivs.aes.toString('hex'),
+                            camellia: result.ivs.camellia.toString('hex')
+                        }
+                    },
+                    encryptedData: result.encrypted.toString('base64'),
+                    timestamp: new Date().toISOString()
+                });
+            } catch (error) {
+                console.error('Real dual encryption error:', error);
+                res.status(500).json({
+                    success: false,
+                    error: error.message
+                });
+            }
+        });
+    } catch (error) {
+        console.error('Real dual encryption endpoint error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// Real UPX packing endpoint
+app.post('/api/real-encryption/upx-pack', async (req, res) => {
+    try {
+        await initializeEngine();
+        
+        const multer = require('multer');
+        const upload = multer({ 
+            storage: multer.memoryStorage(),
+            limits: { fileSize: 1024 * 1024 * 1024 } // 1GB limit
+        });
+        
+        upload.single('file')(req, res, async (err) => {
+            if (err) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'File upload error: ' + err.message
+                });
+            }
+            
+            try {
+                const file = req.file;
+                if (!file) {
+                    return res.status(400).json({
+                        success: false,
+                        error: 'No file provided'
+                    });
+                }
+                
+                // Write file to temp location
+                const fs = require('fs').promises;
+                const tempInput = `/tmp/input_${Date.now()}_${file.originalname}`;
+                const tempOutput = `/tmp/output_${Date.now()}_${file.originalname}`;
+                
+                await fs.writeFile(tempInput, file.buffer);
+                
+                // Perform real UPX packing
+                const result = await realEncryptionEngine.realUPXPacking(tempInput, tempOutput);
+                
+                // Read packed file
+                const packedData = await fs.readFile(tempOutput);
+                
+                // Clean up temp files
+                await fs.unlink(tempInput).catch(() => {});
+                await fs.unlink(tempOutput).catch(() => {});
+                
+                // Set response headers for file download
+                const filename = realEncryptionEngine.generateOutputFilename(
+                    file.originalname, 
+                    'upx-packed', 
+                    '.exe'
+                );
+                
+                res.json({
+                    success: true,
+                    data: {
+                        filename: filename,
+                        originalSize: file.size,
+                        packedSize: packedData.length,
+                        compressionRatio: ((file.size - packedData.length) / file.size * 100).toFixed(2) + '%'
+                    },
+                    packedData: packedData.toString('base64'),
+                    timestamp: new Date().toISOString()
+                });
+            } catch (error) {
+                console.error('Real UPX packing error:', error);
+                res.status(500).json({
+                    success: false,
+                    error: error.message
+                });
+            }
+        });
+    } catch (error) {
+        console.error('Real UPX packing endpoint error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// Real assembly compilation endpoint
+app.post('/api/real-encryption/compile-assembly', async (req, res) => {
+    try {
+        await initializeEngine();
+        
+        const { asmCode, outputFormat = 'exe', architecture = 'x64' } = req.body;
+        
+        if (!asmCode) {
+            return res.status(400).json({
+                success: false,
+                error: 'Assembly code is required'
+            });
+        }
+        
+        // Generate output filename
+        const outputFile = `/tmp/compiled_${Date.now()}.${outputFormat}`;
+        
+        // Perform real assembly compilation
+        const result = await realEncryptionEngine.realAssemblyCompilation(
+            asmCode, 
+            outputFile, 
+            { format: outputFormat, architecture }
+        );
+        
+        // Read compiled file
+        const fs = require('fs').promises;
+        const compiledData = await fs.readFile(outputFile);
+        
+        // Clean up temp file
+        await fs.unlink(outputFile).catch(() => {});
+        
+        // Set response headers for file download
+        const filename = `compiled_${Date.now()}.${outputFormat}`;
+        
+        res.json({
+            success: true,
+            data: {
+                filename: filename,
+                format: outputFormat,
+                architecture: architecture,
+                size: compiledData.length
+            },
+            compiledData: compiledData.toString('base64'),
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Real assembly compilation error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// File disguise endpoint (Beaconism)
+app.post('/api/real-encryption/disguise-file', async (req, res) => {
+    try {
+        await initializeEngine();
+        
+        const multer = require('multer');
+        const upload = multer({ 
+            storage: multer.memoryStorage(),
+            limits: { fileSize: 1024 * 1024 * 1024 } // 1GB limit
+        });
+        
+        upload.single('file')(req, res, async (err) => {
+            if (err) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'File upload error: ' + err.message
+                });
+            }
+            
+            try {
+                const file = req.file;
+                const { disguiseAs } = req.body;
+                
+                if (!file) {
+                    return res.status(400).json({
+                        success: false,
+                        error: 'No file provided'
+                    });
+                }
+                
+                // Write file to temp location
+                const fs = require('fs').promises;
+                const tempInput = `/tmp/input_${Date.now()}_${file.originalname}`;
+                const disguisedName = disguiseAs || 'calc.exe';
+                const tempOutput = `/tmp/${disguisedName}`;
+                
+                await fs.writeFile(tempInput, file.buffer);
+                
+                // Perform file disguise
+                const result = await realEncryptionEngine.disguiseFile(tempInput, tempOutput);
+                
+                // Read disguised file
+                const disguisedData = await fs.readFile(tempOutput);
+                
+                // Clean up temp files
+                await fs.unlink(tempInput).catch(() => {});
+                await fs.unlink(tempOutput).catch(() => {});
+                
+                // Set response headers for file download
+                res.json({
+                    success: true,
+                    data: {
+                        originalName: file.originalname,
+                        disguisedName: disguisedName,
+                        size: disguisedData.length
+                    },
+                    disguisedData: disguisedData.toString('base64'),
+                    timestamp: new Date().toISOString()
+                });
+            } catch (error) {
+                console.error('File disguise error:', error);
+                res.status(500).json({
+                    success: false,
+                    error: error.message
+                });
+            }
+        });
+    } catch (error) {
+        console.error('File disguise endpoint error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// COMPREHENSIVE FILE MANAGEMENT SYSTEM
+
+// Create uploads directory if it doesn't exist
+const fs = require('fs').promises;
+const path = require('path');
+const uploadsDir = path.join(__dirname, 'uploads');
+const processedDir = path.join(__dirname, 'processed');
+
+async function ensureDirectories() {
+    try {
+        await fs.mkdir(uploadsDir, { recursive: true });
+        await fs.mkdir(processedDir, { recursive: true });
+        console.log('✅ Upload directories created');
+    } catch (error) {
+        console.error('❌ Failed to create upload directories:', error);
+    }
+}
+
+// Initialize directories on startup
+ensureDirectories();
+
+// File upload endpoint
+app.post('/api/files/upload', async (req, res) => {
+    try {
+        await initializeEngine();
+        
+        const multer = require('multer');
+        const upload = multer({ 
+            dest: uploadsDir,
+            limits: { 
+                fileSize: 1024 * 1024 * 1024, // 1GB limit
+                files: 10 // Max 10 files at once
+            }
+        });
+        
+        upload.array('files', 10)(req, res, async (err) => {
+            if (err) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'File upload error: ' + err.message
+                });
+            }
+            
+            try {
+                const files = req.files;
+                if (!files || files.length === 0) {
+                    return res.status(400).json({
+                        success: false,
+                        error: 'No files provided'
+                    });
+                }
+                
+                const uploadedFiles = [];
+                
+                for (const file of files) {
+                    const originalName = file.originalname;
+                    const timestamp = Date.now();
+                    const newName = `${timestamp}_${originalName}`;
+                    const newPath = path.join(uploadsDir, newName);
+                    
+                    // Rename file to include timestamp
+                    await fs.rename(file.path, newPath);
+                    
+                    // Get file stats
+                    const stats = await fs.stat(newPath);
+                    
+                    uploadedFiles.push({
+                        id: timestamp,
+                        originalName: originalName,
+                        fileName: newName,
+                        path: newPath,
+                        size: stats.size,
+                        uploadDate: new Date().toISOString(),
+                        url: `/api/files/download/${newName}`
+                    });
+                }
+                
+                res.json({
+                    success: true,
+                    message: `${files.length} file(s) uploaded successfully`,
+                    files: uploadedFiles,
+                    timestamp: new Date().toISOString()
+                });
+            } catch (error) {
+                console.error('File upload processing error:', error);
+                res.status(500).json({
+                    success: false,
+                    error: error.message
+                });
+            }
+        });
+    } catch (error) {
+        console.error('File upload endpoint error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// File download endpoint
+app.get('/api/files/download/:filename', async (req, res) => {
+    try {
+        const filename = req.params.filename;
+        const filePath = path.join(uploadsDir, filename);
+        
+        // Check if file exists
+        try {
+            await fs.access(filePath);
+        } catch (error) {
+            return res.status(404).json({
+                success: false,
+                error: 'File not found'
+            });
+        }
+        
+        // Set headers for file download
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.setHeader('Content-Type', 'application/octet-stream');
+        
+        // Stream file to response
+        const fileStream = require('fs').createReadStream(filePath);
+        fileStream.pipe(res);
+        
+    } catch (error) {
+        console.error('File download error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// List uploaded files
+app.get('/api/files/list', async (req, res) => {
+    try {
+        const files = await fs.readdir(uploadsDir);
+        const fileList = [];
+        
+        for (const file of files) {
+            const filePath = path.join(uploadsDir, file);
+            const stats = await fs.stat(filePath);
+            
+            fileList.push({
+                name: file,
+                size: stats.size,
+                uploadDate: stats.birthtime.toISOString(),
+                modifiedDate: stats.mtime.toISOString(),
+                url: `/api/files/download/${file}`
+            });
+        }
+        
+        // Sort by upload date (newest first)
+        fileList.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
+        
+        res.json({
+            success: true,
+            files: fileList,
+            count: fileList.length,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('File list error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// Delete file endpoint
+app.delete('/api/files/delete/:filename', async (req, res) => {
+    try {
+        const filename = req.params.filename;
+        const filePath = path.join(uploadsDir, filename);
+        
+        // Check if file exists
+        try {
+            await fs.access(filePath);
+        } catch (error) {
+            return res.status(404).json({
+                success: false,
+                error: 'File not found'
+            });
+        }
+        
+        // Delete file
+        await fs.unlink(filePath);
+        
+        res.json({
+            success: true,
+            message: `File ${filename} deleted successfully`,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('File delete error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// Process file with all engines endpoint
+app.post('/api/files/process/:filename', async (req, res) => {
+    try {
+        await initializeEngine();
+        
+        const filename = req.params.filename;
+        const { operations = ['dual-encrypt', 'upx-pack', 'disguise'] } = req.body;
+        const filePath = path.join(uploadsDir, filename);
+        
+        // Check if file exists
+        try {
+            await fs.access(filePath);
+        } catch (error) {
+            return res.status(404).json({
+                success: false,
+                error: 'File not found'
+            });
+        }
+        
+        // Read file
+        const fileBuffer = await fs.readFile(filePath);
+        const results = [];
+        
+        // Process with each operation
+        for (const operation of operations) {
+            try {
+                let result;
+                
+                switch (operation) {
+                    case 'dual-encrypt':
+                        result = await realEncryptionEngine.realDualEncryption(fileBuffer);
+                        break;
+                    case 'upx-pack':
+                        // For UPX, we need to write to temp file first
+                        const tempInput = `/tmp/input_${Date.now()}_${filename}`;
+                        const tempOutput = `/tmp/output_${Date.now()}_${filename}`;
+                        await fs.writeFile(tempInput, fileBuffer);
+                        result = await realEncryptionEngine.realUPXPacking(tempInput, tempOutput);
+                        await fs.unlink(tempInput).catch(() => {});
+                        await fs.unlink(tempOutput).catch(() => {});
+                        break;
+                    case 'disguise':
+                        const tempInput2 = `/tmp/input_${Date.now()}_${filename}`;
+                        const disguisedName = `disguised_${filename}`;
+                        const tempOutput2 = `/tmp/${disguisedName}`;
+                        await fs.writeFile(tempInput2, fileBuffer);
+                        result = await realEncryptionEngine.disguiseFile(tempInput2, tempOutput2);
+                        await fs.unlink(tempInput2).catch(() => {});
+                        await fs.unlink(tempOutput2).catch(() => {});
+                        break;
+                    default:
+                        result = { success: false, error: `Unknown operation: ${operation}` };
+                }
+                
+                results.push({
+                    operation: operation,
+                    success: result.success || true,
+                    result: result
+                });
+            } catch (error) {
+                results.push({
+                    operation: operation,
+                    success: false,
+                    error: error.message
+                });
+            }
+        }
+        
+        res.json({
+            success: true,
+            filename: filename,
+            operations: results,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('File processing error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// File info endpoint
+app.get('/api/files/info/:filename', async (req, res) => {
+    try {
+        const filename = req.params.filename;
+        const filePath = path.join(uploadsDir, filename);
+        
+        // Check if file exists
+        try {
+            await fs.access(filePath);
+        } catch (error) {
+            return res.status(404).json({
+                success: false,
+                error: 'File not found'
+            });
+        }
+        
+        const stats = await fs.stat(filePath);
+        
+        res.json({
+            success: true,
+            file: {
+                name: filename,
+                size: stats.size,
+                uploadDate: stats.birthtime.toISOString(),
+                modifiedDate: stats.mtime.toISOString(),
+                url: `/api/files/download/${filename}`,
+                path: filePath
+            },
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('File info error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 app.get('/api/health', (req, res) => {
     res.json({
         success: true,
