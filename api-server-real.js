@@ -3768,13 +3768,12 @@ Available API Endpoints:
                 
             case 'anti-debug':
                 try {
-                    const response = await fetch('http://localhost:3000/api/black-hat/anti-debug', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ data: 'test payload' })
-                    });
-                    const data = await response.json();
-                    console.log('Anti-Debug Result:', JSON.stringify(data, null, 2));
+                    if (engines['black-hat-capabilities']) {
+                        const result = await engines['black-hat-capabilities'].applyAntiDebug('test payload');
+                        console.log('Anti-Debug Result:', JSON.stringify(result, null, 2));
+                    } else {
+                        console.log('Anti-Debug: Black Hat Capabilities engine not available');
+                    }
                 } catch (error) {
                     console.error('Anti-debug failed:', error.message);
                 }
