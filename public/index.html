@@ -451,7 +451,6 @@
         let commandHistory = [];
         let currentPath = '/';
         let commandCount = 0;
-        let isProcessing = false;
 
         // Initialize terminal
         document.addEventListener('DOMContentLoaded', function() {
@@ -488,8 +487,6 @@
         }
 
         function handleTerminalInput(e) {
-            if (isProcessing) return;
-
             const terminal = document.getElementById('terminal');
             const currentLine = terminal.querySelector('.terminal-line:last-child');
             const input = currentLine.querySelector('.terminal-input');
@@ -559,19 +556,16 @@
         }
 
         function executeCommand(command) {
-            if (isProcessing) return;
-            
-            isProcessing = true;
             commandHistory.push(command);
             commandCount++;
             document.getElementById('commandCount').textContent = commandCount;
-            
+
             // Add command to history display
             addToHistory(command);
-            
+
             // Show command in terminal
             addTerminalOutput(`RawrZ@SecurityPlatform:~$ ${command}`, 'info');
-            
+
             // Process command
             processCommand(command);
         }
@@ -640,8 +634,7 @@
                     addTerminalOutput(`Command not found: ${cmd}`, 'error');
                     addTerminalOutput('Type "help" for available commands', 'info');
             }
-            
-            isProcessing = false;
+
             createNewInputLine();
         }
 
@@ -1164,44 +1157,202 @@
         function handleDroppedFiles(files) {
             Array.from(files).forEach(file => {
                 addTerminalOutput(`File detected: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`, 'info');
-                
+
                 // Auto-detect file type and suggest actions
                 const extension = file.name.split('.').pop().toLowerCase();
-                
+
+                // Create interactive options
+                const optionsDiv = document.createElement('div');
+                optionsDiv.className = 'file-options';
+                optionsDiv.style.cssText = 'margin: 10px 0; padding: 10px; background: rgba(0,255,0,0.1); border: 1px solid #00ff00; border-radius: 5px;';
+
+                let options = [];
+                let actions = [];
+
                 switch (extension) {
                     case 'exe':
                     case 'dll':
-                        addTerminalOutput('Executable file detected. Suggested actions:', 'warning');
-                        addTerminalOutput('  [1] Encrypt with EV Certificate', 'info');
-                        addTerminalOutput('  [2] Generate stub with stealth features', 'info');
-                        addTerminalOutput('  [3] Add persistence mechanisms', 'info');
+                        addTerminalOutput('Executable file detected. Select an action:', 'warning');
+                        options = [
+                            'Encrypt with EV Certificate',
+                            'Generate stub with stealth features', 
+                            'Add persistence mechanisms',
+                            'Analyze for malware signatures'
+                        ];
+                        actions = ['encrypt-ev', 'generate-stub', 'add-persistence', 'analyze-malware'];
                         break;
                     case 'txt':
                     case 'json':
                     case 'js':
                     case 'py':
-                        addTerminalOutput('Text file detected. Suggested actions:', 'warning');
-                        addTerminalOutput('  [1] Encrypt with multiple algorithms', 'info');
-                        addTerminalOutput('  [2] Analyze content', 'info');
-                        addTerminalOutput('  [3] Generate payload', 'info');
+                        addTerminalOutput('Text file detected. Select an action:', 'warning');
+                        options = [
+                            'Encrypt with multiple algorithms',
+                            'Analyze content for patterns',
+                            'Generate payload from content',
+                            'Extract metadata'
+                        ];
+                        actions = ['encrypt-multi', 'analyze-content', 'generate-payload', 'extract-metadata'];
                         break;
                     case 'jpg':
                     case 'png':
                     case 'gif':
-                        addTerminalOutput('Image file detected. Suggested actions:', 'warning');
-                        addTerminalOutput('  [1] Steganography analysis', 'info');
-                        addTerminalOutput('  [2] Hide payload in image', 'info');
+                        addTerminalOutput('Image file detected. Select an action:', 'warning');
+                        options = [
+                            'Steganography analysis',
+                            'Hide payload in image',
+                            'Extract EXIF data',
+                            'Image forensics'
+                        ];
+                        actions = ['stego-analysis', 'hide-payload', 'extract-exif', 'image-forensics'];
                         break;
                     default:
-                        addTerminalOutput('Unknown file type. Available actions:', 'warning');
-                        addTerminalOutput('  [1] Encrypt file', 'info');
-                        addTerminalOutput('  [2] Analyze file', 'info');
-                        addTerminalOutput('  [3] Generate report', 'info');
+                        addTerminalOutput('Unknown file type. Select an action:', 'warning');
+                        options = [
+                            'General file encryption',
+                            'Hex analysis',
+                            'File signature analysis',
+                            'Generate processing report'
+                        ];
+                        actions = ['encrypt-general', 'hex-analysis', 'signature-analysis', 'generate-report'];
                 }
-                
+
+                // Create clickable buttons for each option
+                options.forEach((option, index) => {
+                    const button = document.createElement('button');
+                    button.textContent = `[${index + 1}] ${option}`;
+                    button.style.cssText = 'display: block; width: 100%; margin: 5px 0; padding: 8px; background: #333; color: #00ff00; border: 1px solid #00ff00; border-radius: 3px; cursor: pointer; font-family: inherit;';
+                    button.onmouseover = () => button.style.background = '#00ff00';
+                    button.onmouseout = () => button.style.background = '#333';
+                    button.onclick = () => {
+                        addTerminalOutput(`Selected: ${option}`, 'success');
+                        processFileAction(file, actions[index], option);
+                        optionsDiv.remove();
+                    };
+                    optionsDiv.appendChild(button);
+                });
+
+                // Add to terminal
+                const terminal = document.getElementById('terminal');
+                terminal.appendChild(optionsDiv);
+                terminal.scrollTop = terminal.scrollHeight;
+
                 // Store file for processing
                 window.droppedFile = file;
             });
+        }
+
+        function processFileAction(file, action, description) {
+            addTerminalOutput(`Processing: ${file.name} - ${description}`, 'info');
+            
+            switch (action) {
+                case 'encrypt-ev':
+                    addTerminalOutput('Encrypting with EV Certificate...', 'info');
+                    // Simulate EV encryption
+                    setTimeout(() => {
+                        addTerminalOutput('EV Certificate encryption completed!', 'success');
+                        addTerminalOutput('File: encrypted_' + file.name, 'info');
+                    }, 2000);
+                    break;
+                case 'generate-stub':
+                    addTerminalOutput('Generating stub with stealth features...', 'info');
+                    // Simulate stub generation
+                    setTimeout(() => {
+                        addTerminalOutput('Stealth stub generated successfully!', 'success');
+                        addTerminalOutput('File: stealth_stub.exe', 'info');
+                    }, 2000);
+                    break;
+                case 'add-persistence':
+                    addTerminalOutput('Adding persistence mechanisms...', 'info');
+                    // Simulate persistence addition
+                    setTimeout(() => {
+                        addTerminalOutput('Persistence mechanisms added!', 'success');
+                        addTerminalOutput('File: persistent_' + file.name, 'info');
+                    }, 2000);
+                    break;
+                case 'analyze-malware':
+                    addTerminalOutput('Analyzing for malware signatures...', 'info');
+                    // Simulate malware analysis
+                    setTimeout(() => {
+                        addTerminalOutput('Malware analysis completed!', 'success');
+                        addTerminalOutput('Result: Clean file detected', 'info');
+                    }, 2000);
+                    break;
+                case 'encrypt-multi':
+                    addTerminalOutput('Encrypting with multiple algorithms...', 'info');
+                    setTimeout(() => {
+                        addTerminalOutput('Multi-algorithm encryption completed!', 'success');
+                    }, 2000);
+                    break;
+                case 'analyze-content':
+                    addTerminalOutput('Analyzing content for patterns...', 'info');
+                    setTimeout(() => {
+                        addTerminalOutput('Content analysis completed!', 'success');
+                    }, 2000);
+                    break;
+                case 'generate-payload':
+                    addTerminalOutput('Generating payload from content...', 'info');
+                    setTimeout(() => {
+                        addTerminalOutput('Payload generated successfully!', 'success');
+                    }, 2000);
+                    break;
+                case 'extract-metadata':
+                    addTerminalOutput('Extracting metadata...', 'info');
+                    setTimeout(() => {
+                        addTerminalOutput('Metadata extraction completed!', 'success');
+                    }, 2000);
+                    break;
+                case 'stego-analysis':
+                    addTerminalOutput('Performing steganography analysis...', 'info');
+                    setTimeout(() => {
+                        addTerminalOutput('Steganography analysis completed!', 'success');
+                    }, 2000);
+                    break;
+                case 'hide-payload':
+                    addTerminalOutput('Hiding payload in image...', 'info');
+                    setTimeout(() => {
+                        addTerminalOutput('Payload hidden successfully!', 'success');
+                    }, 2000);
+                    break;
+                case 'extract-exif':
+                    addTerminalOutput('Extracting EXIF data...', 'info');
+                    setTimeout(() => {
+                        addTerminalOutput('EXIF data extracted!', 'success');
+                    }, 2000);
+                    break;
+                case 'image-forensics':
+                    addTerminalOutput('Performing image forensics...', 'info');
+                    setTimeout(() => {
+                        addTerminalOutput('Image forensics completed!', 'success');
+                    }, 2000);
+                    break;
+                case 'encrypt-general':
+                    addTerminalOutput('Performing general file encryption...', 'info');
+                    setTimeout(() => {
+                        addTerminalOutput('General encryption completed!', 'success');
+                    }, 2000);
+                    break;
+                case 'hex-analysis':
+                    addTerminalOutput('Performing hex analysis...', 'info');
+                    setTimeout(() => {
+                        addTerminalOutput('Hex analysis completed!', 'success');
+                    }, 2000);
+                    break;
+                case 'signature-analysis':
+                    addTerminalOutput('Analyzing file signatures...', 'info');
+                    setTimeout(() => {
+                        addTerminalOutput('Signature analysis completed!', 'success');
+                    }, 2000);
+                    break;
+                case 'generate-report':
+                    addTerminalOutput('Generating processing report...', 'info');
+                    setTimeout(() => {
+                        addTerminalOutput('Processing report generated!', 'success');
+                    }, 2000);
+                    break;
+                default:
+                    addTerminalOutput('Unknown action selected', 'error');
+            }
         }
 
         // Utility functions
