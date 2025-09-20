@@ -569,6 +569,22 @@ class FullAssembly {
         this.assembledCode.clear();
         logger.info('Full Assembly cleanup completed');
     }
+
+    // Get engine status
+    getStatus() {
+        return {
+            name: 'Full Assembly Engine',
+            version: '1.0.0',
+            initialized: this.initialized || false,
+            supportedArchitectures: this.architectures ? Object.keys(this.architectures) : [],
+            supportedFormats: this.outputFormats ? Object.keys(this.outputFormats) : [],
+            compilerPaths: this.compilerPaths ? Object.keys(this.compilerPaths).filter(key => this.compilerPaths[key]) : [],
+            activeCompilations: this.activeCompilations ? this.activeCompilations.size : 0,
+            compilationStats: this.compilationStats || {},
+            status: this.initialized ? 'ready' : 'initializing',
+            timestamp: new Date().toISOString()
+        };
+    }
 }
 
 // Create and export instance

@@ -617,7 +617,22 @@ execute_decrypted_data:
 
   hexToAsmArray(hex) {
     const bytes = hex.match(/.{2}/g);
-    return bytes.map(byte => `0x${byte}`).join(', ');
+  return bytes.map(byte => `0x${byte}`).join(', ');
+}
+
+  // Get engine status
+  getStatus() {
+    return {
+      name: 'Camellia Assembly Engine',
+      version: '1.0.0',
+      initialized: this.initialized,
+      supportedAlgorithms: ['camellia-256-cbc', 'camellia-192-cbc', 'camellia-128-cbc'],
+      supportedArchitectures: ['x86', 'x64'],
+      compilerPaths: Object.keys(this.compilerPaths).filter(key => this.compilerPaths[key]),
+      assemblyStats: this.assemblyStats || {},
+      status: this.initialized ? 'ready' : 'initializing',
+      timestamp: new Date().toISOString()
+    };
   }
 }
 

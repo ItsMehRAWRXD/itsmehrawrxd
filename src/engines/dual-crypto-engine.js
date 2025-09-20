@@ -917,8 +917,22 @@ handle_exe:
   }
 
   hexToAsmArray(hex) {
-    const bytes = hex.match(/.{2}/g);
-    return bytes.map(byte => `0x${byte}`).join(', ');
+  const bytes = hex.match(/.{2}/g);
+  return bytes.map(byte => `0x${byte}`).join(', ');
+}
+
+  // Get engine status
+  getStatus() {
+    return {
+      name: this.name,
+      version: this.version,
+      initialized: this.initialized,
+      supportedAlgorithms: Object.keys(this.algorithms),
+      supportedFormats: ['csharp', 'cpp', 'c', 'assembly'],
+      encryptionStats: this.encryptionStats || {},
+      status: this.initialized ? 'ready' : 'initializing',
+      timestamp: new Date().toISOString()
+    };
   }
 }
 

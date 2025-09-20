@@ -1230,6 +1230,21 @@ exit /b 0`;
             timestamp: new Date().toISOString()
         };
     }
+
+    // Get engine status
+    getStatus() {
+        return {
+            name: 'EV Certificate Encryptor',
+            version: '1.0.0',
+            initialized: this.initialized,
+            certificateStore: this.certificateStore ? 'loaded' : 'not loaded',
+            encryptionCapabilities: this.encryptionCapabilities || {},
+            stubGeneration: this.stubGeneration ? 'enabled' : 'disabled',
+            trustedCAs: this.trustedCAs ? Object.keys(this.trustedCAs).length : 0,
+            status: this.initialized ? 'ready' : 'initializing',
+            timestamp: new Date().toISOString()
+        };
+    }
 }
 
 module.exports = EVCertEncryptor;

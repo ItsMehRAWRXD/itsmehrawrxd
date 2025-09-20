@@ -1090,6 +1090,20 @@ main();`;
     async cleanup() {
         logger.info('Advanced Crypto cleanup completed');
     }
+
+    // Get engine status
+    getStatus() {
+        return {
+            name: 'Advanced Crypto Engine',
+            version: '1.0.0',
+            initialized: true,
+            supportedAlgorithms: this.algorithms,
+            algorithmMap: Object.keys(this.algorithmMap),
+            encryptionStats: this.encryptionStats || {},
+            status: 'ready',
+            timestamp: new Date().toISOString()
+        };
+    }
 }
 
 module.exports = new AdvancedCrypto();
