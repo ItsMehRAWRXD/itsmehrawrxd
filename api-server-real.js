@@ -1144,6 +1144,15 @@ async function initializeEngine() {
             console.log('Creating RealEncryptionEngine instance...');
             realEncryptionEngine = new RealEncryptionEngine();
             console.log('RealEncryptionEngine instance created');
+            
+            // Initialize PowerShell One-Liners Engine
+            try {
+                const PowerShellOneLinersEngine = require('./src/engines/powershell-one-liners');
+                oneLinersEngine = new PowerShellOneLinersEngine();
+                console.log('[OK] PowerShell One-Liners Engine initialized');
+            } catch (error) {
+                console.error('Failed to load PowerShell One-Liners Engine:', error);
+            }
             await realEncryptionEngine.initialize();
             console.log('Real Encryption Engine initialized successfully');
         } catch (error) {
@@ -1537,6 +1546,114 @@ app.get('/api/health', (req, res) => {
         version: '1.0.0',
         service: 'RawrZ Security Platform - Real Only'
     });
+});
+
+// PowerShell One-Liners Engine endpoints
+app.get('/api/one-liners/list', (req, res) => {
+    try {
+        if (!oneLinersEngine) {
+            return res.status(500).json({
+                success: false,
+                error: 'PowerShell One-Liners Engine not initialized'
+            });
+        }
+        
+        const oneLiners = oneLinersEngine.getOneLiner();
+        res.json(oneLiners);
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+app.get('/api/one-liners/categories', (req, res) => {
+    try {
+        if (!oneLinersEngine) {
+            return res.status(500).json({
+                success: false,
+                error: 'PowerShell One-Liners Engine not initialized'
+            });
+        }
+        
+        const categories = oneLinersEngine.getCategories();
+        res.json({
+            success: true,
+            categories: categories
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+app.post('/api/one-liners/execute', async (req, res) => {
+    try {
+        const { name, args = [] } = req.body;
+        
+        if (!oneLinersEngine) {
+            return res.status(500).json({
+                success: false,
+                error: 'PowerShell One-Liners Engine not initialized'
+            });
+        }
+        
+        const result = oneLinersEngine.executeOneLiner(name, args);
+        
+        // Execute the PowerShell command
+        const { exec } = require('child_process');
+        
+        return new Promise((resolve) => {
+            exec(result.command, (error, stdout, stderr) => {
+                if (error) {
+                    resolve(res.json({
+                        success: false,
+                        error: error.message,
+                        output: stderr,
+                        command: result.command
+                    }));
+                } else {
+                    resolve(res.json({
+                        success: true,
+                        output: stdout || 'One-liner executed successfully',
+                        command: result.command,
+                        name: result.name,
+                        category: result.category
+                    }));
+                }
+            });
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+app.get('/api/one-liners/stats', (req, res) => {
+    try {
+        if (!oneLinersEngine) {
+            return res.status(500).json({
+                success: false,
+                error: 'PowerShell One-Liners Engine not initialized'
+            });
+        }
+        
+        const stats = oneLinersEngine.getStats();
+        res.json({
+            success: true,
+            stats: stats
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
 });
 
 // File upload
