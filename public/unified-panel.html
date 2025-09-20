@@ -393,8 +393,19 @@
         let metricsInterval;
         
         // Initialize dashboard
-                // Initialize
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize terminal
+            initializeTerminal();
+            
+            // Initialize file drop zone
+            setupFileDropZone();
+            
+            // Load command history
+            loadCommandHistory();
+            
+            // Initialize dashboard
+            initializeDashboard();
+            
             // Add a small delay to ensure all elements are fully loaded
             setTimeout(() => {
                 // Add event listeners to all tab buttons
@@ -408,7 +419,7 @@
                     });
                 });
             }, 100);
-        }););
+        });
         
         function initializeDashboard() {
             checkSystemHealth();
@@ -469,18 +480,6 @@
             } catch (error) {
                 console.error('Error switching tab:', error);
             }
-        });
-            
-            // Remove active class from all nav tabs
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Show selected tab
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
-            
-            currentTab = tabName;
         }
         
         async function apiCall(endpoint, method = 'GET', body = null) {
