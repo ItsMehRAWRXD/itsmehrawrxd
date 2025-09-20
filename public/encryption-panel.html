@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RawrZ Encryption Panel</title>
+    <style>
+        body { background: #000; color: #0f0; font-family: monospace; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { text-align: center; color: #0f0; text-shadow: 0 0 10px #0f0; }
+        .panel { border: 2px solid #0f0; padding: 20px; margin: 20px 0; background: rgba(0,255,0,0.05); }
+        .file-drop { border: 2px dashed #0f0; padding: 20px; text-align: center; cursor: pointer; }
+        .file-drop:hover { background: rgba(0,255,0,0.1); }
+        .method-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+        .method-card { border: 1px solid #0f0; padding: 15px; cursor: pointer; background: #111; }
+        .method-card:hover { background: rgba(0,255,0,0.1); }
+        .method-card.selected { background: rgba(0,255,0,0.2); border-color: #0ff; }
+        .btn { background: #111; color: #0f0; border: 2px solid #0f0; padding: 10px 20px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #0f0; color: #000; }
+        .btn:disabled { background: #333; color: #666; border-color: #666; }
+        .status { border: 1px solid #0f0; padding: 15px; background: #111; min-height: 200px; overflow-y: auto; }
+        .status-item { margin: 5px 0; padding: 5px; border-left: 3px solid #0f0; }
+        .success { border-left-color: #0f0; color: #0f0; }
+        .error { border-left-color: #f00; color: #f00; }
+        .info { border-left-color: #0ff; color: #0ff; }
+        .warning { border-left-color: #ff0; color: #ff0; }
+        .checkbox { margin: 5px 0; }
+        .checkbox label { display: flex; align-items: center; cursor: pointer; }
+        .checkbox input { margin-right: 8px; accent-color: #0f0; }
+        .file-list { border: 1px solid #0f0; padding: 10px; max-height: 200px; overflow-y: auto; background: #111; }
+        .file-item { padding: 5px; margin: 2px 0; border: 1px solid #333; cursor: pointer; }
+        .file-item:hover { background: rgba(0,255,0,0.1); }
+        .file-item.selected { background: rgba(0,255,0,0.2); }
+        .download-link { color: #0ff; text-decoration: none; padding: 10px; border: 1px solid #0ff; display: inline-block; margin: 5px; }
+        .download-link:hover { background: #0ff; color: #000; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 RawrZ Security Platform - Encryption Panel</h1>
+        
+        <div class="panel">
+            <h3>📁 File Selection</h3>
+            <div class="file-drop" id="fileDrop">
+                📁 Drag & Drop Files Here or Click to Browse
+                <input type="file" id="fileInput" style="display: none;" multiple>
+            </div>
+            <div class="file-list" id="fileList">No files selected</div>
+            <button class="btn" onclick="clearFiles()">Clear Files</button>
+        </div>
+        
+        <div class="panel">
+            <h3>🔒 Encryption Methods</h3>
+            <div class="method-grid">
+                <div class="method-card" data-method="dual-encrypt">
+                    <h4>🔄 Dual Encryption</h4>
+                    <p>AES-256-GCM + Camellia-256-CBC</p>
+                    <small>Output: .enc file</small>
+                </div>
+                
+                <div class="method-card" data-method="keyless-encrypt">
+                    <h4>🔑 Keyless Encryption</h4>
+                    <p>System entropy-based encryption</p>
+                    <small>Output: .enc file</small>
+                    <div class="checkbox">
+                        <label><input type="checkbox" name="useHardwareEntropy" checked> Use Hardware Entropy</label>
+                    </div>
+                </div>
+                
+                <div class="method-card" data-method="fileless-encrypt">
+                    <h4>💾 Fileless Encryption</h4>
+                    <p>Memory-only operations</p>
+                    <small>Output: .enc file</small>
+                    <div class="checkbox">
+                        <label><input type="checkbox" name="memoryOnly" checked> Memory Only</label>
+                        <label><input type="checkbox" name="obfuscateMemory" checked> Obfuscate Memory</label>
+                        <label><input type="checkbox" name="useProcessMemory" checked> Use Process Memory</label>
+                    </div>
+                </div>
+                
+                <div class="method-card" data-method="beaconism-stealth">
+                    <h4>🥷 Beaconism Stealth</h4>
+                    <p>Advanced evasion techniques</p>
+                    <small>Output: .stealth file</small>
+                    <div class="checkbox">
+                        <label><input type="checkbox" name="antiAnalysis" checked> Anti-Analysis</label>
+                    </div>
+                </div>
+                
+                <div class="method-card" data-method="polymorphic-encrypt">
+                    <h4>🔄 Polymorphic Encryption</h4>
+                    <p>Multiple encryption variants</p>
+                    <small>Output: .enc file</small>
+                    <div class="checkbox">
+                        <label><input type="checkbox" name="algorithmRotation" checked> Algorithm Rotation</label>
+                    </div>
+                    <div>
+                        <label>Variants: <input type="number" name="variants" value="3" min="1" max="10" style="width: 60px; background: #111; color: #0f0; border: 1px solid #0f0;"></label>
+                    </div>
+                </div>
+                
+                <div class="method-card" data-method="upx-pack">
+                    <h4>📦 UPX Packing</h4>
+                    <p>Executable compression</p>
+                    <small>Output: .exe file</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h3>⚡ Actions</h3>
+            <button class="btn" id="encryptBtn" onclick="processFiles()" disabled>🔐 Encrypt Files</button>
+            <button class="btn" onclick="listProcessed()">📋 List Processed Files</button>
+            <button class="btn" onclick="clearStatus()">🗑️ Clear Status</button>
+        </div>
+        
+        <div class="panel">
+            <h3>📊 Status & Results</h3>
+            <div class="status" id="status"></div>
+        </div>
+        
+        <div class="panel" id="downloadPanel" style="display: none;">
+            <h3>📥 Download Processed Files</h3>
+            <div id="downloadLinks"></div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFiles = [];
+        let selectedMethod = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setupFileHandling();
+            setupMethodSelection();
+            addStatus('System ready. Select files and encryption method.', 'info');
+        });
+
+        function setupFileHandling() {
+            const fileDrop = document.getElementById('fileDrop');
+            const fileInput = document.getElementById('fileInput');
+
+            fileDrop.addEventListener('click', () => fileInput.click());
+            fileDrop.addEventListener('dragover', (e) => e.preventDefault());
+            fileDrop.addEventListener('drop', (e) => {
+                e.preventDefault();
+                handleFiles(e.dataTransfer.files);
+            });
+            fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+        }
+
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                if (!selectedFiles.find(f => f.name === file.name && f.size === file.size)) {
+                    selectedFiles.push(file);
+                }
+            });
+            updateFileList();
+            updateEncryptButton();
+        }
+
+        function updateFileList() {
+            const fileList = document.getElementById('fileList');
+            if (selectedFiles.length === 0) {
+                fileList.innerHTML = 'No files selected';
+                return;
+            }
+            fileList.innerHTML = selectedFiles.map((file, index) => `
+                <div class="file-item" onclick="selectFile(${index})">
+                    <strong>${file.name}</strong> (${(file.size/1024).toFixed(2)} KB)
+                </div>
+            `).join('');
+        }
+
+        function selectFile(index) {
+            document.querySelectorAll('.file-item').forEach(item => item.classList.remove('selected'));
+            document.querySelectorAll('.file-item')[index].classList.add('selected');
+        }
+
+        function clearFiles() {
+            selectedFiles = [];
+            updateFileList();
+            updateEncryptButton();
+            addStatus('Files cleared.', 'info');
+        }
+
+        function setupMethodSelection() {
+            document.querySelectorAll('.method-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    document.querySelectorAll('.method-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    selectedMethod = card.dataset.method;
+                    updateEncryptButton();
+                    addStatus(`Selected: ${selectedMethod}`, 'info');
+                });
+            });
+        }
+
+        function updateEncryptButton() {
+            const btn = document.getElementById('encryptBtn');
+            const hasFiles = selectedFiles.length > 0;
+            const hasMethod = selectedMethod !== null;
+            btn.disabled = !(hasFiles && hasMethod);
+            if (hasFiles && hasMethod) {
+                btn.textContent = `🔐 Encrypt ${selectedFiles.length} File(s) with ${selectedMethod}`;
+            } else {
+                btn.textContent = '🔐 Encrypt Files';
+            }
+        }
+
+        async function processFiles() {
+            if (selectedFiles.length === 0 || !selectedMethod) {
+                addStatus('Please select files and encryption method.', 'warning');
+                return;
+            }
+
+            const btn = document.getElementById('encryptBtn');
+            btn.disabled = true;
+            addStatus(`Processing ${selectedFiles.length} file(s) with ${selectedMethod}...`, 'info');
+
+            for (let i = 0; i < selectedFiles.length; i++) {
+                const file = selectedFiles[i];
+                try {
+                    await processFile(file, selectedMethod);
+                    addStatus(`✅ ${file.name} processed successfully`, 'success');
+                } catch (error) {
+                    addStatus(`❌ ${file.name} failed: ${error.message}`, 'error');
+                }
+            }
+
+            btn.disabled = false;
+            addStatus('All files processed!', 'success');
+            await listProcessed();
+        }
+
+        async function processFile(file, method) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const methodCard = document.querySelector(`[data-method="${method}"]`);
+            const checkboxes = methodCard.querySelectorAll('input[type="checkbox"]');
+            const numberInputs = methodCard.querySelectorAll('input[type="number"]');
+
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) formData.append(checkbox.name, 'on');
+            });
+            numberInputs.forEach(input => {
+                formData.append(input.name, input.value);
+            });
+
+            const response = await fetch(`/api/real-encryption/${method}`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            if (!result.success) throw new Error(result.error);
+            return result;
+        }
+
+        async function listProcessed() {
+            try {
+                const response = await fetch('/api/files/list-processed');
+                const result = await response.json();
+
+                if (result.success && result.files.length > 0) {
+                    const downloadPanel = document.getElementById('downloadPanel');
+                    const downloadLinks = document.getElementById('downloadLinks');
+                    
+                    downloadPanel.style.display = 'block';
+                    downloadLinks.innerHTML = result.files.map(file => `
+                        <a href="${file.downloadUrl}" class="download-link" download>
+                            📥 ${file.name} (${(file.size/1024).toFixed(2)} KB)
+                        </a>
+                    `).join('');
+                    
+                    addStatus(`Found ${result.files.length} processed files.`, 'success');
+                } else {
+                    addStatus('No processed files found.', 'warning');
+                }
+            } catch (error) {
+                addStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        function addStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            const timestamp = new Date().toLocaleTimeString();
+            const item = document.createElement('div');
+            item.className = `status-item ${type}`;
+            item.innerHTML = `[${timestamp}] ${message}`;
+            status.appendChild(item);
+            status.scrollTop = status.scrollHeight;
+        }
+
+        function clearStatus() {
+            document.getElementById('status').innerHTML = '<div class="status-item info">Status cleared.</div>';
+        }
+    </script>
+</body>
+</html>

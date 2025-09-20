@@ -114,11 +114,7 @@ RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.2 && \
 # Install additional security and analysis tools
 RUN apk add --no-cache \
     wine \
-    wine-dev \
-    upx \
-    mingw-w64-gcc \
-    mingw-w64-crt \
-    mingw-w64-winpthreads
+    wine-dev
 
 # Install Java tools
 RUN echo "export JAVA_HOME=/usr/lib/jvm/java-11-openjdk" >> /etc/profile && \
