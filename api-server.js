@@ -558,12 +558,20 @@ app.post('/api/rawrz-engine/execute', async (req, res) => {
                 
             // Camellia Assembly
             case 'camellia-assembly':
+                // Bridge approach: try new method first, fallback to old method
+                let camelliaModule = RawrZEngine.modules.get('camellia-assembly');
+                if (!camelliaModule) {
+                    camelliaModule = await RawrZEngine.loadModule('camellia-assembly');
+                }
+                if (!camelliaModule) {
+                    throw new Error('Camellia Assembly module not available');
+                }
                 if (action === 'compileAssembly') {
-                    const module = await RawrZEngine.loadModule('camellia-assembly');
-                    result = await module.compileAssembly(params.code, params.platform, params.options || {});
+                    result = await camelliaModule.compileAssembly(params.code, params.platform, params.options || {});
                 } else if (action === 'getStatus') {
-                    const module = RawrZEngine.modules.get('camellia-assembly');
-                    result = module.getStatus();
+                    result = camelliaModule.getStatus();
+                } else {
+                    throw new Error(`Action ${action} not supported for engine camellia-assembly`);
                 }
                 break;
                 
@@ -602,12 +610,20 @@ app.post('/api/rawrz-engine/execute', async (req, res) => {
                 
             // Dual Crypto Engine
             case 'dual-crypto-engine':
+                // Bridge approach: try new method first, fallback to old method
+                let dualModule = RawrZEngine.modules.get('dual-crypto-engine');
+                if (!dualModule) {
+                    dualModule = await RawrZEngine.loadModule('dual-crypto-engine');
+                }
+                if (!dualModule) {
+                    throw new Error('Dual Crypto Engine module not available');
+                }
                 if (action === 'dualEncrypt') {
-                    const module = await RawrZEngine.loadModule('dual-crypto-engine');
-                    result = await module.dualEncrypt(params.data, params.algorithms, params.options || {});
+                    result = await dualModule.dualEncrypt(params.data, params.algorithms, params.options || {});
                 } else if (action === 'getStatus') {
-                    const module = RawrZEngine.modules.get('dual-crypto-engine');
-                    result = module.getStatus();
+                    result = dualModule.getStatus();
+                } else {
+                    throw new Error(`Action ${action} not supported for engine dual-crypto-engine`);
                 }
                 break;
                 
@@ -624,12 +640,20 @@ app.post('/api/rawrz-engine/execute', async (req, res) => {
                 
             // EV Cert Encryptor
             case 'ev-cert-encryptor':
+                // Bridge approach: try new method first, fallback to old method
+                let evModule = RawrZEngine.modules.get('ev-cert-encryptor');
+                if (!evModule) {
+                    evModule = await RawrZEngine.loadModule('ev-cert-encryptor');
+                }
+                if (!evModule) {
+                    throw new Error('EV Cert Encryptor module not available');
+                }
                 if (action === 'evEncrypt') {
-                    const module = await RawrZEngine.loadModule('ev-cert-encryptor');
-                    result = await module.evEncrypt(params.data, params.certificate, params.options || {});
+                    result = await evModule.evEncrypt(params.data, params.certificate, params.options || {});
                 } else if (action === 'getStatus') {
-                    const module = RawrZEngine.modules.get('ev-cert-encryptor');
-                    result = module.getStatus();
+                    result = evModule.getStatus();
+                } else {
+                    throw new Error(`Action ${action} not supported for engine ev-cert-encryptor`);
                 }
                 break;
                 

