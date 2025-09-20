@@ -2,7 +2,7 @@
 REM RawrZ Security Platform - Docker Environment Update Script (Windows)
 REM This script updates the local Docker environment to match the droplet
 
-echo 🚀 RawrZ Security Platform - Docker Environment Update
+echo RawrZ Security Platform - Docker Environment Update
 echo ======================================================
 
 REM Check if Docker is running
@@ -97,7 +97,7 @@ if %errorlevel% equ 0 (
 
 REM Display service URLs
 echo.
-echo 🌐 Service URLs:
+echo Service URLs:
 echo ================
 echo Main Application: http://localhost:3000
 echo Web Interface: http://localhost
@@ -108,25 +108,25 @@ echo Bot Manager: http://localhost/bot-manager.html
 echo CVE Analysis: http://localhost/cve-analysis-panel.html
 echo CLI Interface: http://localhost/advanced-encryption-panel.html
 echo.
-echo 📊 Monitoring:
+echo Monitoring:
 echo ==============
 echo Prometheus: http://localhost:9090
 echo Loki Logs: http://localhost:3100
 echo.
-echo 🗄️ Database:
+echo Database:
 echo ============
 echo PostgreSQL: localhost:5432
 echo Redis: localhost:6379
 echo.
 
 REM Display container status
-echo 📦 Container Status:
+echo Container Status:
 echo ====================
 docker-compose ps
 
 REM Display logs for main application
 echo.
-echo 📋 Recent Application Logs:
+echo Recent Application Logs:
 echo ===========================
 docker-compose logs --tail=20 rawrz-app
 
@@ -136,7 +136,7 @@ echo [INFO] Your local environment is now synchronized with the droplet
 echo [INFO] All advanced features are available and ready for testing
 
 echo.
-echo 🎯 Next Steps:
+echo Next Steps:
 echo ==============
 echo 1. Open http://localhost in your browser
 echo 2. Test the encryption panel with file uploads
@@ -144,13 +144,13 @@ echo 3. Try the advanced features (dangerous options, PowerShell, etc.)
 echo 4. Generate and test stubs
 echo 5. Test bot management and CVE analysis
 echo.
-echo 💡 Tips:
+echo Tips:
 echo ========
 echo - Use 'docker-compose logs -f [service]' to follow logs
 echo - Use 'docker-compose restart [service]' to restart a service
 echo - Use 'docker-compose down' to stop all services
 echo - Use 'docker-compose up -d' to start all services
 echo.
-echo [SUCCESS] Environment is ready for airtight testing! 🔒
+echo [SUCCESS] Environment is ready for airtight testing!
 
 pause
