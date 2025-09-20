@@ -1,39 +1,41 @@
 # RawrZ Security Platform - Airtight Environment Dockerfile
-FROM node:18-alpine
+FROM node:18-bullseye
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies for cryptography and advanced features
-RUN apk add --no-cache \
+# Update package lists and install system dependencies for cryptography and advanced features
+RUN apt-get update && apt-get install -y \
     python3 \
+    python3-pip \
+    python3-dev \
+    build-essential \
     make \
     g++ \
     gcc \
-    libc-dev \
+    libc6-dev \
     libffi-dev \
-    openssl-dev \
-    sqlite-dev \
+    libssl-dev \
+    libsqlite3-dev \
     imagemagick \
     graphicsmagick \
-    vips-dev \
+    libvips-dev \
     libpng-dev \
-    libjpeg-turbo-dev \
-    giflib-dev \
+    libjpeg-dev \
+    libgif-dev \
     libwebp-dev \
-    librsvg-dev \
-    pango-dev \
-    cairo-dev \
-    pixman-dev \
-    gdk-pixbuf-dev \
-    freetype-dev \
-    fontconfig-dev \
+    librsvg2-dev \
+    libpango1.0-dev \
+    libcairo2-dev \
+    libpixman-1-dev \
+    libgdk-pixbuf2.0-dev \
+    libfreetype6-dev \
+    libfontconfig1-dev \
     libx11-dev \
     libxext-dev \
     libxrender-dev \
     libxtst-dev \
     libxi-dev \
-    mesa-dev \
     libgl1-mesa-dev \
     libglu1-mesa-dev \
     libxrandr-dev \
@@ -44,9 +46,6 @@ RUN apk add --no-cache \
     libxfixes-dev \
     libxinerama-dev \
     libxcursor-dev \
-    libxss-dev \
-    libxtst-dev \
-    libxrandr-dev \
     libasound2-dev \
     libpangocairo-1.0-0 \
     libatk1.0-0 \
@@ -73,7 +72,7 @@ RUN apk add --no-cache \
     vim \
     htop \
     net-tools \
-    iputils \
+    iputils-ping \
     tcpdump \
     nmap \
     openssh-client \
@@ -83,12 +82,14 @@ RUN apk add --no-cache \
     tar \
     gzip \
     bzip2 \
-    xz \
+    xz-utils \
     lz4 \
     zstd \
     jq \
     yq \
-    && rm -rf /var/cache/apk/*
+    postgresql-client \
+    redis-tools \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js global packages for advanced features
 RUN npm install -g \
@@ -115,7 +116,7 @@ RUN npm install -g \
 COPY package*.json ./
 
 # Install all dependencies
-RUN npm ci --only=production --silent
+RUN npm ci --omit=dev --silent
 
 # Copy application files
 COPY . .
