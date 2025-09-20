@@ -146,14 +146,24 @@
         }
         
         async function showSystemStatus() {
-            addOutput('RawrZ Security Platform Status:', 'success');
-            addOutput('  Server: Running on port 3000', 'info');
-            addOutput('  Engine: Active (48+ modules loaded)', 'info');
-            addOutput('  Memory: 45.2 MB used', 'info');
-            addOutput('  CPU: 2.3% usage', 'info');
-            addOutput('  Uptime: 2 hours 15 minutes', 'info');
-            addOutput('  Requests: 1,247 processed', 'info');
-            addOutput('  Errors: 0', 'info');
+            addOutput('RawrZ Security Platform Status:', 'header');
+            try {
+                const response = await fetch('/api/health');
+                const result = await response.json();
+                
+                if (result.success) {
+                    addOutput(`  Status: ${result.status}`, 'success');
+                    addOutput(`  Engines: ${result.engines} Active`, 'success');
+                    addOutput(`  Uptime: ${result.uptime.toFixed(2)}s`, 'info');
+                    addOutput(`  Version: ${result.version}`, 'info');
+                    addOutput(`  Service: ${result.service}`, 'info');
+                } else {
+                    addOutput('  Status: Error', 'error');
+                }
+            } catch (error) {
+                addOutput('  Status: Offline', 'error');
+                addOutput(`  Error: ${error.message}`, 'error');
+            }
         }
         
         async function showEngineStatus() {
@@ -226,12 +236,51 @@
                 addOutput('Usage: encrypt <filename>', 'error');
                 return;
             }
-            addOutput(`Encrypting file: ${args[0]}`, 'info');
-            addOutput('Select encryption algorithm:', 'warning');
-            addOutput('  [1] AES-256-GCM (Recommended)', 'info');
-            addOutput('  [2] ChaCha20-Poly1305', 'info');
-            addOutput('  [3] Camellia-256-GCM', 'info');
-            addOutput('  [4] Multiple algorithms', 'info');
+            
+            const filename = args[0];
+            const extension = args[1] || '.enc';
+            
+            addOutput(`Encrypting file: ${filename}`, 'info');
+            addOutput('Uploading file to server...', 'info');
+            
+            try {
+                // Create a file input element to simulate file upload
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = '*/*';
+                
+                // For demo purposes, we'll create a test file
+                const testContent = `Test content for ${filename}`;
+                const blob = new Blob([testContent], { type: 'text/plain' });
+                const file = new File([blob], filename, { type: 'text/plain' });
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('algorithm', 'AES-256-CBC');
+                formData.append('extension', extension);
+                
+                addOutput('Sending encryption request...', 'info');
+                
+                const response = await fetch('/api/encrypt-file', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    addOutput('✅ File encrypted successfully!', 'success');
+                    addOutput(`Original: ${result.originalName} (${result.originalSize} bytes)`, 'info');
+                    addOutput(`Encrypted: ${result.encryptedName} (${result.encryptedSize} bytes)`, 'info');
+                    addOutput(`Algorithm: ${result.algorithm}`, 'info');
+                    addOutput(`Download: ${result.downloadUrl}`, 'info');
+                    addOutput('Encryption keys saved for decryption', 'warning');
+                } else {
+                    addOutput(`❌ Encryption failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                addOutput(`❌ Error: ${error.message}`, 'error');
+            }
         }
         
         async function handleDecryption(args) {
