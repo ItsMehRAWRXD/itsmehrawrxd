@@ -51,6 +51,11 @@ app.use((req, res, next) => {
 app.use(express.urlencoded({ limit: '1gb', extended: true }));
 app.use(express.static('.'));
 
+// Root route - serve main panel
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'panel.html'));
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error('Error:', err);
