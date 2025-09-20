@@ -1,11 +1,17 @@
 # RawrZ Security Platform - Airtight Environment Dockerfile
-FROM node:18-bullseye
+FROM ubuntu:22.04
 
 # Set working directory
 WORKDIR /app
 
-# Update package lists and install system dependencies for cryptography and advanced features
+# Install Node.js 18 and system dependencies
 RUN apt-get update && apt-get install -y \
+    curl \
+    ca-certificates \
+    gnupg \
+    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get install -y \
     python3 \
     python3-pip \
     python3-dev \
@@ -86,7 +92,6 @@ RUN apt-get update && apt-get install -y \
     lz4 \
     zstd \
     jq \
-    yq \
     postgresql-client \
     redis-tools \
     && rm -rf /var/lib/apt/lists/*
@@ -112,11 +117,11 @@ RUN npm install -g \
     serve \
     live-server
 
-# Copy package files
-COPY package*.json ./
+# Copy minimal package file for Docker build
+COPY package-docker.json package.json
 
-# Install all dependencies
-RUN npm ci --omit=dev --silent
+# Install core dependencies
+RUN npm install --omit=dev --ignore-scripts --no-optional
 
 # Copy application files
 COPY . .
@@ -136,8 +141,9 @@ RUN mkdir -p \
     /app/engines \
     /app/backups
 
-# Set proper permissions
-RUN chmod -R 755 /app && \
+# Create node user and set proper permissions
+RUN useradd -m -s /bin/bash node && \
+    chmod -R 755 /app && \
     chown -R node:node /app
 
 # Switch to non-root user
