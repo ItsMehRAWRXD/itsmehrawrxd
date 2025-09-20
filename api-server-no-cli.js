@@ -363,6 +363,9 @@ async function startServer() {
             // Heartbeat to keep process alive
         }, 30000);
 
+        // CRITICAL: Keep the process alive by not exiting
+        return server;
+
     } catch (error) {
         console.error('Failed to start server:', error);
         // Don't exit immediately, try to recover
@@ -373,5 +376,12 @@ async function startServer() {
     }
 }
 
-// FIXED: Don't use .catch() which causes process.exit()
-startServer();
+// FIXED: Properly handle the server startup
+startServer().then(server => {
+    if (server) {
+        console.log('Server started successfully and is listening on port', PORT);
+    }
+}).catch(error => {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+});
