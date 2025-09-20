@@ -1,38 +1,28 @@
 name: rawrz-security-platform
-region: nyc
 services:
-  - name: rawrz-backend
-    run_command: node api-server.js
-    http_port: 3000
-    source_dir: /
-    dockerfile_path: Dockerfile
-    instance_count: 1
-    instance_size_slug: basic-xxs
-    github:
-      repo: ItsMehRAWRXD/itsmehrawrxd
-      branch: master
-    envs:
-      - key: NODE_ENV
-        value: production
-        scope: RUN_AND_BUILD_TIME
-      - key: PORT
-        value: '3000'
-        scope: RUN_AND_BUILD_TIME
-      - key: LOG_LEVEL
-        value: info
-        scope: RUN_AND_BUILD_TIME
-    health_check:
-      http_path: /api/health
-      initial_delay_seconds: 10
-      period_seconds: 10
-      timeout_seconds: 5
-      success_threshold: 1
-      failure_threshold: 3
-ingress:
-  rules:
-    - match:
-        path:
-          prefix: /
-      component:
-        name: rawrz-backend
-# Domains will be auto-assigned by DigitalOcean
+- name: api
+  source_dir: /
+  github:
+    repo: ItsMehRAWRXD/itsmehrawrxd
+    branch: master
+  run_command: node api-server.js
+  environment_slug: node-js
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  http_port: 3000
+  routes:
+  - path: /
+  envs:
+  - key: NODE_ENV
+    value: production
+  - key: PORT
+    value: "3000"
+  - key: JOTTI_API_URL
+    value: "https://virusscan.jotti.org"
+  health_check:
+    http_path: /health
+    initial_delay_seconds: 10
+    period_seconds: 10
+    timeout_seconds: 5
+    success_threshold: 1
+    failure_threshold: 3
