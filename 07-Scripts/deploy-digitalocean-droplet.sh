@@ -1,10 +1,64 @@
 #!/bin/bash
 
 # RawrZ Security Platform - DigitalOcean Droplet Deployment
-# This script deploys the app to a DigitalOcean Droplet
+# Enhanced deployment script with improved error handling and security
 
-echo "=== RawrZ Security Platform - DigitalOcean Droplet Deployment ==="
-echo "Starting deployment to DigitalOcean Droplet..."
+set -e
+
+# Color codes for better output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+WHITE='\033[1;37m'
+NC='\033[0m' # No Color
+
+# Configuration
+APP_NAME="rawrz-security-platform"
+VERSION="1.0.0"
+DEFAULT_PORT=3000
+DEFAULT_REPO="https://github.com/ItsMehRAWRXD/itsmehrawrxd.git"
+DOCKER_IMAGE="rawrz-security-platform:latest"
+CONTAINER_NAME="rawrz-app"
+
+log() {
+    echo -e "${WHITE}$1${NC}"
+}
+
+log_success() {
+    echo -e "${GREEN}✅ $1${NC}"
+}
+
+log_error() {
+    echo -e "${RED}❌ $1${NC}"
+}
+
+log_warning() {
+    echo -e "${YELLOW}⚠️  $1${NC}"
+}
+
+log_info() {
+    echo -e "${CYAN}ℹ️  $1${NC}"
+}
+
+display_banner() {
+    clear
+    echo -e "${CYAN}"
+    echo "╔══════════════════════════════════════════════════════════════════╗"
+    echo "║                   RawrZ Security Platform                       ║"
+    echo "║                DigitalOcean Droplet Deployment                  ║"
+    echo "║                        Version $VERSION                               ║"
+    echo "╚══════════════════════════════════════════════════════════════════╝"
+    echo -e "${NC}"
+    echo -e "${YELLOW}🚀 Enhanced deployment with improved security and monitoring${NC}"
+    echo ""
+}
+
+log_header() {
+    echo -e "${PURPLE}$1${NC}"
+}
 
 # Check if we're on a DigitalOcean Droplet
 if [ ! -f /etc/digitalocean ]; then
