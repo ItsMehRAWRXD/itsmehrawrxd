@@ -1,0 +1,144 @@
+{
+  "name": "n0mn0m-ide",
+  "displayName": "n0mn0m IDE",
+  "description": "Complete AI coding assistant with unlimited access to all models",
+  "version": "1.0.0",
+  "publisher": "n0mn0m",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other",
+    "Machine Learning",
+    "Snippets"
+  ],
+  "activationEvents": [
+    "onCommand:n0mn0m.startSession",
+    "onCommand:n0mn0m.generateCode",
+    "onCommand:n0mn0m.codeReview",
+    "onCommand:n0mn0m.debugCode",
+    "onCommand:n0mn0m.refactorCode",
+    "onCommand:airtight-ai.explainCode",
+    "onCommand:airtight-ai.generateTests",
+    "onCommand:airtight-ai.optimizeCode"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "airtight-ai.startSession",
+        "title": "Start AI Coding Session",
+        "category": "Airtight AI"
+      },
+      {
+        "command": "airtight-ai.generateCode",
+        "title": "Generate Code",
+        "category": "Airtight AI"
+      },
+      {
+        "command": "airtight-ai.codeReview",
+        "title": "Code Review",
+        "category": "Airtight AI"
+      },
+      {
+        "command": "airtight-ai.debugCode",
+        "title": "Debug Code",
+        "category": "Airtight AI"
+      },
+      {
+        "command": "airtight-ai.refactorCode",
+        "title": "Refactor Code",
+        "category": "Airtight AI"
+      },
+      {
+        "command": "airtight-ai.explainCode",
+        "title": "Explain Code",
+        "category": "Airtight AI"
+      },
+      {
+        "command": "airtight-ai.generateTests",
+        "title": "Generate Tests",
+        "category": "Airtight AI"
+      },
+      {
+        "command": "airtight-ai.optimizeCode",
+        "title": "Optimize Code",
+        "category": "Airtight AI"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "airtight-ai.generateCode",
+          "group": "airtight-ai",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "airtight-ai.codeReview",
+          "group": "airtight-ai",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "airtight-ai.explainCode",
+          "group": "airtight-ai",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "airtight-ai.refactorCode",
+          "group": "airtight-ai",
+          "when": "editorHasSelection"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "airtight-ai.startSession",
+          "when": "!airtight-ai.sessionActive"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Airtight AI",
+      "properties": {
+        "airtight-ai.defaultModel": {
+          "type": "string",
+          "default": "gpt-5",
+          "enum": ["gpt-5", "claude-3.5", "gemini-2.0", "copilot"],
+          "description": "Default AI model to use"
+        },
+        "airtight-ai.backendUrl": {
+          "type": "string",
+          "default": "http://localhost:3001",
+          "description": "Backend server URL"
+        },
+        "airtight-ai.websocketUrl": {
+          "type": "string",
+          "default": "ws://localhost:3002",
+          "description": "WebSocket server URL"
+        }
+      }
+    },
+    "views": {
+      "explorer": [
+        {
+          "id": "airtight-ai-sessions",
+          "name": "AI Sessions",
+          "when": "airtight-ai.sessionActive"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "16.x",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "ws": "^8.14.2",
+    "axios": "^1.6.0"
+  }
+}

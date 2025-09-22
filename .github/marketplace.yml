@@ -1,0 +1,43 @@
+name: n0mn0m-meta-engine
+description: "One-liner, trillion-dollar Meta-Engine that bootstraps 26 development engines from #use(System::Meta)"
+category: developer-tools
+pricing:
+  - plan: hobby
+    price: 0
+    unit: month
+    description: "Engine-3 Transpiler only, 1K meta-decisions/month"
+  - plan: indie  
+    price: 49
+    unit: month
+    description: "Any 2 engines, 10K meta-decisions/month"
+  - plan: pro
+    price: 199
+    unit: month
+    description: "All 4 core engines, 100K meta-decisions/month"
+  - plan: enterprise
+    price: 999
+    unit: month
+    description: "All 26 engines, unlimited meta-decisions"
+features:
+  - "One-liner bootstrap: #use(System::Meta)"
+  - "26 self-optimizing engines"
+  - "Real-time trade-off decisions"
+  - "Automatic rollback and recovery"
+  - "Zero-downtime deployments"
+  - "Femtosecond-precision billing"
+  - "Quantum-ASM compilation"
+  - "EON-JIT execution"
+  - "49-language transpilation"
+  - "Self-hosting daemon"
+  - "Enterprise-grade security"
+  - "Kubernetes deployment"
+  - "eBPF monitoring"
+  - "WebGPU acceleration"
+  - "Cross-platform support"
+screenshots:
+  - "https://raw.githubusercontent.com/n0mn0m/n0mn0m-trillion/main/screenshots/main-uni.png"
+  - "https://raw.githubusercontent.com/n0mn0m/n0mn0m-trillion/main/screenshots/meta-engine-dashboard.png"
+  - "https://raw.githubusercontent.com/n0mn0m/n0mn0m-trillion/main/screenshots/real-time-switching.gif"
+  - "https://raw.githubusercontent.com/n0mn0m/n0mn0m-trillion/main/screenshots/billing-meter.png"
+documentation: "https://github.com/n0mn0m/n0mn0m-trillion/wiki"
+support: "https://github.com/n0mn0m/n0mn0m-trillion/discussions"

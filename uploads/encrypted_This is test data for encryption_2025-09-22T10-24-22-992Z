@@ -1,0 +1,10 @@
+{
+  "metadata": {
+    "algorithm": "aes-256-gcm",
+    "key": "4257fd4a9f9db2dc89d66cbb3381160644be53938857846b55835a4cc006c437",
+    "iv": "724649489ceb464917a44dcabbc1a758",
+    "timestamp": "2025-09-22T10:24:22.992Z",
+    "originalSize": 48
+  },
+  "data": "wcK89r7rF8X6fdOgmNATUxLvcIoe9WGbXElft02qzqip9Jmr5D8t5cV1Z0EPPX9Q"
+}

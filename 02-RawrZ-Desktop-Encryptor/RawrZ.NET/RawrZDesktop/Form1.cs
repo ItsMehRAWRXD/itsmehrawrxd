@@ -2,7 +2,6 @@ using System.Security.Cryptography;
 using System.Text;
 using RawrZDesktop.Engines;
 using RawrZDesktop.Controls;
-using RawrZDesktop.Security;
 using RawrZDesktop.Stealth;
 using RawrZDesktop.AdvancedModules;
 using Microsoft.CodeAnalysis;
@@ -66,17 +65,7 @@ public partial class Form1 : Form
         {
             InitializeComponent();
             
-            // Perform tamper detection before initializing
-            try
-            {
-                // Temporarily disabled for development
-                // PerformStartupTamperDetection();
-                MessageBox.Show("Tamper detection temporarily disabled for development", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Tamper detection failed: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            // Tamper detection removed
             
             // Initialize stealth architecture
             try
@@ -143,10 +132,7 @@ public partial class Form1 : Form
             ForeColor = Color.DarkBlue
         };
 
-        // Add security status tab
-        var securityTab = new TabPage("Security Status");
-        securityTab.Controls.Add(CreateSecurityStatusPanel());
-        mainTabControl.TabPages.Add(securityTab);
+        // Security status tab removed
         
         // Tab 1: File Operations
         var fileOperationsTab = new TabPage("📁 File Operations");
@@ -727,7 +713,7 @@ public partial class Form1 : Form
             BackColor = Color.LightBlue,
             Font = new Font("Arial", 10, FontStyle.Bold)
         };
-        refreshButton.Click += (s, e) => RefreshSecurityStatus(statusText);
+        refreshButton.Click += (s, e) => statusText.Text = "Security features disabled";
 
         var testButton = new Button
         {
@@ -737,7 +723,7 @@ public partial class Form1 : Form
             BackColor = Color.LightCoral,
             Font = new Font("Arial", 10, FontStyle.Bold)
         };
-        testButton.Click += (s, e) => TestTamperDetection(statusText);
+        testButton.Click += (s, e) => statusText.Text = "Security features disabled";
 
         var stealthButton = new Button
         {
@@ -808,7 +794,7 @@ public partial class Form1 : Form
         panel.Controls.Add(powershellButton);
 
         // Initial status check
-        RefreshSecurityStatus(statusText);
+        statusText.Text = "Security features disabled";
 
         return panel;
     }
@@ -1007,120 +993,18 @@ public partial class Form1 : Form
 
     private void RefreshSecurityStatus(TextBox statusText)
     {
-        try
-        {
-            var result = TamperDetection.PerformTamperDetection();
-            
-            var status = new StringBuilder();
-            status.AppendLine($"Security Status Report - {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-            status.AppendLine("=" + new string('=', 50));
-            status.AppendLine();
-            
-            status.AppendLine($"🔍 Overall Status: {(result.IsTampered ? "❌ COMPROMISED" : "✅ SECURE")}");
-            status.AppendLine();
-            
-            status.AppendLine("📊 Detailed Analysis:");
-            status.AppendLine($"   • Executable Integrity: {(result.ExecutableTampered ? "❌ TAMPERED" : "✅ VERIFIED")}");
-            status.AppendLine($"   • Debugger Detection: {(result.DebuggerDetected ? "❌ DETECTED" : "✅ CLEAR")}");
-            status.AppendLine($"   • Virtual Machine: {(result.VirtualMachineDetected ? "⚠️ DETECTED" : "✅ CLEAR")}");
-            status.AppendLine($"   • Analysis Tools: {(result.AnalysisToolsDetected ? "❌ DETECTED" : "✅ CLEAR")}");
-            status.AppendLine($"   • Memory Integrity: {(result.MemoryTampered ? "❌ TAMPERED" : "✅ VERIFIED")}");
-            status.AppendLine();
-            
-            if (result.IsTampered)
-            {
-                status.AppendLine("🚨 SECURITY WARNINGS:");
-                if (result.ExecutableTampered)
-                    status.AppendLine("   • Application executable has been modified!");
-                if (result.DebuggerDetected)
-                    status.AppendLine("   • Debugging tools are active!");
-                if (result.AnalysisToolsDetected)
-                    status.AppendLine("   • Security analysis tools detected!");
-                if (result.MemoryTampered)
-                    status.AppendLine("   • Memory has been tampered with!");
-                status.AppendLine();
-            }
-            
-            status.AppendLine("🔧 Recommendations:");
-            if (result.VirtualMachineDetected)
-                status.AppendLine("   • Running in VM - some features may be limited");
-            if (!result.IsTampered)
-                status.AppendLine("   • System appears secure - continue normal operations");
-            else
-                status.AppendLine("   • Security violations detected - consider restarting application");
-            
-            statusText.Text = status.ToString();
-        }
-        catch (Exception ex)
-        {
-            statusText.Text = $"Error checking security status: {ex.Message}";
-        }
+        statusText.Text = "Security features have been disabled.";
     }
 
     private void TestTamperDetection(TextBox statusText)
     {
-        try
-        {
-            statusText.AppendText($"\r\n🧪 Running tamper detection test...\r\n");
-            
-            var result = TamperDetection.PerformTamperDetection();
-            
-            statusText.AppendText($"Test completed at {DateTime.Now:HH:mm:ss}\r\n");
-            statusText.AppendText($"Result: {(result.IsTampered ? "TAMPER DETECTED" : "NO TAMPER DETECTED")}\r\n");
-            
-            if (result.IsTampered)
-            {
-                statusText.AppendText("⚠️ Security violations found:\r\n");
-                if (result.ExecutableTampered) statusText.AppendText("  - Executable tampered\r\n");
-                if (result.DebuggerDetected) statusText.AppendText("  - Debugger detected\r\n");
-                if (result.VirtualMachineDetected) statusText.AppendText("  - VM detected\r\n");
-                if (result.AnalysisToolsDetected) statusText.AppendText("  - Analysis tools detected\r\n");
-                if (result.MemoryTampered) statusText.AppendText("  - Memory tampered\r\n");
-            }
-            else
-            {
-                statusText.AppendText("✅ All security checks passed\r\n");
-            }
-            
-            statusText.AppendText("\r\n");
-        }
-        catch (Exception ex)
-        {
-            statusText.AppendText($"Test failed: {ex.Message}\r\n");
-        }
+        statusText.AppendText("\r\nSecurity features have been disabled.\r\n");
     }
 
     // Event handlers
     private void PerformStartupTamperDetection()
     {
-        try
-        {
-            // Perform comprehensive tamper detection
-            var tamperResult = TamperDetection.PerformTamperDetection();
-            
-            if (tamperResult.IsTampered)
-            {
-                // Handle tamper detection
-                TamperDetection.HandleTamperDetection(tamperResult);
-                
-                // Show warning to user (in production, this might be more subtle)
-                if (tamperResult.DebuggerDetected)
-                {
-                    MessageBox.Show("Debugging tools detected. Application will exit for security reasons.", 
-                                  "Security Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    Environment.Exit(0);
-                }
-                else if (tamperResult.VirtualMachineDetected)
-                {
-                    MessageBox.Show("Virtual machine environment detected. Some features may be limited.", 
-                                  "Environment Warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-            }
-        }
-        catch
-        {
-            // Silently handle tamper detection failures
-        }
+        // Tamper detection disabled
     }
 
     private void FileButton_Click(object? sender, EventArgs e)
@@ -1134,11 +1018,7 @@ public partial class Form1 : Form
             {
                 resultsTextBox.AppendText($"Selected file: {selectedFile}\r\n");
                 
-                // Verify file integrity
-                if (!TamperDetection.VerifyFileIntegrity(selectedFile))
-                {
-                    resultsTextBox.AppendText("WARNING: File integrity verification failed!\r\n");
-                }
+                // File integrity verification disabled
             }
         }
     }
@@ -1165,13 +1045,7 @@ public partial class Form1 : Form
             return;
         }
 
-        // Perform tamper detection before encryption
-        var tamperResult = TamperDetection.PerformTamperDetection();
-        if (tamperResult.IsTampered)
-        {
-            MessageBox.Show("Security violation detected. Encryption aborted.", "Security Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            return;
-        }
+        // Tamper detection before encryption disabled
 
         try
         {
@@ -1214,8 +1088,7 @@ public partial class Form1 : Form
             var outputPath = Path.Combine(directory ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"{fileNameWithoutExt}_encrypted{originalExtension}");
             File.WriteAllBytes(outputPath, encryptedData ?? Array.Empty<byte>());
             
-            // Add integrity protection to the encrypted file
-            TamperDetection.AddIntegrityProtection(outputPath);
+            // Integrity protection disabled
             
             resultsTextBox.AppendText($"\r\nFileless processing completed successfully!\r\n");
             resultsTextBox.AppendText($"Output file: {outputPath}\r\n");

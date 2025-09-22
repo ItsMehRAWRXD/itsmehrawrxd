@@ -1,5 +1,5 @@
 ; eon_assembly_lexer.asm
-; Complete lexer implementation in x86-64 assembly for the Eon language
+; Complete lexer for the Eon language in x86-64 assembly
 ; Handles all Eon language tokens and keywords
 
 section .data
@@ -37,8 +37,8 @@ section .data
     keyword_mutex       db "mutex", 0
     keyword_lock        db "lock", 0
     keyword_unlock      db "unlock", 0
-    
-    ; === Token Types ===
+
+    ; === Token Type Constants ===
     TOKEN_EOF           equ 0
     TOKEN_IDENTIFIER    equ 1
     TOKEN_NUMBER        equ 2
@@ -122,7 +122,7 @@ section .data
     TOKEN_NEWLINE       equ 80
     TOKEN_INDENT        equ 81
     TOKEN_DEDENT        equ 82
-    
+
     ; === Lexer State ===
     lexer_source        resq 1       ; Pointer to source code
     lexer_position      resq 1       ; Current position in source
@@ -130,44 +130,64 @@ section .data
     lexer_line          resq 1       ; Current line number
     lexer_column        resq 1       ; Current column number
     lexer_start         resq 1       ; Start of current token
-    
+    lexer_current_char  resb 1       ; Current character
+
     ; === Token Buffer ===
     token_value         resb 256     ; Token value buffer
     token_type          resq 1       ; Token type
-    token_line          resq 1       ; Token line number
-    token_column        resq 1       ; Token column number
-    
-    ; === Character Classification ===
-    whitespace_chars    db " \t\r", 0
-    digit_chars         db "0123456789", 0
-    alpha_chars         db "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_", 0
-    alnum_chars         db "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789", 0
+    token_line          resq 1       ; Token line
+    token_column        resq 1       ; Token column
 
 section .text
-    global lexer_init_with_source
+    global lexer_init
     global lexer_next_token
     global lexer_get_current_token
     global lexer_peek_token
     global lexer_skip_whitespace
-    global lexer_is_whitespace
+    global lexer_is_keyword
+    global lexer_is_identifier_start
+    global lexer_is_identifier_char
     global lexer_is_digit
-    global lexer_is_alpha
-    global lexer_is_alnum
-    global lexer_match_keyword
+    global lexer_is_hex_digit
+    global lexer_is_octal_digit
+    global lexer_is_binary_digit
 
-; === Initialize Lexer with Source ===
-lexer_init_with_source:
+; === Initialize Lexer ===
+; Args: rdi = source code pointer, rsi = source length
+lexer_init:
     push rbp
     mov rbp, rsp
     
-    ; Store source information
     mov [lexer_source], rdi
     mov [lexer_length], rsi
     mov qword [lexer_position], 0
     mov qword [lexer_line], 1
     mov qword [lexer_column], 1
-    mov qword [lexer_start], 0
     
+    ; Load first character
+    call lexer_load_current_char
+    
+    leave
+    ret
+
+; === Load Current Character ===
+lexer_load_current_char:
+    push rbp
+    mov rbp, rsp
+    
+    mov rax, [lexer_position]
+    cmp rax, [lexer_length]
+    jge .eof
+    
+    mov rbx, [lexer_source]
+    mov al, [rbx + rax]
+    mov [lexer_current_char], al
+    jmp .done
+    
+.eof:
+    mov byte [lexer_current_char], 0
+    
+.done:
     leave
     ret
 
@@ -179,17 +199,12 @@ lexer_next_token:
     ; Skip whitespace
     call lexer_skip_whitespace
     
-    ; Check for end of file
-    mov rax, [lexer_position]
-    cmp rax, [lexer_length]
-    jge .eof_token
+    ; Check for EOF
+    mov al, [lexer_current_char]
+    cmp al, 0
+    je .eof_token
     
-    ; Get current character
-    mov rdi, [lexer_source]
-    add rdi, [lexer_position]
-    mov al, [rdi]
-    
-    ; Store token start position
+    ; Record token start position
     mov rax, [lexer_position]
     mov [lexer_start], rax
     mov rax, [lexer_line]
@@ -197,281 +212,310 @@ lexer_next_token:
     mov rax, [lexer_column]
     mov [token_column], rax
     
-    ; Classify character and tokenize
-    cmp al, '"'
-    je .string_token
+    ; Determine token type
+    call lexer_identify_token
     
-    cmp al, '''
-    je .char_token
-    
-    cmp al, '0'
-    jl .check_alpha
-    cmp al, '9'
-    jle .number_token
-    
-.check_alpha:
-    call lexer_is_alpha
-    cmp rax, 1
-    je .identifier_or_keyword
-    
-    ; Check for operators and punctuation
-    cmp al, '+'
-    je .plus_token
-    
-    cmp al, '-'
-    je .minus_token
-    
-    cmp al, '*'
-    je .multiply_token
-    
-    cmp al, '/'
-    je .divide_token
-    
-    cmp al, '%'
-    je .modulo_token
-    
-    cmp al, '^'
-    je .power_token
-    
-    cmp al, '='
-    je .assign_token
-    
-    cmp al, '!'
-    je .not_token
-    
-    cmp al, '>'
-    je .greater_token
-    
-    cmp al, '<'
-    je .less_token
-    
-    cmp al, '&'
-    je .ampersand_token
-    
-    cmp al, '|'
-    je .pipe_token
-    
-    cmp al, '~'
-    je .bitwise_not_token
-    
-    cmp al, '('
-    je .lparen_token
-    
-    cmp al, ')'
-    je .rparen_token
-    
-    cmp al, '{'
-    je .lbrace_token
-    
-    cmp al, '}'
-    je .rbrace_token
-    
-    cmp al, '['
-    je .lbracket_token
-    
-    cmp al, ']'
-    je .rbracket_token
-    
-    cmp al, ';'
-    je .semicolon_token
-    
-    cmp al, ','
-    je .comma_token
-    
-    cmp al, '.'
-    je .dot_token
-    
-    cmp al, ':'
-    je .colon_token
-    
-    cmp al, '?'
-    je .question_token
-    
-    cmp al, '\n'
-    je .newline_token
-    
-    ; Unknown character
-    jmp .error_token
-    
-.string_token:
-    call lexer_scan_string
-    jmp .done
-    
-.char_token:
-    call lexer_scan_char
-    jmp .done
-    
-.number_token:
-    call lexer_scan_number
-    jmp .done
-    
-.identifier_or_keyword:
-    call lexer_scan_identifier
-    call lexer_match_keyword
-    jmp .done
-    
-.plus_token:
-    call lexer_scan_plus
-    jmp .done
-    
-.minus_token:
-    call lexer_scan_minus
-    jmp .done
-    
-.multiply_token:
-    call lexer_scan_multiply
-    jmp .done
-    
-.divide_token:
-    call lexer_scan_divide
-    jmp .done
-    
-.modulo_token:
-    mov qword [token_type], TOKEN_MODULO
-    call lexer_advance
-    jmp .done
-    
-.power_token:
-    mov qword [token_type], TOKEN_POWER
-    call lexer_advance
-    jmp .done
-    
-.assign_token:
-    call lexer_scan_assign
-    jmp .done
-    
-.not_token:
-    call lexer_scan_not
-    jmp .done
-    
-.greater_token:
-    call lexer_scan_greater
-    jmp .done
-    
-.less_token:
-    call lexer_scan_less
-    jmp .done
-    
-.ampersand_token:
-    call lexer_scan_ampersand
-    jmp .done
-    
-.pipe_token:
-    call lexer_scan_pipe
-    jmp .done
-    
-.bitwise_not_token:
-    mov qword [token_type], TOKEN_BITWISE_NOT
-    call lexer_advance
-    jmp .done
-    
-.lparen_token:
-    mov qword [token_type], TOKEN_LPAREN
-    call lexer_advance
-    jmp .done
-    
-.rparen_token:
-    mov qword [token_type], TOKEN_RPAREN
-    call lexer_advance
-    jmp .done
-    
-.lbrace_token:
-    mov qword [token_type], TOKEN_LBRACE
-    call lexer_advance
-    jmp .done
-    
-.rbrace_token:
-    mov qword [token_type], TOKEN_RBRACE
-    call lexer_advance
-    jmp .done
-    
-.lbracket_token:
-    mov qword [token_type], TOKEN_LBRACKET
-    call lexer_advance
-    jmp .done
-    
-.rbracket_token:
-    mov qword [token_type], TOKEN_RBRACKET
-    call lexer_advance
-    jmp .done
-    
-.semicolon_token:
-    mov qword [token_type], TOKEN_SEMICOLON
-    call lexer_advance
-    jmp .done
-    
-.comma_token:
-    mov qword [token_type], TOKEN_COMMA
-    call lexer_advance
-    jmp .done
-    
-.dot_token:
-    mov qword [token_type], TOKEN_DOT
-    call lexer_advance
-    jmp .done
-    
-.colon_token:
-    call lexer_scan_colon
-    jmp .done
-    
-.question_token:
-    mov qword [token_type], TOKEN_QUESTION
-    call lexer_advance
-    jmp .done
-    
-.newline_token:
-    mov qword [token_type], TOKEN_NEWLINE
-    call lexer_advance
-    jmp .done
+    leave
+    ret
     
 .eof_token:
     mov qword [token_type], TOKEN_EOF
+    mov byte [token_value], 0
+    leave
+    ret
+
+; === Skip Whitespace ===
+lexer_skip_whitespace:
+    push rbp
+    mov rbp, rsp
+    
+.whitespace_loop:
+    mov al, [lexer_current_char]
+    
+    ; Check for space or tab
+    cmp al, ' '
+    je .skip_char
+    cmp al, 9              ; tab
+    je .skip_char
+    
+    ; Check for newline
+    cmp al, 10             ; newline
+    je .newline
+    cmp al, 13             ; carriage return
+    je .newline
+    
+    ; Not whitespace
     jmp .done
     
-.error_token:
-    mov qword [token_type], -1  ; Error token
-    jmp .done
+.skip_char:
+    call lexer_advance
+    jmp .whitespace_loop
+    
+.newline:
+    call lexer_advance
+    inc qword [lexer_line]
+    mov qword [lexer_column], 1
+    jmp .whitespace_loop
     
 .done:
     leave
     ret
 
-; === Scan String Literal ===
-lexer_scan_string:
+; === Advance Position ===
+lexer_advance:
     push rbp
     mov rbp, rsp
     
-    mov qword [token_type], TOKEN_STRING
-    call lexer_advance  ; Skip opening quote
+    inc qword [lexer_position]
+    inc qword [lexer_column]
+    call lexer_load_current_char
     
-    ; Copy string content
-    mov rdi, token_value
-    mov rsi, [lexer_source]
-    add rsi, [lexer_position]
+    leave
+    ret
+
+; === Identify Token Type ===
+lexer_identify_token:
+    push rbp
+    mov rbp, rsp
+    
+    mov al, [lexer_current_char]
+    
+    ; Check for letters (identifiers/keywords)
+    call lexer_is_identifier_start
+    cmp rax, 1
+    je .identifier_or_keyword
+    
+    ; Check for digits (numbers)
+    call lexer_is_digit
+    cmp rax, 1
+    je .number
+    
+    ; Check for string literal
+    cmp al, '"'
+    je .string_literal
+    
+    ; Check for character literal
+    cmp al, '''
+    je .char_literal
+    
+    ; Check for operators and punctuation
+    call lexer_identify_operator
+    
+    leave
+    ret
+
+; === Identifier or Keyword ===
+.identifier_or_keyword:
+    call lexer_read_identifier
+    call lexer_is_keyword
+    cmp rax, 0
+    jne .keyword_found
+    
+    ; It's an identifier
+    mov qword [token_type], TOKEN_IDENTIFIER
+    jmp .done
+    
+.keyword_found:
+    mov [token_type], rax
+    jmp .done
+
+; === Read Identifier ===
+lexer_read_identifier:
+    push rbp
+    mov rbp, rsp
+    push rbx
+    push rcx
+    
+    mov rbx, token_value
     mov rcx, 0
     
+.identifier_loop:
+    mov al, [lexer_current_char]
+    call lexer_is_identifier_char
+    cmp rax, 0
+    je .identifier_done
+    
+    mov [rbx + rcx], al
+    inc rcx
+    call lexer_advance
+    jmp .identifier_loop
+    
+.identifier_done:
+    mov byte [rbx + rcx], 0
+    
+    pop rcx
+    pop rbx
+    leave
+    ret
+
+; === Number Token ===
+.number:
+    call lexer_read_number
+    mov qword [token_type], TOKEN_NUMBER
+    leave
+    ret
+
+; === Read Number ===
+lexer_read_number:
+    push rbp
+    mov rbp, rsp
+    push rbx
+    push rcx
+    
+    mov rbx, token_value
+    mov rcx, 0
+    
+    ; Check for hex prefix
+    mov al, [lexer_current_char]
+    cmp al, '0'
+    jne .decimal_number
+    
+    call lexer_advance
+    mov al, [lexer_current_char]
+    cmp al, 'x'
+    je .hex_number
+    cmp al, 'X'
+    je .hex_number
+    cmp al, 'b'
+    je .binary_number
+    cmp al, 'B'
+    je .binary_number
+    cmp al, 'o'
+    je .octal_number
+    cmp al, 'O'
+    je .octal_number
+    
+    ; It's a decimal number starting with 0
+    mov byte [rbx + rcx], '0'
+    inc rcx
+    jmp .decimal_loop
+    
+.hex_number:
+    call lexer_advance  ; skip 'x'
+    jmp .hex_loop
+    
+.hex_loop:
+    mov al, [lexer_current_char]
+    call lexer_is_hex_digit
+    cmp rax, 0
+    je .number_done
+    
+    mov [rbx + rcx], al
+    inc rcx
+    call lexer_advance
+    jmp .hex_loop
+    
+.binary_number:
+    call lexer_advance  ; skip 'b'
+    jmp .binary_loop
+    
+.binary_loop:
+    mov al, [lexer_current_char]
+    call lexer_is_binary_digit
+    cmp rax, 0
+    je .number_done
+    
+    mov [rbx + rcx], al
+    inc rcx
+    call lexer_advance
+    jmp .binary_loop
+    
+.octal_number:
+    call lexer_advance  ; skip 'o'
+    jmp .octal_loop
+    
+.octal_loop:
+    mov al, [lexer_current_char]
+    call lexer_is_octal_digit
+    cmp rax, 0
+    je .number_done
+    
+    mov [rbx + rcx], al
+    inc rcx
+    call lexer_advance
+    jmp .octal_loop
+    
+.decimal_number:
+    jmp .decimal_loop
+    
+.decimal_loop:
+    mov al, [lexer_current_char]
+    call lexer_is_digit
+    cmp rax, 0
+    je .check_float
+    
+    mov [rbx + rcx], al
+    inc rcx
+    call lexer_advance
+    jmp .decimal_loop
+    
+.check_float:
+    ; Check for decimal point
+    cmp al, '.'
+    jne .number_done
+    
+    mov [rbx + rcx], al
+    inc rcx
+    call lexer_advance
+    
+    ; Read fractional part
+.float_loop:
+    mov al, [lexer_current_char]
+    call lexer_is_digit
+    cmp rax, 0
+    je .number_done
+    
+    mov [rbx + rcx], al
+    inc rcx
+    call lexer_advance
+    jmp .float_loop
+    
+.number_done:
+    mov byte [rbx + rcx], 0
+    
+    pop rcx
+    pop rbx
+    leave
+    ret
+
+; === String Literal ===
+.string_literal:
+    call lexer_read_string
+    mov qword [token_type], TOKEN_STRING
+    leave
+    ret
+
+; === Read String ===
+lexer_read_string:
+    push rbp
+    mov rbp, rsp
+    push rbx
+    push rcx
+    
+    mov rbx, token_value
+    mov rcx, 0
+    
+    call lexer_advance  ; skip opening quote
+    
 .string_loop:
-    mov al, [rsi]
-    cmp al, '"'
-    je .string_end
-    cmp al, '\'
-    je .escape_char
+    mov al, [lexer_current_char]
     cmp al, 0
     je .string_error
+    cmp al, '"'
+    je .string_done
+    cmp al, '\'
+    je .escape_sequence
     
-    mov [rdi], al
-    inc rdi
-    inc rsi
+    mov [rbx + rcx], al
     inc rcx
-    inc qword [lexer_position]
-    inc qword [lexer_column]
+    call lexer_advance
     jmp .string_loop
     
-.escape_char:
-    inc rsi
-    inc qword [lexer_position]
-    inc qword [lexer_column]
-    mov al, [rsi]
+.escape_sequence:
+    call lexer_advance  ; skip backslash
+    mov al, [lexer_current_char]
+    
+    ; Handle escape sequences
     cmp al, 'n'
     je .escape_newline
     cmp al, 't'
@@ -483,615 +527,426 @@ lexer_scan_string:
     cmp al, '"'
     je .escape_quote
     
-    ; Unknown escape sequence
-    jmp .string_error
-    
-.escape_newline:
-    mov byte [rdi], 10
-    jmp .escape_done
-    
-.escape_tab:
-    mov byte [rdi], 9
-    jmp .escape_done
-    
-.escape_carriage:
-    mov byte [rdi], 13
-    jmp .escape_done
-    
-.escape_backslash:
-    mov byte [rdi], '\'
-    jmp .escape_done
-    
-.escape_quote:
-    mov byte [rdi], '"'
-    jmp .escape_done
-    
-.escape_done:
-    inc rdi
-    inc rsi
+    ; Default: just copy the character
+    mov [rbx + rcx], al
     inc rcx
-    inc qword [lexer_position]
-    inc qword [lexer_column]
+    call lexer_advance
     jmp .string_loop
     
-.string_end:
-    mov byte [rdi], 0
-    call lexer_advance  ; Skip closing quote
+.escape_newline:
+    mov byte [rbx + rcx], 10
+    inc rcx
+    call lexer_advance
+    jmp .string_loop
+    
+.escape_tab:
+    mov byte [rbx + rcx], 9
+    inc rcx
+    call lexer_advance
+    jmp .string_loop
+    
+.escape_carriage:
+    mov byte [rbx + rcx], 13
+    inc rcx
+    call lexer_advance
+    jmp .string_loop
+    
+.escape_backslash:
+    mov byte [rbx + rcx], '\'
+    inc rcx
+    call lexer_advance
+    jmp .string_loop
+    
+.escape_quote:
+    mov byte [rbx + rcx], '"'
+    inc rcx
+    call lexer_advance
+    jmp .string_loop
+    
+.string_done:
+    call lexer_advance  ; skip closing quote
+    mov byte [rbx + rcx], 0
+    
+    pop rcx
+    pop rbx
     leave
     ret
     
 .string_error:
-    mov qword [token_type], -1  ; Error
-    leave
-    ret
-
-; === Scan Character Literal ===
-lexer_scan_char:
-    push rbp
-    mov rbp, rsp
-    
-    mov qword [token_type], TOKEN_CHAR
-    call lexer_advance  ; Skip opening quote
-    
-    ; Get character
-    mov rdi, [lexer_source]
-    add rdi, [lexer_position]
-    mov al, [rdi]
-    
-    cmp al, '\'
-    je .char_escape
-    
-    mov [token_value], al
-    call lexer_advance
-    jmp .char_end
-    
-.char_escape:
-    call lexer_advance
-    mov rdi, [lexer_source]
-    add rdi, [lexer_position]
-    mov al, [rdi]
-    
-    cmp al, 'n'
-    je .char_newline
-    cmp al, 't'
-    je .char_tab
-    cmp al, 'r'
-    je .char_carriage
-    cmp al, '\\'
-    je .char_backslash
-    cmp al, '''
-    je .char_quote
-    
-    ; Unknown escape sequence
-    jmp .char_error
-    
-.char_newline:
-    mov byte [token_value], 10
-    jmp .char_escape_done
-    
-.char_tab:
-    mov byte [token_value], 9
-    jmp .char_escape_done
-    
-.char_carriage:
-    mov byte [token_value], 13
-    jmp .char_escape_done
-    
-.char_backslash:
-    mov byte [token_value], '\'
-    jmp .char_escape_done
-    
-.char_quote:
-    mov byte [token_value], '''
-    jmp .char_escape_done
-    
-.char_escape_done:
-    call lexer_advance
-    jmp .char_end
-    
-.char_end:
-    ; Check for closing quote
-    mov rdi, [lexer_source]
-    add rdi, [lexer_position]
-    mov al, [rdi]
-    cmp al, '''
-    jne .char_error
-    
-    call lexer_advance  ; Skip closing quote
-    leave
-    ret
-    
-.char_error:
-    mov qword [token_type], -1  ; Error
-    leave
-    ret
-
-; === Scan Number ===
-lexer_scan_number:
-    push rbp
-    mov rbp, rsp
-    
-    mov qword [token_type], TOKEN_NUMBER
-    
-    ; Copy number to token value
-    mov rdi, token_value
-    mov rsi, [lexer_source]
-    add rsi, [lexer_position]
-    mov rcx, 0
-    
-.number_loop:
-    mov al, [rsi]
-    call lexer_is_digit
-    cmp rax, 1
-    jne .check_dot
-    
-    mov [rdi], al
-    inc rdi
-    inc rsi
-    inc rcx
-    inc qword [lexer_position]
-    inc qword [lexer_column]
-    jmp .number_loop
-    
-.check_dot:
-    cmp al, '.'
-    jne .number_end
-    
-    ; Check if next character is a digit
-    mov rbx, rsi
-    inc rbx
-    mov bl, [rbx]
-    push rbx
-    mov rdi, rbx
-    call lexer_is_digit
+    ; Handle string error
+    pop rcx
     pop rbx
-    cmp rax, 1
-    jne .number_end
-    
-    ; It's a float
-    mov [rdi], al
-    inc rdi
-    inc rsi
-    inc rcx
-    inc qword [lexer_position]
-    inc qword [lexer_column]
-    jmp .number_loop
-    
-.number_end:
-    mov byte [rdi], 0
     leave
     ret
 
-; === Scan Identifier ===
-lexer_scan_identifier:
-    push rbp
-    mov rbp, rsp
-    
-    mov qword [token_type], TOKEN_IDENTIFIER
-    
-    ; Copy identifier to token value
-    mov rdi, token_value
-    mov rsi, [lexer_source]
-    add rsi, [lexer_position]
-    mov rcx, 0
-    
-.identifier_loop:
-    mov al, [rsi]
-    call lexer_is_alnum
-    cmp rax, 1
-    jne .identifier_end
-    
-    mov [rdi], al
-    inc rdi
-    inc rsi
-    inc rcx
-    inc qword [lexer_position]
-    inc qword [lexer_column]
-    jmp .identifier_loop
-    
-.identifier_end:
-    mov byte [rdi], 0
+; === Character Literal ===
+.char_literal:
+    call lexer_read_char
+    mov qword [token_type], TOKEN_CHAR
     leave
     ret
 
-; === Scan Plus Operator ===
-lexer_scan_plus:
+; === Read Character ===
+lexer_read_char:
     push rbp
     mov rbp, rsp
     
-    call lexer_advance
+    call lexer_advance  ; skip opening quote
     
-    ; Check for +=
-    mov rdi, [lexer_source]
-    add rdi, [lexer_position]
-    mov al, [rdi]
+    mov al, [lexer_current_char]
+    mov [token_value], al
+    
+    call lexer_advance  ; skip character
+    call lexer_advance  ; skip closing quote
+    
+    leave
+    ret
+
+; === Identify Operator ===
+lexer_identify_operator:
+    push rbp
+    mov rbp, rsp
+    
+    mov al, [lexer_current_char]
+    
+    ; Single character operators
+    cmp al, '+'
+    je .plus
+    cmp al, '-'
+    je .minus
+    cmp al, '*'
+    je .multiply
+    cmp al, '/'
+    je .divide
+    cmp al, '%'
+    je .modulo
+    cmp al, '^'
+    je .power
     cmp al, '='
-    jne .plus_done
+    je .assign_or_equals
+    cmp al, '!'
+    je .not_or_not_equals
+    cmp al, '>'
+    je .greater_or_shift
+    cmp al, '<'
+    je .less_or_shift
+    cmp al, '&'
+    je .and_or_bitwise_and
+    cmp al, '|'
+    je .or_or_bitwise_or
+    cmp al, '~'
+    je .bitwise_not
+    cmp al, '('
+    je .lparen
+    cmp al, ')'
+    je .rparen
+    cmp al, '{'
+    je .lbrace
+    cmp al, '}'
+    je .rbrace
+    cmp al, '['
+    je .lbracket
+    cmp al, ']'
+    je .rbracket
+    cmp al, ';'
+    je .semicolon
+    cmp al, ','
+    je .comma
+    cmp al, '.'
+    je .dot
+    cmp al, ':'
+    je .colon
+    cmp al, '?'
+    je .question
     
-    mov qword [token_type], TOKEN_PLUS_ASSIGN
+    ; Unknown character
+    jmp .unknown
+    
+.plus:
     call lexer_advance
-    jmp .plus_end
-    
-.plus_done:
+    mov al, [lexer_current_char]
+    cmp al, '='
+    je .plus_assign
     mov qword [token_type], TOKEN_PLUS
+    jmp .done
     
-.plus_end:
-    leave
-    ret
-
-; === Scan Minus Operator ===
-lexer_scan_minus:
-    push rbp
-    mov rbp, rsp
-    
+.plus_assign:
     call lexer_advance
+    mov qword [token_type], TOKEN_PLUS_ASSIGN
+    jmp .done
     
-    ; Check for -= or ->
-    mov rdi, [lexer_source]
-    add rdi, [lexer_position]
-    mov al, [rdi]
+.minus:
+    call lexer_advance
+    mov al, [lexer_current_char]
     cmp al, '='
     je .minus_assign
     cmp al, '>'
     je .arrow
-    
     mov qword [token_type], TOKEN_MINUS
-    jmp .minus_end
+    jmp .done
     
 .minus_assign:
-    mov qword [token_type], TOKEN_MINUS_ASSIGN
     call lexer_advance
-    jmp .minus_end
+    mov qword [token_type], TOKEN_MINUS_ASSIGN
+    jmp .done
     
 .arrow:
+    call lexer_advance
     mov qword [token_type], TOKEN_ARROW
+    jmp .done
+    
+.multiply:
     call lexer_advance
-    jmp .minus_end
-    
-.minus_end:
-    leave
-    ret
-
-; === Scan Multiply Operator ===
-lexer_scan_multiply:
-    push rbp
-    mov rbp, rsp
-    
-    call lexer_advance
-    
-    ; Check for *=
-    mov rdi, [lexer_source]
-    add rdi, [lexer_position]
-    mov al, [rdi]
+    mov al, [lexer_current_char]
     cmp al, '='
-    jne .multiply_done
+    je .multiply_assign
+    mov qword [token_type], TOKEN_MULTIPLY
+    jmp .done
     
+.multiply_assign:
+    call lexer_advance
     mov qword [token_type], TOKEN_MULTIPLY_ASSIGN
+    jmp .done
+    
+.divide:
     call lexer_advance
-    jmp .multiply_end
-    
-.multiply_done:
-    mov qword [token_type], TOKEN_STAR
-    
-.multiply_end:
-    leave
-    ret
-
-; === Scan Divide Operator ===
-lexer_scan_divide:
-    push rbp
-    mov rbp, rsp
-    
-    call lexer_advance
-    
-    ; Check for /= or //
-    mov rdi, [lexer_source]
-    add rdi, [lexer_position]
-    mov al, [rdi]
+    mov al, [lexer_current_char]
     cmp al, '='
     je .divide_assign
-    cmp al, '/'
-    je .comment
-    
     mov qword [token_type], TOKEN_DIVIDE
-    jmp .divide_end
+    jmp .done
     
 .divide_assign:
+    call lexer_advance
     mov qword [token_type], TOKEN_DIVIDE_ASSIGN
+    jmp .done
+    
+.modulo:
     call lexer_advance
-    jmp .divide_end
+    mov qword [token_type], TOKEN_MODULO
+    jmp .done
     
-.comment:
-    ; Skip single-line comment
-    call lexer_skip_comment
-    call lexer_next_token  ; Get next token
-    jmp .divide_end
-    
-.divide_end:
-    leave
-    ret
-
-; === Scan Assign Operator ===
-lexer_scan_assign:
-    push rbp
-    mov rbp, rsp
-    
+.power:
     call lexer_advance
+    mov qword [token_type], TOKEN_POWER
+    jmp .done
     
-    ; Check for ==
-    mov rdi, [lexer_source]
-    add rdi, [lexer_position]
-    mov al, [rdi]
+.assign_or_equals:
+    call lexer_advance
+    mov al, [lexer_current_char]
     cmp al, '='
-    jne .assign_done
-    
-    mov qword [token_type], TOKEN_EQUALS
-    call lexer_advance
-    jmp .assign_end
-    
-.assign_done:
+    je .equals
     mov qword [token_type], TOKEN_ASSIGN
+    jmp .done
     
-.assign_end:
-    leave
-    ret
-
-; === Scan Not Operator ===
-lexer_scan_not:
-    push rbp
-    mov rbp, rsp
-    
+.equals:
     call lexer_advance
+    mov qword [token_type], TOKEN_EQUALS
+    jmp .done
     
-    ; Check for !=
-    mov rdi, [lexer_source]
-    add rdi, [lexer_position]
-    mov al, [rdi]
+.not_or_not_equals:
+    call lexer_advance
+    mov al, [lexer_current_char]
     cmp al, '='
-    jne .not_done
-    
-    mov qword [token_type], TOKEN_NOT_EQUALS
-    call lexer_advance
-    jmp .not_end
-    
-.not_done:
+    je .not_equals
     mov qword [token_type], TOKEN_LOGICAL_NOT
+    jmp .done
     
-.not_end:
-    leave
-    ret
-
-; === Scan Greater Operator ===
-lexer_scan_greater:
-    push rbp
-    mov rbp, rsp
-    
+.not_equals:
     call lexer_advance
+    mov qword [token_type], TOKEN_NOT_EQUALS
+    jmp .done
     
-    ; Check for >= or >>
-    mov rdi, [lexer_source]
-    add rdi, [lexer_position]
-    mov al, [rdi]
+.greater_or_shift:
+    call lexer_advance
+    mov al, [lexer_current_char]
     cmp al, '='
     je .greater_equal
     cmp al, '>'
     je .right_shift
-    
     mov qword [token_type], TOKEN_GREATER
-    jmp .greater_end
+    jmp .done
     
 .greater_equal:
-    mov qword [token_type], TOKEN_GREATER_EQUAL
     call lexer_advance
-    jmp .greater_end
+    mov qword [token_type], TOKEN_GREATER_EQUAL
+    jmp .done
     
 .right_shift:
+    call lexer_advance
     mov qword [token_type], TOKEN_RIGHT_SHIFT
+    jmp .done
+    
+.less_or_shift:
     call lexer_advance
-    jmp .greater_end
-    
-.greater_end:
-    leave
-    ret
-
-; === Scan Less Operator ===
-lexer_scan_less:
-    push rbp
-    mov rbp, rsp
-    
-    call lexer_advance
-    
-    ; Check for <= or <<
-    mov rdi, [lexer_source]
-    add rdi, [lexer_position]
-    mov al, [rdi]
+    mov al, [lexer_current_char]
     cmp al, '='
     je .less_equal
     cmp al, '<'
     je .left_shift
-    
     mov qword [token_type], TOKEN_LESS
-    jmp .less_end
+    jmp .done
     
 .less_equal:
-    mov qword [token_type], TOKEN_LESS_EQUAL
     call lexer_advance
-    jmp .less_end
+    mov qword [token_type], TOKEN_LESS_EQUAL
+    jmp .done
     
 .left_shift:
+    call lexer_advance
     mov qword [token_type], TOKEN_LEFT_SHIFT
+    jmp .done
+    
+.and_or_bitwise_and:
     call lexer_advance
-    jmp .less_end
-    
-.less_end:
-    leave
-    ret
-
-; === Scan Ampersand Operator ===
-lexer_scan_ampersand:
-    push rbp
-    mov rbp, rsp
-    
-    call lexer_advance
-    
-    ; Check for &&
-    mov rdi, [lexer_source]
-    add rdi, [lexer_position]
-    mov al, [rdi]
+    mov al, [lexer_current_char]
     cmp al, '&'
-    jne .ampersand_done
+    je .logical_and
+    mov qword [token_type], TOKEN_BITWISE_AND
+    jmp .done
     
+.logical_and:
+    call lexer_advance
     mov qword [token_type], TOKEN_LOGICAL_AND
+    jmp .done
+    
+.or_or_bitwise_or:
     call lexer_advance
-    jmp .ampersand_end
-    
-.ampersand_done:
-    mov qword [token_type], TOKEN_AMPERSAND
-    
-.ampersand_end:
-    leave
-    ret
-
-; === Scan Pipe Operator ===
-lexer_scan_pipe:
-    push rbp
-    mov rbp, rsp
-    
-    call lexer_advance
-    
-    ; Check for ||
-    mov rdi, [lexer_source]
-    add rdi, [lexer_position]
-    mov al, [rdi]
+    mov al, [lexer_current_char]
     cmp al, '|'
-    jne .pipe_done
-    
-    mov qword [token_type], TOKEN_LOGICAL_OR
-    call lexer_advance
-    jmp .pipe_end
-    
-.pipe_done:
+    je .logical_or
     mov qword [token_type], TOKEN_BITWISE_OR
+    jmp .done
     
-.pipe_end:
-    leave
-    ret
-
-; === Scan Colon Operator ===
-lexer_scan_colon:
-    push rbp
-    mov rbp, rsp
-    
+.logical_or:
     call lexer_advance
+    mov qword [token_type], TOKEN_LOGICAL_OR
+    jmp .done
     
-    ; Check for ::
-    mov rdi, [lexer_source]
-    add rdi, [lexer_position]
-    mov al, [rdi]
+.bitwise_not:
+    call lexer_advance
+    mov qword [token_type], TOKEN_BITWISE_NOT
+    jmp .done
+    
+.lparen:
+    call lexer_advance
+    mov qword [token_type], TOKEN_LPAREN
+    jmp .done
+    
+.rparen:
+    call lexer_advance
+    mov qword [token_type], TOKEN_RPAREN
+    jmp .done
+    
+.lbrace:
+    call lexer_advance
+    mov qword [token_type], TOKEN_LBRACE
+    jmp .done
+    
+.rbrace:
+    call lexer_advance
+    mov qword [token_type], TOKEN_RBRACE
+    jmp .done
+    
+.lbracket:
+    call lexer_advance
+    mov qword [token_type], TOKEN_LBRACKET
+    jmp .done
+    
+.rbracket:
+    call lexer_advance
+    mov qword [token_type], TOKEN_RBRACKET
+    jmp .done
+    
+.semicolon:
+    call lexer_advance
+    mov qword [token_type], TOKEN_SEMICOLON
+    jmp .done
+    
+.comma:
+    call lexer_advance
+    mov qword [token_type], TOKEN_COMMA
+    jmp .done
+    
+.dot:
+    call lexer_advance
+    mov qword [token_type], TOKEN_DOT
+    jmp .done
+    
+.colon:
+    call lexer_advance
+    mov al, [lexer_current_char]
     cmp al, ':'
-    jne .colon_done
-    
-    mov qword [token_type], TOKEN_DOUBLE_COLON
-    call lexer_advance
-    jmp .colon_end
-    
-.colon_done:
+    je .double_colon
     mov qword [token_type], TOKEN_COLON
+    jmp .done
     
-.colon_end:
+.double_colon:
+    call lexer_advance
+    mov qword [token_type], TOKEN_DOUBLE_COLON
+    jmp .done
+    
+.question:
+    call lexer_advance
+    mov qword [token_type], TOKEN_QUESTION
+    jmp .done
+    
+.unknown:
+    ; Handle unknown character
+    mov qword [token_type], TOKEN_EOF
+    
+.done:
     leave
     ret
 
 ; === Utility Functions ===
 
-; Skip whitespace
-lexer_skip_whitespace:
+; Check if character is identifier start
+lexer_is_identifier_start:
     push rbp
     mov rbp, rsp
     
-.whitespace_loop:
-    mov rax, [lexer_position]
-    cmp rax, [lexer_length]
-    jge .whitespace_done
+    mov al, [lexer_current_char]
+    cmp al, 'a'
+    jl .not_identifier_start
+    cmp al, 'z'
+    jle .is_identifier_start
+    cmp al, 'A'
+    jl .not_identifier_start
+    cmp al, 'Z'
+    jle .is_identifier_start
+    cmp al, '_'
+    je .is_identifier_start
     
-    mov rdi, [lexer_source]
-    add rdi, [lexer_position]
-    mov al, [rdi]
+.not_identifier_start:
+    mov rax, 0
+    leave
+    ret
     
-    call lexer_is_whitespace
+.is_identifier_start:
+    mov rax, 1
+    leave
+    ret
+
+; Check if character is identifier character
+lexer_is_identifier_char:
+    push rbp
+    mov rbp, rsp
+    
+    call lexer_is_identifier_start
     cmp rax, 1
-    jne .whitespace_done
+    je .is_identifier_char
     
-    cmp al, '\n'
-    jne .not_newline
-    
-    inc qword [lexer_line]
-    mov qword [lexer_column], 1
-    jmp .advance
-    
-.not_newline:
-    inc qword [lexer_column]
-    
-.advance:
-    inc qword [lexer_position]
-    jmp .whitespace_loop
-    
-.whitespace_done:
-    leave
-    ret
-
-; Skip comment
-lexer_skip_comment:
-    push rbp
-    mov rbp, rsp
-    
-.comment_loop:
-    mov rax, [lexer_position]
-    cmp rax, [lexer_length]
-    jge .comment_done
-    
-    mov rdi, [lexer_source]
-    add rdi, [lexer_position]
-    mov al, [rdi]
-    
-    cmp al, '\n'
-    je .comment_done
-    
-    inc qword [lexer_position]
-    inc qword [lexer_column]
-    jmp .comment_loop
-    
-.comment_done:
-    leave
-    ret
-
-; Advance position
-lexer_advance:
-    inc qword [lexer_position]
-    inc qword [lexer_column]
-    ret
-
-; Check if character is whitespace
-lexer_is_whitespace:
-    push rbp
-    mov rbp, rsp
-    
-    cmp dil, ' '
-    je .is_whitespace
-    cmp dil, '\t'
-    je .is_whitespace
-    cmp dil, '\r'
-    je .is_whitespace
-    cmp dil, '\n'
-    je .is_whitespace
+    call lexer_is_digit
+    cmp rax, 1
+    je .is_identifier_char
     
     mov rax, 0
-    jmp .whitespace_done
+    leave
+    ret
     
-.is_whitespace:
+.is_identifier_char:
     mov rax, 1
-    
-.whitespace_done:
     leave
     ret
 
@@ -1100,422 +955,448 @@ lexer_is_digit:
     push rbp
     mov rbp, rsp
     
-    cmp dil, '0'
+    mov al, [lexer_current_char]
+    cmp al, '0'
     jl .not_digit
-    cmp dil, '9'
+    cmp al, '9'
     jg .not_digit
     
     mov rax, 1
-    jmp .digit_done
+    leave
+    ret
     
 .not_digit:
     mov rax, 0
-    
-.digit_done:
     leave
     ret
 
-; Check if character is alpha
-lexer_is_alpha:
+; Check if character is hex digit
+lexer_is_hex_digit:
     push rbp
     mov rbp, rsp
-    
-    cmp dil, 'a'
-    jl .check_upper
-    cmp dil, 'z'
-    jle .is_alpha
-    
-.check_upper:
-    cmp dil, 'A'
-    jl .check_underscore
-    cmp dil, 'Z'
-    jle .is_alpha
-    
-.check_underscore:
-    cmp dil, '_'
-    je .is_alpha
-    
-    mov rax, 0
-    jmp .alpha_done
-    
-.is_alpha:
-    mov rax, 1
-    
-.alpha_done:
-    leave
-    ret
-
-; Check if character is alphanumeric
-lexer_is_alnum:
-    push rbp
-    mov rbp, rsp
-    
-    call lexer_is_alpha
-    cmp rax, 1
-    je .is_alnum
     
     call lexer_is_digit
     cmp rax, 1
-    je .is_alnum
+    je .is_hex_digit
     
+    mov al, [lexer_current_char]
+    cmp al, 'a'
+    jl .not_hex_digit
+    cmp al, 'f'
+    jle .is_hex_digit
+    cmp al, 'A'
+    jl .not_hex_digit
+    cmp al, 'F'
+    jle .is_hex_digit
+    
+.not_hex_digit:
     mov rax, 0
-    jmp .alnum_done
+    leave
+    ret
     
-.is_alnum:
+.is_hex_digit:
     mov rax, 1
-    
-.alnum_done:
     leave
     ret
 
-; Match keyword
-lexer_match_keyword:
+; Check if character is octal digit
+lexer_is_octal_digit:
     push rbp
     mov rbp, rsp
     
-    ; Compare token value with keywords
+    mov al, [lexer_current_char]
+    cmp al, '0'
+    jl .not_octal_digit
+    cmp al, '7'
+    jg .not_octal_digit
+    
+    mov rax, 1
+    leave
+    ret
+    
+.not_octal_digit:
+    mov rax, 0
+    leave
+    ret
+
+; Check if character is binary digit
+lexer_is_binary_digit:
+    push rbp
+    mov rbp, rsp
+    
+    mov al, [lexer_current_char]
+    cmp al, '0'
+    je .is_binary_digit
+    cmp al, '1'
+    je .is_binary_digit
+    
+    mov rax, 0
+    leave
+    ret
+    
+.is_binary_digit:
+    mov rax, 1
+    leave
+    ret
+
+; Check if current token is a keyword
+lexer_is_keyword:
+    push rbp
+    mov rbp, rsp
+    push rbx
+    push rcx
+    push rdx
+    
+    ; Compare with each keyword
     mov rdi, token_value
     mov rsi, keyword_def
     call string_compare
     cmp rax, 0
-    je .match_def
+    je .keyword_def_found
     
     mov rdi, token_value
     mov rsi, keyword_model
     call string_compare
     cmp rax, 0
-    je .match_model
+    je .keyword_model_found
     
     mov rdi, token_value
     mov rsi, keyword_func
     call string_compare
     cmp rax, 0
-    je .match_func
+    je .keyword_func_found
     
     mov rdi, token_value
     mov rsi, keyword_loop
     call string_compare
     cmp rax, 0
-    je .match_loop
+    je .keyword_loop_found
     
     mov rdi, token_value
     mov rsi, keyword_if
     call string_compare
     cmp rax, 0
-    je .match_if
+    je .keyword_if_found
     
     mov rdi, token_value
     mov rsi, keyword_else
     call string_compare
     cmp rax, 0
-    je .match_else
+    je .keyword_else_found
     
     mov rdi, token_value
     mov rsi, keyword_let
     call string_compare
     cmp rax, 0
-    je .match_let
+    je .keyword_let_found
     
     mov rdi, token_value
     mov rsi, keyword_const
     call string_compare
     cmp rax, 0
-    je .match_const
+    je .keyword_const_found
     
     mov rdi, token_value
     mov rsi, keyword_ret
     call string_compare
     cmp rax, 0
-    je .match_ret
+    je .keyword_ret_found
     
     mov rdi, token_value
     mov rsi, keyword_break
     call string_compare
     cmp rax, 0
-    je .match_break
+    je .keyword_break_found
     
     mov rdi, token_value
     mov rsi, keyword_continue
     call string_compare
     cmp rax, 0
-    je .match_continue
+    je .keyword_continue_found
     
     mov rdi, token_value
     mov rsi, keyword_import
     call string_compare
     cmp rax, 0
-    je .match_import
+    je .keyword_import_found
     
     mov rdi, token_value
     mov rsi, keyword_export
     call string_compare
     cmp rax, 0
-    je .match_export
+    je .keyword_export_found
     
     mov rdi, token_value
     mov rsi, keyword_match
     call string_compare
     cmp rax, 0
-    je .match_match
+    je .keyword_match_found
     
     mov rdi, token_value
     mov rsi, keyword_case
     call string_compare
     cmp rax, 0
-    je .match_case
+    je .keyword_case_found
     
     mov rdi, token_value
     mov rsi, keyword_default
     call string_compare
     cmp rax, 0
-    je .match_default
+    je .keyword_default_found
     
     mov rdi, token_value
     mov rsi, keyword_try
     call string_compare
     cmp rax, 0
-    je .match_try
+    je .keyword_try_found
     
     mov rdi, token_value
     mov rsi, keyword_catch
     call string_compare
     cmp rax, 0
-    je .match_catch
+    je .keyword_catch_found
     
     mov rdi, token_value
     mov rsi, keyword_finally
     call string_compare
     cmp rax, 0
-    je .match_finally
+    je .keyword_finally_found
     
     mov rdi, token_value
     mov rsi, keyword_throw
     call string_compare
     cmp rax, 0
-    je .match_throw
+    je .keyword_throw_found
     
     mov rdi, token_value
     mov rsi, keyword_int
     call string_compare
     cmp rax, 0
-    je .match_int
+    je .keyword_int_found
     
     mov rdi, token_value
     mov rsi, keyword_float
     call string_compare
     cmp rax, 0
-    je .match_float
+    je .keyword_float_found
     
     mov rdi, token_value
     mov rsi, keyword_bool
     call string_compare
     cmp rax, 0
-    je .match_bool
+    je .keyword_bool_found
     
     mov rdi, token_value
     mov rsi, keyword_void
     call string_compare
     cmp rax, 0
-    je .match_void
+    je .keyword_void_found
     
     mov rdi, token_value
     mov rsi, keyword_auto
     call string_compare
     cmp rax, 0
-    je .match_auto
+    je .keyword_auto_found
     
     mov rdi, token_value
     mov rsi, keyword_alloc
     call string_compare
     cmp rax, 0
-    je .match_alloc
+    je .keyword_alloc_found
     
     mov rdi, token_value
     mov rsi, keyword_free
     call string_compare
     cmp rax, 0
-    je .match_free
+    je .keyword_free_found
     
     mov rdi, token_value
     mov rsi, keyword_sizeof
     call string_compare
     cmp rax, 0
-    je .match_sizeof
+    je .keyword_sizeof_found
     
     mov rdi, token_value
     mov rsi, keyword_spawn
     call string_compare
     cmp rax, 0
-    je .match_spawn
+    je .keyword_spawn_found
     
     mov rdi, token_value
     mov rsi, keyword_shared
     call string_compare
     cmp rax, 0
-    je .match_shared
+    je .keyword_shared_found
     
     mov rdi, token_value
     mov rsi, keyword_mutex
     call string_compare
     cmp rax, 0
-    je .match_mutex
+    je .keyword_mutex_found
     
     mov rdi, token_value
     mov rsi, keyword_lock
     call string_compare
     cmp rax, 0
-    je .match_lock
+    je .keyword_lock_found
     
     mov rdi, token_value
     mov rsi, keyword_unlock
     call string_compare
     cmp rax, 0
-    je .match_unlock
+    je .keyword_unlock_found
     
-    ; No keyword match, keep as identifier
-    jmp .keyword_done
+    ; Not a keyword
+    mov rax, 0
+    jmp .done
     
-.match_def:
-    mov qword [token_type], TOKEN_DEF
-    jmp .keyword_done
+.keyword_def_found:
+    mov rax, TOKEN_DEF
+    jmp .done
     
-.match_model:
-    mov qword [token_type], TOKEN_MODEL
-    jmp .keyword_done
+.keyword_model_found:
+    mov rax, TOKEN_MODEL
+    jmp .done
     
-.match_func:
-    mov qword [token_type], TOKEN_FUNC
-    jmp .keyword_done
+.keyword_func_found:
+    mov rax, TOKEN_FUNC
+    jmp .done
     
-.match_loop:
-    mov qword [token_type], TOKEN_LOOP
-    jmp .keyword_done
+.keyword_loop_found:
+    mov rax, TOKEN_LOOP
+    jmp .done
     
-.match_if:
-    mov qword [token_type], TOKEN_IF
-    jmp .keyword_done
+.keyword_if_found:
+    mov rax, TOKEN_IF
+    jmp .done
     
-.match_else:
-    mov qword [token_type], TOKEN_ELSE
-    jmp .keyword_done
+.keyword_else_found:
+    mov rax, TOKEN_ELSE
+    jmp .done
     
-.match_let:
-    mov qword [token_type], TOKEN_LET
-    jmp .keyword_done
+.keyword_let_found:
+    mov rax, TOKEN_LET
+    jmp .done
     
-.match_const:
-    mov qword [token_type], TOKEN_CONST
-    jmp .keyword_done
+.keyword_const_found:
+    mov rax, TOKEN_CONST
+    jmp .done
     
-.match_ret:
-    mov qword [token_type], TOKEN_RET
-    jmp .keyword_done
+.keyword_ret_found:
+    mov rax, TOKEN_RET
+    jmp .done
     
-.match_break:
-    mov qword [token_type], TOKEN_BREAK
-    jmp .keyword_done
+.keyword_break_found:
+    mov rax, TOKEN_BREAK
+    jmp .done
     
-.match_continue:
-    mov qword [token_type], TOKEN_CONTINUE
-    jmp .keyword_done
+.keyword_continue_found:
+    mov rax, TOKEN_CONTINUE
+    jmp .done
     
-.match_import:
-    mov qword [token_type], TOKEN_IMPORT
-    jmp .keyword_done
+.keyword_import_found:
+    mov rax, TOKEN_IMPORT
+    jmp .done
     
-.match_export:
-    mov qword [token_type], TOKEN_EXPORT
-    jmp .keyword_done
+.keyword_export_found:
+    mov rax, TOKEN_EXPORT
+    jmp .done
     
-.match_match:
-    mov qword [token_type], TOKEN_MATCH
-    jmp .keyword_done
+.keyword_match_found:
+    mov rax, TOKEN_MATCH
+    jmp .done
     
-.match_case:
-    mov qword [token_type], TOKEN_CASE
-    jmp .keyword_done
+.keyword_case_found:
+    mov rax, TOKEN_CASE
+    jmp .done
     
-.match_default:
-    mov qword [token_type], TOKEN_DEFAULT
-    jmp .keyword_done
+.keyword_default_found:
+    mov rax, TOKEN_DEFAULT
+    jmp .done
     
-.match_try:
-    mov qword [token_type], TOKEN_TRY
-    jmp .keyword_done
+.keyword_try_found:
+    mov rax, TOKEN_TRY
+    jmp .done
     
-.match_catch:
-    mov qword [token_type], TOKEN_CATCH
-    jmp .keyword_done
+.keyword_catch_found:
+    mov rax, TOKEN_CATCH
+    jmp .done
     
-.match_finally:
-    mov qword [token_type], TOKEN_FINALLY
-    jmp .keyword_done
+.keyword_finally_found:
+    mov rax, TOKEN_FINALLY
+    jmp .done
     
-.match_throw:
-    mov qword [token_type], TOKEN_THROW
-    jmp .keyword_done
+.keyword_throw_found:
+    mov rax, TOKEN_THROW
+    jmp .done
     
-.match_int:
-    mov qword [token_type], TOKEN_INT
-    jmp .keyword_done
+.keyword_int_found:
+    mov rax, TOKEN_INT
+    jmp .done
     
-.match_float:
-    mov qword [token_type], TOKEN_FLOAT
-    jmp .keyword_done
+.keyword_float_found:
+    mov rax, TOKEN_FLOAT
+    jmp .done
     
-.match_bool:
-    mov qword [token_type], TOKEN_BOOL
-    jmp .keyword_done
+.keyword_bool_found:
+    mov rax, TOKEN_BOOL
+    jmp .done
     
-.match_void:
-    mov qword [token_type], TOKEN_VOID
-    jmp .keyword_done
+.keyword_void_found:
+    mov rax, TOKEN_VOID
+    jmp .done
     
-.match_auto:
-    mov qword [token_type], TOKEN_AUTO
-    jmp .keyword_done
+.keyword_auto_found:
+    mov rax, TOKEN_AUTO
+    jmp .done
     
-.match_alloc:
-    mov qword [token_type], TOKEN_ALLOC
-    jmp .keyword_done
+.keyword_alloc_found:
+    mov rax, TOKEN_ALLOC
+    jmp .done
     
-.match_free:
-    mov qword [token_type], TOKEN_FREE
-    jmp .keyword_done
+.keyword_free_found:
+    mov rax, TOKEN_FREE
+    jmp .done
     
-.match_sizeof:
-    mov qword [token_type], TOKEN_SIZEOF
-    jmp .keyword_done
+.keyword_sizeof_found:
+    mov rax, TOKEN_SIZEOF
+    jmp .done
     
-.match_spawn:
-    mov qword [token_type], TOKEN_SPAWN
-    jmp .keyword_done
+.keyword_spawn_found:
+    mov rax, TOKEN_SPAWN
+    jmp .done
     
-.match_shared:
-    mov qword [token_type], TOKEN_SHARED
-    jmp .keyword_done
+.keyword_shared_found:
+    mov rax, TOKEN_SHARED
+    jmp .done
     
-.match_mutex:
-    mov qword [token_type], TOKEN_MUTEX
-    jmp .keyword_done
+.keyword_mutex_found:
+    mov rax, TOKEN_MUTEX
+    jmp .done
     
-.match_lock:
-    mov qword [token_type], TOKEN_LOCK
-    jmp .keyword_done
+.keyword_lock_found:
+    mov rax, TOKEN_LOCK
+    jmp .done
     
-.match_unlock:
-    mov qword [token_type], TOKEN_UNLOCK
-    jmp .keyword_done
+.keyword_unlock_found:
+    mov rax, TOKEN_UNLOCK
+    jmp .done
     
-.keyword_done:
+.done:
+    pop rdx
+    pop rcx
+    pop rbx
     leave
     ret
 
 ; === String Comparison ===
+; Args: rdi = string1, rsi = string2
+; Returns: rax = 0 if equal, non-zero if different
 string_compare:
     push rbp
     mov rbp, rsp
     push rbx
+    push rcx
     
     mov rbx, rdi
     mov rcx, rsi
@@ -1536,46 +1417,58 @@ string_compare:
     
 .equal:
     mov rax, 0
-    jmp .compare_done
+    jmp .done
     
 .not_equal:
     mov rax, 1
     
-.compare_done:
+.done:
+    pop rcx
     pop rbx
     leave
     ret
 
 ; === Get Current Token ===
 lexer_get_current_token:
+    push rbp
+    mov rbp, rsp
+    
+    ; Return token information
     mov rax, [token_type]
+    mov rbx, token_value
+    mov rcx, [token_line]
+    mov rdx, [token_column]
+    
+    leave
     ret
 
 ; === Peek Token ===
 lexer_peek_token:
     push rbp
     mov rbp, rsp
+    push rbx
+    push rcx
+    push rdx
     
     ; Save current state
-    push qword [lexer_position]
-    push qword [lexer_line]
-    push qword [lexer_column]
-    push qword [token_type]
+    mov rbx, [lexer_position]
+    mov rcx, [lexer_line]
+    mov rdx, [lexer_column]
     
     ; Get next token
     call lexer_next_token
     
-    ; Save token type
-    mov rbx, [token_type]
-    
     ; Restore state
-    pop qword [token_type]
-    pop qword [lexer_column]
-    pop qword [lexer_line]
-    pop qword [lexer_position]
+    mov [lexer_position], rbx
+    mov [lexer_line], rcx
+    mov [lexer_column], rdx
+    call lexer_load_current_char
     
-    ; Return peeked token type
-    mov rax, rbx
+    ; Return token type
+    mov rax, [token_type]
     
+    pop rdx
+    pop rcx
+    pop rbx
     leave
     ret

@@ -1,6 +1,4 @@
-import java.io.*;
 import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * Enhanced EON Compiler v2.0 - Java Implementation
@@ -140,7 +138,6 @@ public class EonCompilerEnhanced {
     private Token currentToken;
     private Scope currentScope;
     private Scope globalScope;
-    private int tempVarCount;
     private int labelCount;
     
     // Keyword mapping
@@ -186,7 +183,6 @@ public class EonCompilerEnhanced {
         this.pos = 0;
         this.line = 1;
         this.column = 1;
-        this.tempVarCount = 0;
         this.labelCount = 0;
         this.globalScope = new Scope(null);
         this.currentScope = globalScope;
@@ -194,14 +190,35 @@ public class EonCompilerEnhanced {
     
     // Lexer methods
     private void skipWhitespace() {
-        while (pos < source.length() && Character.isWhitespace(source.charAt(pos))) {
-            if (source.charAt(pos) == '\n') {
-                line++;
-                column = 1;
-            } else {
-                column++;
+        while (pos < source.length()) {
+            char c = source.charAt(pos);
+            
+            // Handle comments
+            if (c == '/' && pos + 1 < source.length() && source.charAt(pos + 1) == '/') {
+                // Single line comment - skip to end of line
+                while (pos < source.length() && source.charAt(pos) != '\n') {
+                    pos++;
+                }
+                if (pos < source.length()) {
+                    line++;
+                    column = 1;
+                    pos++;
+                }
+                continue;
             }
-            pos++;
+            
+            // Handle whitespace
+            if (Character.isWhitespace(c)) {
+                if (c == '\n') {
+                    line++;
+                    column = 1;
+                } else {
+                    column++;
+                }
+                pos++;
+            } else {
+                break;
+            }
         }
     }
     
@@ -642,7 +659,9 @@ public class EonCompilerEnhanced {
             case LET:
                 advance(); // consume 'let'
                 AstNode varNode = new AstNode(AstType.VAR_DECL, currentToken.line, currentToken.column);
-                expect(TokenType.IDENTIFIER);
+                if (currentToken.type != TokenType.IDENTIFIER) {
+                    throw new RuntimeException("Expected identifier, got " + currentToken.type + " at line " + currentToken.line);
+                }
                 varNode.varName = currentToken.value;
                 advance();
                 
@@ -718,6 +737,7 @@ public class EonCompilerEnhanced {
         }
         
         expect(TokenType.FUNC);
+        advance(); // consume 'func'
         expect(TokenType.IDENTIFIER);
         funcNode.funcName = currentToken.value;
         advance();
@@ -874,12 +894,117 @@ public class EonCompilerEnhanced {
                     stmt = stmt.next;
                 }
                 break;
+                
+            // Handle all other AST types
+            case NUMBER:
+            case STRING:
+            case CHAR:
+                // Literals don't need semantic analysis
+                break;
+                
+            case ASSIGN:
+                semanticPass(node.left);
+                semanticPass(node.right);
+                break;
+                
+            case ELSE:
+                semanticPass(node.body);
+                break;
+                
+            case STRUCT_DEFINITION:
+                // Add struct to symbol table
+                Symbol structSym = new Symbol(node.name, "struct");
+                currentScope.symbols.put(node.name, structSym);
+                break;
+                
+            case POINTER_TYPE:
+            case DEREFERENCE:
+            case ADDRESS_OF:
+                semanticPass(node.left);
+                break;
+                
+            case PARAMETER:
+                // Parameters are handled in function definition
+                break;
+                
+            case STRUCT_FIELD:
+                semanticPass(node.left);
+                break;
+                
+            case PROGRAM:
+                semanticPass(node.body);
+                break;
+                
+            case ALLOC:
+            case FREE:
+            case SIZEOF:
+                semanticPass(node.left);
+                break;
+                
+            case FUNCTION_PROTOTYPE:
+                // Add function prototype to symbol table
+                Symbol protoSym = new Symbol(node.funcName, "function");
+                protoSym.isFunction = true;
+                currentScope.symbols.put(node.funcName, protoSym);
+                break;
+                
+            case SPAWN:
+                semanticPass(node.left);
+                break;
+                
+            case ASSIGN_DEREF:
+                semanticPass(node.left);
+                semanticPass(node.right);
+                break;
+                
+            case FOR_LOOP:
+                semanticPass(node.forInit);
+                semanticPass(node.forCond);
+                semanticPass(node.forIncr);
+                semanticPass(node.forBody);
+                break;
+                
+            case BREAK:
+            case CONTINUE:
+                // Control flow statements
+                break;
+                
+            case MATCH:
+                semanticPass(node.cond);
+                semanticPass(node.body);
+                break;
+                
+            case CASE:
+                semanticPass(node.left);
+                semanticPass(node.body);
+                break;
+                
+            case TRY:
+                semanticPass(node.tryBlock);
+                break;
+                
+            case CATCH:
+                semanticPass(node.catchBlock);
+                break;
+                
+            case FINALLY:
+                semanticPass(node.finallyBlock);
+                break;
+                
+            case THROW:
+                semanticPass(node.left);
+                break;
+                
+            case MEMBER_ACCESS:
+                semanticPass(node.left);
+                break;
+                
+            default:
+                // Handle any remaining node types recursively
+                semanticPass(node.left);
+                semanticPass(node.right);
+                break;
         }
-        
-        // Recursively process child nodes
-        semanticPass(node.left);
-        semanticPass(node.right);
-        semanticPass(node.next);
     }
     
     private boolean symbolExists(String name) {
@@ -928,6 +1053,68 @@ public class EonCompilerEnhanced {
                         output.append("    xor rdx, rdx\n");
                         output.append("    idiv rbx\n");
                         break;
+                    case MODULO:
+                        output.append("    xor rdx, rdx\n");
+                        output.append("    idiv rbx\n");
+                        output.append("    mov rax, rdx\n");
+                        break;
+                    case POWER:
+                        output.append("    ; Power operation (simplified)\n");
+                        break;
+                    case EQUALS:
+                        output.append("    cmp rax, rbx\n");
+                        output.append("    sete al\n");
+                        output.append("    movzx rax, al\n");
+                        break;
+                    case NOT_EQUALS:
+                        output.append("    cmp rax, rbx\n");
+                        output.append("    setne al\n");
+                        output.append("    movzx rax, al\n");
+                        break;
+                    case GREATER:
+                        output.append("    cmp rax, rbx\n");
+                        output.append("    setg al\n");
+                        output.append("    movzx rax, al\n");
+                        break;
+                    case GREATER_EQUAL:
+                        output.append("    cmp rax, rbx\n");
+                        output.append("    setge al\n");
+                        output.append("    movzx rax, al\n");
+                        break;
+                    case LESS:
+                        output.append("    cmp rax, rbx\n");
+                        output.append("    setl al\n");
+                        output.append("    movzx rax, al\n");
+                        break;
+                    case LESS_EQUAL:
+                        output.append("    cmp rax, rbx\n");
+                        output.append("    setle al\n");
+                        output.append("    movzx rax, al\n");
+                        break;
+                    case LOGICAL_AND:
+                        output.append("    and rax, rbx\n");
+                        break;
+                    case LOGICAL_OR:
+                        output.append("    or rax, rbx\n");
+                        break;
+                    case BITWISE_AND:
+                        output.append("    and rax, rbx\n");
+                        break;
+                    case BITWISE_OR:
+                        output.append("    or rax, rbx\n");
+                        break;
+                    case BITWISE_XOR:
+                        output.append("    xor rax, rbx\n");
+                        break;
+                    case LEFT_SHIFT:
+                        output.append("    shl rax, cl\n");
+                        break;
+                    case RIGHT_SHIFT:
+                        output.append("    shr rax, cl\n");
+                        break;
+                    default:
+                        output.append("    ; Unknown operator\n");
+                        break;
                 }
                 output.append("    push rax\n");
                 break;
@@ -965,6 +1152,183 @@ public class EonCompilerEnhanced {
                     generateCode(stmt, output);
                     stmt = stmt.next;
                 }
+                break;
+                
+            // Handle all other AST types
+            case STRING:
+            case CHAR:
+                // String and char literals
+                output.append("    ; String/char literal\n");
+                break;
+                
+            case ASSIGN:
+                generateCode(node.right, output);
+                output.append("    pop rax\n");
+                output.append("    mov [rbp-8], rax\n"); // Simplified
+                break;
+                
+            case IF:
+                generateCode(node.cond, output);
+                output.append("    pop rax\n");
+                output.append("    test rax, rax\n");
+                output.append("    jz .else_" + (++labelCount) + "\n");
+                generateCode(node.body, output);
+                output.append("    jmp .end_if_" + labelCount + "\n");
+                output.append(".else_" + labelCount + ":\n");
+                if (node.right != null) {
+                    generateCode(node.right, output);
+                }
+                output.append(".end_if_" + labelCount + ":\n");
+                break;
+                
+            case ELSE:
+                generateCode(node.body, output);
+                break;
+                
+            case WHILE_LOOP:
+                output.append(".while_" + (++labelCount) + ":\n");
+                generateCode(node.whileCond, output);
+                output.append("    pop rax\n");
+                output.append("    test rax, rax\n");
+                output.append("    jz .end_while_" + labelCount + "\n");
+                generateCode(node.whileBody, output);
+                output.append("    jmp .while_" + labelCount + "\n");
+                output.append(".end_while_" + labelCount + ":\n");
+                break;
+                
+            case FOR_LOOP:
+                generateCode(node.forInit, output);
+                output.append(".for_" + (++labelCount) + ":\n");
+                generateCode(node.forCond, output);
+                output.append("    pop rax\n");
+                output.append("    test rax, rax\n");
+                output.append("    jz .end_for_" + labelCount + "\n");
+                generateCode(node.forBody, output);
+                generateCode(node.forIncr, output);
+                output.append("    jmp .for_" + labelCount + "\n");
+                output.append(".end_for_" + labelCount + ":\n");
+                break;
+                
+            case BREAK:
+                output.append("    jmp .end_loop_" + labelCount + "\n");
+                break;
+                
+            case CONTINUE:
+                output.append("    jmp .loop_" + labelCount + "\n");
+                break;
+                
+            case STRUCT_DEFINITION:
+                // Struct definitions don't generate code directly
+                break;
+                
+            case POINTER_TYPE:
+            case DEREFERENCE:
+                generateCode(node.left, output);
+                output.append("    pop rax\n");
+                output.append("    mov rax, [rax]\n");
+                output.append("    push rax\n");
+                break;
+                
+            case ADDRESS_OF:
+                // Address of operation
+                output.append("    lea rax, [rbp-8]\n"); // Simplified
+                output.append("    push rax\n");
+                break;
+                
+            case PARAMETER:
+                // Parameters are handled in function definition
+                break;
+                
+            case STRUCT_FIELD:
+                generateCode(node.left, output);
+                break;
+                
+            case PROGRAM:
+                generateCode(node.body, output);
+                break;
+                
+            case ALLOC:
+                output.append("    mov rdi, ").append(node.value).append("\n");
+                output.append("    call malloc\n");
+                output.append("    push rax\n");
+                break;
+                
+            case FREE:
+                generateCode(node.left, output);
+                output.append("    pop rdi\n");
+                output.append("    call free\n");
+                break;
+                
+            case SIZEOF:
+                output.append("    mov rax, ").append(node.value).append("\n");
+                output.append("    push rax\n");
+                break;
+                
+            case FUNCTION_DEFINITION:
+                output.append(node.funcName).append(":\n");
+                output.append("    push rbp\n");
+                output.append("    mov rbp, rsp\n");
+                generateCode(node.funcBody, output);
+                output.append("    leave\n");
+                output.append("    ret\n");
+                break;
+                
+            case FUNCTION_PROTOTYPE:
+                // Function prototypes don't generate code
+                break;
+                
+            case SPAWN:
+                generateCode(node.left, output);
+                output.append("    ; Spawn thread\n");
+                break;
+                
+            case ASSIGN_DEREF:
+                generateCode(node.right, output);
+                output.append("    pop rbx\n");
+                generateCode(node.left, output);
+                output.append("    pop rax\n");
+                output.append("    mov [rax], rbx\n");
+                break;
+                
+            case MATCH:
+                generateCode(node.cond, output);
+                output.append("    ; Match statement\n");
+                break;
+                
+            case CASE:
+                generateCode(node.left, output);
+                generateCode(node.body, output);
+                break;
+                
+            case TRY:
+                generateCode(node.tryBlock, output);
+                output.append("    ; Try block\n");
+                break;
+                
+            case CATCH:
+                generateCode(node.catchBlock, output);
+                output.append("    ; Catch block\n");
+                break;
+                
+            case FINALLY:
+                generateCode(node.finallyBlock, output);
+                output.append("    ; Finally block\n");
+                break;
+                
+            case THROW:
+                generateCode(node.left, output);
+                output.append("    ; Throw exception\n");
+                break;
+                
+            case MEMBER_ACCESS:
+                generateCode(node.left, output);
+                output.append("    ; Member access\n");
+                break;
+                
+            default:
+                // Handle any remaining node types recursively
+                generateCode(node.left, output);
+                generateCode(node.right, output);
                 break;
         }
     }

@@ -523,7 +523,16 @@ namespace RawrZDesktop.Engines
                     Microsoft.CodeAnalysis.MetadataReference.CreateFromFile(typeof(System.Linq.Enumerable).Assembly.Location),
                     Microsoft.CodeAnalysis.MetadataReference.CreateFromFile(typeof(System.IO.DriveInfo).Assembly.Location),
                     Microsoft.CodeAnalysis.MetadataReference.CreateFromFile(typeof(System.ComponentModel.Component).Assembly.Location),
-                    Microsoft.CodeAnalysis.MetadataReference.CreateFromFile(typeof(System.Runtime.CompilerServices.RuntimeHelpers).Assembly.Location)
+                    Microsoft.CodeAnalysis.MetadataReference.CreateFromFile(typeof(System.Runtime.CompilerServices.RuntimeHelpers).Assembly.Location),
+                    // Add missing assembly references
+                    Microsoft.CodeAnalysis.MetadataReference.CreateFromFile(typeof(System.Runtime.CompilerServices.RuntimeHelpers).Assembly.Location),
+                    Microsoft.CodeAnalysis.MetadataReference.CreateFromFile(typeof(System.Net.IPAddress).Assembly.Location),
+                    Microsoft.CodeAnalysis.MetadataReference.CreateFromFile(typeof(System.IO.Stream).Assembly.Location),
+                    Microsoft.CodeAnalysis.MetadataReference.CreateFromFile(typeof(System.Decimal).Assembly.Location),
+                    Microsoft.CodeAnalysis.MetadataReference.CreateFromFile(typeof(System.Collections.IEnumerable).Assembly.Location),
+                    Microsoft.CodeAnalysis.MetadataReference.CreateFromFile(typeof(System.IDisposable).Assembly.Location),
+                    Microsoft.CodeAnalysis.MetadataReference.CreateFromFile(typeof(System.Enum).Assembly.Location),
+                    Microsoft.CodeAnalysis.MetadataReference.CreateFromFile(typeof(System.MarshalByRefObject).Assembly.Location)
                 };
 
                 var compilation = Microsoft.CodeAnalysis.CSharp.CSharpCompilation.Create(

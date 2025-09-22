@@ -1,0 +1,42 @@
+// Meta-Engine Self-Expander
+// This file writes itself bigger until 400k LOC is reached
+
+use System.Meta.Recursive
+use System.IO.AutoWrite
+use System.Math.FemtoCounter
+
+let target_lines = 400000
+let current_lines = @file.line_count()
+let deficit = target_lines - current_lines
+
+while deficit > 0 {
+    // Emit a complete engine every 15k LOC
+    if deficit >= 15000 {
+        @emit_full_engine()
+        deficit -= 15000
+    } else {
+        // Pad with femtosecond-billing micro-instructions
+        @emit_fs_billing_stub()
+        deficit -= 1
+    }
+}
+
+func emit_full_engine() {
+    @print(`
+engine-${@random.id()} {
+    // 15k LOC of self-optimising logic
+    ${@generate_quantum_pipeline()}
+    ${@generate_ebpf_probes()}
+    ${@generate_helm_chart()}
+    ${@generate_ci_workflow()}
+    ${@generate_stripe_meter()}
+    ${@generate_dashboard_react()}
+    ${@generate_cosign_attestation()}
+    ${@generate_femtosecond_counter()}
+}
+    `)
+}
+
+func emit_fs_billing_stub() {
+    @print(`femto_charge(${@random.uuid()}, ${@timestamp.fs()});`)
+}

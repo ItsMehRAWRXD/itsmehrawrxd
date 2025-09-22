@@ -1,0 +1,2193 @@
+{
+  "timestamp": "2025-09-22T08:56:51.309Z",
+  "billing": {
+    "totalFemtoseconds": 29982000000000,
+    "totalBilled": 0.029982000000000023,
+    "totalInvoices": 272,
+    "invoices": [
+      {
+        "timestamp": 1758531381402,
+        "femtoseconds": 107000000000,
+        "amount": 0.00010700000000000001,
+        "totalBilled": 0.00010700000000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531381512,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.00021700000000000002,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531381622,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.00032700000000000003,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531381732,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.00043700000000000005,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531381841,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.000546,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531381951,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.000656,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531382061,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.000766,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531382173,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.000878,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531382283,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.000988,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531382393,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.001098,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531382503,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.001208,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531382611,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.0013160000000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531382724,
+        "femtoseconds": 113000000000,
+        "amount": 0.00011300000000000001,
+        "totalBilled": 0.0014290000000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531382836,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.0015410000000000003,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531382944,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.0016490000000000003,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531383055,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.0017600000000000003,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531383166,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.0018710000000000003,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531383278,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.0019830000000000004,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531383388,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.0020930000000000002,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531383508,
+        "femtoseconds": 120000000000,
+        "amount": 0.00012,
+        "totalBilled": 0.002213,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531383623,
+        "femtoseconds": 115000000000,
+        "amount": 0.000115,
+        "totalBilled": 0.002328,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531383734,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.002439,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531383843,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.0025480000000000004,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531383953,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.002658,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531384063,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.002768,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531384173,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.002878,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531384282,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.002987,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531384393,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.003098,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531384503,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.003208,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531384614,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.003319,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531384723,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.003428,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531384833,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.003538,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531384944,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.003649,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531385053,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.003758,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531385163,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.003868,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531385274,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.003979,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531385384,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.004089,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531385494,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.004199,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531385606,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.004311,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531385717,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.004422,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531385827,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.004532,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531385936,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.004640999999999999,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531386046,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.004750999999999999,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531386156,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.004860999999999999,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531386268,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.004972999999999999,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531386380,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.005084999999999999,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531386488,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.005192999999999999,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531386600,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.005304999999999999,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531386710,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.005414999999999999,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531386819,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.0055239999999999985,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531386931,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.005635999999999999,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531387042,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.005746999999999999,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531387154,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.005858999999999999,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531387265,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.005969999999999999,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531387375,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.006079999999999999,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531387484,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.006188999999999998,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531387595,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.006299999999999998,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531387706,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.006410999999999998,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531387816,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.006520999999999998,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531387926,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.006630999999999998,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531388037,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.006741999999999998,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531388148,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.006852999999999998,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531388257,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.006961999999999998,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531388365,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.007069999999999997,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531388475,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.007179999999999997,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531388585,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.007289999999999997,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531388696,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.007400999999999997,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531388807,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.007511999999999997,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531388916,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.007620999999999997,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531389026,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.0077309999999999966,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531389137,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.007841999999999997,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531389246,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.007950999999999996,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531389358,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.008062999999999996,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531389468,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.008172999999999996,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531389578,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.008282999999999997,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531389690,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.008394999999999996,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531389802,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.008506999999999995,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531389913,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.008617999999999995,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531390022,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.008726999999999995,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531390138,
+        "femtoseconds": 116000000000,
+        "amount": 0.00011600000000000001,
+        "totalBilled": 0.008842999999999995,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531390242,
+        "femtoseconds": 104000000000,
+        "amount": 0.00010400000000000001,
+        "totalBilled": 0.008946999999999995,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531390354,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.009058999999999994,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531390465,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.009169999999999994,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531390574,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.009278999999999994,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531390685,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.009389999999999994,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531390795,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.009499999999999995,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531390905,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.009609999999999995,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531391015,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.009719999999999996,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531391126,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.009830999999999996,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531391236,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.009940999999999997,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531391346,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.010050999999999997,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531391456,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.010160999999999998,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531391566,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.010270999999999999,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531391677,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.010381999999999999,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531391788,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.010492999999999999,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531391897,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.010601999999999999,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531392008,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.010712999999999999,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531392118,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.010823,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531392228,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.010933,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531392338,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.011043,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531392450,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.011155,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531392562,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.011267,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531392674,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.011378999999999998,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531392785,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.011489999999999998,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531392896,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.011600999999999998,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531393018,
+        "femtoseconds": 122000000000,
+        "amount": 0.00012200000000000001,
+        "totalBilled": 0.011722999999999999,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531393130,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.011834999999999998,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531393240,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.011944999999999999,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531393350,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.012055,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531393460,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.012165,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531393570,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.012275000000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531393680,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.012385000000000002,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531393790,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.012495000000000003,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531393900,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.012605000000000003,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531394009,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.012714000000000003,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531394119,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.012824000000000004,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531394228,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.012933000000000004,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531394338,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.013043000000000004,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531394448,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.013153000000000005,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531394558,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.013263000000000006,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531394667,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.013372000000000005,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531394777,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.013482000000000006,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531394888,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.013593000000000006,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531394998,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.013703000000000007,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531395110,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.013815000000000006,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531395221,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.013926000000000006,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531395330,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.014035000000000006,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531395440,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.014145000000000007,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531395551,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.014256000000000007,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531395660,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.014365000000000006,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531395772,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.014477000000000005,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531395884,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.014589000000000005,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531395990,
+        "femtoseconds": 106000000000,
+        "amount": 0.000106,
+        "totalBilled": 0.014695000000000005,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531396099,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.014804000000000005,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531396207,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.014912000000000005,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531396319,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.015024000000000004,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531396429,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.015134000000000005,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531396539,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.015244000000000006,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531396647,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.015352000000000006,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531396758,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.015463000000000006,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531396867,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.015572000000000006,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531396976,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.015681000000000007,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531397085,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.01579000000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531397195,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.015900000000000008,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531397305,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.016010000000000007,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531397413,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.016118000000000007,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531397523,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.016228000000000006,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531397634,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.016339000000000006,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531397745,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.016450000000000006,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531397853,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.016558000000000007,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531397964,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.016669000000000007,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531398073,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.016778000000000008,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531398184,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.016889000000000008,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531398293,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.01699800000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531398403,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.01710800000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531398515,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.01722000000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531398626,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.01733100000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531398734,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.01743900000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531398846,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.01755100000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531398956,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.01766100000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531399078,
+        "femtoseconds": 122000000000,
+        "amount": 0.00012200000000000001,
+        "totalBilled": 0.01778300000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531399191,
+        "femtoseconds": 113000000000,
+        "amount": 0.00011300000000000001,
+        "totalBilled": 0.01789600000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531399302,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.01800700000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531399412,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.018117000000000008,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531399523,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.018228000000000008,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531399632,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.01833700000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531399742,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.01844700000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531399852,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.018557000000000008,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531399962,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.018667000000000007,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531400072,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.018777000000000005,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531400179,
+        "femtoseconds": 107000000000,
+        "amount": 0.00010700000000000001,
+        "totalBilled": 0.018884000000000005,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531400287,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.018992000000000005,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531400394,
+        "femtoseconds": 107000000000,
+        "amount": 0.00010700000000000001,
+        "totalBilled": 0.019099000000000005,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531400504,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.019209000000000004,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531400615,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.019320000000000004,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531400726,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.019431000000000004,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531400837,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.019542000000000004,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531400944,
+        "femtoseconds": 107000000000,
+        "amount": 0.00010700000000000001,
+        "totalBilled": 0.019649000000000003,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531401054,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.019759000000000002,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531401166,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.019871000000000003,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531401273,
+        "femtoseconds": 107000000000,
+        "amount": 0.00010700000000000001,
+        "totalBilled": 0.019978000000000003,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531401384,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.020089000000000003,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531401493,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.020198000000000004,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531401601,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.020306000000000005,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531401708,
+        "femtoseconds": 107000000000,
+        "amount": 0.00010700000000000001,
+        "totalBilled": 0.020413000000000004,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531401817,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.020522000000000006,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531401929,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.020634000000000007,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531402038,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.020743000000000008,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531402146,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.02085100000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531402255,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.02096000000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531402363,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.02106800000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531402472,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.021177000000000012,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531402587,
+        "femtoseconds": 115000000000,
+        "amount": 0.000115,
+        "totalBilled": 0.021292000000000012,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531402693,
+        "femtoseconds": 106000000000,
+        "amount": 0.000106,
+        "totalBilled": 0.02139800000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531402801,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.02150600000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531402911,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.02161600000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531403019,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.02172400000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531403130,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.02183500000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531403239,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.021944000000000012,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531403349,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.02205400000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531403457,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.02216200000000001,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531403566,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.022271000000000013,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531403675,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.022380000000000014,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531403786,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.022491000000000014,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531403895,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.022600000000000016,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531404006,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.022711000000000016,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531404113,
+        "femtoseconds": 107000000000,
+        "amount": 0.00010700000000000001,
+        "totalBilled": 0.022818000000000015,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531404228,
+        "femtoseconds": 115000000000,
+        "amount": 0.000115,
+        "totalBilled": 0.022933000000000016,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531404334,
+        "femtoseconds": 106000000000,
+        "amount": 0.000106,
+        "totalBilled": 0.023039000000000014,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531404443,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.023148000000000016,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531404552,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.023257000000000017,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531404662,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.023367000000000016,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531404772,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.023477000000000015,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531404882,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.023587000000000014,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531404992,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.023697000000000013,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531405102,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.023807000000000012,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531405211,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.023916000000000014,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531405320,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.024025000000000015,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531405428,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.024133000000000016,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531405537,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.024242000000000017,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531405647,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.024352000000000016,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531405755,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.024460000000000016,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531405863,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.024568000000000017,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531405973,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.024678000000000016,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531406081,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.024786000000000016,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531406188,
+        "femtoseconds": 107000000000,
+        "amount": 0.00010700000000000001,
+        "totalBilled": 0.024893000000000016,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531406307,
+        "femtoseconds": 119000000000,
+        "amount": 0.000119,
+        "totalBilled": 0.025012000000000017,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531406422,
+        "femtoseconds": 115000000000,
+        "amount": 0.000115,
+        "totalBilled": 0.025127000000000017,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531406529,
+        "femtoseconds": 107000000000,
+        "amount": 0.00010700000000000001,
+        "totalBilled": 0.025234000000000017,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531406640,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.025345000000000017,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531406749,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.02545400000000002,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531406859,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.025564000000000017,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531406970,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.025675000000000017,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531407081,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.025786000000000017,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531407194,
+        "femtoseconds": 113000000000,
+        "amount": 0.00011300000000000001,
+        "totalBilled": 0.025899000000000016,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531407301,
+        "femtoseconds": 107000000000,
+        "amount": 0.00010700000000000001,
+        "totalBilled": 0.026006000000000015,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531407409,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.026114000000000016,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531407521,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.026226000000000017,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531407631,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.026336000000000016,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531407744,
+        "femtoseconds": 113000000000,
+        "amount": 0.00011300000000000001,
+        "totalBilled": 0.026449000000000014,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531407852,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.026557000000000015,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531407962,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.026667000000000014,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531408072,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.026777000000000013,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531408181,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.026886000000000014,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531408292,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.026997000000000014,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531408402,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.027107000000000013,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531408525,
+        "femtoseconds": 123000000000,
+        "amount": 0.000123,
+        "totalBilled": 0.027230000000000015,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531408638,
+        "femtoseconds": 113000000000,
+        "amount": 0.00011300000000000001,
+        "totalBilled": 0.027343000000000013,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531408748,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.027453000000000012,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531408857,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.027562000000000014,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531408965,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.027670000000000014,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531409075,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.027780000000000013,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531409186,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.027891000000000013,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531409295,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.028000000000000014,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531409404,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.028109000000000016,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531409515,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.028220000000000016,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531409624,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.028329000000000017,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531409734,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.028439000000000016,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531409850,
+        "femtoseconds": 116000000000,
+        "amount": 0.00011600000000000001,
+        "totalBilled": 0.028555000000000018,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531409955,
+        "femtoseconds": 105000000000,
+        "amount": 0.000105,
+        "totalBilled": 0.02866000000000002,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531410065,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.028770000000000018,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531410175,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.028880000000000017,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531410291,
+        "femtoseconds": 116000000000,
+        "amount": 0.00011600000000000001,
+        "totalBilled": 0.02899600000000002,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531410395,
+        "femtoseconds": 104000000000,
+        "amount": 0.00010400000000000001,
+        "totalBilled": 0.029100000000000018,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531410507,
+        "femtoseconds": 112000000000,
+        "amount": 0.00011200000000000001,
+        "totalBilled": 0.02921200000000002,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531410615,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.02932000000000002,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531410726,
+        "femtoseconds": 111000000000,
+        "amount": 0.00011100000000000001,
+        "totalBilled": 0.02943100000000002,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531410841,
+        "femtoseconds": 115000000000,
+        "amount": 0.000115,
+        "totalBilled": 0.02954600000000002,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531410949,
+        "femtoseconds": 108000000000,
+        "amount": 0.00010800000000000001,
+        "totalBilled": 0.02965400000000002,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531411059,
+        "femtoseconds": 110000000000,
+        "amount": 0.00011,
+        "totalBilled": 0.02976400000000002,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531411168,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.02987300000000002,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      },
+      {
+        "timestamp": 1758531411277,
+        "femtoseconds": 109000000000,
+        "amount": 0.000109,
+        "totalBilled": 0.029982000000000023,
+        "subscription_item": "si_1Trillion",
+        "action": "increment"
+      }
+    ]
+  },
+  "summary": {
+    "target": 50000,
+    "achieved": 184764,
+    "successRate": 369.5,
+    "costPerLine": 1.6227187114372942e-7,
+    "efficiency": "The gap is the art; the artifact is the punchline."
+  }
+}

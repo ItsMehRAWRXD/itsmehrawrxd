@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TestIrcBotConsole")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+54605de7bcc88efe975c352a0625ed4a63d5d0f2")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7e7b7228309e428e1c3de6b3799d11d024ca5260")]
 [assembly: System.Reflection.AssemblyProductAttribute("TestIrcBotConsole")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TestIrcBotConsole")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
