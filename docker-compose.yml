@@ -23,7 +23,7 @@ services:
       - ./engines:/app/engines
       - ./backups:/app/backups
       - ./public:/app/public
-      - ./api-server-no-cli.js:/app/api-server-no-cli.js
+      - ./api-server.js:/app/api-server.js
     environment:
       - NODE_ENV=production
       - PORT=3000
