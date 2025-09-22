@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Co Pilot</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+      width: 350px; 
+      padding: 15px; 
+      margin: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    h3 {
+      margin: 0 0 15px 0;
+      font-size: 18px;
+      font-weight: 600;
+      text-align: center;
+    }
+    
+    textarea { 
+      width: 100%; 
+      height: 100px; 
+      margin-bottom: 15px; 
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #333;
+      font-size: 14px;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+    
+    textarea:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+    }
+    
+    button { 
+      width: 100%; 
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 10px;
+    }
+    
+    button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-1px);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    #response { 
+      margin-top: 15px; 
+      white-space: pre-wrap; 
+      background: rgba(0, 0, 0, 0.2);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.4;
+      min-height: 50px;
+    }
+    
+    hr {
+      border: none;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.3);
+      margin: 20px 0;
+    }
+    
+    .settings-section {
+      margin-top: 20px;
+    }
+    
+    input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #333;
+      font-size: 14px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+    
+    input[type="password"]:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+    }
+    
+    .status {
+      font-size: 12px;
+      text-align: center;
+      margin-top: 10px;
+      opacity: 0.8;
+    }
+    
+    .loading {
+      display: none;
+      text-align: center;
+      margin: 10px 0;
+    }
+    
+    .spinner {
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top: 2px solid white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h3>🤖 AI Co Pilot</h3>
+    
+    <div class="chat-section">
+      <textarea id="chatMessage" placeholder="Type your message to AI..."></textarea>
+      <button id="sendButton">Send Message</button>
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div>AI is thinking...</div>
+      </div>
+      <div id="response"></div>
+    </div>
+
+    <hr>
+
+    <div class="settings-section">
+      <h3>⚙️ Settings</h3>
+      <input type="text" id="apiUrlInput" placeholder="Enter API Server URL (e.g., http://localhost:5000)">
+      <input type="password" id="apiKeyInput" placeholder="Enter Your API Key (optional)">
+      <button id="saveSettingsButton">Save Settings</button>
+      <div class="status" id="status"></div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

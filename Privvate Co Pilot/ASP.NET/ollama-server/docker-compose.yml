@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  ollama-service:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - OLLAMA_URL=http://host.docker.internal:11434
+      - YOUR_API_KEY=your-secret-key-here
+      - DEFAULT_MODEL=llama3
+      - DEBUG=false
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - ollama-network
+
+networks:
+  ollama-network:
+    driver: bridge

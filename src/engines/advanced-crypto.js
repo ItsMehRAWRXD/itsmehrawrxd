@@ -134,12 +134,7 @@ class AdvancedCrypto {
         
         let processedData = data;
         
-        // Debug logging (reduced for memory optimization)
-        if (process.env.DEBUG_CRYPTO === 'true') {
-            console.log('[DEBUG] Advanced Crypto - Input data type:', typeof data);
-            console.log('[DEBUG] Advanced Crypto - Input data:', data);
-            console.log('[DEBUG] Advanced Crypto - Data type option:', dataType);
-        }
+        // Debug logging disabled for performance
         
         // Handle different data types
         if (dataType === 'buffer' && Buffer.isBuffer(data)) {
@@ -154,10 +149,7 @@ class AdvancedCrypto {
             processedData = Buffer.from(dataStr, encoding);
         }
         
-        if (process.env.DEBUG_CRYPTO === 'true') {
-            console.log('[DEBUG] Advanced Crypto - Processed data type:', typeof processedData);
-            console.log('[DEBUG] Advanced Crypto - Processed data is buffer:', Buffer.isBuffer(processedData));
-        }
+        // Debug logging disabled for performance
         
         // Apply compression if requested
         if (compression) {

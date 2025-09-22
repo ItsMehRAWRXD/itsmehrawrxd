@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RawrZ Security Platform - Monitoring Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1rem 2rem;
+            border-bottom: 2px solid #00ff00;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00ff00;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #00ff00;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 10px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #00ff00;
+        }
+
+        .card-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .card-subtitle {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00ff00;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 0.25rem;
+        }
+
+        .chart-container {
+            height: 200px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+        }
+
+        .activity-feed {
+            grid-column: 1 / -1;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(0, 255, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-time {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-online {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+        }
+
+        .status-offline {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff0000;
+        }
+
+        .status-warning {
+            background: rgba(255, 255, 0, 0.2);
+            color: #ffff00;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #00ff00;
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: #00cc00;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-danger {
+            background: #ff0000;
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            background: #cc0000;
+        }
+
+        .refresh-indicator {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #00ff00;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+        }
+
+        .alert-error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff0000;
+            color: #ff0000;
+        }
+
+        .alert-warning {
+            background: rgba(255, 255, 0, 0.1);
+            border: 1px solid #ffff00;
+            color: #ffff00;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">RawrZ Security Platform</div>
+        <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span>System Online</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="controls">
+            <button class="btn btn-primary" onclick="refreshDashboard()">
+                <span id="refresh-icon" class="refresh-indicator hidden"></span>
+                Refresh Dashboard
+            </button>
+            <button class="btn btn-secondary" onclick="exportData()">Export Data</button>
+            <button class="btn btn-danger" onclick="emergencyShutdown()">Emergency Shutdown</button>
+        </div>
+
+        <div id="alerts-container"></div>
+
+        <div class="dashboard-grid">
+            <!-- System Status Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">System Status</div>
+                    <div class="status-badge status-online">Online</div>
+                </div>
+                <div class="card-value" id="system-uptime">0d 0h 0m</div>
+                <div class="card-subtitle">System Uptime</div>
+                <div class="metric-grid">
+                    <div class="metric">
+                        <div class="metric-value" id="cpu-usage">0%</div>
+                        <div class="metric-label">CPU Usage</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="memory-usage">0%</div>
+                        <div class="metric-label">Memory Usage</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bot Network Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Bot Network</div>
+                    <div class="status-badge status-online">Active</div>
+                </div>
+                <div class="card-value" id="total-bots">0</div>
+                <div class="card-subtitle">Total Bots</div>
+                <div class="metric-grid">
+                    <div class="metric">
+                        <div class="metric-value" id="online-bots">0</div>
+                        <div class="metric-label">Online</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="offline-bots">0</div>
+                        <div class="metric-label">Offline</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Extraction Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Data Extraction</div>
+                    <div class="status-badge status-online">Running</div>
+                </div>
+                <div class="card-value" id="total-extractions">0</div>
+                <div class="card-subtitle">Total Extractions</div>
+                <div class="metric-grid">
+                    <div class="metric">
+                        <div class="metric-value" id="browser-data">0</div>
+                        <div class="metric-label">Browser Data</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="crypto-data">0</div>
+                        <div class="metric-label">Crypto Data</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Status Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Security Status</div>
+                    <div class="status-badge status-online">Secure</div>
+                </div>
+                <div class="card-value" id="threat-level">Low</div>
+                <div class="card-subtitle">Threat Level</div>
+                <div class="metric-grid">
+                    <div class="metric">
+                        <div class="metric-value" id="blocked-attacks">0</div>
+                        <div class="metric-label">Blocked Attacks</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="active-threats">0</div>
+                        <div class="metric-label">Active Threats</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Network Traffic Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Network Traffic</div>
+                    <div class="status-badge status-online">Normal</div>
+                </div>
+                <div class="card-value" id="network-connections">0</div>
+                <div class="card-subtitle">Active Connections</div>
+                <div class="metric-grid">
+                    <div class="metric">
+                        <div class="metric-value" id="inbound-traffic">0 KB/s</div>
+                        <div class="metric-label">Inbound</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="outbound-traffic">0 KB/s</div>
+                        <div class="metric-label">Outbound</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Metrics Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Performance</div>
+                    <div class="status-badge status-online">Good</div>
+                </div>
+                <div class="card-value" id="response-time">0ms</div>
+                <div class="card-subtitle">Average Response Time</div>
+                <div class="chart-container">
+                    <div>Performance Chart</div>
+                </div>
+            </div>
+
+            <!-- Activity Feed -->
+            <div class="card activity-feed">
+                <div class="card-header">
+                    <div class="card-title">Recent Activity</div>
+                </div>
+                <div id="activity-feed">
+                    <div class="activity-item">
+                        <div class="activity-icon">🤖</div>
+                        <div class="activity-content">
+                            <div class="activity-title">Bot connected</div>
+                            <div class="activity-time">2 minutes ago</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">📊</div>
+                        <div class="activity-content">
+                            <div class="activity-title">Data extraction completed</div>
+                            <div class="activity-time">5 minutes ago</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">🔒</div>
+                        <div class="activity-content">
+                            <div class="activity-title">Security scan completed</div>
+                            <div class="activity-time">10 minutes ago</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dashboard functionality
+        let refreshInterval;
+        let isRefreshing = false;
+
+        // Initialize dashboard
+        function initDashboard() {
+            loadDashboardData();
+            startAutoRefresh();
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/api/monitoring/dashboard');
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateDashboard(data.data);
+                } else {
+                    showAlert('error', 'Failed to load dashboard data');
+                }
+            } catch (error) {
+                showAlert('error', 'Error loading dashboard data: ' + error.message);
+            }
+        }
+
+        // Update dashboard with new data
+        function updateDashboard(data) {
+            // System Status
+            document.getElementById('system-uptime').textContent = data.system.uptime || '0d 0h 0m';
+            document.getElementById('cpu-usage').textContent = data.system.cpu + '%';
+            document.getElementById('memory-usage').textContent = data.system.memory + '%';
+
+            // Bot Network
+            document.getElementById('total-bots').textContent = data.bots.total;
+            document.getElementById('online-bots').textContent = data.bots.online;
+            document.getElementById('offline-bots').textContent = data.bots.offline;
+
+            // Data Extraction
+            document.getElementById('total-extractions').textContent = data.extractions.total;
+            document.getElementById('browser-data').textContent = data.extractions.browser;
+            document.getElementById('crypto-data').textContent = data.extractions.crypto;
+
+            // Security Status
+            document.getElementById('threat-level').textContent = data.security.threatLevel;
+            document.getElementById('blocked-attacks').textContent = data.security.blockedAttacks;
+            document.getElementById('active-threats').textContent = data.security.activeThreats;
+
+            // Network Traffic
+            document.getElementById('network-connections').textContent = data.network.connections;
+            document.getElementById('inbound-traffic').textContent = data.network.inbound;
+            document.getElementById('outbound-traffic').textContent = data.network.outbound;
+
+            // Performance
+            document.getElementById('response-time').textContent = data.performance.responseTime + 'ms';
+
+            // Update activity feed
+            updateActivityFeed(data.activity);
+        }
+
+        // Update activity feed
+        function updateActivityFeed(activities) {
+            const feed = document.getElementById('activity-feed');
+            feed.innerHTML = '';
+
+            activities.forEach(activity => {
+                const item = document.createElement('div');
+                item.className = 'activity-item';
+                item.innerHTML = `
+                    <div class="activity-icon">${activity.icon}</div>
+                    <div class="activity-content">
+                        <div class="activity-title">${activity.title}</div>
+                        <div class="activity-time">${activity.time}</div>
+                    </div>
+                `;
+                feed.appendChild(item);
+            });
+        }
+
+        // Refresh dashboard
+        async function refreshDashboard() {
+            if (isRefreshing) return;
+
+            isRefreshing = true;
+            const refreshIcon = document.getElementById('refresh-icon');
+            refreshIcon.classList.remove('hidden');
+
+            try {
+                await loadDashboardData();
+                showAlert('success', 'Dashboard refreshed successfully');
+            } catch (error) {
+                showAlert('error', 'Failed to refresh dashboard');
+            } finally {
+                isRefreshing = false;
+                refreshIcon.classList.add('hidden');
+            }
+        }
+
+        // Start auto-refresh
+        function startAutoRefresh() {
+            refreshInterval = setInterval(loadDashboardData, 30000); // Refresh every 30 seconds
+        }
+
+        // Stop auto-refresh
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        }
+
+        // Export data
+        function exportData() {
+            const data = {
+                timestamp: new Date().toISOString(),
+                system: {
+                    uptime: document.getElementById('system-uptime').textContent,
+                    cpu: document.getElementById('cpu-usage').textContent,
+                    memory: document.getElementById('memory-usage').textContent
+                },
+                bots: {
+                    total: document.getElementById('total-bots').textContent,
+                    online: document.getElementById('online-bots').textContent,
+                    offline: document.getElementById('offline-bots').textContent
+                }
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `rawrz-dashboard-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showAlert('success', 'Data exported successfully');
+        }
+
+        // Emergency shutdown
+        async function emergencyShutdown() {
+            if (!confirm('Are you sure you want to perform an emergency shutdown?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/monitoring/emergency-shutdown', {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    showAlert('warning', 'Emergency shutdown initiated');
+                } else {
+                    showAlert('error', 'Failed to initiate emergency shutdown');
+                }
+            } catch (error) {
+                showAlert('error', 'Error during emergency shutdown: ' + error.message);
+            }
+        }
+
+        // Show alert
+        function showAlert(type, message) {
+            const container = document.getElementById('alerts-container');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            container.appendChild(alert);
+
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', initDashboard);
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', stopAutoRefresh);
+    </script>
+</body>
+</html>

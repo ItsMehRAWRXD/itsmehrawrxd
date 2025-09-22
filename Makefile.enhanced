@@ -1,0 +1,81 @@
+# Enhanced EON Compiler Makefile
+# Based on comprehensive features from rwararw.txt
+
+CC = gcc
+CFLAGS = -Wall -Wextra -std=c99 -g -O2
+NASM = nasm
+NASMFLAGS = -f elf64
+LDFLAGS = -lc
+
+# Targets
+TARGET = eon_enhanced
+TEST_PROGRAM = test_enhanced.eon
+OUTPUT_ASM = out.asm
+OUTPUT_OBJ = out.o
+OUTPUT_EXE = program
+
+# Default target
+all: $(TARGET)
+
+# Build the enhanced EON compiler
+$(TARGET): eon_compiler_enhanced.c
+	$(CC) $(CFLAGS) -o $(TARGET) eon_compiler_enhanced.c
+
+# Test the compiler with a sample program
+test: $(TARGET) $(TEST_PROGRAM)
+	@echo "Testing Enhanced EON Compiler..."
+	./$(TARGET) $(TEST_PROGRAM)
+	@echo "Assembling generated code..."
+	$(NASM) $(NASMFLAGS) $(OUTPUT_ASM)
+	@echo "Linking executable..."
+	$(CC) $(OUTPUT_OBJ) -o $(OUTPUT_EXE) $(LDFLAGS)
+	@echo "Running compiled program..."
+	./$(OUTPUT_EXE)
+	@echo "Exit code: $$?"
+
+# Clean up generated files
+clean:
+	rm -f $(TARGET) $(OUTPUT_ASM) $(OUTPUT_OBJ) $(OUTPUT_EXE)
+
+# Run a specific test
+run-test: $(TARGET)
+	@echo "Compiling $(TEST_PROGRAM)..."
+	./$(TARGET) $(TEST_PROGRAM)
+	@echo "Assembling..."
+	$(NASM) $(NASMFLAGS) $(OUTPUT_ASM)
+	@echo "Linking..."
+	$(CC) $(OUTPUT_OBJ) -o $(OUTPUT_EXE) $(LDFLAGS)
+	@echo "Executing..."
+	./$(OUTPUT_EXE)
+
+# Show compiler help
+help:
+	@echo "Enhanced EON Compiler Build System"
+	@echo "=================================="
+	@echo "Available targets:"
+	@echo "  all        - Build the enhanced EON compiler"
+	@echo "  test       - Build and test the compiler with sample program"
+	@echo "  run-test   - Compile, assemble, link and run test program"
+	@echo "  clean      - Remove all generated files"
+	@echo "  help       - Show this help message"
+	@echo ""
+	@echo "Usage:"
+	@echo "  make all          # Build compiler"
+	@echo "  make test         # Test with sample program"
+	@echo "  make clean        # Clean up"
+
+# Check for required tools
+check-deps:
+	@echo "Checking dependencies..."
+	@which $(CC) > /dev/null || (echo "Error: gcc not found" && exit 1)
+	@which $(NASM) > /dev/null || (echo "Error: nasm not found" && exit 1)
+	@echo "All dependencies found!"
+
+# Install dependencies (Ubuntu/Debian)
+install-deps:
+	@echo "Installing dependencies..."
+	sudo apt-get update
+	sudo apt-get install -y gcc nasm make
+	@echo "Dependencies installed!"
+
+.PHONY: all test clean run-test help check-deps install-deps

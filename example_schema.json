@@ -1,0 +1,124 @@
+{
+  "schema": {
+    "name": "user_management",
+    "tables": [
+      {
+        "name": "User",
+        "primary_key": {
+          "name": "id",
+          "eon_type": "int32"
+        },
+        "columns": [
+          {
+            "name": "id",
+            "eon_type": "int32",
+            "indexed": true
+          },
+          {
+            "name": "username",
+            "eon_type": "String",
+            "indexed": true
+          },
+          {
+            "name": "email",
+            "eon_type": "String",
+            "indexed": true
+          },
+          {
+            "name": "password_hash",
+            "eon_type": "String",
+            "indexed": false
+          },
+          {
+            "name": "created_at",
+            "eon_type": "String",
+            "indexed": false
+          },
+          {
+            "name": "updated_at",
+            "eon_type": "String",
+            "indexed": false
+          }
+        ]
+      },
+      {
+        "name": "Profile",
+        "primary_key": {
+          "name": "id",
+          "eon_type": "int32"
+        },
+        "columns": [
+          {
+            "name": "id",
+            "eon_type": "int32",
+            "indexed": true
+          },
+          {
+            "name": "user_id",
+            "eon_type": "int32",
+            "indexed": true
+          },
+          {
+            "name": "first_name",
+            "eon_type": "String",
+            "indexed": false
+          },
+          {
+            "name": "last_name",
+            "eon_type": "String",
+            "indexed": false
+          },
+          {
+            "name": "bio",
+            "eon_type": "String",
+            "indexed": false
+          },
+          {
+            "name": "avatar_url",
+            "eon_type": "String",
+            "indexed": false
+          }
+        ]
+      },
+      {
+        "name": "Post",
+        "primary_key": {
+          "name": "id",
+          "eon_type": "int32"
+        },
+        "columns": [
+          {
+            "name": "id",
+            "eon_type": "int32",
+            "indexed": true
+          },
+          {
+            "name": "user_id",
+            "eon_type": "int32",
+            "indexed": true
+          },
+          {
+            "name": "title",
+            "eon_type": "String",
+            "indexed": true
+          },
+          {
+            "name": "content",
+            "eon_type": "String",
+            "indexed": false
+          },
+          {
+            "name": "published",
+            "eon_type": "bool",
+            "indexed": true
+          },
+          {
+            "name": "created_at",
+            "eon_type": "String",
+            "indexed": false
+          }
+        ]
+      }
+    ]
+  }
+}

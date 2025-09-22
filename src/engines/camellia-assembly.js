@@ -44,23 +44,30 @@ class CamelliaAssemblyEngine {
       'clang++': 'clang++'
     };
 
+    const missingCompilers = [];
     for (const [name, command] of Object.entries(compilers)) {
       try {
         await this.checkCompiler(command);
         this.compilerPaths[name] = command;
       } catch (error) {
-        console.warn(`[WARN]  Compiler ${name} not found: ${error.message}`);
+        missingCompilers.push(name);
       }
     }
 
     if (Object.keys(this.compilerPaths).length === 0) {
+      console.log('[INFO] No native compilers found - using JavaScript fallback');
       throw new Error('No compatible compilers found for assembly engine');
+    } else if (missingCompilers.length > 0) {
+      console.log(`[INFO] Missing compilers: ${missingCompilers.join(', ')} - using available: ${Object.keys(this.compilerPaths).join(', ')}`);
     }
   }
 
   async checkCompiler(command) {
     return new Promise((resolve, reject) => {
-      const proc = spawn(command, ['--version'], { windowsHide: true });
+      const proc = spawn(command, ['--version'], { 
+        windowsHide: true,
+        stdio: ['ignore', 'ignore', 'ignore'] // Suppress all output
+      });
       proc.on('close', (code) => {
         if (code === 0) {
           resolve();

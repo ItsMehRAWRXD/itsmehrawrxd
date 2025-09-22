@@ -128,12 +128,10 @@ class RawrZEngine extends EventEmitter {
         // Check if module is already loaded
         const existingModule = this.modules.get(moduleName);
         if (existingModule !== null && existingModule !== undefined) {
-            console.log(`[DEBUG] Module ${moduleName} already loaded, returning cached instance`);
             return existingModule;
         }
         
         try {
-            console.log(`[INFO] Loading ${moduleName} on demand...`);
             
             // Map module names to actual file names
             const moduleFileMap = {
@@ -194,16 +192,13 @@ class RawrZEngine extends EventEmitter {
             
             const fileName = moduleFileMap[moduleName] || moduleName;
             const modulePath = path.join(__dirname, fileName);
-            console.log(`[DEBUG] Loading module from: ${modulePath}`);
             
             const ModuleClass = require(modulePath);
-            console.log(`[DEBUG] Module loaded, type: ${typeof ModuleClass}`);
             
             // Use the module as-is (it's already an instance)
             const module = ModuleClass;
             
             if (module.initialize) {
-                console.log(`[DEBUG] Initializing module ${moduleName}...`);
                 await module.initialize(this.config);
             }
             
@@ -213,7 +208,6 @@ class RawrZEngine extends EventEmitter {
             return module;
         } catch (error) {
             console.log(`[WARN] Failed to load module ${moduleName}:`, error.message);
-            console.log(`[DEBUG] Error stack:`, error.stack);
             // Set to null to prevent repeated attempts
             this.modules.set(moduleName, null);
             return null;

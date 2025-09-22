@@ -1,0 +1,129 @@
+// example_data_access.eont
+// Template for generating Eon data access code from database schema
+
+// Generate model definitions for each table
+{{#for table in schema.tables}}
+// Model for {{table.name}} table
+def model {{table.name}} {
+    {{#for column in table.columns}}
+    var {{column.name}}: {{column.eon_type}};
+    {{/for}}
+    
+    // Constructor
+    def func new({{#for column in table.columns}}{{column.name}}: {{column.eon_type}}{{#unless @last}}, {{/unless}}{{/for}}): {{table.name}} {
+        var instance = new {{table.name}}();
+        {{#for column in table.columns}}
+        instance.{{column.name}} = {{column.name}};
+        {{/for}}
+        return instance;
+    }
+    
+    // Database operations
+    def func save(): bool {
+        // Insert or update record
+        return database.save_{{table.name}}(this);
+    }
+    
+    def func delete(): bool {
+        // Delete record
+        return database.delete_{{table.name}}(this.id);
+    }
+    
+    // Static query methods
+    def func find_by_id(id: {{table.primary_key.eon_type}}): {{table.name}}? {
+        return database.find_{{table.name}}_by_id(id);
+    }
+    
+    {{#for column in table.columns}}
+    {{#if column.indexed}}
+    def func find_by_{{column.name}}({{column.name}}: {{column.eon_type}}): [{{table.name}}] {
+        return database.find_{{table.name}}_by_{{column.name}}({{column.name}});
+    }
+    {{/if}}
+    {{/for}}
+}
+{{/for}}
+
+// Generate database interface
+def model Database {
+    {{#for table in schema.tables}}
+    // {{table.name}} operations
+    def func save_{{table.name}}(record: {{table.name}}): bool;
+    def func delete_{{table.name}}(id: {{table.primary_key.eon_type}}): bool;
+    def func find_{{table.name}}_by_id(id: {{table.primary_key.eon_type}}): {{table.name}}?;
+    
+    {{#for column in table.columns}}
+    {{#if column.indexed}}
+    def func find_{{table.name}}_by_{{column.name}}({{column.name}}: {{column.eon_type}}): [{{table.name}}];
+    {{/if}}
+    {{/for}}
+    {{/for}}
+}
+
+// Generate database implementation
+def model DatabaseImpl inherits Database {
+    var connection: Connection;
+    
+    def func new(connection_string: String): DatabaseImpl {
+        var instance = new DatabaseImpl();
+        instance.connection = Connection.open(connection_string);
+        return instance;
+    }
+    
+    {{#for table in schema.tables}}
+    def func save_{{table.name}}(record: {{table.name}}): bool {
+        var sql = "INSERT OR REPLACE INTO {{table.name}} ({{#for column in table.columns}}{{column.name}}{{#unless @last}}, {{/unless}}{{/for}}) VALUES ({{#for column in table.columns}}?{{#unless @last}}, {{/unless}}{{/for}})";
+        var stmt = connection.prepare(sql);
+        
+        {{#for column in table.columns}}
+        stmt.bind({{@index}}, record.{{column.name}});
+        {{/for}}
+        
+        return stmt.execute();
+    }
+    
+    def func delete_{{table.name}}(id: {{table.primary_key.eon_type}}): bool {
+        var sql = "DELETE FROM {{table.name}} WHERE {{table.primary_key.name}} = ?";
+        var stmt = connection.prepare(sql);
+        stmt.bind(0, id);
+        return stmt.execute();
+    }
+    
+    def func find_{{table.name}}_by_id(id: {{table.primary_key.eon_type}}): {{table.name}}? {
+        var sql = "SELECT * FROM {{table.name}} WHERE {{table.primary_key.name}} = ?";
+        var stmt = connection.prepare(sql);
+        stmt.bind(0, id);
+        var result = stmt.execute_query();
+        
+        if (result.next()) {
+            return new {{table.name}}(
+                {{#for column in table.columns}}
+                result.get_{{column.eon_type}}({{column.name}}){{#unless @last}},{{/unless}}
+                {{/for}}
+            );
+        }
+        return null;
+    }
+    
+    {{#for column in table.columns}}
+    {{#if column.indexed}}
+    def func find_{{table.name}}_by_{{column.name}}({{column.name}}: {{column.eon_type}}): [{{table.name}}] {
+        var sql = "SELECT * FROM {{table.name}} WHERE {{column.name}} = ?";
+        var stmt = connection.prepare(sql);
+        stmt.bind(0, {{column.name}});
+        var result = stmt.execute_query();
+        var records: [{{table.name}}] = [];
+        
+        while (result.next()) {
+            records.push(new {{table.name}}(
+                {{#for col in table.columns}}
+                result.get_{{col.eon_type}}({{col.name}}){{#unless @last}},{{/unless}}
+                {{/for}}
+            ));
+        }
+        return records;
+    }
+    {{/if}}
+    {{/for}}
+    {{/for}}
+}

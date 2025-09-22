@@ -1,0 +1,7 @@
+// Simple test program for Enhanced EON Compiler
+def func main() -> int {
+    let x = 5;
+    let y = 10;
+    let result = x + y;
+    ret result;
+}

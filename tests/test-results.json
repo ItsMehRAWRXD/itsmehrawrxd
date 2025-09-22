@@ -1,0 +1,82 @@
+{
+  "passed": 11,
+  "failed": 4,
+  "total": 15,
+  "details": [
+    {
+      "testName": "Server Health Check",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "testName": "Authentication (Valid Token)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "testName": "Authentication (Invalid Token)",
+      "status": "FAIL",
+      "details": "Should return 401"
+    },
+    {
+      "testName": "Botnet Status API",
+      "status": "FAIL",
+      "details": "Invalid data structure"
+    },
+    {
+      "testName": "Get Bots API",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "testName": "Add Bot API",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "testName": "Data Extraction (extract_browser_data)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "testName": "Data Extraction (extract_crypto_data)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "testName": "Data Extraction (extract_messaging_data)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "testName": "Hashing API",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "testName": "Encryption API",
+      "status": "FAIL",
+      "details": ""
+    },
+    {
+      "testName": "WebSocket Connection",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "testName": "Rate Limiting",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "testName": "Data Persistence",
+      "status": "FAIL",
+      "details": "Bot not found in persisted data"
+    },
+    {
+      "testName": "Security Headers",
+      "status": "PASS",
+      "details": "Found 3/4 headers"
+    }
+  ]
+}

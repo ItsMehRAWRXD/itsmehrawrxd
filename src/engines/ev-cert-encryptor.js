@@ -193,7 +193,7 @@ class EVCertEncryptor {
 
     async initialize() {
         try {
-            console.log(`[EV Cert Encryptor] Initializing ${this.name} v${this.version}...`);
+            // Initializing EV Certificate Encryptor
             
             // Initialize certificate generation
             await this.initializeCertificateGeneration();
@@ -208,7 +208,7 @@ class EVCertEncryptor {
             await this.loadTrustedCAs();
             
             this.initialized = true;
-            console.log(`[EV Cert Encryptor] ${this.name} v${this.version} initialized successfully`);
+            // EV Certificate Encryptor initialized successfully
             return true;
         } catch (error) {
             console.error(`[EV Cert Encryptor] Initialization failed:`, error);
@@ -217,22 +217,22 @@ class EVCertEncryptor {
     }
 
     async initializeCertificateGeneration() {
-        console.log('[EV Cert Encryptor] Initializing certificate generation...');
+        // Initializing certificate generation
         // Certificate generation is ready
     }
 
     async initializeEncryption() {
-        console.log('[EV Cert Encryptor] Initializing encryption capabilities...');
+        // Initializing encryption capabilities
         // Encryption is ready
     }
 
     async initializeStubGeneration() {
-        console.log('[EV Cert Encryptor] Initializing stub generation...');
+        // Initializing stub generation
         // Stub generation is ready
     }
 
     async loadTrustedCAs() {
-        console.log('[EV Cert Encryptor] Loading trusted CAs...');
+        // Loading trusted CAs
         // Load system trusted CAs silently
         try {
             if (process.platform === 'win32') {
@@ -242,9 +242,9 @@ class EVCertEncryptor {
                     timeout: 5000 
                 }, (error, stdout, stderr) => {
                     if (!error && stdout) {
-                        console.log('[EV Cert Encryptor] Windows certificate store loaded silently');
+                        // Windows certificate store loaded silently
                     } else {
-                        console.log('[EV Cert Encryptor] Windows certificate store loaded (fallback)');
+                        // Windows certificate store loaded (fallback)
                     }
                 });
             }
@@ -255,7 +255,7 @@ class EVCertEncryptor {
 
     // Generate EV Certificate
     async generateEVCertificate(templateName = 'Microsoft Corporation', customOptions = {}) {
-        console.log("[EV Cert Encryptor] Generating EV certificate using " + templateName + " template...");
+        // Generating EV certificate
         
         try {
             const template = this.evCertTemplates[templateName];
@@ -291,7 +291,7 @@ class EVCertEncryptor {
                 expiresAt: new Date(Date.now() + template.validity)
             });
 
-            console.log(`[EV Cert Encryptor] EV certificate generated: ${certId}`);
+            // EV certificate generated
             return certId;
 
         } catch (error) {
@@ -374,7 +374,7 @@ class EVCertEncryptor {
 
     // Encrypt Stub with EV Certificate
     async encryptStubWithEVCert(stubCode, language, certId, options = {}) {
-        console.log(`[EV Cert Encryptor] Encrypting ${language} stub with EV certificate ${certId}...`);
+        // Encrypting stub with EV certificate
         
         try {
             const certificate = this.certificates.get(certId);
@@ -406,7 +406,7 @@ class EVCertEncryptor {
                 options: options
             });
 
-            console.log(`[EV Cert Encryptor] Stub encrypted and generated: ${stubId}`);
+            // Stub encrypted and generated
             return {
                 stubId: stubId,
                 stub: finalStub,

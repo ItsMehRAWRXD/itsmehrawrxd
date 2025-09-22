@@ -1,0 +1,65 @@
+// Enhanced EON Compiler Test Program
+// This demonstrates the comprehensive features from rwararw.txt
+
+// Define a simple struct
+model Point {
+    x: int
+    y: int
+}
+
+// Define a function with parameters and return type
+def func add(a: int, b: int) -> int {
+    ret a + b;
+}
+
+// Define a function with memory allocation
+def func create_point(x: int, y: int) -> Point {
+    let p: Point = alloc(sizeof(Point));
+    p.x = x;
+    p.y = y;
+    ret p;
+}
+
+// Define a function with control flow
+def func factorial(n: int) -> int {
+    if (n > 1) {
+        ret n * factorial(n - 1);
+    } else {
+        ret 1;
+    }
+}
+
+// Define a function with loops
+def func sum_array(arr: int, len: int) -> int {
+    let sum = 0;
+    let i = 0;
+    loop (i < len) {
+        sum = sum + arr[i];
+        i = i + 1;
+    }
+    ret sum;
+}
+
+// Main function
+def func main() -> int {
+    let x = 5;
+    let y = 10;
+    let result = add(x, y);
+    
+    let p = create_point(3, 4);
+    let fact = factorial(5);
+    
+    // Test memory management
+    let ptr = alloc(8);
+    *ptr = 42;
+    let value = *ptr;
+    free(ptr);
+    
+    // Test address-of operator
+    let addr = &x;
+    
+    // Test sizeof operator
+    let size = sizeof(Point);
+    
+    ret result;
+}

@@ -322,7 +322,7 @@ class APIStatus extends EventEmitter {
 
         const results = await Promise.allSettled(checkPromises);
         
-        logger.debug(`Critical API status check completed: ${results.length} APIs checked`);
+        // API status check completed
         this.emit('critical-status-check-complete', results);
     }
 
@@ -361,10 +361,7 @@ class APIStatus extends EventEmitter {
                 success: true
             });
 
-            logger.debug(`API check successful: ${apiId}`, {
-                status: response.status,
-                responseTime: `${responseTime}ms`
-            });
+            // API check successful
 
             this.emit('api-check-success', { apiId, status: response.status, responseTime });
 

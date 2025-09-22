@@ -1,0 +1,217 @@
+// Comprehensive Test Suite for Enhanced EON Compiler
+// Tests all language features from rwararw.txt specification
+
+// Test 1: Basic Variables and Types
+def func test_basic_variables() -> int {
+    let x = 42;
+    let y: int = 10;
+    const PI = 3;
+    let result = x + y;
+    ret result;
+}
+
+// Test 2: Function Definitions and Calls
+def func add(a: int, b: int) -> int {
+    ret a + b;
+}
+
+def func multiply(a: int, b: int) -> int {
+    ret a * b;
+}
+
+def func test_functions() -> int {
+    let sum = add(5, 3);
+    let product = multiply(4, 6);
+    ret sum + product;
+}
+
+// Test 3: Struct Definitions and Member Access
+model Person {
+    name: int
+    age: int
+    height: int
+}
+
+def func create_person(name: int, age: int, height: int) -> Person {
+    let p: Person = alloc(sizeof(Person));
+    p.name = name;
+    p.age = age;
+    p.height = height;
+    ret p;
+}
+
+def func test_structs() -> int {
+    let person = create_person(1, 25, 180);
+    let age = person.age;
+    ret age;
+}
+
+// Test 4: Control Flow - If Statements
+def func test_if_statements() -> int {
+    let x = 10;
+    let result = 0;
+    
+    if (x > 5) {
+        result = 1;
+    } else {
+        result = 0;
+    }
+    
+    if (x == 10) {
+        result = result + 1;
+    }
+    
+    ret result;
+}
+
+// Test 5: Control Flow - Loops
+def func test_loops() -> int {
+    let sum = 0;
+    let i = 0;
+    
+    loop (i < 5) {
+        sum = sum + i;
+        i = i + 1;
+    }
+    
+    ret sum;
+}
+
+// Test 6: Memory Management
+def func test_memory_management() -> int {
+    let ptr = alloc(8);
+    *ptr = 100;
+    let value = *ptr;
+    free(ptr);
+    ret value;
+}
+
+// Test 7: Pointer Operations
+def func test_pointers() -> int {
+    let x = 42;
+    let ptr = &x;
+    let value = *ptr;
+    ret value;
+}
+
+// Test 8: Sizeof Operator
+def func test_sizeof() -> int {
+    let int_size = sizeof(int);
+    let person_size = sizeof(Person);
+    ret int_size + person_size;
+}
+
+// Test 9: Arithmetic Operations
+def func test_arithmetic() -> int {
+    let a = 20;
+    let b = 4;
+    let sum = a + b;
+    let diff = a - b;
+    let product = a * b;
+    let quotient = a / b;
+    let result = sum + diff + product + quotient;
+    ret result;
+}
+
+// Test 10: Comparison Operations
+def func test_comparisons() -> int {
+    let a = 10;
+    let b = 5;
+    let result = 0;
+    
+    if (a > b) result = result + 1;
+    if (a >= b) result = result + 1;
+    if (a < 20) result = result + 1;
+    if (a <= 10) result = result + 1;
+    if (a == 10) result = result + 1;
+    if (a != 5) result = result + 1;
+    
+    ret result;
+}
+
+// Test 11: Logical Operations
+def func test_logical_operations() -> int {
+    let a = 1;
+    let b = 0;
+    let result = 0;
+    
+    if (a && b) result = result + 1;
+    if (a || b) result = result + 1;
+    if (!b) result = result + 1;
+    
+    ret result;
+}
+
+// Test 12: Nested Function Calls
+def func square(x: int) -> int {
+    ret x * x;
+}
+
+def func cube(x: int) -> int {
+    ret x * x * x;
+}
+
+def func test_nested_calls() -> int {
+    let x = 3;
+    let squared = square(x);
+    let cubed = cube(x);
+    ret squared + cubed;
+}
+
+// Test 13: Recursive Function
+def func factorial(n: int) -> int {
+    if (n <= 1) {
+        ret 1;
+    } else {
+        ret n * factorial(n - 1);
+    }
+}
+
+def func test_recursion() -> int {
+    let result = factorial(5);
+    ret result;
+}
+
+// Test 14: Complex Expression
+def func test_complex_expression() -> int {
+    let a = 2;
+    let b = 3;
+    let c = 4;
+    let result = (a + b) * c - (a * b) + (c / a);
+    ret result;
+}
+
+// Test 15: Multiple Variable Declarations
+def func test_multiple_vars() -> int {
+    let x = 1;
+    let y = 2;
+    let z = 3;
+    let w = 4;
+    let result = x + y + z + w;
+    ret result;
+}
+
+// Main test function
+def func main() -> int {
+    let test1 = test_basic_variables();
+    let test2 = test_functions();
+    let test3 = test_structs();
+    let test4 = test_if_statements();
+    let test5 = test_loops();
+    let test6 = test_memory_management();
+    let test7 = test_pointers();
+    let test8 = test_sizeof();
+    let test9 = test_arithmetic();
+    let test10 = test_comparisons();
+    let test11 = test_logical_operations();
+    let test12 = test_nested_calls();
+    let test13 = test_recursion();
+    let test14 = test_complex_expression();
+    let test15 = test_multiple_vars();
+    
+    let total = test1 + test2 + test3 + test4 + test5 + 
+                test6 + test7 + test8 + test9 + test10 + 
+                test11 + test12 + test13 + test14 + test15;
+    
+    ret total;
+}

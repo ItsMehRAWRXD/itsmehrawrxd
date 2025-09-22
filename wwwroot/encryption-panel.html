@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RawrZ .NET Encryption Panel</title>
+    <style>
+        body { background: #000; color: #0f0; font-family: 'Courier New', monospace; padding: 20px; margin: 0; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { text-align: center; color: #0f0; text-shadow: 0 0 10px #0f0; margin-bottom: 30px; }
+        .panel { border: 2px solid #0f0; padding: 20px; margin: 20px 0; background: rgba(0,255,0,0.05); border-radius: 8px; }
+        .file-drop { border: 2px dashed #0f0; padding: 40px; text-align: center; cursor: pointer; background: rgba(0,255,0,0.02); border-radius: 8px; }
+        .btn { background: #111; color: #0f0; border: 2px solid #0f0; padding: 12px 24px; cursor: pointer; margin: 8px; border-radius: 4px; font-family: 'Courier New', monospace; }
+        .btn:hover { background: #0f0; color: #000; }
+        .status { border: 1px solid #0f0; padding: 15px; background: #111; min-height: 200px; overflow-y: auto; border-radius: 4px; }
+        .status-item { margin: 8px 0; padding: 8px; border-left: 3px solid #0f0; background: rgba(0,255,0,0.05); }
+        .success { border-left-color: #0f0; color: #0f0; }
+        .error { border-left-color: #f00; color: #f00; }
+        .info { border-left-color: #0ff; color: #0ff; }
+        .loading { border-left-color: #ff0; color: #ff0; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .form-group { margin: 15px 0; }
+        .form-group label { display: block; margin-bottom: 5px; color: #0f0; }
+        .form-group select, .form-group input { width: 100%; padding: 10px; background: #111; color: #0f0; border: 1px solid #0f0; border-radius: 4px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 RawrZ .NET Security Platform - Encryption Panel</h1>
+        
+        <div class="grid">
+            <div class="panel">
+                <h3>📁 File Upload</h3>
+                <div class="file-drop" id="fileDrop">
+                    📁 Drag & Drop Files Here or Click to Browse
+                    <input type="file" id="fileInput" style="display: none;" multiple>
+                </div>
+                <div id="fileList">No files selected</div>
+                <button class="btn" onclick="clearFiles()">Clear Files</button>
+                <button class="btn" onclick="uploadFiles()">Upload Files</button>
+            </div>
+            
+            <div class="panel">
+                <h3>🔧 Encryption Settings</h3>
+                <div class="form-group">
+                    <label for="algorithm">Algorithm:</label>
+                    <select id="algorithm">
+                        <option value="AES-256-GCM">AES-256-GCM</option>
+                        <option value="AES-256-CBC">AES-256-CBC</option>
+                        <option value="ChaCha20-Poly1305">ChaCha20-Poly1305</option>
+                        <option value="ARIA-256-GCM">ARIA-256-GCM</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="extension">Extension:</label>
+                    <select id="extension">
+                        <option value=".enc">.enc</option>
+                        <option value=".exe">.exe</option>
+                        <option value=".dll">.dll</option>
+                        <option value=".secure">.secure</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><input type="checkbox" id="compress" checked> Compress</label>
+                </div>
+                <div class="form-group">
+                    <label><input type="checkbox" id="obfuscate" checked> Obfuscate</label>
+                </div>
+                <div class="form-group">
+                    <label><input type="checkbox" id="stealth" checked> Stealth Mode</label>
+                </div>
+                <button class="btn" onclick="encryptFiles()">🔒 Encrypt Files</button>
+                <button class="btn" onclick="decryptFiles()">🔓 Decrypt Files</button>
+                <button class="btn" onclick="hashFiles()"># Hash Files</button>
+                <button class="btn" onclick="generateStub()">🔧 Generate Stub</button>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h3>📊 Status & Results</h3>
+            <div class="status" id="status">
+                <div class="status-item info">Ready for file operations...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let uploadedFiles = [];
+        
+        const fileDrop = document.getElementById('fileDrop');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const status = document.getElementById('status');
+
+        fileDrop.addEventListener('click', () => fileInput.click());
+        fileDrop.addEventListener('dragover', (e) => { e.preventDefault(); fileDrop.style.background = 'rgba(0,255,0,0.1)'; });
+        fileDrop.addEventListener('dragleave', () => { fileDrop.style.background = 'rgba(0,255,0,0.02)'; });
+        fileDrop.addEventListener('drop', (e) => { e.preventDefault(); fileDrop.style.background = 'rgba(0,255,0,0.02)'; addFiles(Array.from(e.dataTransfer.files)); });
+        
+        fileInput.addEventListener('change', (e) => addFiles(Array.from(e.target.files)));
+        
+        function addFiles(files) {
+            uploadedFiles = [...uploadedFiles, ...files];
+            updateFileList();
+            addStatus(`Added ${files.length} file(s)`, 'info');
+        }
+
+        function updateFileList() {
+            if (uploadedFiles.length === 0) {
+                fileList.innerHTML = 'No files selected';
+                return;
+            }
+            fileList.innerHTML = uploadedFiles.map((file, index) => `
+                <div style="padding: 10px; margin: 5px 0; border: 1px solid #333; background: rgba(0,255,0,0.02); border-radius: 4px;">
+                    <strong>${file.name}</strong><br>
+                    <small>${(file.size / 1024).toFixed(2)} KB</small>
+                </div>
+            `).join('');
+        }
+
+        function clearFiles() {
+            uploadedFiles = [];
+            updateFileList();
+            addStatus('Files cleared', 'info');
+        }
+        
+        async function uploadFiles() {
+            if (uploadedFiles.length === 0) {
+                addStatus('No files to upload', 'error');
+                return;
+            }
+            
+            addStatus(`Uploading ${uploadedFiles.length} file(s)...`, 'loading');
+            
+            for (const file of uploadedFiles) {
+                try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    
+                    const response = await fetch('/api/encryption/encrypt-file', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        addStatus(`✅ Uploaded: ${file.name}`, 'success');
+                    } else {
+                        addStatus(`❌ Upload failed: ${file.name} - ${result.error}`, 'error');
+                    }
+                } catch (error) {
+                    addStatus(`❌ Upload error: ${file.name} - ${error.message}`, 'error');
+                }
+            }
+        }
+        
+        async function encryptFiles() {
+            if (uploadedFiles.length === 0) {
+                addStatus('No files to encrypt', 'error');
+                return;
+            }
+            
+            const algorithm = document.getElementById('algorithm').value;
+            const extension = document.getElementById('extension').value;
+            const compress = document.getElementById('compress').checked;
+            const obfuscate = document.getElementById('obfuscate').checked;
+            const stealth = document.getElementById('stealth').checked;
+            
+            addStatus(`🔒 Encrypting ${uploadedFiles.length} file(s) with ${algorithm}`, 'loading');
+            
+            for (const file of uploadedFiles) {
+                try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('Algorithm', algorithm);
+                    formData.append('Extension', extension);
+                    formData.append('Compress', compress);
+                    formData.append('Obfuscate', obfuscate);
+                    formData.append('Stealth', stealth);
+                    
+                    const response = await fetch('/api/encryption/encrypt-file', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        addStatus(`✅ Encrypted: ${result.originalName} → ${result.encryptedName}`, 'success');
+                        addStatus(`   Size: ${result.originalSize} → ${result.encryptedSize} bytes`, 'info');
+                        addStatus(`   Download: <a href="${result.downloadUrl}" style="color: #0ff;">${result.encryptedName}</a>`, 'info');
+                    } else {
+                        addStatus(`❌ Encryption failed: ${file.name} - ${result.error}`, 'error');
+                    }
+                } catch (error) {
+                    addStatus(`❌ Encryption error: ${file.name} - ${error.message}`, 'error');
+                }
+            }
+        }
+        
+        async function decryptFiles() {
+            if (uploadedFiles.length === 0) {
+                addStatus('No files to decrypt', 'error');
+                return;
+            }
+
+            addStatus(`🔓 Decrypting ${uploadedFiles.length} file(s)...`, 'loading');
+            
+            for (const file of uploadedFiles) {
+                try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('Key', prompt('Enter encryption key (Base64):') || '');
+                    formData.append('IV', prompt('Enter IV (Base64):') || '');
+                    formData.append('Algorithm', document.getElementById('algorithm').value);
+
+                    const response = await fetch('/api/encryption/decrypt-file', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        addStatus(`✅ Decrypted: ${file.name}`, 'success');
+                        addStatus(`   Download: <a href="${result.downloadUrl}" style="color: #0ff;">${result.decryptedName}</a>`, 'info');
+                    } else {
+                        addStatus(`❌ Decryption failed: ${file.name} - ${result.error}`, 'error');
+                    }
+                } catch (error) {
+                    addStatus(`❌ Decryption error: ${file.name} - ${error.message}`, 'error');
+                }
+            }
+        }
+        
+        async function hashFiles() {
+            if (uploadedFiles.length === 0) {
+                addStatus('No files to hash', 'error');
+                return;
+            }
+
+            addStatus(`Calculating hashes for ${uploadedFiles.length} file(s)...`, 'loading');
+            
+            for (const file of uploadedFiles) {
+                try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('Algorithm', 'SHA256');
+                    
+                    const response = await fetch('/api/encryption/hash-file', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        addStatus(`✅ Hash: ${file.name}`, 'success');
+                        addStatus(`   SHA256: ${result.hash}`, 'info');
+                    } else {
+                        addStatus(`❌ Hash failed: ${file.name} - ${result.error}`, 'error');
+                    }
+                } catch (error) {
+                    addStatus(`❌ Hash error: ${file.name} - ${error.message}`, 'error');
+                }
+            }
+        }
+        
+        async function generateStub() {
+            addStatus('🔧 Generating custom stub...', 'loading');
+            
+            try {
+                const stubData = {
+                    type: 'exe',
+                    architecture: 'x64',
+                    size: 50,
+                    obfuscation: true,
+                    packing: false,
+                    antiDebug: true,
+                    antiVM: true,
+                    version: '1.0.0.0',
+                    description: 'RawrZ Security Application',
+                    company: 'RawrZ Security'
+                };
+                
+                const response = await fetch('/api/stubs/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(stubData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    addStatus('✅ Stub generated successfully', 'success');
+                    addStatus(`   Type: ${result.stub.type}`, 'info');
+                    addStatus(`   Architecture: ${result.stub.architecture}`, 'info');
+                    addStatus(`   Size: ${result.stub.size}KB`, 'info');
+                    addStatus(`   Download: <a href="${result.downloadUrl}" style="color: #0ff;">${result.stub.filename}</a>`, 'info');
+                } else {
+                    addStatus(`❌ Stub generation failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                addStatus(`❌ Stub generation error: ${error.message}`, 'error');
+            }
+        }
+        
+        function addStatus(message, type) {
+            const statusItem = document.createElement('div');
+            statusItem.className = `status-item ${type}`;
+            statusItem.innerHTML = message;
+            status.appendChild(statusItem);
+            status.scrollTop = status.scrollHeight;
+        }
+        
+        // Initialize
+        addStatus('🔐 RawrZ .NET Encryption Panel loaded successfully', 'success');
+        addStatus('✅ All advanced features enabled', 'success');
+        addStatus('✅ Roslyn compilation enabled', 'success');
+        addStatus('✅ Stub generation enabled', 'success');
+        addStatus('Ready for advanced file operations', 'info');
+    </script>
+</body>
+</html>

@@ -84,13 +84,13 @@ class RedShells {
 
     async initialize() {
         try {
-            console.log('[Red Shells] Initializing Red Shells system...');
+            // Initializing Red Shells system
             
             // Initialize Red Killer integration
             this.redKiller = require('./red-killer');
             if (this.redKiller && typeof this.redKiller.initialize === 'function') {
                 await this.redKiller.initialize();
-                console.log('[Red Shells] Red Killer integration initialized');
+                // Red Killer integration initialized
             }
 
             // Initialize EV Certificate Encryptor integration (use existing instance)
@@ -100,13 +100,13 @@ const { logger } = require('../utils/logger');
             // Only initialize if not already initialized to prevent double initialization
             if (this.evCertEncryptor && typeof this.evCertEncryptor.initialize === 'function' && !this.evCertEncryptor.initialized) {
                 await this.evCertEncryptor.initialize();
-                console.log('[Red Shells] EV Certificate Encryptor integration initialized');
+                // EV Certificate Encryptor integration initialized
             } else if (this.evCertEncryptor && this.evCertEncryptor.initialized) {
-                console.log('[Red Shells] EV Certificate Encryptor already initialized, using existing instance');
+                // EV Certificate Encryptor already initialized, using existing instance
             }
 
             this.initialized = true;
-            console.log('[Red Shells] Red Shells system initialized successfully');
+            // Red Shells system initialized successfully
             return true;
         } catch (error) {
             console.error('[Red Shells] Initialization failed:', error);
@@ -173,7 +173,7 @@ const { logger } = require('../utils/logger');
                 await this.initializeEVCertFeatures(shell);
             }
 
-            console.log(`[Red Shells] Created ${shellType} shell: shellId`);
+            // Shell created successfully
             return shell;
 
         } catch (error) {
@@ -215,7 +215,7 @@ const { logger } = require('../utils/logger');
             shell.status = 'closed';
             shell.exitCode = code;
             shell.closedAt = new Date();
-            console.log(`[Red Shells] Shell ${shell.id} closed with code code`);
+            // Shell closed
         });
 
         shell.process.on('error', (error) => {
@@ -238,7 +238,7 @@ const { logger } = require('../utils/logger');
             };
 
             shell.redKillerCommands = redKillerCommands;
-            console.log(`[Red Shells] Red Killer features initialized for shell ${shell.id}`);
+            // Red Killer features initialized
         } catch (error) {
             console.error(`[Red Shells] Failed to initialize Red Killer features:`, error);
         }
@@ -257,7 +257,7 @@ const { logger } = require('../utils/logger');
             };
 
             shell.evCertCommands = evCertCommands;
-            console.log(`[Red Shells] EV Certificate features initialized for shell ${shell.id}`);
+            // EV Certificate features initialized
         } catch (error) {
             console.error(`[Red Shells] Failed to initialize EV Certificate features:`, error);
         }
@@ -498,7 +498,7 @@ const { logger } = require('../utils/logger');
             const shouldExtract = extractionPatterns.some(pattern => pattern.test(output));
             
             if (shouldExtract && this.redKiller) {
-                console.log(`[Red Shells] Auto-extraction triggered for shell ${shell.id}`);
+                // Auto-extraction triggered
                 await this.redKiller.extractData();
             }
         } catch (error) {
@@ -551,7 +551,7 @@ const { logger } = require('../utils/logger');
             shell.status = 'terminated';
             shell.terminatedAt = new Date();
             
-            console.log("[Red Shells] Shell " + shellId + " terminated");
+            // Shell terminated
             return true;
         } catch (error) {
             console.error("[Red Shells] Failed to terminate shell " + shellId + ":", error);

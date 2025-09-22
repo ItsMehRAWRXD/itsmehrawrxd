@@ -1,0 +1,86 @@
+# AI Configuration for Elegant Self-Hosted IDE
+# This file defines the hybrid AI strategy with local-first philosophy
+
+[ai]
+# The 'providers' list defines the preferred order of AI providers.
+# The system will use the first available provider in the list.
+# For example, it will try to use the local 'self_hosted' model first.
+# If unavailable or less suitable for a task, it can fall back to 'openai'.
+providers = ["self_hosted", "openai", "copilot", "kimi", "claude"]
+
+[ai.self_hosted]
+enabled = true
+model = "local_completion_model"
+model_path = "./models/local_llm.bin"
+context_length = 8192
+temperature = 0.7
+max_tokens = 2048
+quantization = "8bit"  # 4bit, 8bit, 16bit, 32bit
+use_gpu = true
+gpu_memory_fraction = 0.8
+
+[ai.openai]
+enabled = true
+model = "gpt-4o"
+api_key = ""  # Set via environment variable OPENAI_API_KEY
+base_url = "https://api.openai.com/v1"
+timeout = 30
+max_retries = 3
+rate_limit = 60  # requests per minute
+
+[ai.copilot]
+enabled = false  # Disabled by default for privacy/control
+model = "github-copilot"
+api_key = ""  # Set via environment variable GITHUB_COPILOT_TOKEN
+timeout = 15
+max_retries = 2
+
+[ai.kimi]
+enabled = false  # Disabled by default
+model = "moonshot-v1-8k"
+api_key = ""  # Set via environment variable KIMI_API_KEY
+base_url = "https://api.moonshot.cn/v1"
+timeout = 30
+
+[ai.claude]
+enabled = false  # Disabled by default
+model = "claude-3-sonnet-20240229"
+api_key = ""  # Set via environment variable ANTHROPIC_API_KEY
+timeout = 30
+
+[ai.local_llm]
+# Local LLM configuration
+model_type = "llama"  # llama, mistral, codellama, etc.
+model_size = "7B"  # 3B, 7B, 13B, 30B, 65B
+use_ggml = true
+threads = 8
+batch_size = 512
+memory_f16 = true
+use_mlock = true
+use_mmap = true
+
+[ai.cognitive]
+# Cognitive architecture settings
+max_context_window = 32768
+reasoning_depth = 5
+reflection_enabled = true
+self_improvement_enabled = true
+multi_modal_enabled = true
+tool_use_enabled = true
+
+[ai.security]
+# Security settings
+encrypt_local_models = true
+verify_model_integrity = true
+sandbox_execution = true
+memory_isolation = true
+network_isolation = false  # Allow external providers when enabled
+
+[ai.performance]
+# Performance optimization
+cache_responses = true
+cache_size = 1000
+parallel_processing = true
+max_concurrent_requests = 4
+response_timeout = 60
+memory_cleanup_interval = 300  # seconds

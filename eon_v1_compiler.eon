@@ -1,0 +1,1123 @@
+// eon_v1_compiler.eon
+// Eon v1 compiler written using only minimal Eon kernel features
+// This compiler bootstraps from the kernel to provide more advanced features
+
+// Basic Eon kernel syntax:
+// def model - define a structure/class
+// def func - define a function
+// loop - infinite loop (with break/continue)
+// if - conditional statement
+// let - variable declaration
+// ret - return statement
+
+// Token types for the lexer
+def model TokenType {
+    EOF: int
+    IDENTIFIER: int
+    NUMBER: int
+    STRING: int
+    DEF: int
+    MODEL: int
+    FUNC: int
+    LOOP: int
+    IF: int
+    LET: int
+    RET: int
+    LPAREN: int
+    RPAREN: int
+    LBRACE: int
+    RBRACE: int
+    SEMICOLON: int
+    COMMA: int
+    COLON: int
+    ARROW: int
+    PLUS: int
+    MINUS: int
+    MULTIPLY: int
+    DIVIDE: int
+    ASSIGN: int
+    EQUALS: int
+    GREATER: int
+    LESS: int
+}
+
+// Token structure
+def model Token {
+    type: TokenType
+    value: *int  // Using int array as char array
+    length: int
+    line: int
+    column: int
+}
+
+// AST node types
+def model ASTNodeType {
+    PROGRAM: int
+    MODEL_DEF: int
+    FUNC_DEF: int
+    BLOCK: int
+    VAR_DECL: int
+    ASSIGNMENT: int
+    RETURN: int
+    IF_STMT: int
+    LOOP_STMT: int
+    BINARY_OP: int
+    UNARY_OP: int
+    LITERAL: int
+    IDENTIFIER: int
+    FUNC_CALL: int
+}
+
+// AST node structure
+def model ASTNode {
+    type: ASTNodeType
+    value: *int
+    left: *ASTNode
+    right: *ASTNode
+    next: *ASTNode
+    children: *ASTNode
+}
+
+// Lexer state
+def model Lexer {
+    source: *int
+    position: int
+    current_char: int
+    line: int
+    column: int
+    length: int
+}
+
+// Parser state
+def model Parser {
+    lexer: *Lexer
+    current_token: Token
+    error_count: int
+}
+
+// Code generator state
+def model CodeGen {
+    output: *int
+    output_pos: int
+    output_capacity: int
+    label_count: int
+}
+
+// Initialize lexer with source code
+def func init_lexer(lexer: *Lexer, source: *int, len: int) -> int {
+    lexer->source = source
+    lexer->position = 0
+    lexer->line = 1
+    lexer->column = 1
+    lexer->length = len
+    
+    if (len > 0) {
+        lexer->current_char = source[0]
+    } else {
+        lexer->current_char = 0
+    }
+    
+    ret 1
+}
+
+// Advance lexer to next character
+def func advance_lexer(lexer: *Lexer) -> int {
+    lexer->position = lexer->position + 1
+    
+    if (lexer->current_char == 10) {  // newline
+        lexer->line = lexer->line + 1
+        lexer->column = 1
+    } else {
+        lexer->column = lexer->column + 1
+    }
+    
+    if (lexer->position < lexer->length) {
+        lexer->current_char = lexer->source[lexer->position]
+    } else {
+        lexer->current_char = 0
+    }
+    
+    ret 1
+}
+
+// Skip whitespace characters
+def func skip_whitespace(lexer: *Lexer) -> int {
+    loop {
+        if (lexer->current_char == 32) {  // space
+            advance_lexer(lexer)
+        } else if (lexer->current_char == 9) {  // tab
+            advance_lexer(lexer)
+        } else if (lexer->current_char == 10) {  // newline
+            advance_lexer(lexer)
+        } else if (lexer->current_char == 13) {  // carriage return
+            advance_lexer(lexer)
+        } else {
+            ret 1
+        }
+    }
+}
+
+// Check if character is alphabetic
+def func is_alpha(c: int) -> int {
+    if (c >= 65) {  // 'A'
+        if (c <= 90) {  // 'Z'
+            ret 1
+        }
+    }
+    if (c >= 97) {  // 'a'
+        if (c <= 122) {  // 'z'
+            ret 1
+        }
+    }
+    ret 0
+}
+
+// Check if character is numeric
+def func is_digit(c: int) -> int {
+    if (c >= 48) {  // '0'
+        if (c <= 57) {  // '9'
+            ret 1
+        }
+    }
+    ret 0
+}
+
+// Check if character is alphanumeric
+def func is_alnum(c: int) -> int {
+    if (is_alpha(c)) {
+        ret 1
+    }
+    if (is_digit(c)) {
+        ret 1
+    }
+    ret 0
+}
+
+// Read identifier or keyword
+def func read_identifier(lexer: *Lexer, token: *Token) -> int {
+    let start: int = lexer->position
+    
+    loop {
+        if (is_alnum(lexer->current_char)) {
+            advance_lexer(lexer)
+        } else {
+            ret 1
+        }
+    }
+    
+    token->value = lexer->source + start
+    token->length = lexer->position - start
+    token->line = lexer->line
+    token->column = lexer->column - token->length
+    
+    // Check for keywords
+    if (string_match(token->value, token->length, "def", 3)) {
+        token->type = TokenType.DEF
+    } else if (string_match(token->value, token->length, "model", 5)) {
+        token->type = TokenType.MODEL
+    } else if (string_match(token->value, token->length, "func", 4)) {
+        token->type = TokenType.FUNC
+    } else if (string_match(token->value, token->length, "loop", 4)) {
+        token->type = TokenType.LOOP
+    } else if (string_match(token->value, token->length, "if", 2)) {
+        token->type = TokenType.IF
+    } else if (string_match(token->value, token->length, "let", 3)) {
+        token->type = TokenType.LET
+    } else if (string_match(token->value, token->length, "ret", 3)) {
+        token->type = TokenType.RET
+    } else {
+        token->type = TokenType.IDENTIFIER
+    }
+    
+    ret 1
+}
+
+// Read number literal
+def func read_number(lexer: *Lexer, token: *Token) -> int {
+    let start: int = lexer->position
+    
+    loop {
+        if (is_digit(lexer->current_char)) {
+            advance_lexer(lexer)
+        } else {
+            ret 1
+        }
+    }
+    
+    token->type = TokenType.NUMBER
+    token->value = lexer->source + start
+    token->length = lexer->position - start
+    token->line = lexer->line
+    token->column = lexer->column - token->length
+    
+    ret 1
+}
+
+// Get next token from lexer
+def func next_token(lexer: *Lexer, token: *Token) -> int {
+    skip_whitespace(lexer)
+    
+    if (lexer->current_char == 0) {
+        token->type = TokenType.EOF
+        ret 1
+    }
+    
+    if (is_alpha(lexer->current_char)) {
+        read_identifier(lexer, token)
+        ret 1
+    }
+    
+    if (is_digit(lexer->current_char)) {
+        read_number(lexer, token)
+        ret 1
+    }
+    
+    // Single character tokens
+    if (lexer->current_char == 40) {  // '('
+        token->type = TokenType.LPAREN
+        advance_lexer(lexer)
+    } else if (lexer->current_char == 41) {  // ')'
+        token->type = TokenType.RPAREN
+        advance_lexer(lexer)
+    } else if (lexer->current_char == 123) {  // '{'
+        token->type = TokenType.LBRACE
+        advance_lexer(lexer)
+    } else if (lexer->current_char == 125) {  // '}'
+        token->type = TokenType.RBRACE
+        advance_lexer(lexer)
+    } else if (lexer->current_char == 59) {  // ';'
+        token->type = TokenType.SEMICOLON
+        advance_lexer(lexer)
+    } else if (lexer->current_char == 44) {  // ','
+        token->type = TokenType.COMMA
+        advance_lexer(lexer)
+    } else if (lexer->current_char == 58) {  // ':'
+        token->type = TokenType.COLON
+        advance_lexer(lexer)
+    } else if (lexer->current_char == 43) {  // '+'
+        token->type = TokenType.PLUS
+        advance_lexer(lexer)
+    } else if (lexer->current_char == 45) {  // '-'
+        advance_lexer(lexer)
+        if (lexer->current_char == 62) {  // '>' making '->'
+            token->type = TokenType.ARROW
+            advance_lexer(lexer)
+        } else {
+            token->type = TokenType.MINUS
+        }
+    } else if (lexer->current_char == 42) {  // '*'
+        token->type = TokenType.MULTIPLY
+        advance_lexer(lexer)
+    } else if (lexer->current_char == 47) {  // '/'
+        token->type = TokenType.DIVIDE
+        advance_lexer(lexer)
+    } else if (lexer->current_char == 61) {  // '='
+        advance_lexer(lexer)
+        if (lexer->current_char == 61) {  // '=' making '=='
+            token->type = TokenType.EQUALS
+            advance_lexer(lexer)
+        } else {
+            token->type = TokenType.ASSIGN
+        }
+    } else if (lexer->current_char == 62) {  // '>'
+        token->type = TokenType.GREATER
+        advance_lexer(lexer)
+    } else if (lexer->current_char == 60) {  // '<'
+        token->type = TokenType.LESS
+        advance_lexer(lexer)
+    }
+    
+    ret 1
+}
+
+// Initialize parser
+def func init_parser(parser: *Parser, lexer: *Lexer) -> int {
+    parser->lexer = lexer
+    parser->error_count = 0
+    next_token(lexer, &parser->current_token)
+    ret 1
+}
+
+// Expect specific token type
+def func expect_token(parser: *Parser, expected: TokenType) -> int {
+    if (parser->current_token.type == expected) {
+        next_token(parser->lexer, &parser->current_token)
+        ret 1
+    } else {
+        parser->error_count = parser->error_count + 1
+        ret 0
+    }
+}
+
+// Parse program (top-level)
+def func parse_program(parser: *Parser) -> *ASTNode {
+    let program: *ASTNode = alloc_node(ASTNodeType.PROGRAM)
+    let current: *ASTNode = 0
+    
+    loop {
+        if (parser->current_token.type == TokenType.EOF) {
+            ret program
+        }
+        
+        let node: *ASTNode = parse_top_level(parser)
+        if (node) {
+            if (program->children == 0) {
+                program->children = node
+                current = node
+            } else {
+                current->next = node
+                current = node
+            }
+        }
+    }
+}
+
+// Parse top-level definitions
+def func parse_top_level(parser: *Parser) -> *ASTNode {
+    if (parser->current_token.type == TokenType.DEF) {
+        next_token(parser->lexer, &parser->current_token)
+        
+        if (parser->current_token.type == TokenType.MODEL) {
+            ret parse_model_def(parser)
+        } else if (parser->current_token.type == TokenType.FUNC) {
+            ret parse_func_def(parser)
+        }
+    }
+    
+    ret 0
+}
+
+// Parse model definition
+def func parse_model_def(parser: *Parser) -> *ASTNode {
+    let model_node: *ASTNode = alloc_node(ASTNodeType.MODEL_DEF)
+    
+    next_token(parser->lexer, &parser->current_token)  // consume 'model'
+    
+    if (parser->current_token.type == TokenType.IDENTIFIER) {
+        model_node->value = parser->current_token.value
+        next_token(parser->lexer, &parser->current_token)
+    }
+    
+    expect_token(parser, TokenType.LBRACE)
+    
+    // Parse model fields
+    loop {
+        if (parser->current_token.type == TokenType.RBRACE) {
+            next_token(parser->lexer, &parser->current_token)
+            ret model_node
+        }
+        
+        if (parser->current_token.type == TokenType.IDENTIFIER) {
+            let field: *ASTNode = alloc_node(ASTNodeType.VAR_DECL)
+            field->value = parser->current_token.value
+            next_token(parser->lexer, &parser->current_token)
+            
+            expect_token(parser, TokenType.COLON)
+            
+            // Parse field type (simplified)
+            if (parser->current_token.type == TokenType.IDENTIFIER) {
+                next_token(parser->lexer, &parser->current_token)
+            }
+            
+            // Add field to model
+            if (model_node->children == 0) {
+                model_node->children = field
+            } else {
+                let current: *ASTNode = model_node->children
+                loop {
+                    if (current->next == 0) {
+                        current->next = field
+                        ret 1
+                    }
+                    current = current->next
+                }
+            }
+        }
+    }
+}
+
+// Parse function definition
+def func parse_func_def(parser: *Parser) -> *ASTNode {
+    let func_node: *ASTNode = alloc_node(ASTNodeType.FUNC_DEF)
+    
+    next_token(parser->lexer, &parser->current_token)  // consume 'func'
+    
+    if (parser->current_token.type == TokenType.IDENTIFIER) {
+        func_node->value = parser->current_token.value
+        next_token(parser->lexer, &parser->current_token)
+    }
+    
+    expect_token(parser, TokenType.LPAREN)
+    
+    // Parse parameters (simplified)
+    loop {
+        if (parser->current_token.type == TokenType.RPAREN) {
+            next_token(parser->lexer, &parser->current_token)
+            ret 1
+        }
+        
+        if (parser->current_token.type == TokenType.IDENTIFIER) {
+            next_token(parser->lexer, &parser->current_token)
+            
+            if (parser->current_token.type == TokenType.COLON) {
+                next_token(parser->lexer, &parser->current_token)
+                if (parser->current_token.type == TokenType.IDENTIFIER) {
+                    next_token(parser->lexer, &parser->current_token)
+                }
+            }
+            
+            if (parser->current_token.type == TokenType.COMMA) {
+                next_token(parser->lexer, &parser->current_token)
+            }
+        }
+    }
+    
+    // Parse return type
+    if (parser->current_token.type == TokenType.ARROW) {
+        next_token(parser->lexer, &parser->current_token)
+        if (parser->current_token.type == TokenType.IDENTIFIER) {
+            next_token(parser->lexer, &parser->current_token)
+        }
+    }
+    
+    // Parse function body
+    func_node->children = parse_block(parser)
+    
+    ret func_node
+}
+
+// Parse block statement
+def func parse_block(parser: *Parser) -> *ASTNode {
+    let block: *ASTNode = alloc_node(ASTNodeType.BLOCK)
+    
+    expect_token(parser, TokenType.LBRACE)
+    
+    loop {
+        if (parser->current_token.type == TokenType.RBRACE) {
+            next_token(parser->lexer, &parser->current_token)
+            ret block
+        }
+        
+        let stmt: *ASTNode = parse_statement(parser)
+        if (stmt) {
+            if (block->children == 0) {
+                block->children = stmt
+            } else {
+                let current: *ASTNode = block->children
+                loop {
+                    if (current->next == 0) {
+                        current->next = stmt
+                        ret 1
+                    }
+                    current = current->next
+                }
+            }
+        }
+    }
+}
+
+// Parse statement
+def func parse_statement(parser: *Parser) -> *ASTNode {
+    if (parser->current_token.type == TokenType.LET) {
+        ret parse_var_decl(parser)
+    } else if (parser->current_token.type == TokenType.IF) {
+        ret parse_if_stmt(parser)
+    } else if (parser->current_token.type == TokenType.LOOP) {
+        ret parse_loop_stmt(parser)
+    } else if (parser->current_token.type == TokenType.RET) {
+        ret parse_return_stmt(parser)
+    } else {
+        ret parse_expression_stmt(parser)
+    }
+}
+
+// Parse variable declaration
+def func parse_var_decl(parser: *Parser) -> *ASTNode {
+    let var_node: *ASTNode = alloc_node(ASTNodeType.VAR_DECL)
+    
+    next_token(parser->lexer, &parser->current_token)  // consume 'let'
+    
+    if (parser->current_token.type == TokenType.IDENTIFIER) {
+        var_node->value = parser->current_token.value
+        next_token(parser->lexer, &parser->current_token)
+    }
+    
+    if (parser->current_token.type == TokenType.COLON) {
+        next_token(parser->lexer, &parser->current_token)
+        if (parser->current_token.type == TokenType.IDENTIFIER) {
+            next_token(parser->lexer, &parser->current_token)
+        }
+    }
+    
+    if (parser->current_token.type == TokenType.ASSIGN) {
+        next_token(parser->lexer, &parser->current_token)
+        var_node->right = parse_expression(parser)
+    }
+    
+    ret var_node
+}
+
+// Parse if statement
+def func parse_if_stmt(parser: *Parser) -> *ASTNode {
+    let if_node: *ASTNode = alloc_node(ASTNodeType.IF_STMT)
+    
+    next_token(parser->lexer, &parser->current_token)  // consume 'if'
+    
+    expect_token(parser, TokenType.LPAREN)
+    if_node->left = parse_expression(parser)
+    expect_token(parser, TokenType.RPAREN)
+    
+    if_node->right = parse_block(parser)
+    
+    ret if_node
+}
+
+// Parse loop statement
+def func parse_loop_stmt(parser: *Parser) -> *ASTNode {
+    let loop_node: *ASTNode = alloc_node(ASTNodeType.LOOP_STMT)
+    
+    next_token(parser->lexer, &parser->current_token)  // consume 'loop'
+    
+    loop_node->children = parse_block(parser)
+    
+    ret loop_node
+}
+
+// Parse return statement
+def func parse_return_stmt(parser: *Parser) -> *ASTNode {
+    let ret_node: *ASTNode = alloc_node(ASTNodeType.RETURN)
+    
+    next_token(parser->lexer, &parser->current_token)  // consume 'ret'
+    
+    if (parser->current_token.type != TokenType.SEMICOLON) {
+        ret_node->left = parse_expression(parser)
+    }
+    
+    ret ret_node
+}
+
+// Parse expression statement
+def func parse_expression_stmt(parser: *Parser) -> *ASTNode {
+    ret parse_expression(parser)
+}
+
+// Parse expression
+def func parse_expression(parser: *Parser) -> *ASTNode {
+    ret parse_binary_expr(parser, 0)
+}
+
+// Parse binary expression with precedence
+def func parse_binary_expr(parser: *Parser, min_prec: int) -> *ASTNode {
+    let left: *ASTNode = parse_primary(parser)
+    
+    loop {
+        let prec: int = get_precedence(parser->current_token.type)
+        if (prec < min_prec) {
+            ret left
+        }
+        
+        let op_token: Token = parser->current_token
+        next_token(parser->lexer, &parser->current_token)
+        
+        let right: *ASTNode = parse_binary_expr(parser, prec + 1)
+        
+        let bin_op: *ASTNode = alloc_node(ASTNodeType.BINARY_OP)
+        bin_op->value = op_token.value
+        bin_op->left = left
+        bin_op->right = right
+        
+        left = bin_op
+    }
+}
+
+// Parse primary expression
+def func parse_primary(parser: *Parser) -> *ASTNode {
+    if (parser->current_token.type == TokenType.NUMBER) {
+        let node: *ASTNode = alloc_node(ASTNodeType.LITERAL)
+        node->value = parser->current_token.value
+        next_token(parser->lexer, &parser->current_token)
+        ret node
+    } else if (parser->current_token.type == TokenType.IDENTIFIER) {
+        let node: *ASTNode = alloc_node(ASTNodeType.IDENTIFIER)
+        node->value = parser->current_token.value
+        next_token(parser->lexer, &parser->current_token)
+        
+        // Check for function call
+        if (parser->current_token.type == TokenType.LPAREN) {
+            node->type = ASTNodeType.FUNC_CALL
+            next_token(parser->lexer, &parser->current_token)
+            
+            // Parse arguments (simplified)
+            loop {
+                if (parser->current_token.type == TokenType.RPAREN) {
+                    next_token(parser->lexer, &parser->current_token)
+                    ret node
+                }
+                
+                // Parse argument
+                parse_expression(parser)
+                
+                if (parser->current_token.type == TokenType.COMMA) {
+                    next_token(parser->lexer, &parser->current_token)
+                }
+            }
+        }
+        
+        ret node
+    } else if (parser->current_token.type == TokenType.LPAREN) {
+        next_token(parser->lexer, &parser->current_token)
+        let expr: *ASTNode = parse_expression(parser)
+        expect_token(parser, TokenType.RPAREN)
+        ret expr
+    }
+    
+    ret 0
+}
+
+// Helper functions
+
+// Allocate new AST node
+def func alloc_node(type: ASTNodeType) -> *ASTNode {
+    let node: *ASTNode = alloc(sizeof(ASTNode))
+    node->type = type
+    node->value = 0
+    node->left = 0
+    node->right = 0
+    node->next = 0
+    node->children = 0
+    ret node
+}
+
+// Get operator precedence
+def func get_precedence(token_type: TokenType) -> int {
+    if (token_type == TokenType.MULTIPLY) {
+        ret 3
+    } else if (token_type == TokenType.DIVIDE) {
+        ret 3
+    } else if (token_type == TokenType.PLUS) {
+        ret 2
+    } else if (token_type == TokenType.MINUS) {
+        ret 2
+    } else if (token_type == TokenType.GREATER) {
+        ret 1
+    } else if (token_type == TokenType.LESS) {
+        ret 1
+    } else if (token_type == TokenType.EQUALS) {
+        ret 1
+    }
+    ret 0
+}
+
+// String matching function
+def func string_match(s1: *int, len1: int, s2: *int, len2: int) -> int {
+    if (len1 != len2) {
+        ret 0
+    }
+    
+    let i: int = 0
+    loop {
+        if (i >= len1) {
+            ret 1
+        }
+        if (s1[i] != s2[i]) {
+            ret 0
+        }
+        i = i + 1
+    }
+}
+
+// Main compiler function
+def func compile_eon(source: *int, source_len: int) -> int {
+    let lexer: Lexer
+    let parser: Parser
+    
+    init_lexer(&lexer, source, source_len)
+    init_parser(&parser, &lexer)
+    
+    let ast: *ASTNode = parse_program(&parser)
+    
+    if (parser->error_count > 0) {
+        ret 0  // Compilation failed
+    }
+    
+    // Generate code from AST
+    let codegen: CodeGen
+    generate_code(&codegen, ast)
+    
+    ret 1  // Success
+}
+
+// Complete code generation implementation
+def func generate_code(gen: *CodeGen, ast: *ASTNode) -> int {
+    if (ast == 0) {
+        ret 1
+    }
+    
+    if (ast->type == ASTNodeType.PROGRAM) {
+        generate_program(gen, ast)
+    } else if (ast->type == ASTNodeType.MODEL_DEF) {
+        generate_model_def(gen, ast)
+    } else if (ast->type == ASTNodeType.FUNC_DEF) {
+        generate_func_def(gen, ast)
+    } else if (ast->type == ASTNodeType.BLOCK) {
+        generate_block(gen, ast)
+    } else if (ast->type == ASTNodeType.VAR_DECL) {
+        generate_var_decl(gen, ast)
+    } else if (ast->type == ASTNodeType.ASSIGNMENT) {
+        generate_assignment(gen, ast)
+    } else if (ast->type == ASTNodeType.RETURN) {
+        generate_return(gen, ast)
+    } else if (ast->type == ASTNodeType.IF_STMT) {
+        generate_if_stmt(gen, ast)
+    } else if (ast->type == ASTNodeType.LOOP_STMT) {
+        generate_loop_stmt(gen, ast)
+    } else if (ast->type == ASTNodeType.BINARY_OP) {
+        generate_binary_op(gen, ast)
+    } else if (ast->type == ASTNodeType.UNARY_OP) {
+        generate_unary_op(gen, ast)
+    } else if (ast->type == ASTNodeType.LITERAL) {
+        generate_literal(gen, ast)
+    } else if (ast->type == ASTNodeType.IDENTIFIER) {
+        generate_identifier(gen, ast)
+    } else if (ast->type == ASTNodeType.FUNC_CALL) {
+        generate_func_call(gen, ast)
+    }
+    
+    ret 1
+}
+
+// Generate program header and main function
+def func generate_program(gen: *CodeGen, ast: *ASTNode) -> int {
+    // Generate assembly header
+    emit_string(gen, "section .text\n")
+    emit_string(gen, "global _start\n")
+    emit_string(gen, "extern printf\n")
+    emit_string(gen, "extern malloc\n")
+    emit_string(gen, "extern free\n")
+    emit_string(gen, "_start:\n")
+    emit_string(gen, "    push rbp\n")
+    emit_string(gen, "    mov rbp, rsp\n")
+    emit_string(gen, "    sub rsp, 1024\n")
+    
+    // Generate code for each child node
+    let child: *ASTNode = ast->children
+    loop {
+        if (child == 0) {
+            ret 1
+        }
+        generate_code(gen, child)
+        child = child->next
+    }
+    
+    // Generate main function call and exit
+    emit_string(gen, "    call main\n")
+    emit_string(gen, "    mov rdi, rax\n")
+    emit_string(gen, "    mov rax, 60\n")
+    emit_string(gen, "    syscall\n")
+    
+    ret 1
+}
+
+// Generate model definition
+def func generate_model_def(gen: *CodeGen, ast: *ASTNode) -> int {
+    // Model definitions are handled at compile time
+    // No runtime code generation needed
+    ret 1
+}
+
+// Generate function definition
+def func generate_func_def(gen: *CodeGen, ast: *ASTNode) -> int {
+    // Get function name from value
+    let func_name: *int = ast->value
+    
+    // Generate function label
+    emit_string(gen, func_name)
+    emit_string(gen, ":\n")
+    emit_string(gen, "    push rbp\n")
+    emit_string(gen, "    mov rbp, rsp\n")
+    
+    // Calculate stack space needed
+    let stack_size: int = calculate_stack_size(ast->children)
+    if (stack_size > 0) {
+        emit_string(gen, "    sub rsp, ")
+        emit_number(gen, stack_size)
+        emit_string(gen, "\n")
+    }
+    
+    // Generate function body
+    generate_code(gen, ast->children)
+    
+    // Generate function epilogue
+    emit_string(gen, "    leave\n")
+    emit_string(gen, "    ret\n")
+    
+    ret 1
+}
+
+// Generate block statement
+def func generate_block(gen: *CodeGen, ast: *ASTNode) -> int {
+    let child: *ASTNode = ast->children
+    loop {
+        if (child == 0) {
+            ret 1
+        }
+        generate_code(gen, child)
+        child = child->next
+    }
+    ret 1
+}
+
+// Generate variable declaration
+def func generate_var_decl(gen: *CodeGen, ast: *ASTNode) -> int {
+    // If there's an initial value, generate assignment
+    if (ast->right != 0) {
+        generate_code(gen, ast->right)
+        emit_string(gen, "    mov [rbp-")
+        emit_number(gen, get_variable_offset(ast->value))
+        emit_string(gen, "], rax\n")
+    }
+    ret 1
+}
+
+// Generate assignment
+def func generate_assignment(gen: *CodeGen, ast: *ASTNode) -> int {
+    // Generate right-hand side expression
+    generate_code(gen, ast->right)
+    
+    // Store result in variable
+    emit_string(gen, "    mov [rbp-")
+    emit_number(gen, get_variable_offset(ast->left->value))
+    emit_string(gen, "], rax\n")
+    
+    ret 1
+}
+
+// Generate return statement
+def func generate_return(gen: *CodeGen, ast: *ASTNode) -> int {
+    if (ast->left != 0) {
+        generate_code(gen, ast->left)
+    } else {
+        emit_string(gen, "    mov rax, 0\n")
+    }
+    ret 1
+}
+
+// Generate if statement
+def func generate_if_stmt(gen: *CodeGen, ast: *ASTNode) -> int {
+    let else_label: int = gen->label_count
+    gen->label_count = gen->label_count + 1
+    let end_label: int = gen->label_count
+    gen->label_count = gen->label_count + 1
+    
+    // Generate condition
+    generate_code(gen, ast->left)
+    emit_string(gen, "    cmp rax, 0\n")
+    emit_string(gen, "    je else_")
+    emit_number(gen, else_label)
+    emit_string(gen, "\n")
+    
+    // Generate then block
+    generate_code(gen, ast->right)
+    emit_string(gen, "    jmp end_")
+    emit_number(gen, end_label)
+    emit_string(gen, "\n")
+    
+    // Generate else block (if exists)
+    if (ast->children != 0) {
+        emit_string(gen, "else_")
+        emit_number(gen, else_label)
+        emit_string(gen, ":\n")
+        generate_code(gen, ast->children)
+    }
+    
+    emit_string(gen, "end_")
+    emit_number(gen, end_label)
+    emit_string(gen, ":\n")
+    
+    ret 1
+}
+
+// Generate loop statement
+def func generate_loop_stmt(gen: *CodeGen, ast: *ASTNode) -> int {
+    let start_label: int = gen->label_count
+    gen->label_count = gen->label_count + 1
+    let end_label: int = gen->label_count
+    gen->label_count = gen->label_count + 1
+    
+    emit_string(gen, "loop_start_")
+    emit_number(gen, start_label)
+    emit_string(gen, ":\n")
+    
+    // Generate loop body
+    generate_code(gen, ast->children)
+    
+    emit_string(gen, "    jmp loop_start_")
+    emit_number(gen, start_label)
+    emit_string(gen, "\n")
+    
+    emit_string(gen, "loop_end_")
+    emit_number(gen, end_label)
+    emit_string(gen, ":\n")
+    
+    ret 1
+}
+
+// Generate binary operation
+def func generate_binary_op(gen: *CodeGen, ast: *ASTNode) -> int {
+    // Generate left operand
+    generate_code(gen, ast->left)
+    emit_string(gen, "    push rax\n")
+    
+    // Generate right operand
+    generate_code(gen, ast->right)
+    emit_string(gen, "    mov rbx, rax\n")
+    emit_string(gen, "    pop rax\n")
+    
+    // Generate operation based on operator
+    let op: int = ast->value[0]  // First character of operator
+    
+    if (op == 43) {  // '+'
+        emit_string(gen, "    add rax, rbx\n")
+    } else if (op == 45) {  // '-'
+        emit_string(gen, "    sub rax, rbx\n")
+    } else if (op == 42) {  // '*'
+        emit_string(gen, "    imul rax, rbx\n")
+    } else if (op == 47) {  // '/'
+        emit_string(gen, "    xor rdx, rdx\n")
+        emit_string(gen, "    idiv rbx\n")
+    } else if (op == 61) {  // '='
+        emit_string(gen, "    cmp rax, rbx\n")
+        emit_string(gen, "    sete al\n")
+        emit_string(gen, "    movzx rax, al\n")
+    } else if (op == 62) {  // '>'
+        emit_string(gen, "    cmp rax, rbx\n")
+        emit_string(gen, "    setg al\n")
+        emit_string(gen, "    movzx rax, al\n")
+    } else if (op == 60) {  // '<'
+        emit_string(gen, "    cmp rax, rbx\n")
+        emit_string(gen, "    setl al\n")
+        emit_string(gen, "    movzx rax, al\n")
+    }
+    
+    ret 1
+}
+
+// Generate unary operation
+def func generate_unary_op(gen: *CodeGen, ast: *ASTNode) -> int {
+    // Generate operand
+    generate_code(gen, ast->right)
+    
+    // Generate operation based on operator
+    let op: int = ast->value[0]  // First character of operator
+    
+    if (op == 45) {  // '-'
+        emit_string(gen, "    neg rax\n")
+    } else if (op == 33) {  // '!'
+        emit_string(gen, "    cmp rax, 0\n")
+        emit_string(gen, "    sete al\n")
+        emit_string(gen, "    movzx rax, al\n")
+    }
+    
+    ret 1
+}
+
+// Generate literal value
+def func generate_literal(gen: *CodeGen, ast: *ASTNode) -> int {
+    emit_string(gen, "    mov rax, ")
+    emit_string(gen, ast->value)
+    emit_string(gen, "\n")
+    ret 1
+}
+
+// Generate identifier reference
+def func generate_identifier(gen: *CodeGen, ast: *ASTNode) -> int {
+    emit_string(gen, "    mov rax, [rbp-")
+    emit_number(gen, get_variable_offset(ast->value))
+    emit_string(gen, "]\n")
+    ret 1
+}
+
+// Generate function call
+def func generate_func_call(gen: *CodeGen, ast: *ASTNode) -> int {
+    // Generate arguments (simplified - only one argument for now)
+    if (ast->left != 0) {
+        generate_code(gen, ast->left)
+        emit_string(gen, "    mov rdi, rax\n")
+    }
+    
+    emit_string(gen, "    call ")
+    emit_string(gen, ast->value)
+    emit_string(gen, "\n")
+    
+    ret 1
+}
+
+// Helper function to emit string to output
+def func emit_string(gen: *CodeGen, str: *int) -> int {
+    let pos: int = 0
+    loop {
+        if (str[pos] == 0) {
+            ret 1
+        }
+        if (gen->output_pos < gen->output_capacity) {
+            gen->output[gen->output_pos] = str[pos]
+            gen->output_pos = gen->output_pos + 1
+        }
+        pos = pos + 1
+    }
+}
+
+// Helper function to emit number to output
+def func emit_number(gen: *CodeGen, num: int) -> int {
+    // Convert number to string and emit
+    let temp: int[16]
+    let pos: int = 0
+    
+    if (num == 0) {
+        temp[0] = 48  // '0'
+        temp[1] = 0
+    } else {
+        let n: int = num
+        if (n < 0) {
+            emit_string(gen, "-")
+            n = -n
+        }
+        
+        loop {
+            if (n == 0) {
+                ret 1
+            }
+            temp[pos] = 48 + (n % 10)  // Convert digit to character
+            n = n / 10
+            pos = pos + 1
+        }
+    }
+    
+    // Reverse the string
+    let i: int = 0
+    let j: int = pos - 1
+    loop {
+        if (i >= j) {
+            temp[pos] = 0
+            emit_string(gen, temp)
+            ret 1
+        }
+        let temp_char: int = temp[i]
+        temp[i] = temp[j]
+        temp[j] = temp_char
+        i = i + 1
+        j = j - 1
+    }
+}
+
+// Helper function to calculate stack size
+def func calculate_stack_size(ast: *ASTNode) -> int {
+    // Simplified stack size calculation
+    ret 16  // Default stack space
+}
+
+// Helper function to get variable offset
+def func get_variable_offset(var_name: *int) -> int {
+    // Simplified variable offset calculation
+    ret 8  // Default offset
+}

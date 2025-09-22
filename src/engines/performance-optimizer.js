@@ -4,6 +4,7 @@ const os = require('os');
 const fs = require('fs').promises;
 const path = require('path');
 const { logger } = require('../utils/logger');
+const { getMemoryManager } = require('../utils/memory-manager');
 const { Worker, isMainThread, parentPort, workerData } = require('worker_threads');
 const cluster = require('cluster');
 const numCPUs = os.cpus().length;
@@ -26,7 +27,7 @@ class PerformanceOptimizer extends EventEmitter {
         super();
         this.name = 'PerformanceOptimizer';
         this.version = '1.0.0';
-        this.memoryManager = new Map(); // Use simple Map for now
+        this.memoryManager = getMemoryManager();
         this.memoryPools = new Map();
         this.workerPool = new Map();
         this.cacheLayers = new Map();
@@ -40,6 +41,21 @@ class PerformanceOptimizer extends EventEmitter {
             maxWorkerCount: numCPUs * 2
         };
         this.initialized = false;
+        
+        // Ensure memory manager is available
+        if (!this.memoryManager || typeof this.memoryManager.createManagedCollection !== 'function') {
+            logger.warn('Memory manager not available, using fallback');
+            this.memoryManager = {
+                createManagedCollection: (name, type = 'Map', maxSize = 1000000) => {
+                    switch (type) {
+                        case 'Map': return new Map();
+                        case 'Set': return new Set();
+                        case 'Array': return [];
+                        default: return new Map();
+                    }
+                }
+            };
+        }
     }
 
     async initialize(config = {}) {
@@ -520,6 +536,10 @@ class BufferPool {
     constructor(options) {
         this.options = options;
         this.pool = [];
+        this.memoryManager = getMemoryManager();
+        if (!this.memoryManager || typeof this.memoryManager.createManagedCollection !== 'function') {
+            this.memoryManager = { createManagedCollection: () => new Set() };
+        }
         this.used = this.memoryManager.createManagedCollection('used', 'Set', 100);
         this.initialize();
     }
@@ -569,6 +589,10 @@ class StringPool {
     constructor(options) {
         this.options = options;
         this.pool = [];
+        this.memoryManager = getMemoryManager();
+        if (!this.memoryManager || typeof this.memoryManager.createManagedCollection !== 'function') {
+            this.memoryManager = { createManagedCollection: () => new Set() };
+        }
         this.used = this.memoryManager.createManagedCollection('used', 'Set', 100);
         this.initialize();
     }
@@ -614,6 +638,14 @@ class StringPool {
 class ObjectPool {
     constructor(options) {
         this.options = options;
+        this.memoryManager = getMemoryManager();
+        if (!this.memoryManager || typeof this.memoryManager.createManagedCollection !== 'function') {
+            this.memoryManager = { 
+                createManagedCollection: (name, type = 'Map') => {
+                    return type === 'Map' ? new Map() : new Set();
+                }
+            };
+        }
         this.pools = this.memoryManager.createManagedCollection('pools', 'Map', 100);
         this.used = this.memoryManager.createManagedCollection('used', 'Map', 100);
         this.initialize();
@@ -704,6 +736,10 @@ class ObjectPool {
 class L1Cache {
     constructor(options) {
         this.options = options;
+        this.memoryManager = getMemoryManager();
+        if (!this.memoryManager || typeof this.memoryManager.createManagedCollection !== 'function') {
+            this.memoryManager = { createManagedCollection: () => new Map() };
+        }
         this.cache = this.memoryManager.createManagedCollection('cache', 'Map', 100);
         this.accessTimes = this.memoryManager.createManagedCollection('accessTimes', 'Map', 100);
         this.size = 0;
@@ -863,6 +899,10 @@ class L2Cache {
 class L3Cache {
     constructor(options) {
         this.options = options;
+        this.memoryManager = getMemoryManager();
+        if (!this.memoryManager || typeof this.memoryManager.createManagedCollection !== 'function') {
+            this.memoryManager = { createManagedCollection: () => new Map() };
+        }
         this.cache = this.memoryManager.createManagedCollection('cache', 'Map', 100);
         this.accessCounts = this.memoryManager.createManagedCollection('accessCounts', 'Map', 100);
         this.size = 0;
@@ -999,6 +1039,10 @@ class DiskMonitor {
 
 class TaskMonitor {
     constructor() {
+        this.memoryManager = getMemoryManager();
+        if (!this.memoryManager || typeof this.memoryManager.createManagedCollection !== 'function') {
+            this.memoryManager = { createManagedCollection: () => new Map() };
+        }
         this.tasks = this.memoryManager.createManagedCollection('tasks', 'Map', 100);
     }
 

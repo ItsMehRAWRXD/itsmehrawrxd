@@ -1,0 +1,438 @@
+// reverser_self_compiler.rev
+// Self-hosting Reverser compiler written in Reverser language
+// This compiler can compile Reverser source code to assembly
+
+// Reverser language syntax (backwards):
+// cnuf = func
+// ledom = model  
+// pool = loop
+// fi = if
+// tel = let
+// ter = return
+
+// Token types for lexer
+ledom TokenType {
+    EOF: int,
+    IDENTIFIER: int,
+    NUMBER: int,
+    STRING: int,
+    CNUF: int,      // func
+    LEDOM: int,     // model
+    POOL: int,      // loop
+    FI: int,        // if
+    TEL: int,       // let
+    TER: int,       // return
+    LPAREN: int,
+    RPAREN: int,
+    LBRACE: int,
+    RBRACE: int,
+    SEMICOLON: int,
+    COMMA: int,
+    PLUS: int,
+    MINUS: int,
+    MULTIPLY: int,
+    DIVIDE: int,
+    ASSIGN: int,
+    EQUALS: int,
+    GREATER: int,
+    LESS: int
+}
+
+// Token structure
+ledom Token {
+    type: TokenType,
+    value: *char,
+    length: int,
+    line: int,
+    column: int
+}
+
+// AST node types
+ledom ASTNodeType {
+    PROGRAM: int,
+    FUNCTION: int,
+    MODEL: int,
+    BLOCK: int,
+    VARIABLE: int,
+    ASSIGNMENT: int,
+    RETURN: int,
+    IF: int,
+    LOOP: int,
+    BINARY_OP: int,
+    UNARY_OP: int,
+    LITERAL: int,
+    IDENTIFIER: int,
+    FUNCTION_CALL: int
+}
+
+// AST node structure
+ledom ASTNode {
+    type: ASTNodeType,
+    value: *char,
+    left: *ASTNode,
+    right: *ASTNode,
+    next: *ASTNode,
+    children: *ASTNode
+}
+
+// Lexer state
+ledom Lexer {
+    source: *char,
+    position: int,
+    current_char: char,
+    line: int,
+    column: int
+}
+
+// Parser state
+ledom Parser {
+    lexer: *Lexer,
+    current_token: Token,
+    tokens: *Token,
+    token_count: int,
+    token_index: int
+}
+
+// Code generator state
+ledom CodeGenerator {
+    output: *char,
+    output_size: int,
+    output_capacity: int,
+    label_count: int
+}
+
+// Initialize lexer
+cnuf init_lexer(lexer: *Lexer, source: *char) -> int {
+    lexer->source = source;
+    lexer->position = 0;
+    lexer->line = 1;
+    lexer->column = 1;
+    
+    fi (source != null) {
+        lexer->current_char = source[0];
+    } else {
+        lexer->current_char = 0;
+    }
+    
+    ter 1;
+}
+
+// Advance lexer to next character
+cnuf advance_lexer(lexer: *Lexer) -> int {
+    lexer->position = lexer->position + 1;
+    
+    fi (lexer->current_char == 10) {  // newline
+        lexer->line = lexer->line + 1;
+        lexer->column = 1;
+    } else {
+        lexer->column = lexer->column + 1;
+    }
+    
+    fi (lexer->source[lexer->position] != 0) {
+        lexer->current_char = lexer->source[lexer->position];
+    } else {
+        lexer->current_char = 0;
+    }
+    
+    ter 1;
+}
+
+// Skip whitespace
+cnuf skip_whitespace(lexer: *Lexer) -> int {
+    pool (lexer->current_char == 32 || lexer->current_char == 9 || 
+          lexer->current_char == 10 || lexer->current_char == 13) {
+        advance_lexer(lexer);
+    }
+    ter 1;
+}
+
+// Read identifier or keyword
+cnuf read_identifier(lexer: *Lexer, token: *Token) -> int {
+    tel start: int = lexer->position;
+    
+    pool (is_alpha(lexer->current_char) || is_digit(lexer->current_char)) {
+        advance_lexer(lexer);
+    }
+    
+    token->value = lexer->source + start;
+    token->length = lexer->position - start;
+    token->line = lexer->line;
+    token->column = lexer->column - token->length;
+    
+    // Check for keywords (backwards)
+    fi (string_equals(token->value, "cnuf", 4)) {
+        token->type = TokenType.CNUF;
+    } else fi (string_equals(token->value, "ledom", 5)) {
+        token->type = TokenType.LEDOM;
+    } else fi (string_equals(token->value, "pool", 4)) {
+        token->type = TokenType.POOL;
+    } else fi (string_equals(token->value, "fi", 2)) {
+        token->type = TokenType.FI;
+    } else fi (string_equals(token->value, "tel", 3)) {
+        token->type = TokenType.TEL;
+    } else fi (string_equals(token->value, "ter", 3)) {
+        token->type = TokenType.TER;
+    } else {
+        token->type = TokenType.IDENTIFIER;
+    }
+    
+    ter 1;
+}
+
+// Read number literal
+cnuf read_number(lexer: *Lexer, token: *Token) -> int {
+    tel start: int = lexer->position;
+    
+    pool (is_digit(lexer->current_char)) {
+        advance_lexer(lexer);
+    }
+    
+    token->type = TokenType.NUMBER;
+    token->value = lexer->source + start;
+    token->length = lexer->position - start;
+    token->line = lexer->line;
+    token->column = lexer->column - token->length;
+    
+    ter 1;
+}
+
+// Get next token
+cnuf next_token(lexer: *Lexer, token: *Token) -> int {
+    skip_whitespace(lexer);
+    
+    fi (lexer->current_char == 0) {
+        token->type = TokenType.EOF;
+        ter 1;
+    }
+    
+    fi (is_alpha(lexer->current_char)) {
+        read_identifier(lexer, token);
+        ter 1;
+    }
+    
+    fi (is_digit(lexer->current_char)) {
+        read_number(lexer, token);
+        ter 1;
+    }
+    
+    // Single character tokens
+    fi (lexer->current_char == 40) {  // (
+        token->type = TokenType.LPAREN;
+        advance_lexer(lexer);
+    } else fi (lexer->current_char == 41) {  // )
+        token->type = TokenType.RPAREN;
+        advance_lexer(lexer);
+    } else fi (lexer->current_char == 123) {  // {
+        token->type = TokenType.LBRACE;
+        advance_lexer(lexer);
+    } else fi (lexer->current_char == 125) {  // }
+        token->type = TokenType.RBRACE;
+        advance_lexer(lexer);
+    } else fi (lexer->current_char == 59) {  // ;
+        token->type = TokenType.SEMICOLON;
+        advance_lexer(lexer);
+    } else fi (lexer->current_char == 44) {  // ,
+        token->type = TokenType.COMMA;
+        advance_lexer(lexer);
+    } else fi (lexer->current_char == 43) {  // +
+        token->type = TokenType.PLUS;
+        advance_lexer(lexer);
+    } else fi (lexer->current_char == 45) {  // -
+        token->type = TokenType.MINUS;
+        advance_lexer(lexer);
+    } else fi (lexer->current_char == 42) {  // *
+        token->type = TokenType.MULTIPLY;
+        advance_lexer(lexer);
+    } else fi (lexer->current_char == 47) {  // /
+        token->type = TokenType.DIVIDE;
+        advance_lexer(lexer);
+    } else fi (lexer->current_char == 61) {  // =
+        advance_lexer(lexer);
+        fi (lexer->current_char == 61) {  // ==
+            token->type = TokenType.EQUALS;
+            advance_lexer(lexer);
+        } else {
+            token->type = TokenType.ASSIGN;
+        }
+    } else fi (lexer->current_char == 62) {  // >
+        token->type = TokenType.GREATER;
+        advance_lexer(lexer);
+    } else fi (lexer->current_char == 60) {  // <
+        token->type = TokenType.LESS;
+        advance_lexer(lexer);
+    }
+    
+    ter 1;
+}
+
+// Initialize parser
+cnuf init_parser(parser: *Parser, lexer: *Lexer) -> int {
+    parser->lexer = lexer;
+    parser->token_index = 0;
+    next_token(lexer, &parser->current_token);
+    ter 1;
+}
+
+// Parse expression
+cnuf parse_expression(parser: *Parser) -> *ASTNode {
+    ter parse_binary_expression(parser, 0);
+}
+
+// Parse binary expression with precedence
+cnuf parse_binary_expression(parser: *Parser, min_precedence: int) -> *ASTNode {
+    tel left: *ASTNode = parse_primary(parser);
+    
+    pool (get_precedence(parser->current_token.type) >= min_precedence) {
+        tel op_token: Token = parser->current_token;
+        tel precedence: int = get_precedence(op_token.type);
+        
+        next_token(parser->lexer, &parser->current_token);
+        
+        tel right: *ASTNode = parse_binary_expression(parser, precedence + 1);
+        
+        tel node: *ASTNode = alloc(sizeof(ASTNode));
+        node->type = ASTNodeType.BINARY_OP;
+        node->value = op_token.value;
+        node->left = left;
+        node->right = right;
+        
+        left = node;
+    }
+    
+    ter left;
+}
+
+// Parse primary expression
+cnuf parse_primary(parser: *Parser) -> *ASTNode {
+    tel node: *ASTNode = alloc(sizeof(ASTNode));
+    
+    fi (parser->current_token.type == TokenType.NUMBER) {
+        node->type = ASTNodeType.LITERAL;
+        node->value = parser->current_token.value;
+        next_token(parser->lexer, &parser->current_token);
+    } else fi (parser->current_token.type == TokenType.IDENTIFIER) {
+        node->type = ASTNodeType.IDENTIFIER;
+        node->value = parser->current_token.value;
+        next_token(parser->lexer, &parser->current_token);
+        
+        // Check for function call
+        fi (parser->current_token.type == TokenType.LPAREN) {
+            node->type = ASTNodeType.FUNCTION_CALL;
+            next_token(parser->lexer, &parser->current_token);
+            
+            // Parse arguments
+            fi (parser->current_token.type != TokenType.RPAREN) {
+                node->children = parse_expression(parser);
+                
+                pool (parser->current_token.type == TokenType.COMMA) {
+                    next_token(parser->lexer, &parser->current_token);
+                    // Add more arguments to children list
+                }
+            }
+            
+            next_token(parser->lexer, &parser->current_token); // consume )
+        }
+    } else fi (parser->current_token.type == TokenType.LPAREN) {
+        next_token(parser->lexer, &parser->current_token);
+        node = parse_expression(parser);
+        next_token(parser->lexer, &parser->current_token); // consume )
+    }
+    
+    ter node;
+}
+
+// Generate assembly code from AST
+cnuf generate_code(generator: *CodeGenerator, ast: *ASTNode) -> int {
+    fi (ast == null) {
+        ter 1;
+    }
+    
+    fi (ast->type == ASTNodeType.PROGRAM) {
+        emit_string(generator, "section .text\n");
+        emit_string(generator, "global _start\n\n");
+        emit_string(generator, "_start:\n");
+        
+        generate_code(generator, ast->children);
+        
+        emit_string(generator, "    mov rax, 60\n");
+        emit_string(generator, "    xor rdi, rdi\n");
+        emit_string(generator, "    syscall\n");
+    } else fi (ast->type == ASTNodeType.FUNCTION) {
+        emit_string(generator, ast->value);
+        emit_string(generator, ":\n");
+        emit_string(generator, "    push rbp\n");
+        emit_string(generator, "    mov rbp, rsp\n");
+        
+        generate_code(generator, ast->children);
+        
+        emit_string(generator, "    pop rbp\n");
+        emit_string(generator, "    ret\n\n");
+    } else fi (ast->type == ASTNodeType.BINARY_OP) {
+        generate_code(generator, ast->left);
+        generate_code(generator, ast->right);
+        
+        fi (string_equals(ast->value, "+", 1)) {
+            emit_string(generator, "    pop rbx\n");
+            emit_string(generator, "    pop rax\n");
+            emit_string(generator, "    add rax, rbx\n");
+            emit_string(generator, "    push rax\n");
+        } else fi (string_equals(ast->value, "-", 1)) {
+            emit_string(generator, "    pop rbx\n");
+            emit_string(generator, "    pop rax\n");
+            emit_string(generator, "    sub rax, rbx\n");
+            emit_string(generator, "    push rax\n");
+        }
+    } else fi (ast->type == ASTNodeType.LITERAL) {
+        emit_string(generator, "    mov rax, ");
+        emit_string(generator, ast->value);
+        emit_string(generator, "\n    push rax\n");
+    }
+    
+    ter 1;
+}
+
+// Main compiler function
+cnuf compile_reverser(source: *char, output: *char) -> int {
+    tel lexer: Lexer;
+    tel parser: Parser;
+    tel generator: CodeGenerator;
+    
+    init_lexer(&lexer, source);
+    init_parser(&parser, &lexer);
+    
+    tel ast: *ASTNode = parse_program(&parser);
+    
+    init_code_generator(&generator);
+    generate_code(&generator, ast);
+    
+    ter 1;
+}
+
+// Helper functions
+cnuf is_alpha(c: char) -> int {
+    ter (c >= 65 && c <= 90) || (c >= 97 && c <= 122);
+}
+
+cnuf is_digit(c: char) -> int {
+    ter c >= 48 && c <= 57;
+}
+
+cnuf string_equals(s1: *char, s2: *char, len: int) -> int {
+    tel i: int = 0;
+    pool (i < len) {
+        fi (s1[i] != s2[i]) {
+            ter 0;
+        }
+        i = i + 1;
+    }
+    ter 1;
+}
+
+cnuf get_precedence(token_type: TokenType) -> int {
+    fi (token_type == TokenType.PLUS || token_type == TokenType.MINUS) {
+        ter 1;
+    } else fi (token_type == TokenType.MULTIPLY || token_type == TokenType.DIVIDE) {
+        ter 2;
+    }
+    ter 0;
+}

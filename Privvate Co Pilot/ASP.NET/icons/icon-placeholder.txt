@@ -1,0 +1,31 @@
+# Icon Placeholder
+
+This directory needs the following icon files:
+
+- icon16.png (16x16 pixels) - Browser toolbar icon
+- icon48.png (48x48 pixels) - Extension management icon  
+- icon128.png (128x128 pixels) - Chrome Web Store icon
+
+## Icon Design Requirements:
+
+1. **Size**: Exact pixel dimensions as specified
+2. **Format**: PNG with transparency
+3. **Design**: AI/robot theme with gradient colors (#667eea to #764ba2)
+4. **Quality**: High resolution, clear at all sizes
+
+## Quick Icon Creation:
+
+You can create these icons using:
+- Online tools like Canva, Figma, or Adobe Express
+- Image editing software like GIMP or Photoshop
+- AI image generators with specific prompts
+- Icon libraries like Feather Icons or Heroicons
+
+## Temporary Solution:
+
+For testing purposes, you can:
+1. Copy any 16x16, 48x48, and 128x128 PNG files
+2. Rename them to icon16.png, icon48.png, and icon128.png
+3. Place them in this directory
+
+The extension will work without custom icons, but Chrome will show default icons.

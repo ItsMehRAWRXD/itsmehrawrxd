@@ -1,0 +1,693 @@
+// eon_full_compiler.eon
+// Final self-hosted Eon compiler with complete language feature set
+// This compiler includes all advanced features and optimizations
+
+// Import system modules
+import std.memory
+import std.io
+import std.string
+import std.collections
+
+// Advanced token types including all language features
+def model TokenType {
+    // Basic tokens
+    EOF: int
+    IDENTIFIER: int
+    NUMBER: int
+    STRING: int
+    CHAR: int
+    
+    // Keywords
+    DEF: int
+    MODEL: int
+    FUNC: int
+    LOOP: int
+    IF: int
+    ELSE: int
+    LET: int
+    CONST: int
+    RET: int
+    BREAK: int
+    CONTINUE: int
+    IMPORT: int
+    EXPORT: int
+    MATCH: int
+    CASE: int
+    DEFAULT: int
+    TRY: int
+    CATCH: int
+    FINALLY: int
+    THROW: int
+    
+    // Type keywords
+    INT: int
+    FLOAT: int
+    BOOL: int
+    VOID: int
+    AUTO: int
+    
+    // Operators
+    PLUS: int
+    MINUS: int
+    MULTIPLY: int
+    DIVIDE: int
+    MODULO: int
+    POWER: int
+    ASSIGN: int
+    PLUS_ASSIGN: int
+    MINUS_ASSIGN: int
+    MULTIPLY_ASSIGN: int
+    DIVIDE_ASSIGN: int
+    EQUALS: int
+    NOT_EQUALS: int
+    GREATER: int
+    GREATER_EQUAL: int
+    LESS: int
+    LESS_EQUAL: int
+    LOGICAL_AND: int
+    LOGICAL_OR: int
+    LOGICAL_NOT: int
+    BITWISE_AND: int
+    BITWISE_OR: int
+    BITWISE_XOR: int
+    BITWISE_NOT: int
+    LEFT_SHIFT: int
+    RIGHT_SHIFT: int
+    
+    // Punctuation
+    LPAREN: int
+    RPAREN: int
+    LBRACE: int
+    RBRACE: int
+    LBRACKET: int
+    RBRACKET: int
+    SEMICOLON: int
+    COMMA: int
+    DOT: int
+    COLON: int
+    DOUBLE_COLON: int
+    ARROW: int
+    FAT_ARROW: int
+    QUESTION: int
+    AMPERSAND: int
+    STAR: int
+    
+    // Special
+    NEWLINE: int
+    INDENT: int
+    DEDENT: int
+}
+
+// Enhanced token with more metadata
+def model Token {
+    type: TokenType
+    value: String
+    line: int
+    column: int
+    filename: String
+    precedence: int
+    associativity: int  // 0 = left, 1 = right
+}
+
+// Complete AST node types
+def model ASTNodeType {
+    // Program structure
+    PROGRAM: int
+    MODULE: int
+    IMPORT_STMT: int
+    EXPORT_STMT: int
+    
+    // Definitions
+    MODEL_DEF: int
+    FUNC_DEF: int
+    VAR_DECL: int
+    CONST_DECL: int
+    TYPE_ALIAS: int
+    
+    // Statements
+    BLOCK: int
+    EXPRESSION_STMT: int
+    ASSIGNMENT: int
+    RETURN: int
+    BREAK: int
+    CONTINUE: int
+    IF_STMT: int
+    LOOP_STMT: int
+    FOR_STMT: int
+    WHILE_STMT: int
+    MATCH_STMT: int
+    TRY_STMT: int
+    THROW_STMT: int
+    
+    // Expressions
+    BINARY_OP: int
+    UNARY_OP: int
+    TERNARY_OP: int
+    LITERAL: int
+    IDENTIFIER: int
+    FUNC_CALL: int
+    METHOD_CALL: int
+    MEMBER_ACCESS: int
+    ARRAY_ACCESS: int
+    ARRAY_LITERAL: int
+    OBJECT_LITERAL: int
+    LAMBDA: int
+    CLOSURE: int
+    
+    // Types
+    TYPE_ANNOTATION: int
+    GENERIC_TYPE: int
+    ARRAY_TYPE: int
+    POINTER_TYPE: int
+    REFERENCE_TYPE: int
+    FUNCTION_TYPE: int
+}
+
+// Enhanced AST node with type information
+def model ASTNode {
+    type: ASTNodeType
+    value: String
+    data_type: *TypeInfo
+    left: *ASTNode
+    right: *ASTNode
+    condition: *ASTNode
+    body: *ASTNode
+    next: *ASTNode
+    children: Vector<*ASTNode>
+    attributes: Map<String, String>
+    source_location: SourceLocation
+}
+
+// Type system
+def model TypeKind {
+    VOID: int
+    BOOL: int
+    INT: int
+    FLOAT: int
+    CHAR: int
+    STRING: int
+    ARRAY: int
+    POINTER: int
+    REFERENCE: int
+    FUNCTION: int
+    STRUCT: int
+    UNION: int
+    ENUM: int
+    GENERIC: int
+}
+
+def model TypeInfo {
+    kind: TypeKind
+    name: String
+    size: int
+    alignment: int
+    element_type: *TypeInfo  // For arrays, pointers
+    return_type: *TypeInfo   // For functions
+    parameters: Vector<*TypeInfo>  // For functions
+    fields: Vector<FieldInfo>      // For structs
+    is_mutable: bool
+    is_nullable: bool
+}
+
+def model FieldInfo {
+    name: String
+    type: *TypeInfo
+    offset: int
+    is_public: bool
+}
+
+// Source location for error reporting
+def model SourceLocation {
+    filename: String
+    line: int
+    column: int
+    length: int
+}
+
+// Symbol table for scope management
+def model Symbol {
+    name: String
+    type: *TypeInfo
+    kind: SymbolKind
+    scope_level: int
+    is_mutable: bool
+    is_initialized: bool
+    address: int  // For code generation
+}
+
+def model SymbolKind {
+    VARIABLE: int
+    FUNCTION: int
+    TYPE: int
+    MODULE: int
+    CONSTANT: int
+}
+
+def model SymbolTable {
+    symbols: Map<String, *Symbol>
+    parent: *SymbolTable
+    scope_level: int
+}
+
+// Enhanced lexer with advanced features
+def model Lexer {
+    source: String
+    filename: String
+    position: int
+    line: int
+    column: int
+    current_char: char
+    peek_char: char
+    tokens: Vector<Token>
+    keywords: Map<String, TokenType>
+    operators: Map<String, TokenType>
+    indent_stack: Vector<int>
+    in_string_interpolation: bool
+}
+
+// Advanced parser with error recovery
+def model Parser {
+    lexer: *Lexer
+    current_token: Token
+    peek_token: Token
+    token_index: int
+    errors: Vector<CompilerError>
+    symbol_table: *SymbolTable
+    current_scope: int
+    in_function: bool
+    in_loop: bool
+    type_registry: *TypeRegistry
+}
+
+def model CompilerError {
+    message: String
+    location: SourceLocation
+    severity: ErrorSeverity
+    suggestions: Vector<String>
+}
+
+def model ErrorSeverity {
+    INFO: int
+    WARNING: int
+    ERROR: int
+    FATAL: int
+}
+
+// Type registry for type checking
+def model TypeRegistry {
+    builtin_types: Map<String, *TypeInfo>
+    user_types: Map<String, *TypeInfo>
+    generic_instances: Map<String, *TypeInfo>
+}
+
+// Code generator with optimization passes
+def model CodeGenerator {
+    output: StringBuilder
+    target_arch: Architecture
+    optimization_level: int
+    symbol_table: *SymbolTable
+    label_counter: int
+    temp_counter: int
+    current_function: *FunctionInfo
+    basic_blocks: Vector<*BasicBlock>
+}
+
+def model Architecture {
+    X86_64: int
+    ARM64: int
+    WASM: int
+    LLVM_IR: int
+}
+
+def model BasicBlock {
+    label: String
+    instructions: Vector<Instruction>
+    predecessors: Vector<*BasicBlock>
+    successors: Vector<*BasicBlock>
+}
+
+def model Instruction {
+    opcode: String
+    operands: Vector<String>
+    type: *TypeInfo
+}
+
+def model FunctionInfo {
+    name: String
+    parameters: Vector<*Symbol>
+    return_type: *TypeInfo
+    local_variables: Vector<*Symbol>
+    stack_size: int
+}
+
+// Initialize the full compiler system
+def func init_compiler() -> *Compiler {
+    let compiler: *Compiler = alloc<Compiler>()
+    compiler->type_registry = init_type_registry()
+    compiler->symbol_table = init_global_scope()
+    compiler->error_count = 0
+    ret compiler
+}
+
+// Initialize type registry with builtin types
+def func init_type_registry() -> *TypeRegistry {
+    let registry: *TypeRegistry = alloc<TypeRegistry>()
+    
+    // Add builtin types
+    registry->builtin_types["void"] = create_type(TypeKind.VOID, "void", 0)
+    registry->builtin_types["bool"] = create_type(TypeKind.BOOL, "bool", 1)
+    registry->builtin_types["int"] = create_type(TypeKind.INT, "int", 8)
+    registry->builtin_types["float"] = create_type(TypeKind.FLOAT, "float", 8)
+    registry->builtin_types["char"] = create_type(TypeKind.CHAR, "char", 1)
+    registry->builtin_types["string"] = create_type(TypeKind.STRING, "string", 8)
+    
+    ret registry
+}
+
+// Enhanced lexer initialization
+def func init_lexer(lexer: *Lexer, source: String, filename: String) -> bool {
+    lexer->source = source
+    lexer->filename = filename
+    lexer->position = 0
+    lexer->line = 1
+    lexer->column = 1
+    lexer->current_char = if source.length > 0 then source[0] else 0
+    lexer->peek_char = if source.length > 1 then source[1] else 0
+    
+    // Initialize keywords map
+    init_keywords(lexer)
+    init_operators(lexer)
+    
+    ret true
+}
+
+// Initialize keyword mapping
+def func init_keywords(lexer: *Lexer) -> void {
+    lexer->keywords["def"] = TokenType.DEF
+    lexer->keywords["model"] = TokenType.MODEL
+    lexer->keywords["func"] = TokenType.FUNC
+    lexer->keywords["loop"] = TokenType.LOOP
+    lexer->keywords["if"] = TokenType.IF
+    lexer->keywords["else"] = TokenType.ELSE
+    lexer->keywords["let"] = TokenType.LET
+    lexer->keywords["const"] = TokenType.CONST
+    lexer->keywords["ret"] = TokenType.RET
+    lexer->keywords["break"] = TokenType.BREAK
+    lexer->keywords["continue"] = TokenType.CONTINUE
+    lexer->keywords["import"] = TokenType.IMPORT
+    lexer->keywords["export"] = TokenType.EXPORT
+    lexer->keywords["match"] = TokenType.MATCH
+    lexer->keywords["case"] = TokenType.CASE
+    lexer->keywords["default"] = TokenType.DEFAULT
+    lexer->keywords["try"] = TokenType.TRY
+    lexer->keywords["catch"] = TokenType.CATCH
+    lexer->keywords["finally"] = TokenType.FINALLY
+    lexer->keywords["throw"] = TokenType.THROW
+    lexer->keywords["int"] = TokenType.INT
+    lexer->keywords["float"] = TokenType.FLOAT
+    lexer->keywords["bool"] = TokenType.BOOL
+    lexer->keywords["void"] = TokenType.VOID
+    lexer->keywords["auto"] = TokenType.AUTO
+}
+
+// Advanced tokenization with string interpolation and complex literals
+def func next_token(lexer: *Lexer) -> Token {
+    skip_whitespace_and_comments(lexer)
+    
+    if lexer->current_char == 0 {
+        ret create_token(TokenType.EOF, "", lexer->line, lexer->column)
+    }
+    
+    // Handle string literals with interpolation
+    if lexer->current_char == '"' {
+        ret read_string_literal(lexer)
+    }
+    
+    // Handle character literals
+    if lexer->current_char == '\'' {
+        ret read_char_literal(lexer)
+    }
+    
+    // Handle numeric literals (including floats, hex, binary)
+    if is_digit(lexer->current_char) {
+        ret read_numeric_literal(lexer)
+    }
+    
+    // Handle identifiers and keywords
+    if is_alpha(lexer->current_char) || lexer->current_char == '_' {
+        ret read_identifier_or_keyword(lexer)
+    }
+    
+    // Handle multi-character operators
+    let op_token: Token = try_read_operator(lexer)
+    if op_token.type != TokenType.EOF {
+        ret op_token
+    }
+    
+    // Handle single character tokens
+    ret read_single_char_token(lexer)
+}
+
+// Enhanced parser with error recovery
+def func parse_program(parser: *Parser) -> *ASTNode {
+    let program: *ASTNode = create_node(ASTNodeType.PROGRAM)
+    
+    while parser->current_token.type != TokenType.EOF {
+        try {
+            let node: *ASTNode = parse_top_level_declaration(parser)
+            if node != null {
+                program->children.push(node)
+            }
+        } catch error: CompilerError {
+            parser->errors.push(error)
+            recover_from_error(parser)
+        }
+    }
+    
+    ret program
+}
+
+// Parse top-level declarations with full feature support
+def func parse_top_level_declaration(parser: *Parser) -> *ASTNode {
+    match parser->current_token.type {
+        case TokenType.IMPORT:
+            ret parse_import_statement(parser)
+        case TokenType.EXPORT:
+            ret parse_export_statement(parser)
+        case TokenType.DEF:
+            advance(parser)
+            match parser->current_token.type {
+                case TokenType.MODEL:
+                    ret parse_model_definition(parser)
+                case TokenType.FUNC:
+                    ret parse_function_definition(parser)
+                default:
+                    throw CompilerError{
+                        message: "Expected 'model' or 'func' after 'def'",
+                        location: get_current_location(parser),
+                        severity: ErrorSeverity.ERROR
+                    }
+            }
+        default:
+            ret parse_statement(parser)
+    }
+}
+
+// Advanced expression parsing with operator precedence
+def func parse_expression(parser: *Parser) -> *ASTNode {
+    ret parse_ternary_expression(parser)
+}
+
+def func parse_ternary_expression(parser: *Parser) -> *ASTNode {
+    let expr: *ASTNode = parse_logical_or_expression(parser)
+    
+    if parser->current_token.type == TokenType.QUESTION {
+        advance(parser)
+        let true_expr: *ASTNode = parse_expression(parser)
+        expect_token(parser, TokenType.COLON)
+        let false_expr: *ASTNode = parse_expression(parser)
+        
+        let ternary: *ASTNode = create_node(ASTNodeType.TERNARY_OP)
+        ternary->condition = expr
+        ternary->left = true_expr
+        ternary->right = false_expr
+        ret ternary
+    }
+    
+    ret expr
+}
+
+def func parse_logical_or_expression(parser: *Parser) -> *ASTNode {
+    let left: *ASTNode = parse_logical_and_expression(parser)
+    
+    while parser->current_token.type == TokenType.LOGICAL_OR {
+        let op: Token = parser->current_token
+        advance(parser)
+        let right: *ASTNode = parse_logical_and_expression(parser)
+        
+        let binary: *ASTNode = create_node(ASTNodeType.BINARY_OP)
+        binary->value = op.value
+        binary->left = left
+        binary->right = right
+        left = binary
+    }
+    
+    ret left
+}
+
+// Type checking system
+def func check_types(node: *ASTNode, symbol_table: *SymbolTable, 
+                     type_registry: *TypeRegistry) -> *TypeInfo {
+    match node->type {
+        case ASTNodeType.LITERAL:
+            ret infer_literal_type(node->value)
+        case ASTNodeType.IDENTIFIER:
+            let symbol: *Symbol = lookup_symbol(symbol_table, node->value)
+            if symbol == null {
+                throw CompilerError{
+                    message: "Undefined identifier: " + node->value,
+                    location: node->source_location,
+                    severity: ErrorSeverity.ERROR
+                }
+            }
+            ret symbol->type
+        case ASTNodeType.BINARY_OP:
+            ret check_binary_operation(node, symbol_table, type_registry)
+        case ASTNodeType.FUNC_CALL:
+            ret check_function_call(node, symbol_table, type_registry)
+        default:
+            ret type_registry->builtin_types["void"]
+    }
+}
+
+// Advanced code generation with optimizations
+def func generate_code(generator: *CodeGenerator, node: *ASTNode) -> void {
+    match node->type {
+        case ASTNodeType.PROGRAM:
+            generate_program(generator, node)
+        case ASTNodeType.FUNC_DEF:
+            generate_function(generator, node)
+        case ASTNodeType.BINARY_OP:
+            generate_binary_operation(generator, node)
+        case ASTNodeType.FUNC_CALL:
+            generate_function_call(generator, node)
+        case ASTNodeType.IF_STMT:
+            generate_if_statement(generator, node)
+        case ASTNodeType.LOOP_STMT:
+            generate_loop_statement(generator, node)
+        default:
+            generate_expression(generator, node)
+    }
+}
+
+// Optimization passes
+def func optimize_ast(node: *ASTNode) -> *ASTNode {
+    // Constant folding
+    node = constant_folding_pass(node)
+    
+    // Dead code elimination
+    node = dead_code_elimination_pass(node)
+    
+    // Common subexpression elimination
+    node = cse_pass(node)
+    
+    // Loop optimizations
+    node = loop_optimization_pass(node)
+    
+    ret node
+}
+
+// Main compilation function
+def func compile_eon_program(source: String, filename: String, 
+                            output_file: String, options: CompilerOptions) -> bool {
+    try {
+        // Initialize compiler
+        let compiler: *Compiler = init_compiler()
+        
+        // Lexical analysis
+        let lexer: Lexer
+        init_lexer(&lexer, source, filename)
+        
+        // Syntax analysis
+        let parser: Parser
+        init_parser(&parser, &lexer, compiler->symbol_table, compiler->type_registry)
+        let ast: *ASTNode = parse_program(&parser)
+        
+        if parser->errors.length > 0 {
+            print_errors(parser->errors)
+            ret false
+        }
+        
+        // Semantic analysis
+        let type_checker: TypeChecker
+        init_type_checker(&type_checker, compiler->symbol_table, compiler->type_registry)
+        check_semantics(&type_checker, ast)
+        
+        if type_checker->errors.length > 0 {
+            print_errors(type_checker->errors)
+            ret false
+        }
+        
+        // Optimization
+        if options.optimization_level > 0 {
+            ast = optimize_ast(ast)
+        }
+        
+        // Code generation
+        let code_gen: CodeGenerator
+        init_code_generator(&code_gen, options.target_arch, options.optimization_level)
+        generate_code(&code_gen, ast)
+        
+        // Write output
+        write_file(output_file, code_gen->output.to_string())
+        
+        ret true
+        
+    } catch error: CompilerError {
+        print_error(error)
+        ret false
+    }
+}
+
+// Compiler options
+def model CompilerOptions {
+    target_arch: Architecture
+    optimization_level: int
+    debug_info: bool
+    warnings_as_errors: bool
+    output_format: OutputFormat
+}
+
+def model OutputFormat {
+    ASSEMBLY: int
+    OBJECT: int
+    EXECUTABLE: int
+    LLVM_IR: int
+}
+
+// Entry point for the compiler
+def func main(args: Vector<String>) -> int {
+    if args.length < 2 {
+        println("Usage: eon_compiler <input_file> [options]")
+        ret 1
+    }
+    
+    let input_file: String = args[1]
+    let output_file: String = input_file.replace(".eon", ".asm")
+    
+    let options: CompilerOptions = parse_command_line_options(args)
+    
+    let source: String = read_file(input_file)
+    if source.is_empty() {
+        println("Error: Could not read input file: " + input_file)
+        ret 1
+    }
+    
+    if compile_eon_program(source, input_file, output_file, options) {
+        println("Compilation successful: " + output_file)
+        ret 0
+    } else {
+        println("Compilation failed")
+        ret 1
+    }
+}

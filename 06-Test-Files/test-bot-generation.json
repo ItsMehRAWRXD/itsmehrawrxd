@@ -1,0 +1,5 @@
+{
+  "language": "cpp",
+  "platform": "windows",
+  "features": ["keylogger", "screenCapture"]
+}

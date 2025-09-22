@@ -1,0 +1,179 @@
+{
+  "api": {
+    "name": "UserManagementAPI",
+    "version": "1.0.0",
+    "base_url": "https://api.example.com/v1",
+    "paths": [
+      {
+        "method": "GET",
+        "path": "/users",
+        "operation_id": "list_users",
+        "summary": "List all users",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "eon_type": "int32"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "eon_type": "int32"
+          }
+        ],
+        "request_body": null,
+        "response": {
+          "eon_type": "[User]",
+          "is_array": true,
+          "item_type": "User"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/users/{id}",
+        "operation_id": "get_user",
+        "summary": "Get user by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "eon_type": "int32"
+          }
+        ],
+        "request_body": null,
+        "response": {
+          "eon_type": "User",
+          "is_array": false,
+          "item_type": null
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/users",
+        "operation_id": "create_user",
+        "summary": "Create a new user",
+        "parameters": [],
+        "request_body": {
+          "eon_type": "CreateUserRequest"
+        },
+        "response": {
+          "eon_type": "User",
+          "is_array": false,
+          "item_type": null
+        }
+      },
+      {
+        "method": "PUT",
+        "path": "/users/{id}",
+        "operation_id": "update_user",
+        "summary": "Update user by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "eon_type": "int32"
+          }
+        ],
+        "request_body": {
+          "eon_type": "UpdateUserRequest"
+        },
+        "response": {
+          "eon_type": "User",
+          "is_array": false,
+          "item_type": null
+        }
+      },
+      {
+        "method": "DELETE",
+        "path": "/users/{id}",
+        "operation_id": "delete_user",
+        "summary": "Delete user by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "eon_type": "int32"
+          }
+        ],
+        "request_body": null,
+        "response": {
+          "eon_type": "bool",
+          "is_array": false,
+          "item_type": null
+        }
+      }
+    ],
+    "models": [
+      {
+        "name": "User",
+        "properties": [
+          {
+            "name": "id",
+            "eon_type": "int32",
+            "required": true
+          },
+          {
+            "name": "username",
+            "eon_type": "String",
+            "required": true
+          },
+          {
+            "name": "email",
+            "eon_type": "String",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "eon_type": "String",
+            "required": false
+          },
+          {
+            "name": "updated_at",
+            "eon_type": "String",
+            "required": false
+          }
+        ]
+      },
+      {
+        "name": "CreateUserRequest",
+        "properties": [
+          {
+            "name": "username",
+            "eon_type": "String",
+            "required": true
+          },
+          {
+            "name": "email",
+            "eon_type": "String",
+            "required": true
+          },
+          {
+            "name": "password",
+            "eon_type": "String",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "UpdateUserRequest",
+        "properties": [
+          {
+            "name": "username",
+            "eon_type": "String",
+            "required": false
+          },
+          {
+            "name": "email",
+            "eon_type": "String",
+            "required": false
+          }
+        ]
+      }
+    ]
+  }
+}

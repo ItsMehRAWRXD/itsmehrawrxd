@@ -97,6 +97,17 @@
             box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
         }
 
+        .fileless-info {
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+
         .btn {
             background: linear-gradient(45deg, #ff0000, #ff6600);
             color: white;
@@ -308,7 +319,7 @@
                     <p>or</p>
                     <input type="file" id="triple-file" class="file-input">
                 </div>
-                <input type="password" id="triple-password" class="file-input" placeholder="Enter passphrase (optional)">
+                <div class="fileless-info">✅ Fileless processing - No passwords needed</div>
                 <button class="btn" onclick="executeTripleCrypto()">Triple Encrypt</button>
                 <div id="triple-status"></div>
                 <div id="triple-output" class="output"></div>
@@ -353,7 +364,7 @@
                 <h3>🟢 Auto-Key File-less</h3>
                 <div class="tool-description">
                     <strong>Auto-Key File-less Encryption</strong><br>
-                    Derives key/IV from Windows logon password + machine SID automatically.
+                    Generates random keys automatically - no passwords needed.
                 </div>
                 <div class="drag-drop" id="autokey-drop">
                     <p>📁 Drag & Drop any file here</p>
@@ -602,7 +613,7 @@
                 const formData = new FormData();
                 formData.append('file', selectedFiles.triple);
                 formData.append('tool', 'triple');
-                formData.append('password', document.getElementById('triple-password').value);
+                // Fileless processing - no password needed
 
                 const response = await fetch('/api/powershell/execute', {
                     method: 'POST',

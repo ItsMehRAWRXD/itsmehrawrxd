@@ -279,8 +279,6 @@ class RedKiller {
 
     // System Privilege Checking
     async checkSystemPrivileges() {
-        logger.info('[Red Killer] Checking system privileges...');
-        
         const privilegeStatus = {
             isAdmin: false,
             isElevated: false,
@@ -309,8 +307,6 @@ class RedKiller {
                         action: 'Run as Administrator',
                         reason: 'Required for registry modification, service control, and file deletion'
                     });
-                } else {
-                    logger.info('[Red Killer] ✅ Running with Administrator privileges');
                 }
             } else {
                 // Linux/Unix privilege check
@@ -326,8 +322,6 @@ class RedKiller {
                         action: 'Run as root (sudo)',
                         reason: 'Required for system-level operations'
                     });
-                } else {
-                    logger.info('[Red Killer] ✅ Running with root privileges');
                 }
             }
 
@@ -382,12 +376,10 @@ class RedKiller {
             // Store privilege status
             this.privilegeStatus = privilegeStatus;
 
-            // Log warnings
-            if (privilegeStatus.warnings.length > 0) {
-                logger.warn('[Red Killer] ⚠️  Privilege warnings detected:');
-                privilegeStatus.warnings.forEach(warning => {
-                    logger.warn(`[Red Killer] ${warning.type.toUpperCase()}: ${warning.message}`);
-                });
+            // Log warnings only if critical
+            const criticalWarnings = privilegeStatus.warnings.filter(w => w.type === 'critical');
+            if (criticalWarnings.length > 0) {
+                logger.warn(`[Red Killer] ⚠️  ${criticalWarnings.length} critical privilege issue(s) detected`);
             }
 
             // Log recommendations
@@ -2854,20 +2846,16 @@ class RedKiller {
         
         // Check privileges first and warn if insufficient
         const privilegeStatus = this.getPrivilegeStatus();
-        if (privilegeStatus.warnings && privilegeStatus.warnings.length > 0) {
-            logger.warn('[Red Killer] ⚠️  PRIVILEGE WARNING: Insufficient privileges detected!');
-            privilegeStatus.warnings.forEach(warning => {
-                logger.warn(`[Red Killer] ${warning.type.toUpperCase()}: ${warning.message}`);
-            });
+        const criticalWarnings = privilegeStatus.warnings?.filter(w => w.type === 'critical') || [];
+        if (criticalWarnings.length > 0) {
+            logger.warn(`[Red Killer] ⚠️  ${criticalWarnings.length} critical privilege issue(s) - some operations may fail`);
             
             if (privilegeStatus.recommendations && privilegeStatus.recommendations.length > 0) {
-                logger.info('[Red Killer] 💡 RECOMMENDATIONS:');
+                logger.info('[Red Killer] 💡 Recommendations:');
                 privilegeStatus.recommendations.forEach(rec => {
                     logger.info(`[Red Killer] - ${rec.action}: ${rec.reason}`);
                 });
             }
-            
-            logger.warn('[Red Killer] ⚠️  Many termination methods may fail without proper privileges!');
         }
         
         const killResults = {
