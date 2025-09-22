@@ -1,0 +1,36 @@
+{
+  "name": "rawrz-security-platform-optimized",
+  "version": "2.0.0",
+  "description": "Optimized RawrZ Security Platform for DigitalOcean Deployment",
+  "main": "server.optimized.js",
+  "scripts": {
+    "start": "node server.optimized.js",
+    "dev": "nodemon server.optimized.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "compression": "^1.7.4",
+    "express-rate-limit": "^7.1.5",
+    "dotenv": "^16.3.1",
+    "crypto-js": "^4.2.0",
+    "multer": "^1.4.5",
+    "axios": "^1.6.2",
+    "ws": "^8.14.2",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "keywords": [
+    "security",
+    "platform",
+    "digital-ocean"
+  ],
+  "author": "RawrZ",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

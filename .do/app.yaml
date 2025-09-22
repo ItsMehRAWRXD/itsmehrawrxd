@@ -1,28 +1,48 @@
+# DigitalOcean App Platform Configuration
+# Optimized for RawrZ Security Platform
+
 name: rawrz-security-platform
+region: nyc1
+
 services:
-- name: api
+- name: rawrz-api
   source_dir: /
   github:
-    repo: ItsMehRAWRXD/itsmehrawrxd
-    branch: master
-  run_command: node api-server.js
+    branch: main
+    deploy_on_push: true
+  run_command: node server.optimized.js
   environment_slug: node-js
   instance_count: 1
   instance_size_slug: basic-xxs
-  http_port: 3000
-  routes:
-  - path: /
+  dockerfile_path: Dockerfile.optimized
+  
   envs:
   - key: NODE_ENV
     value: production
   - key: PORT
     value: "3000"
-  - key: JOTTI_API_URL
-    value: "https://virusscan.jotti.org"
+  - key: LOG_LEVEL
+    value: info
+  - key: NODE_OPTIONS
+    value: "--max-old-space-size=256"
+    
   health_check:
     http_path: /health
-    initial_delay_seconds: 10
-    period_seconds: 10
-    timeout_seconds: 5
-    success_threshold: 1
-    failure_threshold: 3
+    
+  routes:
+  - path: /
+  
+  alerts:
+  - rule: CPU_UTILIZATION
+    disabled: false
+  - rule: MEM_UTILIZATION  
+    disabled: false
+  - rule: RESTART_COUNT
+    disabled: false
+
+# Database (optional - only add if needed)
+# databases:
+# - engine: PG
+#   name: rawrz-db
+#   version: "14"
+#   size: db-s-dev-database
