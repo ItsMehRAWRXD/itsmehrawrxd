@@ -65,7 +65,7 @@ class DotNetWorkaround {
                 this.availableMethods.push(method);
                 logger.info(`DotNet method available: ${method.name}`);
             } catch (error) {
-                logger.warn(`DotNet method ${method.name} not available: error.message`);
+                logger.warn(`DotNet method ${method.name} not available: ${error.message}`);
             }
         }
 
