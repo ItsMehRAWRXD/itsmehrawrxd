@@ -187,7 +187,7 @@ fi
 # Check file sizes (prevent huge files)
 for file in $(git diff --cached --name-only); do
     if [ -f "$file" ]; then
-        size=$(stat -f%z "$file" 2>/dev/null || stat -c%s "$file" 2>/dev/null || echo 0)
+        size=$(stat -c %s "$file" 2>/dev/null || stat -f %z "$file" 2>/dev/null || echo 0)
         if [ "$size" -gt 10485760 ]; then  # 10MB limit
             echo "❌ ERROR: File $file is too large ($size bytes)"
             echo "Maximum file size is 10MB"
@@ -238,7 +238,7 @@ if ! git diff-index --quiet HEAD --; then
 fi
 
 # Check for large files
-if git ls-files | xargs -I {} sh -c 'test -f "{}" && test $(stat -f%z "{}" 2>/dev/null || stat -c%s "{}" 2>/dev/null || echo 0) -gt 10485760' | grep -q .; then
+if git ls-files | xargs -I {} sh -c 'test -f "{}" && test $(stat -c %s "{}" 2>/dev/null || stat -f %z "{}" 2>/dev/null || echo 0) -gt 10485760' | grep -q .; then
     echo "❌ ERROR: Repository contains files larger than 10MB"
     echo "Please remove large files before pushing"
     exit 1
