@@ -13,6 +13,8 @@ require('dotenv').config();
 
 const RawrZStandalone = require('./rawrz-standalone');
 const rawrzEngine = require('./src/engines/rawrz-engine');
+const { exec } = require('child_process');
+const fs = require('fs').promises;
 
 // Import the real bot engines (they export instances, not classes)
 const httpBotGenerator = require('./src/engines/http-bot-generator');
@@ -41,6 +43,10 @@ const responseTimeCache = new NodeCache({ stdTTL: 60 }); // 1 minute cache for r
 // Enhanced authentication with session management
 const activeSessions = new Map();
 const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+
+// EON Compiler integration
+const EON_COMPILER_PATH = './EonCompilerEnhanced.java';
+const EON_COMPILER_CLASS = 'EonCompilerEnhanced';
 
 function generateSessionId() {
     return crypto.randomBytes(32).toString('hex');
@@ -2209,6 +2215,157 @@ app.post('/api/irc/disconnect', async (req, res) => {
                 message: 'IRC connection closed',
                 timestamp: new Date().toISOString()
             } 
+        });
+    } catch (error) {
+        res.status(500).json({ status: 500, error: error.message });
+    }
+});
+
+// ===== EON COMPILER API ENDPOINTS =====
+
+// Compile EON source code
+app.post('/api/eon/compile', requireAuth, [
+    body('source').isString().isLength({ min: 1, max: 100000 }).trim(),
+    body('options').optional().isObject()
+], async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ 
+                status: 400, 
+                error: 'Invalid input', 
+                details: errors.array() 
+            });
+        }
+
+        const { source, options = {} } = req.body;
+        const timestamp = Date.now();
+        const tempFile = `temp_eon_${timestamp}.eon`;
+        
+        // Write source to temporary file
+        await fs.writeFile(tempFile, source, 'utf8');
+        
+        // Compile using Java EON compiler
+        const compileCommand = `java ${EON_COMPILER_CLASS} ${tempFile}`;
+        
+        exec(compileCommand, { timeout: 30000 }, async (error, stdout, stderr) => {
+            try {
+                // Clean up temp file
+                await fs.unlink(tempFile).catch(() => {});
+                
+                if (error) {
+                    return res.status(400).json({
+                        status: 400,
+                        error: 'Compilation failed',
+                        details: stderr || error.message,
+                        stdout: stdout
+                    });
+                }
+                
+                // Read generated assembly if successful
+                let assembly = '';
+                try {
+                    assembly = await fs.readFile('out.asm', 'utf8');
+                } catch (readError) {
+                    // Assembly file might not exist if compilation failed
+                }
+                
+                res.json({
+                    status: 200,
+                    data: {
+                        success: true,
+                        assembly: assembly,
+                        stdout: stdout,
+                        stderr: stderr,
+                        timestamp: new Date().toISOString()
+                    }
+                });
+                
+            } catch (cleanupError) {
+                console.error('Error in EON compilation cleanup:', cleanupError);
+                res.status(500).json({ status: 500, error: 'Internal server error' });
+            }
+        });
+        
+    } catch (error) {
+        console.error('EON compilation error:', error);
+        res.status(500).json({ status: 500, error: error.message });
+    }
+});
+
+// Get EON compiler status and capabilities
+app.get('/api/eon/status', requireAuth, (req, res) => {
+    try {
+        res.json({
+            status: 200,
+            data: {
+                compiler: 'Enhanced EON Compiler v2.0',
+                language: 'Java',
+                features: [
+                    'Lexical Analysis',
+                    'Syntax Parsing', 
+                    'Semantic Analysis',
+                    'Code Generation',
+                    'Assembly Output',
+                    'Error Reporting',
+                    'Comment Support',
+                    'Variable Declarations',
+                    'Arithmetic Operations',
+                    'Function Definitions',
+                    'Control Flow'
+                ],
+                supportedTokens: 50,
+                outputFormat: 'x86-64 Assembly',
+                timestamp: new Date().toISOString()
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ status: 500, error: error.message });
+    }
+});
+
+// Get EON language documentation
+app.get('/api/eon/docs', requireAuth, (req, res) => {
+    try {
+        const documentation = {
+            language: 'EON',
+            version: '2.0',
+            syntax: {
+                variables: 'let name = value;',
+                functions: 'def func name() { ... }',
+                comments: '// Single line comment',
+                operators: ['+', '-', '*', '/', '==', '!=', '>', '<', '>=', '<='],
+                keywords: ['let', 'def', 'func', 'ret', 'if', 'else', 'loop']
+            },
+            examples: {
+                helloWorld: `// Hello World in EON
+def func main() {
+    let message = "Hello, World!";
+    ret 0;
+}`,
+                arithmetic: `// Arithmetic operations
+let x = 5;
+let y = 10;
+let result = x + y;`,
+                function: `// Function definition
+def func add(a, b) {
+    ret a + b;
+}`
+            },
+            features: [
+                'Type inference',
+                'Function definitions',
+                'Variable declarations',
+                'Arithmetic operations',
+                'Control flow',
+                'Memory management',
+                'Assembly code generation'
+            ]
+        };
+        
+        res.json({
+            status: 200,
+            data: documentation
         });
     } catch (error) {
         res.status(500).json({ status: 500, error: error.message });
