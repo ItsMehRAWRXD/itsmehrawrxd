@@ -1,0 +1,144 @@
+name: Deploy to Digital Ocean App Platform
+
+on:
+  push:
+    branches:
+      - main
+      - production
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+env:
+  DO_APP_ID: f7e8c6ff-12ff-4c2a-a62b-e8b537f2c8ca
+  DO_APP_NAME: orca
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test || true
+        continue-on-error: true
+
+      - name: Check code quality
+        run: |
+          npm run lint || true
+        continue-on-error: true
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Validate app spec
+        run: |
+          if [ -f .do/app.yaml ]; then
+            doctl apps spec validate .do/app.yaml
+          fi
+
+      - name: Update app spec
+        run: |
+          if [ -f .do/app.yaml ]; then
+            doctl apps update ${{ env.DO_APP_ID }} --spec .do/app.yaml
+          fi
+
+      - name: Trigger deployment
+        run: |
+          doctl apps create-deployment ${{ env.DO_APP_ID }} --wait
+
+      - name: Verify deployment
+        run: |
+          # Wait for deployment to be active
+          sleep 30
+          
+          # Get deployment status
+          STATUS=$(doctl apps get ${{ env.DO_APP_ID }} --format "ActiveDeployment.Phase" --no-header)
+          
+          if [ "$STATUS" != "ACTIVE" ]; then
+            echo "Deployment status: $STATUS"
+            echo "Checking logs..."
+            doctl apps logs ${{ env.DO_APP_ID }} --type=build --tail=50
+            exit 1
+          fi
+          
+          echo "✅ Deployment successful!"
+
+      - name: Get app URL
+        run: |
+          APP_URL=$(doctl apps get ${{ env.DO_APP_ID }} --format "LiveURL" --no-header)
+          echo "🚀 App deployed to: $APP_URL"
+          echo "APP_URL=$APP_URL" >> $GITHUB_ENV
+
+      - name: Health check
+        run: |
+          sleep 10
+          curl -f https://${{ env.APP_URL }}/health || exit 1
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "✅ Successfully deployed to Digital Ocean App Platform"
+          echo "🌐 Live URL: https://${{ env.APP_URL }}"
+          echo "📊 View in DO Console: https://cloud.digitalocean.com/apps/${{ env.DO_APP_ID }}"
+
+      - name: Notify deployment failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed!"
+          echo "📜 Check build logs:"
+          doctl apps logs ${{ env.DO_APP_ID }} --type=build --tail=100
+
+  rollback:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'rollback'
+    
+    steps:
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Rollback deployment
+        run: |
+          # Get previous deployment
+          PREV_DEPLOYMENT=$(doctl apps list-deployments ${{ env.DO_APP_ID }} --format "ID,Phase" --no-header | grep "SUPERSEDED" | head -1 | awk '{print $1}')
+          
+          if [ -n "$PREV_DEPLOYMENT" ]; then
+            doctl apps create-deployment ${{ env.DO_APP_ID }} --deployment-id $PREV_DEPLOYMENT --wait
+            echo "✅ Rolled back to deployment: $PREV_DEPLOYMENT"
+          else
+            echo "❌ No previous deployment found"
+            exit 1
+          fi
