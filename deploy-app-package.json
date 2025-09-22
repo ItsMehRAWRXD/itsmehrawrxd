@@ -1,0 +1,45 @@
+{
+  "name": "rawrz-deployment-app",
+  "version": "1.0.0",
+  "description": "Interactive Digital Ocean deployment application for RawrZ Security Platform",
+  "main": "deploy-app.js",
+  "bin": {
+    "rawrz-deploy": "./deploy-app.js"
+  },
+  "scripts": {
+    "start": "node deploy-app.js",
+    "deploy": "node deploy-app.js",
+    "test": "node deploy-app.js --test",
+    "install-global": "npm install -g .",
+    "build": "npm install --production"
+  },
+  "dependencies": {
+    "axios": "^1.12.2",
+    "chalk": "^4.1.2",
+    "commander": "^11.0.0",
+    "inquirer": "^9.2.0",
+    "ora": "^7.0.0",
+    "node-fetch": "^3.3.0"
+  },
+  "keywords": [
+    "deployment",
+    "digital-ocean",
+    "docker",
+    "automation",
+    "security-platform",
+    "rawrz"
+  ],
+  "author": "RawrZ Security Platform",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ItsMehRAWRXD/itsmehrawrxd.git"
+  },
+  "homepage": "https://github.com/ItsMehRAWRXD/itsmehrawrxd#readme",
+  "bugs": {
+    "url": "https://github.com/ItsMehRAWRXD/itsmehrawrxd/issues"
+  }
+}
