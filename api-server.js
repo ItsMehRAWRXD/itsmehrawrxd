@@ -206,6 +206,11 @@ app.get('/api/health', (req, res) => {
     });
 });
 
+// App Platform default health path
+app.get('/health', (req, res) => {
+    res.json({ ok: true });
+});
+
 // File upload
 app.post('/api/files/upload', async (req, res) => {
     try {
