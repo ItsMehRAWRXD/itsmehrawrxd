@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  # Quantum-Inspired LLM Showcase
+  quantum-showcase:
+    build:
+      context: .
+      dockerfile: Dockerfile.quantum
+    container_name: quantum-showcase-server
+    ports:
+      - "3000:3000"
+      - "3001:3001"  # WebSocket port
+    volumes:
+      - ./quantum-showcase-server.js:/app/quantum-showcase-server.js
+      - ./public:/app/public
+      - ./logs:/app/logs
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - WEBSOCKET_PORT=3001
+      - QUANTUM_DIMENSION=8
+      - MAX_SEQUENCE_LENGTH=256
+    restart: unless-stopped
+    networks:
+      - quantum-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  quantum-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.1.0/16
