@@ -1,0 +1,134 @@
+# n0mn0m Quantum System - Complete Development Environment
+FROM ubuntu:22.04
+
+# Set working directory
+WORKDIR /app
+
+# Prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install all required system dependencies
+RUN apt-get update && apt-get install -y \
+    # Build tools
+    nasm \
+    build-essential \
+    gcc \
+    g++ \
+    make \
+    binutils \
+    # Node.js
+    curl \
+    ca-certificates \
+    gnupg \
+    # Utilities
+    git \
+    wget \
+    htop \
+    net-tools \
+    iputils-ping \
+    vim \
+    nano \
+    # Libraries for compilation
+    libffi-dev \
+    libssl-dev \
+    zlib1g-dev \
+    libbz2-dev \
+    libreadline-dev \
+    libsqlite3-dev \
+    libncurses5-dev \
+    libncursesw5-dev \
+    liblzma-dev \
+    libgdbm-dev \
+    libdb-dev \
+    libexpat1-dev \
+    libmpdec-dev \
+    libmpfr-dev \
+    libgmp-dev \
+    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g pm2 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user for security
+RUN useradd -m -s /bin/bash -u 1001 n0mn0m && \
+    mkdir -p /app && \
+    chown -R n0mn0m:n0mn0m /app
+
+# Set proper permissions
+RUN chmod 755 /app
+
+# Switch to non-root user
+USER n0mn0m
+
+# Set Node.js environment
+ENV NODE_ENV=production
+ENV NPM_CONFIG_PREFIX=/home/n0mn0m/.npm-global
+ENV PATH=/home/n0mn0m/.npm-global/bin:$PATH
+
+# Expose ports
+EXPOSE 3000 3001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:3000/api/health || exit 1
+
+# Copy all source files
+COPY --chown=n0mn0m:n0mn0m . .
+
+# Create necessary directories
+RUN mkdir -p \
+    /app/logs \
+    /app/temp \
+    /app/public \
+    /app/bin \
+    && chmod -R 755 /app
+
+# Install Node.js dependencies
+RUN npm install --omit=dev
+
+# Create startup script
+RUN cat > /app/start-n0mn0m.sh << 'EOF'
+#!/bin/bash
+echo "🚀 Starting n0mn0m Quantum System..."
+
+# Set environment
+export NODE_ENV=production
+export PORT=3000
+export PATH=/usr/local/bin:/usr/bin:/bin:$PATH
+
+# Create logs directory
+mkdir -p /app/logs
+
+# Compile assembly components if they exist
+echo "🔨 Compiling n0mn0m components..."
+
+# Compile n0mn0m Final System
+if [[ -f "n0mn0m_final_complete.asm" ]]; then
+    echo "Building n0mn0m Final System..."
+    nasm -f elf64 n0mn0m_final_complete.asm -o n0mn0m_final_complete.o 2>/dev/null || echo "n0mn0m Final System compilation failed or source not found"
+fi
+
+# Compile Master Universal Compiler
+if [[ -f "master_universal_compiler.asm" ]]; then
+    echo "Building Master Universal Compiler..."
+    nasm -f elf64 master_universal_compiler.asm -o master_universal_compiler.o 2>/dev/null || echo "Master Universal Compiler compilation failed or source not found"
+fi
+
+# Compile Quantum ASM Compiler
+if [[ -f "n0mn0m_quantum_asm_compiler.asm" ]]; then
+    echo "Building Quantum ASM Compiler..."
+    nasm -f elf64 n0mn0m_quantum_asm_compiler.asm -o n0mn0m_quantum_asm_compiler.o 2>/dev/null || echo "Quantum ASM Compiler compilation failed or source not found"
+fi
+
+echo "✅ Compilation phase complete"
+
+# Start the Quantum Showcase Server
+echo "🌐 Starting Quantum Showcase Server..."
+exec node quantum-showcase-server.js
+EOF
+
+# Make startup script executable
+RUN chmod +x /app/start-n0mn0m.sh
+
+# Start the system
+CMD ["/app/start-n0mn0m.sh"]
