@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RawrZ IDE - Multi-Language Development Environment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0f24;
+            color: #e8eaed;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 1rem;
+            border-bottom: 2px solid #0d7377;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #0d7377;
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .language-selector {
+            background: #1a1a2e;
+            border: 1px solid #0d7377;
+            color: #e8eaed;
+            padding: 0.5rem;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #0d7377 0%, #14a085 100%);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #14a085 0%, #0d7377 100%);
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            background: #333;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .main-container {
+            display: flex;
+            height: calc(100vh - 80px);
+        }
+
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: 2px solid #1a1a2e;
+        }
+
+        .editor-header {
+            background: #1a1a2e;
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-tabs {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .tab {
+            background: #0a0f24;
+            border: 1px solid #333;
+            color: #e8eaed;
+            padding: 0.5rem 1rem;
+            border-radius: 4px 4px 0 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: #0d7377;
+            border-color: #0d7377;
+        }
+
+        .tab:hover:not(.active) {
+            background: #1a1a2e;
+        }
+
+        .editor {
+            flex: 1;
+            background: #0a0f24;
+            border: none;
+            color: #e8eaed;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            padding: 1rem;
+            resize: none;
+            outline: none;
+            line-height: 1.4;
+        }
+
+        .editor:focus {
+            background: #0c1228;
+        }
+
+        .output-container {
+            width: 40%;
+            display: flex;
+            flex-direction: column;
+            background: #0a0f24;
+        }
+
+        .output-header {
+            background: #1a1a2e;
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .output-tabs {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .output {
+            flex: 1;
+            background: #0a0f24;
+            color: #e8eaed;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            padding: 1rem;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            border: none;
+            outline: none;
+        }
+
+        .output.compilation {
+            color: #ffd700;
+        }
+
+        .output.execution {
+            color: #90ee90;
+        }
+
+        .output.error {
+            color: #ff6b6b;
+        }
+
+        .status-bar {
+            background: #1a1a2e;
+            padding: 0.5rem 1rem;
+            border-top: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-light {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4ade80;
+        }
+
+        .status-light.error {
+            background: #ef4444;
+        }
+
+        .status-light.warning {
+            background: #f59e0b;
+        }
+
+        .templates {
+            background: #1a1a2e;
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid #333;
+        }
+
+        .template-btn {
+            background: #0a0f24;
+            border: 1px solid #333;
+            color: #e8eaed;
+            padding: 0.25rem 0.5rem;
+            margin-right: 0.5rem;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .template-btn:hover {
+            border-color: #0d7377;
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* Syntax highlighting classes */
+        .keyword { color: #ff79c6; }
+        .string { color: #50fa7b; }
+        .comment { color: #6272a4; }
+        .number { color: #bd93f9; }
+        .function { color: #8be9fd; }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            .output-container {
+                width: 100%;
+                height: 40%;
+            }
+            .controls {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 RawrZ IDE</h1>
+        <div class="controls">
+            <select id="languageSelect" class="language-selector">
+                <option value="c">C</option>
+                <option value="cpp">C++</option>
+                <option value="assembly">Assembly</option>
+            </select>
+            <button id="compileBtn" class="btn">🔨 Compile</button>
+            <button id="runBtn" class="btn">▶️ Compile & Run</button>
+            <button id="newBtn" class="btn">📄 New</button>
+            <button id="saveBtn" class="btn">💾 Save</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="editor-container">
+            <div class="editor-header">
+                <div class="file-tabs">
+                    <div class="tab active" data-tab="main">main.c</div>
+                </div>
+                <div class="templates">
+                    <button class="template-btn" onclick="loadTemplate('hello')">Hello World</button>
+                    <button class="template-btn" onclick="loadTemplate('loop')">Loop Example</button>
+                    <button class="template-btn" onclick="loadTemplate('function')">Function Example</button>
+                </div>
+            </div>
+            <textarea id="editor" class="editor" placeholder="Start coding here...">// Welcome to RawrZ IDE
+// Select a language and start coding!
+
+#include <stdio.h>
+
+int main() {
+    printf("Hello, World!\\n");
+    return 0;
+}</textarea>
+        </div>
+
+        <div class="output-container">
+            <div class="output-header">
+                <div class="output-tabs">
+                    <div class="tab active" data-tab="compilation">Compilation</div>
+                    <div class="tab" data-tab="execution">Execution</div>
+                </div>
+                <button id="clearOutputBtn" class="btn" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">Clear</button>
+            </div>
+            <div id="compilationOutput" class="output compilation">Ready to compile...</div>
+            <div id="executionOutput" class="output execution" style="display: none;">Ready to run...</div>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <div class="status-indicator">
+            <div id="statusLight" class="status-light"></div>
+            <span id="statusText">Ready</span>
+        </div>
+        <div>
+            <span id="languageStatus">Language: C</span> |
+            <span id="compilerStatus">Compiler: gcc</span> |
+            <span id="timeStatus">--:--:--</span>
+        </div>
+    </div>
+
+    <script>
+        class RawrZIDE {
+            constructor() {
+                this.currentLanguage = 'c';
+                this.isCompiling = false;
+                this.currentTab = 'compilation';
+                this.templates = {
+                    c: {
+                        hello: '#include <stdio.h>\\n\\nint main() {\\n    printf("Hello, World!\\\\n");\\n    return 0;\\n}',
+                        loop: '#include <stdio.h>\\n\\nint main() {\\n    for (int i = 0; i < 10; i++) {\\n        printf("Count: %d\\\\n", i);\\n    }\\n    return 0;\\n}',
+                        function: '#include <stdio.h>\\n\\nint add(int a, int b) {\\n    return a + b;\\n}\\n\\nint main() {\\n    int result = add(5, 3);\\n    printf("Result: %d\\\\n", result);\\n    return 0;\\n}'
+                    },
+                    cpp: {
+                        hello: '#include <iostream>\\n\\nint main() {\\n    std::cout << "Hello, World!" << std::endl;\\n    return 0;\\n}',
+                        loop: '#include <iostream>\\n\\nint main() {\\n    for (int i = 0; i < 10; i++) {\\n        std::cout << "Count: " << i << std::endl;\\n    }\\n    return 0;\\n}',
+                        function: '#include <iostream>\\n\\nint add(int a, int b) {\\n    return a + b;\\n}\\n\\nint main() {\\n    int result = add(5, 3);\\n    std::cout << "Result: " << result << std::endl;\\n    return 0;\\n}'
+                    },
+                    assembly: {
+                        hello: '.section .data\\n    msg: .ascii "Hello, World!\\\\n"\\n    msg_len = . - msg\\n\\n.section .text\\n.global _start\\n\\n_start:\\n    # write system call\\n    mov $1, %rax\\n    mov $1, %rdi\\n    mov $msg, %rsi\\n    mov $msg_len, %rdx\\n    syscall\\n\\n    # exit system call\\n    mov $60, %rax\\n    mov $0, %rdi\\n    syscall',
+                        loop: '.section .data\\n    count: .quad 0\\n\\n.section .text\\n.global _start\\n\\n_start:\\n    movq $0, %rcx\\n\\nloop:\\n    cmpq $10, %rcx\\n    jge end\\n    incq %rcx\\n    jmp loop\\n\\nend:\\n    mov $60, %rax\\n    mov $0, %rdi\\n    syscall',
+                        function: '.section .text\\n.global _start\\n\\nadd_function:\\n    addq %rsi, %rdi\\n    movq %rdi, %rax\\n    ret\\n\\n_start:\\n    movq $5, %rdi\\n    movq $3, %rsi\\n    call add_function\\n\\n    mov $60, %rax\\n    mov $0, %rdi\\n    syscall'
+                    }
+                };
+                this.initializeEventListeners();
+                this.updateTime();
+            }
+
+            initializeEventListeners() {
+                // Language selector
+                document.getElementById('languageSelect').addEventListener('change', (e) => {
+                    this.changeLanguage(e.target.value);
+                });
+
+                // Buttons
+                document.getElementById('compileBtn').addEventListener('click', () => {
+                    this.compile();
+                });
+
+                document.getElementById('runBtn').addEventListener('click', () => {
+                    this.compileAndRun();
+                });
+
+                document.getElementById('newBtn').addEventListener('click', () => {
+                    this.newFile();
+                });
+
+                document.getElementById('saveBtn').addEventListener('click', () => {
+                    this.saveFile();
+                });
+
+                document.getElementById('clearOutputBtn').addEventListener('click', () => {
+                    this.clearOutput();
+                });
+
+                // Output tabs
+                document.querySelectorAll('.output-header .tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        this.switchOutputTab(e.target.dataset.tab);
+                    });
+                });
+
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    if (e.ctrlKey || e.metaKey) {
+                        switch (e.key) {
+                            case 's':
+                                e.preventDefault();
+                                this.saveFile();
+                                break;
+                            case 'n':
+                                e.preventDefault();
+                                this.newFile();
+                                break;
+                            case 'Enter':
+                                e.preventDefault();
+                                this.compileAndRun();
+                                break;
+                        }
+                    }
+                });
+            }
+
+            changeLanguage(language) {
+                this.currentLanguage = language;
+                document.getElementById('languageStatus').textContent = `Language: ${language.toUpperCase()}`;
+                
+                // Update compiler status
+                const compilerMap = {
+                    'c': 'gcc',
+                    'cpp': 'g++',
+                    'assembly': 'gcc (gas)'
+                };
+                document.getElementById('compilerStatus').textContent = `Compiler: ${compilerMap[language]}`;
+                
+                // Update file tab
+                const extensionMap = {
+                    'c': '.c',
+                    'cpp': '.cpp',
+                    'assembly': '.s'
+                };
+                document.querySelector('.file-tabs .tab').textContent = `main${extensionMap[language]}`;
+                
+                this.updateStatus('ready', `Language changed to ${language.toUpperCase()}`);
+            }
+
+            async compile() {
+                if (this.isCompiling) return;
+                
+                this.isCompiling = true;
+                this.updateStatus('warning', 'Compiling...');
+                document.getElementById('compileBtn').disabled = true;
+                document.getElementById('runBtn').disabled = true;
+                
+                const source = document.getElementById('editor').value;
+                
+                try {
+                    const response = await fetch('/api/compile', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            source: source,
+                            language: this.currentLanguage,
+                            filename: 'main'
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.updateStatus('ready', 'Compilation successful');
+                        this.addOutput('compilation', `✅ Compilation successful (${result.compiler})\\n${result.output}`, 'success');
+                    } else {
+                        this.updateStatus('error', 'Compilation failed');
+                        this.addOutput('compilation', `❌ Compilation failed (${result.compiler})\\n${result.output || result.error}`, 'error');
+                    }
+                } catch (error) {
+                    this.updateStatus('error', 'Network error');
+                    this.addOutput('compilation', `❌ Network error: ${error.message}`, 'error');
+                } finally {
+                    this.isCompiling = false;
+                    document.getElementById('compileBtn').disabled = false;
+                    document.getElementById('runBtn').disabled = false;
+                }
+            }
+
+            async compileAndRun() {
+                if (this.isCompiling) return;
+                
+                this.isCompiling = true;
+                this.updateStatus('warning', 'Compiling and running...');
+                document.getElementById('compileBtn').disabled = true;
+                document.getElementById('runBtn').disabled = true;
+                
+                const source = document.getElementById('editor').value;
+                
+                try {
+                    const response = await fetch('/api/compile-and-run', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            source: source,
+                            language: this.currentLanguage,
+                            filename: 'main',
+                            timeout: 5000
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    // Show compilation results
+                    if (result.compilation.success) {
+                        this.addOutput('compilation', `✅ Compilation successful (${result.compilation.compiler})\\n${result.compilation.output}`, 'success');
+                        
+                        // Show execution results
+                        if (result.execution) {
+                            if (result.execution.success) {
+                                this.updateStatus('ready', 'Execution completed');
+                                this.addOutput('execution', `🚀 Program executed successfully\\n${result.execution.output}`, 'success');
+                            } else {
+                                this.updateStatus('error', 'Execution failed');
+                                this.addOutput('execution', `❌ Execution failed (exit code: ${result.execution.exitCode})\\n${result.execution.output}`, 'error');
+                            }
+                        }
+                    } else {
+                        this.updateStatus('error', 'Compilation failed');
+                        this.addOutput('compilation', `❌ Compilation failed (${result.compilation.compiler})\\n${result.compilation.output || result.compilation.error}`, 'error');
+                    }
+                } catch (error) {
+                    this.updateStatus('error', 'Network error');
+                    this.addOutput('compilation', `❌ Network error: ${error.message}`, 'error');
+                } finally {
+                    this.isCompiling = false;
+                    document.getElementById('compileBtn').disabled = false;
+                    document.getElementById('runBtn').disabled = false;
+                }
+            }
+
+            newFile() {
+                if (confirm('Create a new file? Unsaved changes will be lost.')) {
+                    document.getElementById('editor').value = this.templates[this.currentLanguage].hello;
+                    this.updateStatus('ready', 'New file created');
+                }
+            }
+
+            saveFile() {
+                const source = document.getElementById('editor').value;
+                const extensionMap = {
+                    'c': '.c',
+                    'cpp': '.cpp',
+                    'assembly': '.s'
+                };
+                
+                const blob = new Blob([source], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `main${extensionMap[this.currentLanguage]}`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                this.updateStatus('ready', 'File saved');
+            }
+
+            clearOutput() {
+                document.getElementById('compilationOutput').textContent = 'Ready to compile...';
+                document.getElementById('executionOutput').textContent = 'Ready to run...';
+                this.updateStatus('ready', 'Output cleared');
+            }
+
+            switchOutputTab(tab) {
+                document.querySelectorAll('.output-header .tab').forEach(t => t.classList.remove('active'));
+                document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+                
+                document.getElementById('compilationOutput').style.display = tab === 'compilation' ? 'block' : 'none';
+                document.getElementById('executionOutput').style.display = tab === 'execution' ? 'block' : 'none';
+                
+                this.currentTab = tab;
+            }
+
+            addOutput(tab, text, type) {
+                const outputElement = document.getElementById(`${tab}Output`);
+                const timestamp = new Date().toLocaleTimeString();
+                outputElement.textContent += `[${timestamp}] ${text}\\n\\n`;
+                outputElement.scrollTop = outputElement.scrollHeight;
+            }
+
+            updateStatus(type, message) {
+                const statusLight = document.getElementById('statusLight');
+                const statusText = document.getElementById('statusText');
+                
+                statusLight.className = `status-light ${type}`;
+                statusText.textContent = message;
+            }
+
+            updateTime() {
+                const now = new Date();
+                document.getElementById('timeStatus').textContent = now.toLocaleTimeString();
+                setTimeout(() => this.updateTime(), 1000);
+            }
+        }
+
+        // Template loader function
+        function loadTemplate(templateName) {
+            const ide = window.ide;
+            const template = ide.templates[ide.currentLanguage][templateName];
+            if (template) {
+                document.getElementById('editor').value = template;
+                ide.updateStatus('ready', `Template "${templateName}" loaded`);
+            }
+        }
+
+        // Initialize IDE when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.ide = new RawrZIDE();
+        });
+    </script>
+</body>
+</html>

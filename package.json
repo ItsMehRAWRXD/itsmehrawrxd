@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node api-server.js",
     "start:ide": "node ide-server.js",
-    "test": "echo 'Tests pass'"
+    "test": "echo 'Tests pass'",
+    "ide": "node ide-server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
