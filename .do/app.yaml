@@ -2,9 +2,6 @@ name: rawrz-security-platform
 services:
 - name: api
   source_dir: /
-  github:
-    repo: ItsMehRAWRXD/itsmehrawrxd
-    branch: master
   run_command: node api-server.js
   environment_slug: node-js
   instance_count: 1
