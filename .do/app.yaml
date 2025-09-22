@@ -3,10 +3,6 @@ region: nyc
 services:
 - name: web
   environment_slug: node-js
-  github:
-    branch: main
-    deploy_on_push: true
-    repo: your-github-username/your-repo-name
   build_command: npm ci --production
   run_command: node --max-old-space-size=256 server-optimized.js
   http_port: 8080
@@ -28,11 +24,12 @@ services:
     success_threshold: 1
     failure_threshold: 3
   alerts:
-  - rule: DEPLOYMENT_FAILED
-  - rule: DOMAIN_FAILED
   - rule: CPU_UTILIZATION
     value: 85
     window: FIVE_MINUTES
   - rule: MEM_UTILIZATION
     value: 85
+    window: FIVE_MINUTES
+  - rule: RESTART_COUNT
+    value: 5
     window: FIVE_MINUTES

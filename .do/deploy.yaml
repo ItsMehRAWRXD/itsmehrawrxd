@@ -1,0 +1,10 @@
+name: rawrz-optimized
+region: nyc
+services:
+- dockerfile_path: Dockerfile
+  http_port: 8080
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  name: rawrz-web
+  run_command: node --max-old-space-size=256 server-optimized.js
+  source_dir: /
