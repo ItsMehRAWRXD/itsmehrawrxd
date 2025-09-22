@@ -1,0 +1,95 @@
+# RawrZ Security Platform - Production Dockerfile
+# Multi-stage build for optimized production image
+
+# Stage 1: Build dependencies and compile assets
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+# Install build dependencies
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    git \
+    curl
+
+# Copy package files
+COPY package*.json ./
+
+# Install all dependencies (including devDependencies for build)
+RUN npm ci --include=dev
+
+# Copy source code
+COPY . .
+
+# Build assets and prepare for production
+RUN npm run build 2>/dev/null || echo "No build script found" && \
+    npm prune --production && \
+    npm cache clean --force
+
+# Stage 2: Production runtime
+FROM node:18-alpine AS production
+
+# Create app user and group
+RUN addgroup -g 1001 -S rawrz && \
+    adduser -S rawrz -u 1001 -G rawrz
+
+# Install production runtime dependencies
+RUN apk add --no-cache \
+    curl \
+    dumb-init \
+    ca-certificates \
+    tini \
+    && rm -rf /var/cache/apk/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy application files from builder stage
+COPY --from=builder --chown=rawrz:rawrz /app/node_modules ./node_modules
+COPY --from=builder --chown=rawrz:rawrz /app/package*.json ./
+COPY --chown=rawrz:rawrz . .
+
+# Create necessary directories with proper permissions
+RUN mkdir -p \
+    /app/uploads \
+    /app/downloads \
+    /app/temp \
+    /app/logs \
+    /app/data \
+    /app/keys \
+    /app/stubs \
+    /app/payloads \
+    /app/bots \
+    /app/cve \
+    /app/engines \
+    /app/backups && \
+    chown -R rawrz:rawrz /app
+
+# Remove unnecessary files for production
+RUN rm -rf \
+    /app/.git \
+    /app/.github \
+    /app/docs \
+    /app/test \
+    /app/tests \
+    /app/*.md \
+    /app/.env* \
+    /app/docker-compose*.yml
+
+# Switch to non-root user
+USER rawrz
+
+# Expose ports
+EXPOSE 3000 3001 3002
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000/api/health || exit 1
+
+# Use tini as init system for proper signal handling
+ENTRYPOINT ["tini", "--"]
+
+# Start the application
+CMD ["node", "auto-server.js"]
