@@ -176,6 +176,8 @@ class NativeCompiler {
                 // Only log if we find compilers, don't warn about missing ones
                 if (name === 'dotnet' || name === 'java' || name === 'javac') {
                     logger.info(`Optional compiler ${name} found - enhanced compilation available`);
+                } else if (name === 'gcc' || name === 'g++' || name === 'clang' || name === 'clang++') {
+                    logger.info(`Native compiler detected: ${name}`);
                 }
             } catch (error) {
                 // Silent - no warnings for missing optional compilers
@@ -261,6 +263,9 @@ class NativeCompiler {
     // Main compilation method
     async compileSource(sourceCode, language, options = {}) {
         await this.initialize();
+        
+        // Debug: Log compiler paths state
+        logger.info(`Compiler paths available: ${Object.keys(this.compilerPaths).filter(k => this.compilerPaths[k]).join(', ')}`);
         
         const {
             outputPath = null,
@@ -364,7 +369,7 @@ class NativeCompiler {
 
         // Use native compilers for C/C++
         if (['cpp', 'c'].includes(language)) {
-            if (this.compilerPaths.gcc || this.compilerPaths.g++ || this.compilerPaths.clang || this.compilerPaths.cl) {
+            if (this.compilerPaths['gcc'] || this.compilerPaths['g++'] || this.compilerPaths['clang'] || this.compilerPaths['cl']) {
                 return 'native';
             }
         }
@@ -375,16 +380,16 @@ class NativeCompiler {
         }
 
         // Use specific toolchains
-        if (language === 'rust' && this.compilerPaths.rustc) {
+        if (language === 'rust' && this.compilerPaths['rustc']) {
             return 'native';
         }
 
-        if (language === 'go' && this.compilerPaths.go) {
+        if (language === 'go' && this.compilerPaths['go']) {
             return 'native';
         }
 
         // Use Java compilation for Java
-        if (language === 'java' && this.compilerPaths.javac && this.compilerPaths.java) {
+        if (language === 'java' && this.compilerPaths['javac'] && this.compilerPaths['java']) {
             return 'java';
         }
 
@@ -497,19 +502,19 @@ class NativeCompiler {
             let compiler, args;
             switch (language) {
                 case 'cpp':
-                    compiler = this.compilerPaths.g++ || this.compilerPaths.clang++ || this.compilerPaths.cl;
+                    compiler = this.compilerPaths['g++'] || this.compilerPaths['clang++'] || this.compilerPaths['cl'];
                     args = this.buildCppArgs(sourceFile, outputPath, options);
                     break;
                 case 'c':
-                    compiler = this.compilerPaths.gcc || this.compilerPaths.clang || this.compilerPaths.cl;
+                    compiler = this.compilerPaths['gcc'] || this.compilerPaths['clang'] || this.compilerPaths['cl'];
                     args = this.buildCArgs(sourceFile, outputPath, options);
                     break;
                 case 'rust':
-                    compiler = this.compilerPaths.rustc;
+                    compiler = this.compilerPaths['rustc'];
                     args = this.buildRustArgs(sourceFile, outputPath, options);
                     break;
                 case 'go':
-                    compiler = this.compilerPaths.go;
+                    compiler = this.compilerPaths['go'];
                     args = this.buildGoArgs(sourceFile, outputPath, options);
                     break;
                 default:
@@ -517,6 +522,7 @@ class NativeCompiler {
             }
 
             if (!compiler) {
+                logger.error(`Available compiler paths: ${JSON.stringify(this.compilerPaths)}`);
                 throw new Error(`Native compiler not available for ${language}`);
             }
 

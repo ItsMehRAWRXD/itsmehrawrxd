@@ -493,6 +493,121 @@ app.post('/api/real-encryption/compile-assembly', async (req, res) => {
     }
 });
 
+// IDE Compilation endpoint for C# and other languages
+app.post('/api/compile/:language', async (req, res) => {
+    try {
+        const { language } = req.params;
+        const { sourceCode, options = {} } = req.body;
+        
+        if (!sourceCode) {
+            return res.status(400).json({
+                success: false,
+                error: 'Source code is required'
+            });
+        }
+        
+        // Load native compiler
+        const nativeCompiler = require('./src/engines/native-compiler');
+        
+        // Set default output path if not provided
+        if (!options.outputPath) {
+            options.outputPath = `/tmp/compiled_${Date.now()}_${language}.exe`;
+        }
+        
+        const result = await nativeCompiler.compileSource(sourceCode, language, options);
+        
+        res.json({
+            success: true,
+            result: result,
+            language: language,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            language: req.params.language
+        });
+    }
+});
+
+// IDE Command endpoint for terminal-like commands
+app.post('/api/command', async (req, res) => {
+    try {
+        const { command } = req.body;
+        
+        if (!command) {
+            return res.status(400).json({
+                success: false,
+                error: 'Command is required'
+            });
+        }
+        
+        // Parse command
+        const parts = command.trim().split(/\s+/);
+        const mainCommand = parts[0];
+        const args = parts.slice(1);
+        
+        let result;
+        
+        switch (mainCommand) {
+            case 'compile':
+                if (args.length < 2) {
+                    return res.status(400).json({
+                        success: false,
+                        error: 'Usage: compile <language> <source_code>'
+                    });
+                }
+                
+                const language = args[0];
+                const sourceCode = args.slice(1).join(' ');
+                
+                const nativeCompiler = require('./src/engines/native-compiler');
+                result = await nativeCompiler.compileSource(sourceCode, language, {
+                    outputPath: `/tmp/cmd_compiled_${Date.now()}.exe`
+                });
+                break;
+                
+            case 'help':
+                result = {
+                    commands: [
+                        'compile <language> <source_code> - Compile source code',
+                        'help - Show this help message',
+                        'status - Show system status'
+                    ]
+                };
+                break;
+                
+            case 'status':
+                result = {
+                    status: 'online',
+                    engines: 'loaded',
+                    timestamp: new Date().toISOString()
+                };
+                break;
+                
+            default:
+                return res.status(400).json({
+                    success: false,
+                    error: `Unknown command: ${mainCommand}. Type 'help' for available commands.`
+                });
+        }
+        
+        res.json({
+            success: true,
+            command: command,
+            result: result,
+            timestamp: new Date().toISOString()
+        });
+        
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 // Real file disguise
 app.post('/api/real-encryption/disguise-file', async (req, res) => {
     try {

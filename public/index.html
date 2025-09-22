@@ -557,14 +557,73 @@
         // REAL ASSEMBLY COMPILATION
         async function handleAssemblyCompilation(args) {
             if (!args[0]) {
-                addOutput('Usage: compile <filename> [format] [architecture]', 'error');
+                addOutput('Usage: compile <filename|language> [format] [architecture] OR compile <language> <source_code>', 'error');
                 addOutput('Available files:', 'info');
                 currentFiles.forEach(file => {
                     addOutput(`  ${file.name}`, 'info');
                 });
+                addOutput('Supported languages: csharp, cpp, c, java, javascript, python, rust, go', 'info');
                 return;
             }
             
+            const firstArg = args[0];
+            const supportedLanguages = ['csharp', 'cpp', 'c', 'java', 'javascript', 'python', 'rust', 'go'];
+            
+            // Check if first argument is a language for direct compilation
+            if (supportedLanguages.includes(firstArg.toLowerCase())) {
+                const language = firstArg.toLowerCase();
+                const sourceCode = args.slice(1).join(' ');
+                
+                if (!sourceCode) {
+                    addOutput(`Usage: compile ${language} <source_code>`, 'error');
+                    addOutput(`Example: compile csharp using System; class Program { static void Main() { Console.WriteLine("Hello!"); } }`, 'info');
+                    return;
+                }
+                
+                addOutput(`Compiling ${language} source code...`, 'info');
+                addOutput('Processing with Native Compiler Engine...', 'info');
+                
+                try {
+                    // Call new compilation API endpoint
+                    const response = await fetch(`/api/compile/${language}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            sourceCode: sourceCode,
+                            options: {
+                                outputFormat: 'exe'
+                            }
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        addOutput('Compilation completed successfully!', 'success');
+                        addOutput(`Language: ${result.language}`, 'info');
+                        addOutput(`Method: ${result.result.method}`, 'info');
+                        addOutput(`Compiler: ${result.result.compiler}`, 'info');
+                        addOutput(`Output path: ${result.result.outputPath}`, 'info');
+                        if (result.result.stdout) {
+                            addOutput('Build output:', 'info');
+                            result.result.stdout.split('\n').forEach(line => {
+                                if (line.trim()) addOutput(`  ${line}`, 'info');
+                            });
+                        }
+                    } else {
+                        addOutput('Compilation failed:', 'error');
+                        addOutput(result.error, 'error');
+                    }
+                } catch (error) {
+                    addOutput('Compilation error:', 'error');
+                    addOutput(error.message, 'error');
+                }
+                return;
+            }
+            
+            // Original file-based assembly compilation
             const filename = args[0];
             const format = args[1] || 'exe';
             const architecture = args[2] || 'x64';
@@ -661,6 +720,8 @@
             addOutput('  upx-pack <file>          - REAL UPX packing', 'info');
             addOutput('  disguise <file> [as]     - REAL file disguise (Beaconism)', 'info');
             addOutput('  compile <file> [fmt]     - REAL assembly compilation', 'info');
+            addOutput('  compile <lang> <code>    - Direct source code compilation', 'info');
+            addOutput('                             Languages: csharp, cpp, c, java, python, rust, go', 'info');
             addOutput('  stealth <file> [mode]    - REAL stealth features', 'info');
             addOutput('  hotpatch <file>          - REAL hotpatching system', 'info');
             addOutput('  mutex <file>             - REAL mutex protection', 'info');
