@@ -1,28 +1,118 @@
-name: rawrz-security-platform
+# Digital Ocean App Platform Specification
+# App Name: orca
+# This file defines the deployment configuration for Digital Ocean App Platform
+
+name: orca
+region: nyc
+features:
+  - buildpack-stack=ubuntu-22
+
 services:
-- name: api
-  source_dir: /
-  github:
-    repo: ItsMehRAWRXD/itsmehrawrxd
-    branch: master
-  run_command: node api-server.js
-  environment_slug: node-js
-  instance_count: 1
-  instance_size_slug: basic-xxs
-  http_port: 3000
-  routes:
-  - path: /
-  envs:
-  - key: NODE_ENV
-    value: production
-  - key: PORT
-    value: "3000"
-  - key: JOTTI_API_URL
-    value: "https://virusscan.jotti.org"
-  health_check:
-    http_path: /health
-    initial_delay_seconds: 10
-    period_seconds: 10
-    timeout_seconds: 5
-    success_threshold: 1
-    failure_threshold: 3
+  - name: web
+    environment_slug: node-js
+    github:
+      repo: ItsMehRAWRXD/itsmehrawrxd
+      branch: main
+      deploy_on_push: true
+    
+    # Build configuration
+    build_command: npm ci --only=production
+    run_command: node auto-server.js
+    
+    # Source directory
+    source_dir: /
+    
+    # HTTP configuration
+    http_port: 8080
+    
+    # Instance configuration
+    instance_size_slug: professional-xs
+    instance_count: 1
+    
+    # Health check
+    health_check:
+      http_path: /health
+      initial_delay_seconds: 10
+      period_seconds: 10
+      timeout_seconds: 3
+      success_threshold: 1
+      failure_threshold: 3
+    
+    # Environment variables
+    envs:
+      - key: NODE_ENV
+        value: production
+        type: GENERAL
+      - key: PORT
+        value: "8080"
+        type: GENERAL
+      - key: AUTH_TOKEN
+        type: SECRET
+        value: EV[2:secretKey:sensitiveData]
+      - key: LOG_LEVEL
+        value: info
+        type: GENERAL
+      - key: CORS_ORIGIN
+        value: "*"
+        type: GENERAL
+      - key: RATE_LIMIT_WINDOW
+        value: "15"
+        type: GENERAL
+      - key: RATE_LIMIT_MAX
+        value: "100"
+        type: GENERAL
+    
+    # Alerts
+    alerts:
+      - rule: DEPLOYMENT_FAILED
+      - rule: DOMAIN_FAILED
+      - rule: CPU_UTILIZATION
+        value: 85
+        window: FIVE_MINUTES
+      - rule: MEM_UTILIZATION
+        value: 85
+        window: FIVE_MINUTES
+      - rule: RESTART_COUNT
+        value: 5
+        window: FIVE_MINUTES
+
+# Optional: Database component (uncomment if needed)
+# databases:
+#   - name: db
+#     engine: PG
+#     version: "15"
+#     size: db-s-dev-database
+#     num_nodes: 1
+
+# Optional: Redis component (uncomment if needed)
+# databases:
+#   - name: redis
+#     engine: REDIS
+#     version: "7"
+#     size: db-s-dev-database
+#     num_nodes: 1
+
+# Static sites (if you have any static assets)
+# static_sites:
+#   - name: frontend
+#     environment_slug: html
+#     github:
+#       repo: ItsMehRAWRXD/itsmehrawrxd
+#       branch: main
+#       deploy_on_push: true
+#     source_dir: /public
+#     output_dir: /public
+#     index_document: index.html
+#     error_document: error.html
+
+# Jobs (for scheduled tasks)
+# jobs:
+#   - name: cleanup
+#     kind: POST_DEPLOY
+#     github:
+#       repo: ItsMehRAWRXD/itsmehrawrxd
+#       branch: main
+#     run_command: node scripts/cleanup.js
+#     environment_slug: node-js
+#     instance_size_slug: basic-xxs
+#     instance_count: 1
