@@ -1,0 +1,38 @@
+# Optimized Dockerfile for Digital Ocean
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Install only essential system dependencies
+RUN apk add --no-cache \
+    curl \
+    ca-certificates
+
+# Copy package files
+COPY deploy/package-optimized.json package.json
+
+# Install production dependencies only
+RUN npm ci --only=production --omit=dev && \
+    npm cache clean --force
+
+# Copy only essential application files
+COPY deploy/server-optimized.js server.js
+COPY public/ public/
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001 && \
+    chown -R nodejs:nodejs /app
+
+USER nodejs
+
+# Expose port
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD node -e "require('http').get('http://localhost:8080/health', (r) => {r.statusCode === 200 ? process.exit(0) : process.exit(1)})"
+
+# Start with memory limits
+CMD ["node", "--max-old-space-size=512", "server.js"]
