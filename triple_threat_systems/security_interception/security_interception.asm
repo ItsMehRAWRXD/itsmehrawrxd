@@ -47,6 +47,7 @@ initialize_packet_interception:
 
 packet_interception_engine:
     ; Intercept ALL network packets - Wireshark style
+    call wireshark_flow
     
     ; Hook at multiple network layers
     call intercept_ethernet_frames
@@ -232,6 +233,62 @@ detect_c2_communications:
     call detect_beaconing_behavior
     call identify_c2_domains
     call block_c2_traffic
+    ret
+
+; Wireshark flow function
+wireshark_flow:
+    call wireshark_flow_24_7
+wireshark_flow_24_7:
+wireshark_flow_24_7:
+    ; 24/7/365 Wireshark-style monitoring
+    push rax
+    push rbx
+    push rcx
+    push rdx
+    
+    ; Continuous packet capture
+    call capture_all_interfaces
+    call real_time_analysis
+    call threat_correlation
+    call live_visualization
+    
+    ; Update statistics
+    inc qword [wireshark_packets_analyzed]
+    
+    pop rdx
+    pop rcx
+    pop rbx
+    pop rax
+    ret
+
+wireshark_flow_statistics:
+    ; Live flow statistics
+    mov rax, [wireshark_packets_analyzed]
+    mov rbx, [wireshark_threats_detected]
+    mov rcx, [wireshark_bandwidth_usage]
+    ret
+
+wireshark_flow_visualization:
+    ; Real-time packet flow visualization
+    call update_flow_graph
+    call display_protocol_stats
+    call show_threat_indicators
+    ret
+
+    ; Live Wireshark-style packet flow monitoring
+    push rax
+    push rbx
+    push rcx
+    
+    ; Continuous packet flow analysis
+    mov rax, [packet_buffer]
+    call analyze_packet_flow
+    call update_wireshark_display
+    call log_packet_statistics
+    
+    pop rcx
+    pop rbx
+    pop rax
     ret
 
 ; Generate 2.2 million lines of security code...
