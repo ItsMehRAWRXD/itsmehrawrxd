@@ -1,0 +1,30 @@
+name: n0mn0m-quantum-system
+region: nyc3
+services:
+  - name: quantum
+    dockerfile_path: Dockerfile.n0mn0m
+    source_dir: .
+    github:
+      repo: # Add your GitHub repository URL here
+      branch: main
+    envs:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      - key: QUANTUM_SIMULATION_ENABLED
+        value: "true"
+      - key: N0MN0M_SYSTEM_MODE
+        value: "production"
+      - key: N0MN0M_LANGUAGES_COUNT
+        value: "49"
+      - key: QUANTUM_DIMENSION
+        value: "8"
+      - key: MAX_SEQUENCE_LENGTH
+        value: "256"
+    health_check:
+      http_path: /api/health
+      initial_delay_seconds: 90
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    http_port: 3000

@@ -1,0 +1,45 @@
+# Quantum-Inspired LLM Showcase Dockerfile
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apk add --no-cache \
+    curl \
+    ca-certificates \
+    && rm -rf /var/cache/apk/*
+
+# Copy package file
+COPY package-quantum.json package.json
+
+# Install dependencies
+RUN npm install --omit=dev --ignore-scripts
+
+# Copy application files
+COPY quantum-showcase-server.js .
+COPY public ./public/
+
+# Create necessary directories
+RUN mkdir -p \
+    /app/logs \
+    /app/temp \
+    /app/data
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S quantum -u 1001
+
+# Set proper permissions
+RUN chown -R quantum:nodejs /app
+USER quantum
+
+# Expose ports
+EXPOSE 3000 3001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000/api/health || exit 1
+
+# Start the application
+CMD ["node", "quantum-showcase-server.js"]

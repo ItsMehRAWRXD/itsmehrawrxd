@@ -1,0 +1,48 @@
+name: rawrz-security-platform
+region: nyc3
+services:
+  - name: web
+    dockerfile_path: Dockerfile.rawrz
+    source_dir: .
+    github:
+      repo: # Add your GitHub repository URL here
+      branch: main
+    envs:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      - key: RAWRZ_UPLOAD_DIR
+        value: "/app/uploads"
+      - key: RAWRZ_LOG_DIR
+        value: "/app/logs"
+      - key: RAWRZ_MAX_FILE_SIZE
+        value: "1024MB"
+      - key: RAWRZ_FEATURES_COUNT
+        value: "72"
+    health_check:
+      http_path: /api/health
+      initial_delay_seconds: 60
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    http_port: 3000
+
+  - name: websocket
+    dockerfile_path: Dockerfile.rawrz
+    source_dir: .
+    github:
+      repo: # Add your GitHub repository URL here
+      branch: main
+    envs:
+      - key: NODE_ENV
+        value: production
+      - key: WEBSOCKET_PORT
+        value: "3001"
+      - key: RAWRZ_WS_ENABLED
+        value: "true"
+    health_check:
+      http_path: /api/health
+      initial_delay_seconds: 60
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    http_port: 3001
