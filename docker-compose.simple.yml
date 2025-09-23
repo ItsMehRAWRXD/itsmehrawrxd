@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  # Main RawrZ Security Platform
+  rawrz-app:
+    build: .
+    container_name: rawrz-security-platform
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+      - ./api-server.js:/app/api-server.js
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
