@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  rawrz-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.optimized
+    container_name: rawrz-optimized
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - LOG_LEVEL=info
+    volumes:
+      - ./logs:/app/logs:rw
+      - ./temp:/app/temp:rw
+      - ./uploads:/app/uploads:rw
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  default:
+    driver: bridge
