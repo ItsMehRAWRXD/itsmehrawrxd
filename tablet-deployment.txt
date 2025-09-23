@@ -1,0 +1,40 @@
+🚀 DIGITAL OCEAN DEPLOYMENT - TABLET FRIENDLY
+============================================
+
+Copy and paste these commands into your terminal:
+
+# 1. Install doctl
+curl -sL https://github.com/digitalocean/doctl/releases/latest/download/doctl-linux-amd64.tar.gz | tar -xzf - && sudo mv doctl /usr/local/bin/
+
+# 2. Authenticate (get token from https://cloud.digitalocean.com/account/api/tokens)
+doctl auth init
+
+# 3. Verify it works
+doctl account get
+
+# 4. Deploy RawrZ Security Platform
+doctl apps create --spec do-app-rawrz.yaml
+
+# 5. Deploy n0mn0m Quantum System
+doctl apps create --spec do-app-n0mn0m.yaml
+
+# 6. List your apps
+doctl apps list
+
+Your apps will be at:
+RawrZ: https://[rawrz-url].ondigitalocean.app
+n0mn0m: https://[n0mn0m-url].ondigitalocean.app
+
+Test with:
+curl https://[your-app-url].ondigitalocean.app/api/health
+
+Expected response:
+{"success": true, "status": "healthy", "features": 72}
+
+Management:
+doctl apps logs [app-id]     # View logs
+doctl apps list             # List apps
+doctl apps get [app-id]     # Get details
+
+✅ NO WEB PANELS NEEDED - ALL COMMAND LINE!
+🎉 Your systems will be deployed automatically!
