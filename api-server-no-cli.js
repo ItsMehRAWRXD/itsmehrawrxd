@@ -16,8 +16,8 @@ app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 app.use(express.static('public'));
 
 // File management directories
-const uploadsDir = '/app/uploads';
-const processedDir = '/app/processed';
+const uploadsDir = './uploads';
+const processedDir = './processed';
 
 // Ensure directories exist
 async function ensureDirectories() {

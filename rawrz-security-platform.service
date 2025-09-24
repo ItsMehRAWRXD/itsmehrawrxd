@@ -1,0 +1,27 @@
+[Unit]
+Description=RawrZ Security Platform
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/workspace
+ExecStart=/usr/bin/node /workspace/api-server-no-cli.js
+Restart=always
+RestartSec=10
+Environment=NODE_ENV=production
+Environment=PORT=3000
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/workspace
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+[Install]
+WantedBy=multi-user.target
