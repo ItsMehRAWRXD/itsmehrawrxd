@@ -1,1 +1,0 @@
-Large test file content for encryption testing with substantial data to verify proper file handling and generation capabilities of the RawrZ Security Platform
