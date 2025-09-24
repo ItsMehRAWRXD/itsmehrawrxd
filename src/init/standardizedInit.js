@@ -1,5 +1,6 @@
 // RawrZ Standardized Initialization - Safe component initialization without malformation
 const { safeInitializer } = require('../utils/safeInitializer');
+const { injector } = require('../utils/injector');
 const { logger } = require('../utils/logger');
 const { dataIntegrityValidator } = require('../utils/dataIntegrity');
 const { chatterbox } = require('../utils/chatterbox');
@@ -54,6 +55,21 @@ class StandardizedInitializer {
     async registerCoreComponents() {
         logger.info('[STD_INIT] Registering core components');
         
+        // Register injector first so it is available to all consumers
+        safeInitializer.registerComponent('injector', injector, {
+            required: true,
+            order: -1,
+            validate: false
+        });
+        
+        // Bind core services into the injector
+        injector.registerValue('logger', logger);
+        injector.registerValue('dataIntegrity', dataIntegrityValidator);
+        injector.registerValue('chatterbox', chatterbox);
+        injector.registerValue('reverseTracer', reverseTracer);
+        injector.registerValue('builtinDatabase', builtinDatabase);
+        injector.registerValue('safeInitializer', safeInitializer);
+        
         // Register logger (already loaded)
         safeInitializer.registerComponent('logger', logger, {
             required: true,
@@ -101,6 +117,8 @@ class StandardizedInitializer {
         // Register RawrZ Engine with lazy loading
         const rawrzEngine = await this.loadEngineSafely('rawrz-engine');
         if (rawrzEngine) {
+            // Bind to injector
+            injector.registerValue('rawrzEngine', rawrzEngine);
             safeInitializer.registerComponent('rawrzEngine', rawrzEngine, {
                 required: true,
                 order: 5,
@@ -134,6 +152,8 @@ class StandardizedInitializer {
             try {
                 const engine = await this.loadEngineSafely(engineName);
                 if (engine) {
+                    // Bind to injector for optional resolution
+                    injector.registerValue(engineName, engine);
                     safeInitializer.registerComponent(engineName, engine, {
                         required: false,
                         order: 6,
