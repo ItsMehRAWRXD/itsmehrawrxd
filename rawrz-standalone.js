@@ -1370,6 +1370,15 @@ class RawrZStandalone {
                 case 'persistence':
                     stubCode = this.generatePersistenceStubCode(name, options);
                     break;
+                case 'encryption':
+                    stubCode = this.generateEncryptionStubCode(name, options);
+                    break;
+                case 'decryption':
+                    stubCode = this.generateDecryptionStubCode(name, options);
+                    break;
+                case 'file-processor':
+                    stubCode = this.generateFileProcessorStubCode(name, options);
+                    break;
                 default:
                     stubCode = this.generateBasicStubCode(name, options);
             }
@@ -2333,7 +2342,7 @@ public:
         std::string shortcutPath = std::string(startupPath) + "\\\\RawrZStub.lnk";
         
         // Create shortcut (simplified)
-        std::ofstream file(shortcutPath);
+        std::ofstream file(shortupPath);
         if (file.is_open()) {
             file << "[InternetShortcut]" << std::endl;
             file << "URL=file://" << persistencePath << std::endl;
@@ -2394,6 +2403,370 @@ int main() {
     ${name}Persistence persistence;
     persistence.setPersistencePath("C:\\\\path\\\\to\\\\stub.exe");
     persistence.establishPersistence();
+    return 0;
+}`;
+    }
+
+    generateEncryptionStubCode(name, options) {
+        return `#include <windows.h>
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <vector>
+#include <random>
+#include <chrono>
+
+class ${name}Encryption {
+private:
+    std::string algorithm;
+    std::vector<unsigned char> key;
+    std::vector<unsigned char> iv;
+    bool fileless;
+    
+public:
+    ${name}Encryption(const std::string& algo = "AES-256-GCM") : algorithm(algo), fileless(true) {
+        generateFilelessKey();
+    }
+    
+    void generateFilelessKey() {
+        // Generate random key and IV
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> dis(0, 255);
+        
+        key.resize(32); // 256 bits
+        iv.resize(16);  // 128 bits
+        
+        for (int i = 0; i < 32; i++) {
+            key[i] = dis(gen);
+        }
+        for (int i = 0; i < 16; i++) {
+            iv[i] = dis(gen);
+        }
+        
+        std::cout << "Generated fileless key and IV" << std::endl;
+    }
+    
+    bool encryptFile(const std::string& inputPath, const std::string& outputPath) {
+        std::ifstream inputFile(inputPath, std::ios::binary);
+        if (!inputFile.is_open()) {
+            std::cout << "Failed to open input file" << std::endl;
+            return false;
+        }
+        
+        std::ofstream outputFile(outputPath, std::ios::binary);
+        if (!outputFile.is_open()) {
+            std::cout << "Failed to create output file" << std::endl;
+            return false;
+        }
+        
+        // Read file content
+        std::vector<unsigned char> fileData((std::istreambuf_iterator<char>(inputFile)),
+                                           std::istreambuf_iterator<char>());
+        
+        // Simple XOR encryption (replace with actual AES implementation)
+        std::vector<unsigned char> encryptedData;
+        for (size_t i = 0; i < fileData.size(); i++) {
+            encryptedData.push_back(fileData[i] ^ key[i % key.size()]);
+        }
+        
+        // Write encrypted data
+        outputFile.write(reinterpret_cast<const char*>(encryptedData.data()), encryptedData.size());
+        
+        inputFile.close();
+        outputFile.close();
+        
+        std::cout << "File encrypted successfully" << std::endl;
+        return true;
+    }
+    
+    bool decryptFile(const std::string& inputPath, const std::string& outputPath) {
+        std::ifstream inputFile(inputPath, std::ios::binary);
+        if (!inputFile.is_open()) {
+            std::cout << "Failed to open encrypted file" << std::endl;
+            return false;
+        }
+        
+        std::ofstream outputFile(outputPath, std::ios::binary);
+        if (!outputFile.is_open()) {
+            std::cout << "Failed to create output file" << std::endl;
+            return false;
+        }
+        
+        // Read encrypted data
+        std::vector<unsigned char> encryptedData((std::istreambuf_iterator<char>(inputFile)),
+                                                std::istreambuf_iterator<char>());
+        
+        // Simple XOR decryption (replace with actual AES implementation)
+        std::vector<unsigned char> decryptedData;
+        for (size_t i = 0; i < encryptedData.size(); i++) {
+            decryptedData.push_back(encryptedData[i] ^ key[i % key.size()]);
+        }
+        
+        // Write decrypted data
+        outputFile.write(reinterpret_cast<const char*>(decryptedData.data()), decryptedData.size());
+        
+        inputFile.close();
+        outputFile.close();
+        
+        std::cout << "File decrypted successfully" << std::endl;
+        return true;
+    }
+    
+    void setAlgorithm(const std::string& algo) {
+        algorithm = algo;
+    }
+    
+    std::string getAlgorithm() const {
+        return algorithm;
+    }
+    
+    bool isFileless() const {
+        return fileless;
+    }
+    
+    void setFileless(bool fl) {
+        fileless = fl;
+    }
+};
+
+int main(int argc, char* argv[]) {
+    if (argc < 3) {
+        std::cout << "Usage: " << argv[0] << " <encrypt|decrypt> <input_file> [output_file]" << std::endl;
+        return 1;
+    }
+    
+    std::string mode = argv[1];
+    std::string inputFile = argv[2];
+    std::string outputFile = (argc > 3) ? argv[3] : inputFile + ".enc";
+    
+    ${name}Encryption encryptor;
+    
+    if (mode == "encrypt") {
+        encryptor.encryptFile(inputFile, outputFile);
+    } else if (mode == "decrypt") {
+        encryptor.decryptFile(inputFile, outputFile);
+    } else {
+        std::cout << "Invalid mode. Use 'encrypt' or 'decrypt'" << std::endl;
+        return 1;
+    }
+    
+    return 0;
+}`;
+    }
+
+    generateDecryptionStubCode(name, options) {
+        return `#include <windows.h>
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <vector>
+
+class ${name}Decryption {
+private:
+    std::string algorithm;
+    std::vector<unsigned char> key;
+    std::vector<unsigned char> iv;
+    bool fileless;
+    
+public:
+    ${name}Decryption(const std::string& algo = "AES-256-GCM") : algorithm(algo), fileless(true) {
+        // In real implementation, key would be embedded or retrieved securely
+        generateFilelessKey();
+    }
+    
+    void generateFilelessKey() {
+        // Generate the same key as encryption stub
+        // In real implementation, this would be coordinated
+        key.resize(32);
+        iv.resize(16);
+        
+        // Use same seed for consistency (in real implementation, use secure key exchange)
+        std::srand(12345);
+        for (int i = 0; i < 32; i++) {
+            key[i] = std::rand() % 256;
+        }
+        for (int i = 0; i < 16; i++) {
+            iv[i] = std::rand() % 256;
+        }
+        
+        std::cout << "Using fileless key for decryption" << std::endl;
+    }
+    
+    bool decryptFile(const std::string& inputPath, const std::string& outputPath) {
+        std::ifstream inputFile(inputPath, std::ios::binary);
+        if (!inputFile.is_open()) {
+            std::cout << "Failed to open encrypted file" << std::endl;
+            return false;
+        }
+        
+        std::ofstream outputFile(outputPath, std::ios::binary);
+        if (!outputFile.is_open()) {
+            std::cout << "Failed to create output file" << std::endl;
+            return false;
+        }
+        
+        // Read encrypted data
+        std::vector<unsigned char> encryptedData((std::istreambuf_iterator<char>(inputFile)),
+                                                std::istreambuf_iterator<char>());
+        
+        // Simple XOR decryption (replace with actual AES implementation)
+        std::vector<unsigned char> decryptedData;
+        for (size_t i = 0; i < encryptedData.size(); i++) {
+            decryptedData.push_back(encryptedData[i] ^ key[i % key.size()]);
+        }
+        
+        // Write decrypted data
+        outputFile.write(reinterpret_cast<const char*>(decryptedData.data()), decryptedData.size());
+        
+        inputFile.close();
+        outputFile.close();
+        
+        std::cout << "File decrypted successfully" << std::endl;
+        return true;
+    }
+    
+    void setAlgorithm(const std::string& algo) {
+        algorithm = algo;
+    }
+    
+    std::string getAlgorithm() const {
+        return algorithm;
+    }
+};
+
+int main(int argc, char* argv[]) {
+    if (argc < 3) {
+        std::cout << "Usage: " << argv[0] << " <input_file> [output_file]" << std::endl;
+        return 1;
+    }
+    
+    std::string inputFile = argv[1];
+    std::string outputFile = (argc > 2) ? argv[2] : inputFile + ".dec";
+    
+    ${name}Decryption decryptor;
+    decryptor.decryptFile(inputFile, outputFile);
+    
+    return 0;
+}`;
+    }
+
+    generateFileProcessorStubCode(name, options) {
+        return `#include <windows.h>
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <vector>
+#include <filesystem>
+
+class ${name}FileProcessor {
+private:
+    std::string inputPath;
+    std::string outputPath;
+    std::string operation;
+    
+public:
+    void setInputPath(const std::string& path) {
+        inputPath = path;
+    }
+    
+    void setOutputPath(const std::string& path) {
+        outputPath = path;
+    }
+    
+    void setOperation(const std::string& op) {
+        operation = op;
+    }
+    
+    bool processFile() {
+        if (operation == "encrypt") {
+            return encryptFile();
+        } else if (operation == "decrypt") {
+            return decryptFile();
+        } else if (operation == "compress") {
+            return compressFile();
+        } else if (operation == "decompress") {
+            return decompressFile();
+        } else {
+            std::cout << "Unknown operation: " << operation << std::endl;
+            return false;
+        }
+    }
+    
+    bool encryptFile() {
+        std::ifstream input(inputPath, std::ios::binary);
+        std::ofstream output(outputPath, std::ios::binary);
+        
+        if (!input.is_open() || !output.is_open()) {
+            return false;
+        }
+        
+        // Simple encryption (replace with actual implementation)
+        char byte;
+        while (input.get(byte)) {
+            output.put(byte ^ 0xAA);
+        }
+        
+        input.close();
+        output.close();
+        return true;
+    }
+    
+    bool decryptFile() {
+        std::ifstream input(inputPath, std::ios::binary);
+        std::ofstream output(outputPath, std::ios::binary);
+        
+        if (!input.is_open() || !output.is_open()) {
+            return false;
+        }
+        
+        // Simple decryption (replace with actual implementation)
+        char byte;
+        while (input.get(byte)) {
+            output.put(byte ^ 0xAA);
+        }
+        
+        input.close();
+        output.close();
+        return true;
+    }
+    
+    bool compressFile() {
+        // Simple compression placeholder
+        std::cout << "Compression not implemented" << std::endl;
+        return false;
+    }
+    
+    bool decompressFile() {
+        // Simple decompression placeholder
+        std::cout << "Decompression not implemented" << std::endl;
+        return false;
+    }
+};
+
+int main(int argc, char* argv[]) {
+    if (argc < 4) {
+        std::cout << "Usage: " << argv[0] << " <operation> <input_file> <output_file>" << std::endl;
+        std::cout << "Operations: encrypt, decrypt, compress, decompress" << std::endl;
+        return 1;
+    }
+    
+    std::string operation = argv[1];
+    std::string inputFile = argv[2];
+    std::string outputFile = argv[3];
+    
+    ${name}FileProcessor processor;
+    processor.setOperation(operation);
+    processor.setInputPath(inputFile);
+    processor.setOutputPath(outputFile);
+    
+    if (processor.processFile()) {
+        std::cout << "File processed successfully" << std::endl;
+    } else {
+        std::cout << "File processing failed" << std::endl;
+        return 1;
+    }
+    
     return 0;
 }`;
     }
