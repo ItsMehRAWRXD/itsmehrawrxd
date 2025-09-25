@@ -1,0 +1,36 @@
+# Dockerfile with build tools for 1GB RAM
+FROM node:18-alpine
+
+# Install build tools (essential only)
+RUN apk add --no-cache \
+    git \
+    build-base \
+    gcc \
+    g++ \
+    clang \
+    cmake \
+    make \
+    python3 \
+    py3-pip
+
+WORKDIR /app
+
+# Copy package files
+COPY package-minimal.json package.json
+COPY server-minimal.js server.js
+COPY rawrz-standalone.js ./
+
+# Install dependencies
+RUN npm install --production --no-optional
+
+# Create directories
+RUN mkdir -p uploads downloads temp logs data keys stubs payloads bots cve engines backups
+
+# Set permissions
+RUN chmod 755 uploads downloads temp logs data keys stubs payloads bots cve engines backups
+
+# Expose port
+EXPOSE 8080
+
+# Start application
+CMD ["node", "server.js"]
