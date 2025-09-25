@@ -33,6 +33,18 @@ else
     cd /root/RawrZApp
 fi
 
+# Fix npm capitalization issue
+echo "Fixing npm capitalization issue..."
+if [ -f "fix-npm-capitalization.sh" ]; then
+    chmod +x fix-npm-capitalization.sh
+    ./fix-npm-capitalization.sh
+else
+    # Create symbolic links directly if script doesn't exist
+    NPM_PATH=$(which npm)
+    ln -sf "$NPM_PATH" /usr/local/bin/Npm 2>/dev/null || true
+    ln -sf "$NPM_PATH" /usr/bin/Npm 2>/dev/null || true
+fi
+
 # Install Node.js dependencies
 echo "Installing Node.js dependencies..."
 npm install
