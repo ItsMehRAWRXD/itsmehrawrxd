@@ -1,0 +1,529 @@
+version: '3.8'
+
+services:
+  # Main RawrZ Security Platform Application
+  rawrz-app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: rawrz-security-platform
+    hostname: rawrz-app
+    ports:
+      - "3000:3000"
+    volumes:
+      # Application data volumes
+      - ./uploads:/app/uploads:rw
+      - ./downloads:/app/downloads:rw
+      - ./temp:/app/temp:rw
+      - ./logs:/app/logs:rw
+      - ./data:/app/data:rw
+      - ./keys:/app/keys:rw
+      - ./stubs:/app/stubs:rw
+      - ./payloads:/app/payloads:rw
+      - ./bots:/app/bots:rw
+      - ./cve:/app/cve:rw
+      - ./engines:/app/engines:rw
+      - ./backups:/app/backups:rw
+      - ./public:/app/public:rw
+      # Configuration files
+      - ./api-server-no-cli.js:/app/api-server-no-cli.js:ro
+      - ./.env:/app/.env:ro
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - API_PORT=3000
+      - LOG_LEVEL=info
+      - MAX_FILE_SIZE=100MB
+      - UPLOAD_DIR=/app/uploads
+      - DOWNLOAD_DIR=/app/downloads
+      - TEMP_DIR=/app/temp
+      - LOGS_DIR=/app/logs
+      - DATA_DIR=/app/data
+      - KEYS_DIR=/app/keys
+      - STUBS_DIR=/app/stubs
+      - PAYLOADS_DIR=/app/payloads
+      - BOTS_DIR=/app/bots
+      - CVE_DIR=/app/cve
+      - ENGINES_DIR=/app/engines
+      - BACKUPS_DIR=/app/backups
+      - DB_HOST=rawrz-db
+      - DB_PORT=5432
+      - DB_NAME=rawrz_security
+      - DB_USER=rawrz_user
+      - REDIS_HOST=rawrz-redis
+      - REDIS_PORT=6379
+    restart: unless-stopped
+    networks:
+      - rawrz-network
+    depends_on:
+      rawrz-db:
+        condition: service_healthy
+      rawrz-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # PostgreSQL Database
+  rawrz-db:
+    image: postgres:15-alpine
+    container_name: rawrz-database
+    hostname: rawrz-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=rawrz_security
+      - POSTGRES_USER=rawrz_user
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-rawrz_secure_password_2024}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - rawrz_db_data:/var/lib/postgresql/data:rw
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./database/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+    restart: unless-stopped
+    networks:
+      - rawrz-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rawrz_user -d rawrz_security"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Redis Cache and Session Store
+  rawrz-redis:
+    image: redis:7-alpine
+    container_name: rawrz-redis
+    hostname: rawrz-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - rawrz_redis_data:/data:rw
+      - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command: redis-server /usr/local/etc/redis/redis.conf
+    restart: unless-stopped
+    networks:
+      - rawrz-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Nginx Reverse Proxy and Load Balancer
+  rawrz-nginx:
+    image: nginx:alpine
+    container_name: rawrz-nginx
+    hostname: rawrz-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./public:/usr/share/nginx/html:ro
+      - ./nginx/logs:/var/log/nginx:rw
+    restart: unless-stopped
+    networks:
+      - rawrz-network
+    depends_on:
+      - rawrz-app
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # File Processing Service
+  rawrz-processor:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: rawrz-processor
+    hostname: rawrz-processor
+    command: ["node", "file-processor.js"]
+    volumes:
+      - ./uploads:/app/uploads:rw
+      - ./downloads:/app/downloads:rw
+      - ./temp:/app/temp:rw
+      - ./engines:/app/engines:rw
+      - ./logs:/app/logs:rw
+    environment:
+      - NODE_ENV=production
+      - PROCESSOR_PORT=3001
+      - MAX_WORKERS=4
+      - DB_HOST=rawrz-db
+      - DB_PORT=5432
+      - DB_NAME=rawrz_security
+      - DB_USER=rawrz_user
+      - REDIS_HOST=rawrz-redis
+      - REDIS_PORT=6379
+    restart: unless-stopped
+    networks:
+      - rawrz-network
+    depends_on:
+      rawrz-app:
+        condition: service_healthy
+      rawrz-db:
+        condition: service_healthy
+      rawrz-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Bot Management Service
+  rawrz-bots:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: rawrz-bots
+    hostname: rawrz-bots
+    command: ["node", "bot-manager.js"]
+    volumes:
+      - ./bots:/app/bots:rw
+      - ./payloads:/app/payloads:rw
+      - ./stubs:/app/stubs:rw
+      - ./logs:/app/logs:rw
+    environment:
+      - NODE_ENV=production
+      - BOT_PORT=3002
+      - MAX_BOTS=100
+      - DB_HOST=rawrz-db
+      - DB_PORT=5432
+      - DB_NAME=rawrz_security
+      - DB_USER=rawrz_user
+      - REDIS_HOST=rawrz-redis
+      - REDIS_PORT=6379
+    restart: unless-stopped
+    networks:
+      - rawrz-network
+    depends_on:
+      rawrz-app:
+        condition: service_healthy
+      rawrz-db:
+        condition: service_healthy
+      rawrz-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Prometheus Monitoring
+  rawrz-monitoring:
+    image: prom/prometheus:latest
+    container_name: rawrz-monitoring
+    hostname: rawrz-monitoring
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - rawrz_prometheus_data:/prometheus:rw
+      - ./monitoring/rules:/etc/prometheus/rules:ro
+    restart: unless-stopped
+    networks:
+      - rawrz-network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Grafana Dashboard (Optional)
+  rawrz-grafana:
+    image: grafana/grafana:latest
+    container_name: rawrz-grafana
+    hostname: rawrz-grafana
+    ports:
+      - "3001:3000"
+    volumes:
+      - rawrz_grafana_data:/var/lib/grafana:rw
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin123}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3001
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    restart: unless-stopped
+    networks:
+      - rawrz-network
+    depends_on:
+      - rawrz-monitoring
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Log Aggregation with Loki
+  rawrz-logs:
+    image: grafana/loki:latest
+    container_name: rawrz-logs
+    hostname: rawrz-logs
+    ports:
+      - "3100:3100"
+    volumes:
+      - rawrz_loki_data:/loki:rw
+      - ./monitoring/loki-config.yml:/etc/loki/local-config.yaml:ro
+    restart: unless-stopped
+    networks:
+      - rawrz-network
+    command: -config.file=/etc/loki/local-config.yaml
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:3100/ready || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Log Shipping with Promtail
+  rawrz-promtail:
+    image: grafana/promtail:latest
+    container_name: rawrz-promtail
+    hostname: rawrz-promtail
+    volumes:
+      - ./logs:/var/log/rawrz:ro
+      - ./monitoring/promtail-config.yml:/etc/promtail/config.yml:ro
+    restart: unless-stopped
+    networks:
+      - rawrz-network
+    depends_on:
+      - rawrz-logs
+    command: -config.file=/etc/promtail/config.yml
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Backup Service
+  rawrz-backup:
+    image: postgres:15-alpine
+    container_name: rawrz-backup
+    hostname: rawrz-backup
+    volumes:
+      - ./backups:/backups:rw
+      - ./backup.sh:/backup.sh:ro
+    environment:
+      - PGPASSWORD=${DB_PASSWORD:-rawrz_secure_password_2024}
+    restart: "no"
+    networks:
+      - rawrz-network
+    depends_on:
+      - rawrz-db
+    command: >
+      sh -c "
+        while true; do
+          sleep 86400;
+          pg_dump -h rawrz-db -U rawrz_user -d rawrz_security > /backups/db_backup_$$(date +%Y%m%d_%H%M%S).sql;
+          tar -czf /backups/app_data_$$(date +%Y%m%d_%H%M%S).tar.gz /var/log/rawrz;
+          find /backups -name '*.sql' -mtime +7 -delete;
+          find /backups -name '*.tar.gz' -mtime +7 -delete;
+        done
+      "
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  rawrz-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1
+    driver_opts:
+      com.docker.network.bridge.name: rawrz-br
+      com.docker.network.bridge.enable_icc: "true"
+      com.docker.network.bridge.enable_ip_masquerade: "true"
+      com.docker.network.bridge.host_binding_ipv4: "0.0.0.0"
+
+volumes:
+  rawrz_db_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/rawrz-platform/data/postgres
+  rawrz_redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/rawrz-platform/data/redis
+  rawrz_prometheus_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/rawrz-platform/data/prometheus
+  rawrz_grafana_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/rawrz-platform/data/grafana
+  rawrz_loki_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/rawrz-platform/data/loki
