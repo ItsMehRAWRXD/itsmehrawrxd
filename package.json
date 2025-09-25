@@ -5,13 +5,10 @@
   "main": "rawrz-standalone.js",
   "scripts": {
     "start": "node api-server-no-cli.js",
-    "Npm": "node api-server-no-cli.js",
-    "npm": "node api-server-no-cli.js",
     "help": "node rawrz-standalone.js help",
     "test": "node rawrz-standalone.js sysinfo",
     "start:web": "node api-server-no-cli.js",
-    "start:standalone": "node rawrz-standalone.js",
-    "docker:start": "./docker-start.sh"
+    "start:standalone": "node rawrz-standalone.js"
   },
   "dependencies": {
     "axios": "^1.12.2",

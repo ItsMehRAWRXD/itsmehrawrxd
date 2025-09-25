@@ -1,0 +1,27 @@
+[Unit]
+Description=RawrZ Security Platform
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=node
+Group=node
+WorkingDirectory=/app
+Environment=NODE_ENV=production
+Environment=PORT=3000
+ExecStart=/usr/bin/node /app/api-server-no-cli.js
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/app/uploads /app/downloads /app/temp /app/logs /app/data
+
+[Install]
+WantedBy=multi-user.target

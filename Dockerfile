@@ -156,5 +156,9 @@ EXPOSE 3000 3001 3002 8080 8081 8082
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:3000/api/health || exit 1
 
+# Copy the startup script
+COPY docker-start.sh /app/docker-start.sh
+RUN chmod +x /app/docker-start.sh
+
 # Start the application
-CMD ["node", "api-server-no-cli.js"]
+ENTRYPOINT ["/app/docker-start.sh"]

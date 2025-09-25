@@ -1,0 +1,18 @@
+version: '3.8'
+
+# Override file to fix "Npm start" issues
+# This ensures all services use proper commands
+
+services:
+  # Main RawrZ Security Platform - Override any incorrect commands
+  rawrz-app:
+    command: ["/app/docker-start.sh"]
+    entrypoint: []
+
+  # File processing service - ensure correct command
+  rawrz-processor:
+    command: ["node", "file-processor.js"]
+
+  # Bot management service - ensure correct command
+  rawrz-bots:
+    command: ["node", "bot-manager.js"]
