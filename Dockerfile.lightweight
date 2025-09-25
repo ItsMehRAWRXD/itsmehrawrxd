@@ -1,0 +1,27 @@
+# Ultra-lightweight Dockerfile for 1GB RAM deployment
+FROM node:18-alpine
+
+# Install minimal dependencies
+RUN apk add --no-cache git build-base
+
+WORKDIR /app
+
+# Copy only essential files
+COPY package-minimal.json package.json
+COPY server.js ./
+COPY rawrz-standalone.js ./
+
+# Install minimal dependencies
+RUN npm install --production --no-optional
+
+# Create minimal directories
+RUN mkdir -p uploads downloads temp logs
+
+# Set permissions
+RUN chmod 755 uploads downloads temp logs
+
+# Expose port
+EXPOSE 8080
+
+# Start with minimal resources
+CMD ["node", "server.js"]
