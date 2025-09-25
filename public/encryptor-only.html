@@ -330,7 +330,60 @@
 
         <div class="main-content">
             <div class="panel">
-                <h2>📁 Step 1: Select Generated Stub</h2>
+                <h2>🔧 Step 1: Loader Menu & Options</h2>
+                
+                <div class="form-group">
+                    <label for="loaderType">Loader Type</label>
+                    <select id="loaderType">
+                        <option value="direct">Direct Loader</option>
+                        <option value="reflective">Reflective DLL Loader</option>
+                        <option value="process-hollowing">Process Hollowing</option>
+                        <option value="dll-injection">DLL Injection</option>
+                        <option value="manual-mapping">Manual DLL Mapping</option>
+                        <option value="beacon">Beacon Loader</option>
+                        <option value="persistence">Persistence Loader</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="targetProcess">Target Process (Optional)</label>
+                    <input type="text" id="targetProcess" placeholder="notepad.exe, explorer.exe, etc.">
+                </div>
+
+                <div class="form-group">
+                    <label for="injectionMethod">Injection Method</label>
+                    <select id="injectionMethod">
+                        <option value="createremotethread">CreateRemoteThread</option>
+                        <option value="setwindowshookex">SetWindowsHookEx</option>
+                        <option value="manual">Manual DLL Mapping</option>
+                        <option value="reflective">Reflective Loading</option>
+                        <option value="processhollowing">Process Hollowing</option>
+                    </select>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="enableStealth" checked>
+                    <label for="enableStealth">Enable Stealth Mode</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="enablePersistence">
+                    <label for="enablePersistence">Enable Persistence</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="enableEvasion" checked>
+                    <label for="enableEvasion">Enable Anti-Detection</label>
+                </div>
+
+                <div class="form-group">
+                    <label for="loaderDelay">Loader Delay (ms)</label>
+                    <input type="number" id="loaderDelay" min="0" max="10000" value="1000" placeholder="Delay before execution">
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>📁 Step 2: Select Generated Stub</h2>
                 
                 <div class="form-group">
                     <label>Available Generated Stubs</label>
@@ -350,7 +403,7 @@
             </div>
 
             <div class="panel">
-                <h2>🔐 Step 2: Configure Encryption</h2>
+                <h2>🔐 Step 3: Configure Encryption (Binary Files Only)</h2>
                 
                 <div class="form-group">
                     <label for="encryptionAlgorithm">Encryption Algorithm</label>
@@ -392,7 +445,7 @@
         </div>
 
         <div class="panel">
-            <h2>📤 Step 3: Upload File for Encryption</h2>
+            <h2>📤 Step 4: Upload Binary File for Encryption</h2>
             
             <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileInput').click()">
                 <div style="font-size: 24px; margin-bottom: 10px;">📁</div>
