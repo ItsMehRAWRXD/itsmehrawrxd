@@ -1,0 +1,1 @@
+FROM node:18-alpine && RUN apk add --no-cache git build-essential gcc g++ clang upx-ucl cmake && WORKDIR /app && COPY . . && RUN npm install && RUN mkdir -p uploads downloads temp logs data keys stubs payloads bots cve engines backups public && EXPOSE 8080 && CMD ["node", "server.js"]

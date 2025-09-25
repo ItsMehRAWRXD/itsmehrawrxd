@@ -1,0 +1,3 @@
+#!/bin/bash
+# One-liner Docker run command for RawrZ Security Platform
+docker run -d --name rawrz-app -p 8080:8080 -v $(pwd)/uploads:/app/uploads -v $(pwd)/downloads:/app/downloads -v $(pwd)/temp:/app/temp -v $(pwd)/logs:/app/logs -v $(pwd)/data:/app/data -v $(pwd)/keys:/app/keys -v $(pwd)/stubs:/app/stubs -v $(pwd)/payloads:/app/payloads -v $(pwd)/bots:/app/bots -v $(pwd)/cve:/app/cve -v $(pwd)/engines:/app/engines -v $(pwd)/backups:/app/backups -v $(pwd)/public:/app/public -e NODE_ENV=production -e PORT=8080 -e LOG_LEVEL=info -e MAX_FILE_SIZE=100MB rawrz-security-platform
