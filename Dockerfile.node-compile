@@ -1,0 +1,31 @@
+# Node.js compilation without heavy build tools
+FROM node:18-alpine
+
+# Install minimal compilation support
+RUN apk add --no-cache \
+    git \
+    build-base \
+    gcc \
+    g++
+
+WORKDIR /app
+
+# Copy files
+COPY package-minimal.json package.json
+COPY server-node-compile.js server.js
+COPY rawrz-standalone.js ./
+
+# Install dependencies
+RUN npm install --production --no-optional
+
+# Create directories
+RUN mkdir -p uploads downloads temp logs data keys stubs payloads bots cve engines backups
+
+# Set permissions
+RUN chmod 755 uploads downloads temp logs data keys stubs payloads bots cve engines backups
+
+# Expose port
+EXPOSE 8080
+
+# Start application
+CMD ["node", "server.js"]
