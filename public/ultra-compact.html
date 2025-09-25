@@ -502,7 +502,7 @@
             log('Encrypting data...', 'info');
 
             try {
-                const response = await fetch('/api/encrypt', {
+                const response = await fetch('/api/encrypt-file', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -533,7 +533,7 @@
             log('Decrypting data...', 'info');
 
             try {
-                const response = await fetch('/api/decrypt', {
+                const response = await fetch('/api/encrypt-file', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

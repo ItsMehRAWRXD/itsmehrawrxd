@@ -9,10 +9,9 @@ app.get('/panel',(_req,res)=>res.sendFile(path.join(__dirname,'public','panel.ht
 app.get('/compact',(_req,res)=>res.sendFile(path.join(__dirname,'public','compact-panel.html')));
 app.get('/ultra',(_req,res)=>res.sendFile(path.join(__dirname,'public','ultra-compact.html')));
 app.get('/encrypt',(_req,res)=>res.sendFile(path.join(__dirname,'public','advanced-encryption.html')));
+app.get('/executable-generator',(_req,res)=>res.sendFile(path.join(__dirname,'public','executable-generator.html')));
 app.get('/',(_req,res)=>res.redirect('/encrypt'));
-app.post('/hash',requireAuth,async(req,res)=>{try{const{input,algorithm='sha256',save=false,extension}=req.body||{};if(!input)return res.status(400).json({error:'input is required'});res.json(await rawrz.hash(input,algorithm,!!save,extension))}catch(e){res.status(500).json({error:e.message})}});
-app.post('/encrypt',requireAuth,async(req,res)=>{try{const{algorithm,input,extension}=req.body||{};if(!algorithm||!input)return res.status(400).json({error:'algorithm and input required'});res.json(await rawrz.encrypt(algorithm,input,extension))}catch(e){res.status(500).json({error:e.message})}});
-app.post('/decrypt',requireAuth,async(req,res)=>{try{const{algorithm,input,key,iv,extension}=req.body||{};if(!algorithm||!input)return res.status(400).json({error:'algorithm and input required'});res.json(await rawrz.decrypt(algorithm,input,key,iv,extension))}catch(e){res.status(500).json({error:e.message})}});
+// Text encryption/decryption removed - file operations only
 app.get('/dns',requireAuth,async(req,res)=>{try{const h=req.query.hostname;if(!h)return res.status(400).json({error:'hostname required'});res.json(await rawrz.dnsLookup(String(h)))}catch(e){res.status(500).json({error:e.message})}});
 app.get('/ping',requireAuth,async(req,res)=>{try{const h=req.query.host;if(!h)return res.status(400).json({error:'host required'});res.json(await rawrz.ping(String(h),false))}catch(e){res.status(500).json({error:e.message})}});
 app.get('/files',requireAuth,async(_req,res)=>{try{res.json(await rawrz.listFiles())}catch(e){res.status(500).json({error:e.message})}});
@@ -22,4 +21,7 @@ app.post('/api/process-file',requireAuth,upload.single('file'),async(req,res)=>{
 app.post('/api/encrypt-file',requireAuth,upload.single('file'),async(req,res)=>{try{const{algorithm,extension,autoKey,saveKey,customKey,compress,obfuscate}=req.body||{};const file=req.file;if(!file)return res.status(400).json({error:'file required'});const result=await rawrz.encryptFile(file,algorithm,extension,autoKey,saveKey,customKey,compress,obfuscate);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/api/generate-executable',requireAuth,async(req,res)=>{try{const{name,extension,platform,type,functionality,code,compiler,options}=req.body||{};if(!name||!extension)return res.status(400).json({error:'name and extension required'});const result=await rawrz.generateExecutable(name,extension,platform,type,functionality,code,compiler,options);res.json(result)}catch(e){res.status(500).json({error:e.message})}});
 app.post('/api/test-compilation',requireAuth,async(req,res)=>{try{const{code,compiler}=req.body||{};if(!code)return res.status(400).json({error:'code required'});res.json({success:true,message:'Compilation test passed'})}catch(e){res.status(500).json({error:e.message})}});
+
+// Text encryption endpoints removed - file operations only
+
 app.listen(port,()=>console.log('[OK] RawrZ API listening on port',port));
