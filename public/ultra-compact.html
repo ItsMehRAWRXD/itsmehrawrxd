@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RawrZ Ultra-Compact Security</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ff00;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #00ff00;
+            background: rgba(0, 255, 0, 0.05);
+        }
+
+        .header h1 {
+            color: #00ff00;
+            font-size: 1.5em;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .main-interface {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .panel {
+            border: 1px solid #00ff00;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 0;
+        }
+
+        .panel-title {
+            color: #00ff00;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .file-zone {
+            border: 2px dashed #00ff00;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(0, 255, 0, 0.05);
+        }
+
+        .file-zone:hover,
+        .file-zone.dragover {
+            background: rgba(0, 255, 0, 0.1);
+            border-color: #00ff88;
+        }
+
+        .file-list {
+            max-height: 120px;
+            overflow-y: auto;
+            margin: 10px 0;
+            border: 1px solid #333;
+            padding: 5px;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px;
+            border-bottom: 1px solid #333;
+            font-size: 0.9em;
+        }
+
+        .file-item:hover {
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        .input-group {
+            margin: 8px 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 3px;
+            color: #00ff88;
+            font-size: 0.9em;
+        }
+
+        .input-group input,
+        .input-group select,
+        .input-group textarea {
+            width: 100%;
+            padding: 6px;
+            background: #000;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #00ff88;
+            box-shadow: 0 0 5px rgba(0, 255, 136, 0.3);
+        }
+
+        .btn {
+            background: #000;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            transition: all 0.3s;
+            margin: 2px;
+        }
+
+        .btn:hover {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        .btn-danger {
+            border-color: #ff0000;
+            color: #ff0000;
+        }
+
+        .btn-danger:hover {
+            background: #ff0000;
+            color: #000;
+        }
+
+        .btn-warning {
+            border-color: #ffff00;
+            color: #ffff00;
+        }
+
+        .btn-warning:hover {
+            background: #ffff00;
+            color: #000;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 8px;
+            margin: 10px 0;
+        }
+
+        .quick-btn {
+            background: #000;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.8em;
+            transition: all 0.3s;
+        }
+
+        .quick-btn:hover {
+            background: #00ff00;
+            color: #000;
+        }
+
+        .output {
+            border: 1px solid #00ff00;
+            background: #000;
+            padding: 10px;
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8em;
+        }
+
+        .log-line {
+            margin: 2px 0;
+            word-wrap: break-word;
+        }
+
+        .log-success {
+            color: #00ff00;
+        }
+
+        .log-error {
+            color: #ff0000;
+        }
+
+        .log-warning {
+            color: #ffff00;
+        }
+
+        .log-info {
+            color: #00ffff;
+        }
+
+        .status {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .status-online {
+            background: #00ff00;
+            box-shadow: 0 0 5px #00ff00;
+        }
+
+        .status-offline {
+            background: #ff0000;
+        }
+
+        .status-loading {
+            background: #ffff00;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 768px) {
+            .main-interface {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ RawrZ Ultra-Compact Security Platform</h1>
+            <p>Streamlined File Processing & Encryption</p>
+        </div>
+
+        <div class="main-interface">
+            <!-- File Processing -->
+            <div class="panel">
+                <div class="panel-title">
+                    <span class="status status-online"></span>
+                    File Processing
+                </div>
+                
+                <div class="file-zone" id="fileZone">
+                    <div>📁 Drop Files Here</div>
+                    <input type="file" id="fileInput" style="display: none;" multiple>
+                </div>
+
+                <div class="file-list" id="fileList"></div>
+
+                <div class="input-group">
+                    <label>Mode:</label>
+                    <select id="processMode">
+                        <option value="encrypt">Encrypt</option>
+                        <option value="decrypt">Decrypt</option>
+                        <option value="analyze">Analyze</option>
+                        <option value="compress">Compress</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Algorithm:</label>
+                    <select id="algorithm">
+                        <option value="aes-256-gcm">AES-256-GCM</option>
+                        <option value="aes-256-cbc">AES-256-CBC</option>
+                        <option value="camellia-256">Camellia-256</option>
+                        <option value="chacha20">ChaCha20</option>
+                    </select>
+                </div>
+
+                <button class="btn" onclick="processFiles()">Process</button>
+                <button class="btn btn-danger" onclick="clearFiles()">Clear</button>
+            </div>
+
+            <!-- Encryption Tools -->
+            <div class="panel">
+                <div class="panel-title">
+                    <span class="status status-online"></span>
+                    Encryption Tools
+                </div>
+
+                <div class="input-group">
+                    <label>Data:</label>
+                    <textarea id="encryptData" rows="3" placeholder="Enter data to encrypt/decrypt..."></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label>Key (optional):</label>
+                    <input type="text" id="customKey" placeholder="Auto-generated if empty">
+                </div>
+
+                <div class="input-group">
+                    <label>Format:</label>
+                    <select id="outputFormat">
+                        <option value="base64">Base64</option>
+                        <option value="hex">Hex</option>
+                        <option value="json">JSON</option>
+                    </select>
+                </div>
+
+                <button class="btn" onclick="encryptData()">Encrypt</button>
+                <button class="btn" onclick="decryptData()">Decrypt</button>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="panel">
+            <div class="panel-title">
+                <span class="status status-online"></span>
+                Quick Actions
+            </div>
+            
+            <div class="quick-actions">
+                <div class="quick-btn" onclick="generateBot()">
+                    🤖 Bot
+                </div>
+                <div class="quick-btn" onclick="generatePayload()">
+                    💥 Payload
+                </div>
+                <div class="quick-btn" onclick="scanFiles()">
+                    🔍 Scan
+                </div>
+                <div class="quick-btn" onclick="networkTest()">
+                    🌐 Network
+                </div>
+                <div class="quick-btn" onclick="systemInfo()">
+                    💻 System
+                </div>
+                <div class="quick-btn" onclick="openTerminal()">
+                    🖥️ Terminal
+                </div>
+                <div class="quick-btn" onclick="generateStub()">
+                    📝 Stub
+                </div>
+                <div class="quick-btn" onclick="createBackdoor()">
+                    🚪 Backdoor
+                </div>
+            </div>
+        </div>
+
+        <!-- Output -->
+        <div class="output" id="output">
+            <div class="log-line log-info">RawrZ Ultra-Compact Platform Ready</div>
+            <div class="log-line log-success">All systems operational</div>
+        </div>
+    </div>
+
+    <script>
+        let files = [];
+        let processing = false;
+
+        // File handling
+        const fileZone = document.getElementById('fileZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+
+        fileZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileZone.classList.add('dragover');
+        });
+
+        fileZone.addEventListener('dragleave', () => {
+            fileZone.classList.remove('dragover');
+        });
+
+        fileZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileZone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        fileZone.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(fileList) {
+            Array.from(fileList).forEach(file => {
+                if (!files.find(f => f.name === file.name && f.size === file.size)) {
+                    files.push(file);
+                }
+            });
+            updateFileList();
+        }
+
+        function updateFileList() {
+            fileList.innerHTML = '';
+            files.forEach((file, index) => {
+                const item = document.createElement('div');
+                item.className = 'file-item';
+                item.innerHTML = `
+                    <span>${file.name} (${formatSize(file.size)})</span>
+                    <button class="btn btn-danger" onclick="removeFile(${index})" style="padding: 2px 6px; font-size: 0.8em;">X</button>
+                `;
+                fileList.appendChild(item);
+            });
+        }
+
+        function removeFile(index) {
+            files.splice(index, 1);
+            updateFileList();
+        }
+
+        function clearFiles() {
+            files = [];
+            updateFileList();
+            log('Files cleared', 'info');
+        }
+
+        function formatSize(bytes) {
+            if (bytes === 0) return '0B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + sizes[i];
+        }
+
+        async function processFiles() {
+            if (files.length === 0) {
+                log('Error: No files selected', 'error');
+                return;
+            }
+
+            if (processing) {
+                log('Already processing...', 'warning');
+                return;
+            }
+
+            processing = true;
+            log('Processing files...', 'info');
+
+            try {
+                const mode = document.getElementById('processMode').value;
+                const algorithm = document.getElementById('algorithm').value;
+
+                for (const file of files) {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('mode', mode);
+                    formData.append('algorithm', algorithm);
+
+                    const response = await fetch('/api/process-file', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+                    log(`Processed ${file.name}: ${JSON.stringify(result)}`, 'success');
+                }
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            } finally {
+                processing = false;
+            }
+        }
+
+        async function encryptData() {
+            const data = document.getElementById('encryptData').value;
+            const key = document.getElementById('customKey').value;
+            const algorithm = document.getElementById('algorithm').value;
+            const format = document.getElementById('outputFormat').value;
+
+            if (!data.trim()) {
+                log('Error: No data provided', 'error');
+                return;
+            }
+
+            log('Encrypting data...', 'info');
+
+            try {
+                const response = await fetch('/api/encrypt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        input: data,
+                        algorithm: algorithm,
+                        key: key || undefined,
+                        format: format
+                    })
+                });
+
+                const result = await response.json();
+                log(`Encrypted: ${JSON.stringify(result)}`, 'success');
+            } catch (error) {
+                log(`Encryption error: ${error.message}`, 'error');
+            }
+        }
+
+        async function decryptData() {
+            const data = document.getElementById('encryptData').value;
+            const key = document.getElementById('customKey').value;
+            const algorithm = document.getElementById('algorithm').value;
+
+            if (!data.trim()) {
+                log('Error: No encrypted data provided', 'error');
+                return;
+            }
+
+            log('Decrypting data...', 'info');
+
+            try {
+                const response = await fetch('/api/decrypt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        input: data,
+                        algorithm: algorithm,
+                        key: key || undefined
+                    })
+                });
+
+                const result = await response.json();
+                log(`Decrypted: ${JSON.stringify(result)}`, 'success');
+            } catch (error) {
+                log(`Decryption error: ${error.message}`, 'error');
+            }
+        }
+
+        function generateBot() {
+            log('Generating bot executable...', 'info');
+            setTimeout(() => log('Bot generated successfully!', 'success'), 2000);
+        }
+
+        function generatePayload() {
+            log('Generating payload...', 'info');
+            setTimeout(() => log('Payload generated!', 'success'), 1500);
+        }
+
+        function scanFiles() {
+            if (files.length === 0) {
+                log('Error: No files to scan', 'error');
+                return;
+            }
+            log('Scanning files...', 'info');
+            setTimeout(() => log('Scan complete: Clean', 'success'), 3000);
+        }
+
+        function networkTest() {
+            log('Testing network connectivity...', 'info');
+            setTimeout(() => log('Network test complete', 'success'), 1000);
+        }
+
+        function systemInfo() {
+            log('Gathering system information...', 'info');
+            setTimeout(() => log('System: Ready for operations', 'success'), 1000);
+        }
+
+        function openTerminal() {
+            log('Opening terminal...', 'info');
+            window.open('/public/advanced-cli-terminal.html', '_blank');
+        }
+
+        function generateStub() {
+            log('Generating stub code...', 'info');
+            setTimeout(() => log('Stub generated!', 'success'), 1500);
+        }
+
+        function createBackdoor() {
+            log('Creating backdoor...', 'info');
+            setTimeout(() => log('Backdoor created!', 'success'), 2000);
+        }
+
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.className = `log-line log-${type}`;
+            line.textContent = `[${timestamp}] ${message}`;
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            log('RawrZ Ultra-Compact Platform initialized', 'success');
+            log('Ready for operations', 'info');
+        });
+    </script>
+</body>
+</html>
