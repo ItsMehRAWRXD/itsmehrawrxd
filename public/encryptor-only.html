@@ -342,6 +342,11 @@
                         <option value="manual-mapping">Manual DLL Mapping</option>
                         <option value="beacon">Beacon Loader</option>
                         <option value="persistence">Persistence Loader</option>
+                        <option value="polymorphic">Polymorphic Loader</option>
+                        <option value="metamorphic">Metamorphic Loader</option>
+                        <option value="anti-analysis">Anti-Analysis Loader</option>
+                        <option value="fileless">Fileless Loader</option>
+                        <option value="memory-only">Memory-Only Loader</option>
                     </select>
                 </div>
 
@@ -377,8 +382,49 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="persistenceMethod">Persistence Method</label>
+                    <select id="persistenceMethod">
+                        <option value="registry">Registry Run Key</option>
+                        <option value="scheduled-task">Scheduled Task</option>
+                        <option value="service">Windows Service</option>
+                        <option value="startup-folder">Startup Folder</option>
+                        <option value="wmi">WMI Event Subscription</option>
+                        <option value="dll-hijacking">DLL Hijacking</option>
+                        <option value="com-hijacking">COM Hijacking</option>
+                        <option value="logon-script">Logon Script</option>
+                        <option value="fileless">Fileless Persistence</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="evasionTechniques">Evasion Techniques</label>
+                    <select id="evasionTechniques" multiple>
+                        <option value="sleep-patching">Sleep Patching</option>
+                        <option value="timing-attacks">Timing Attack Resistance</option>
+                        <option value="debugger-detection">Debugger Detection</option>
+                        <option value="vm-detection">VM Detection</option>
+                        <option value="sandbox-evasion">Sandbox Evasion</option>
+                        <option value="api-unhooking">API Unhooking</option>
+                        <option value="etw-patching">ETW Patching</option>
+                        <option value="amsi-bypass">AMSI Bypass</option>
+                        <option value="wldp-bypass">WLDP Bypass</option>
+                        <option value="code-cave">Code Cave Injection</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label for="loaderDelay">Loader Delay (ms)</label>
                     <input type="number" id="loaderDelay" min="0" max="10000" value="1000" placeholder="Delay before execution">
+                </div>
+
+                <div class="form-group">
+                    <label for="mutexName">Mutex Name (Optional)</label>
+                    <input type="text" id="mutexName" placeholder="Global\\MyMutex123">
+                </div>
+
+                <div class="form-group">
+                    <label for="beaconInterval">Beacon Interval (seconds)</label>
+                    <input type="number" id="beaconInterval" min="30" max="3600" value="300" placeholder="Beacon check interval">
                 </div>
             </div>
 
@@ -429,7 +475,59 @@
 
                 <div class="form-group">
                     <label for="customExtension">Custom Extension</label>
-                    <input type="text" id="customExtension" placeholder=".exe, .dll, .pdf, .secure, etc." value=".exe">
+                    <select id="customExtension">
+                        <optgroup label="Windows Executables">
+                            <option value=".exe">.exe (Windows Executable)</option>
+                            <option value=".dll">.dll (Dynamic Link Library)</option>
+                            <option value=".sys">.sys (System Driver)</option>
+                            <option value=".scr">.scr (Screen Saver)</option>
+                            <option value=".com">.com (Command File)</option>
+                            <option value=".bat">.bat (Batch File)</option>
+                            <option value=".cmd">.cmd (Command Script)</option>
+                            <option value=".ps1">.ps1 (PowerShell Script)</option>
+                            <option value=".vbs">.vbs (VBScript)</option>
+                            <option value=".js">.js (JScript)</option>
+                        </optgroup>
+                        <optgroup label="Mac/Linux Executables">
+                            <option value=".app">.app (Mac Application)</option>
+                            <option value=".dmg">.dmg (Mac Disk Image)</option>
+                            <option value=".pkg">.pkg (Mac Package)</option>
+                            <option value=".deb">.deb (Debian Package)</option>
+                            <option value=".rpm">.rpm (Red Hat Package)</option>
+                            <option value=".tar.gz">.tar.gz (Compressed Archive)</option>
+                            <option value=".sh">.sh (Shell Script)</option>
+                            <option value=".py">.py (Python Script)</option>
+                        </optgroup>
+                        <optgroup label="Document Types">
+                            <option value=".pdf">.pdf (PDF Document)</option>
+                            <option value=".doc">.doc (Word Document)</option>
+                            <option value=".docx">.docx (Word Document)</option>
+                            <option value=".xls">.xls (Excel Spreadsheet)</option>
+                            <option value=".xlsx">.xlsx (Excel Spreadsheet)</option>
+                            <option value=".ppt">.ppt (PowerPoint Presentation)</option>
+                            <option value=".pptx">.pptx (PowerPoint Presentation)</option>
+                        </optgroup>
+                        <optgroup label="Custom Extensions">
+                            <option value=".secure">.secure (Custom Secure)</option>
+                            <option value=".encrypted">.encrypted (Custom Encrypted)</option>
+                            <option value=".data">.data (Data File)</option>
+                            <option value=".bin">.bin (Binary File)</option>
+                            <option value=".dat">.dat (Data File)</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="targetPlatform">Target Platform</label>
+                    <select id="targetPlatform">
+                        <option value="windows">Windows (x64)</option>
+                        <option value="windows-x86">Windows (x86)</option>
+                        <option value="macos">macOS (Intel)</option>
+                        <option value="macos-arm">macOS (ARM64)</option>
+                        <option value="linux">Linux (x64)</option>
+                        <option value="linux-arm">Linux (ARM64)</option>
+                        <option value="cross-platform">Cross-Platform</option>
+                    </select>
                 </div>
 
                 <div class="checkbox-group">
