@@ -56,25 +56,7 @@ app.post('/hash', requireAuth, async (req, res) => {
     }
 });
 
-app.post('/encrypt', requireAuth, async (req, res) => {
-    try {
-        const { algorithm, input, extension } = req.body || {};
-        if (!algorithm || !input) return res.status(400).json({ error: 'algorithm and input required' });
-        res.json(await rawrz.encrypt(algorithm, input, extension));
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
-
-app.post('/decrypt', requireAuth, async (req, res) => {
-    try {
-        const { algorithm, input, key, iv, extension } = req.body || {};
-        if (!algorithm || !input) return res.status(400).json({ error: 'algorithm and input required' });
-        res.json(await rawrz.decrypt(algorithm, input, key, iv, extension));
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
+// Text encryption/decryption removed - file operations only
 
 app.get('/dns', requireAuth, async (req, res) => {
     try {
@@ -146,26 +128,6 @@ app.post('/api/generate-executable', requireAuth, async (req, res) => {
         // Generate C++ code
         let executableCode;
         switch (functionality) {
-            case 'calculator':
-                executableCode = `#include <iostream>
-#include <string>
-using namespace std;
-int main() {
-    cout << "Calculator v1.0" << endl;
-    double a, b;
-    char op;
-    cout << "Enter expression (a op b): ";
-    cin >> a >> op >> b;
-    switch(op) {
-        case '+': cout << a + b << endl; break;
-        case '-': cout << a - b << endl; break;
-        case '*': cout << a * b << endl; break;
-        case '/': cout << (b != 0 ? a / b : "Error") << endl; break;
-        default: cout << "Invalid operator" << endl;
-    }
-    return 0;
-}`;
-                break;
             case 'http-bot':
                 executableCode = `#include <iostream>
 #include <string>

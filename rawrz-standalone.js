@@ -29,86 +29,9 @@ class RawrZStandalone {
     }
 
     // Core Encryption Commands
-    async encrypt(algorithm, input, extension = '.enc') {
-        try {
-            let dataToEncrypt;
-            let inputType = 'text';
+    // Text encryption removed - file operations only
 
-            if (input.startsWith('http://') || input.startsWith('https://') || input.startsWith('ftp://')) {
-                dataToEncrypt = await this.downloadFile(input);
-                inputType = 'file';
-                console.log(`[OK] File downloaded (${dataToEncrypt.length} bytes)`);
-            } else if (input.includes(':\\') || input.startsWith('/') || input.startsWith('~/')) {
-                dataToEncrypt = await this.readAbsoluteFile(input);
-                inputType = 'file';
-                console.log(`[OK] Absolute file read (${dataToEncrypt.length} bytes)`);
-            } else if (input.startsWith('file:')) {
-                const filename = input.slice(5);
-                dataToEncrypt = await this.readLocalFile(filename);
-                inputType = 'file';
-                console.log(`[OK] Local file read (${dataToEncrypt.length} bytes)`);
-            } else if (this.isLikelyFilePath(input)) {
-                // Check if it's a relative file path
-                try {
-                    dataToEncrypt = await this.readAbsoluteFile(input);
-                    inputType = 'file';
-                    console.log(`[OK] File read (${dataToEncrypt.length} bytes)`);
-                } catch (error) {
-                    // If file read fails, treat as text
-                    dataToEncrypt = input;
-                }
-            } else {
-                dataToEncrypt = input;
-            }
-
-            const result = await this.performEncryption(dataToEncrypt, algorithm);
-            const filename = await this.saveEncryptedFile(result, algorithm, extension, input);
-            
-            console.log(`[OK] Encryption successful!`);
-            console.log(`[OK] Type: ${inputType} | Algorithm: ${algorithm}`);
-            console.log(`[OK] Encrypted file: ${filename}`);
-            
-            return { success: true, filename, algorithm, inputType };
-        } catch (error) {
-            console.log(`[ERROR] Encryption failed: ${error.message}`);
-            return { success: false, error: error.message };
-        }
-    }
-
-    async decrypt(algorithm, input, key = null, iv = null, extension = '.bin') {
-        try {
-            let dataToDecrypt;
-            
-            if (input.includes(':\\') || input.startsWith('/') || input.startsWith('~/')) {
-                dataToDecrypt = await this.readAbsoluteFile(input);
-            } else if (input.startsWith('file:')) {
-                const filename = input.slice(5);
-                dataToDecrypt = await this.readLocalFile(filename);
-            } else if (this.isLikelyFilePath(input)) {
-                // Check if it's a relative file path
-                try {
-                    dataToDecrypt = await this.readAbsoluteFile(input);
-                } catch (error) {
-                    // If file read fails, try as local file
-                    dataToDecrypt = await this.readLocalFile(input);
-                }
-            } else {
-                dataToDecrypt = await this.readLocalFile(input);
-            }
-
-            const result = await this.performDecryption(dataToDecrypt, algorithm, key, iv);
-            const filename = await this.saveDecryptedFile(result, algorithm, extension);
-            
-            console.log(`[OK] Decryption successful!`);
-            console.log(`[OK] Algorithm: ${algorithm}`);
-            console.log(`[OK] Decrypted file: ${filename}`);
-            
-            return { success: true, filename, algorithm };
-        } catch (error) {
-            console.log(`[ERROR] Decryption failed: ${error.message}`);
-            return { success: false, error: error.message };
-        }
-    }
+    // Text decryption removed - file operations only
 
     // Advanced Crypto Commands
     async hash(input, algorithm = 'sha256', saveToFile = false, extension = '.hash') {
