@@ -17,7 +17,7 @@ WORKDIR /app
 
 # Copy package files
 COPY package-minimal.json package.json
-COPY server-minimal.js server.js
+COPY server-with-tools.js server.js
 COPY rawrz-standalone.js ./
 
 # Install dependencies
