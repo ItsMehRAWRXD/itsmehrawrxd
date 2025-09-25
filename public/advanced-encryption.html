@@ -449,18 +449,14 @@
 
                 <div class="encryption-options">
                     <div class="option-group">
-                        <h4>🔑 Key Options</h4>
+                        <h4>🔑 Automatic Keys</h4>
+                        <p style="color: #888; font-size: 0.9em;">Keys are automatically generated and embedded filelessly</p>
                         <div class="checkbox-group">
                             <div class="checkbox-item">
-                                <input type="checkbox" id="autoKey" checked>
-                                <label for="autoKey">Auto-generate key</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="saveKey">
-                                <label for="saveKey">Save key to file</label>
+                                <input type="checkbox" id="autoKey" checked disabled>
+                                <label for="autoKey">Auto-generate key (enabled)</label>
                             </div>
                         </div>
-                        <input type="text" id="customKey" placeholder="Custom key (optional)" style="margin-top: 10px;">
                     </div>
 
                     <div class="option-group">
@@ -694,9 +690,9 @@
             try {
                 const algorithm = document.getElementById('encryptionAlgorithm').value;
                 const customExtension = document.getElementById('customExtension').value;
-                const autoKey = document.getElementById('autoKey').checked;
-                const saveKey = document.getElementById('saveKey').checked;
-                const customKey = document.getElementById('customKey').value;
+                const autoKey = true; // Always enabled
+                const saveKey = false; // Disabled - fileless keys
+                const customKey = ''; // Not used - automatic keys
                 const compress = document.getElementById('compress').checked;
                 const obfuscate = document.getElementById('obfuscate').checked;
 

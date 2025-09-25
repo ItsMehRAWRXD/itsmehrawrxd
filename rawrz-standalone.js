@@ -82,41 +82,7 @@ class RawrZStandalone {
         }
     }
 
-    async generateKey(algorithm = 'aes256', length = 256, saveToFile = false, extension = '.key') {
-        try {
-            let key;
-            if (algorithm.toLowerCase().includes('rsa')) {
-                key = crypto.generateKeyPairSync('rsa', { modulusLength: length });
-                console.log(`[OK] RSA key pair generated (${length} bits)`);
-            } else {
-                key = crypto.randomBytes(length / 8);
-                console.log(`[OK] ${algorithm} key generated (${length} bits)`);
-            }
-            
-            if (saveToFile) {
-                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-                const filename = `key_${algorithm}_${length}_${timestamp}${extension}`;
-                const filePath = path.join(this.uploadDir, filename);
-                
-                const keyData = {
-                    algorithm: algorithm,
-                    length: length,
-                    key: key.toString('hex'),
-                    timestamp: new Date().toISOString(),
-                    type: algorithm.toLowerCase().includes('rsa') ? 'keypair' : 'symmetric'
-                };
-                
-                await fs.writeFile(filePath, JSON.stringify(keyData, null, 2));
-                console.log(`[OK] Key saved to: ${filename}`);
-                return { success: true, key, algorithm, length, filename };
-            }
-            
-            return { success: true, key, algorithm, length };
-        } catch (error) {
-            console.log(`[ERROR] Key generation failed: ${error.message}`);
-            return { success: false, error: error.message };
-        }
-    }
+    // Key generation removed - using automatic fileless keys
 
     // Network Commands
     async ping(host, saveToFile = false, extension = '.ping') {
@@ -843,7 +809,8 @@ class RawrZStandalone {
             data: encrypted,
             key: key.toString('hex'),
             iv: iv.toString('hex'),
-            algorithm: algorithm
+            algorithm: algorithm,
+            fileless: true
         };
     }
 
@@ -1284,8 +1251,17 @@ class RawrZStandalone {
             console.log(`[OK] File encryption successful!`);
             console.log(`[OK] Algorithm: ${algorithm}`);
             console.log(`[OK] Encrypted file: ${filename}`);
+            console.log(`[OK] Using automatic fileless keys`);
             
-            return { success: true, filename, algorithm, size: data.length };
+            return { 
+                success: true, 
+                filename, 
+                algorithm, 
+                size: data.length,
+                fileless: true,
+                key: result.key,
+                iv: result.iv
+            };
         } catch (error) {
             console.log(`[ERROR] File encryption failed: ${error.message}`);
             return { success: false, error: error.message };
@@ -1340,18 +1316,20 @@ class RawrZStandalone {
             // Compile using Docker
             const compiledResult = await this.compileWithDocker(executableCode, filename, platform, compiler, options);
             
-            if (compiledResult.success) {
-                console.log(`[OK] Executable generated: ${filename}`);
-                return { 
-                    success: true, 
-                    filename: compiledResult.filename,
-                    size: compiledResult.size,
-                    platform: platform,
-                    algorithm: 'compiled'
-                };
-            } else {
-                throw new Error(compiledResult.error);
-            }
+                if (compiledResult.success) {
+                    console.log(`[OK] Executable generated: ${filename}`);
+                    console.log(`[OK] Using automatic fileless keys`);
+                    return { 
+                        success: true, 
+                        filename: compiledResult.filename,
+                        size: compiledResult.size,
+                        platform: platform,
+                        algorithm: 'compiled',
+                        fileless: true
+                    };
+                } else {
+                    throw new Error(compiledResult.error);
+                }
         } catch (error) {
             console.log(`[ERROR] Executable generation failed: ${error.message}`);
             return { success: false, error: error.message };

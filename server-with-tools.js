@@ -46,15 +46,7 @@ app.get('/executable-generator', (_req, res) => res.sendFile(path.join(__dirname
 app.get('/', (_req, res) => res.redirect('/encrypt'));
 
 // Core API endpoints
-app.post('/hash', requireAuth, async (req, res) => {
-    try {
-        const { input, algorithm = 'sha256', save = false, extension } = req.body || {};
-        if (!input) return res.status(400).json({ error: 'input is required' });
-        res.json(await rawrz.hash(input, algorithm, !!save, extension));
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
+// Hash endpoint removed - file operations only
 
 // Text encryption/decryption removed - file operations only
 
@@ -136,6 +128,29 @@ int main() {
     cout << "HTTP Bot v1.0" << endl;
     cout << "Connecting to server..." << endl;
     cout << "Bot initialized successfully!" << endl;
+    return 0;
+}`;
+                break;
+            case 'file-processor':
+                executableCode = `#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+int main() {
+    cout << "File Processor v1.0" << endl;
+    cout << "Processing files..." << endl;
+    cout << "File operations completed!" << endl;
+    return 0;
+}`;
+                break;
+            case 'network-scanner':
+                executableCode = `#include <iostream>
+#include <string>
+using namespace std;
+int main() {
+    cout << "Network Scanner v1.0" << endl;
+    cout << "Scanning network..." << endl;
+    cout << "Scan completed!" << endl;
     return 0;
 }`;
                 break;
