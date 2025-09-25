@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RawrZ Advanced Encryption Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(15px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            text-align: center;
+            border: 2px solid #00ff88;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.2);
+        }
+
+        .header h1 {
+            color: #00ff88;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+
+        .header p {
+            color: #888;
+            font-size: 1.1em;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .panel {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(15px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid #333;
+            transition: all 0.3s ease;
+        }
+
+        .panel:hover {
+            border-color: #00ff88;
+            box-shadow: 0 0 25px rgba(0, 255, 136, 0.1);
+        }
+
+        .panel-title {
+            color: #00ff88;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .file-drop-zone {
+            border: 3px dashed #555;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+        }
+
+        .file-drop-zone:hover,
+        .file-drop-zone.dragover {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+            transform: scale(1.02);
+        }
+
+        .file-drop-zone h3 {
+            color: #00ff88;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .file-drop-zone p {
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        .file-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 15px 0;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #333;
+            transition: all 0.3s ease;
+        }
+
+        .file-item:hover {
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .file-name {
+            color: #00ff88;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .file-details {
+            color: #888;
+            font-size: 0.8em;
+        }
+
+        .input-group {
+            margin: 15px 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #00ff88;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+
+        .input-group input,
+        .input-group select,
+        .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #00ff88;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+        }
+
+        .input-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffd93d, #ffb347);
+            color: #000;
+        }
+
+        .btn-warning:hover {
+            box-shadow: 0 8px 25px rgba(255, 217, 61, 0.4);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+        }
+
+        .btn-info:hover {
+            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.4);
+        }
+
+        .encryption-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .option-group {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        .option-group h4 {
+            color: #00ff88;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .checkbox-item label {
+            color: #ccc;
+            font-size: 0.9em;
+            margin: 0;
+        }
+
+        .output-panel {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ff88;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 25px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .output-panel h3 {
+            color: #00ff88;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .log-output {
+            background: #000;
+            color: #00ff88;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #333;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .status-online {
+            background: #00ff88;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        .status-offline {
+            background: #ff6b6b;
+        }
+
+        .status-loading {
+            background: #ffd93d;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #333;
+            border-top: 3px solid #00ff88;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #333;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00cc6a);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .download-link {
+            color: #00ff88;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 8px 16px;
+            border: 1px solid #00ff88;
+            border-radius: 6px;
+            display: inline-block;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .download-link:hover {
+            background: #00ff88;
+            color: #000;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .encryption-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 RawrZ Advanced Encryption Suite</h1>
+            <p>Professional File Encryption with Custom Extensions & Full Workability</p>
+        </div>
+
+        <div class="main-grid">
+            <!-- File Encryption Panel -->
+            <div class="panel">
+                <div class="panel-title">
+                    <span class="status-indicator status-online"></span>
+                    📁 File Encryption
+                </div>
+                
+                <div class="file-drop-zone" id="fileDropZone">
+                    <h3>📁 Drop Files Here</h3>
+                    <p>Supports any file type - Images, Documents, Executables, Archives</p>
+                    <input type="file" id="fileInput" style="display: none;" multiple>
+                </div>
+
+                <div class="file-list" id="fileList">
+                    <!-- Files will be listed here -->
+                </div>
+
+                <div class="encryption-options">
+                    <div class="option-group">
+                        <h4>🔒 Encryption Algorithm</h4>
+                        <select id="encryptionAlgorithm">
+                            <option value="aes-256-gcm">AES-256-GCM (Recommended)</option>
+                            <option value="aes-256-cbc">AES-256-CBC</option>
+                            <option value="aes-192-gcm">AES-192-GCM</option>
+                            <option value="aes-128-gcm">AES-128-GCM</option>
+                            <option value="camellia-256">Camellia-256</option>
+                            <option value="chacha20-poly1305">ChaCha20-Poly1305</option>
+                            <option value="aria-256">ARIA-256</option>
+                            <option value="twofish">Twofish</option>
+                        </select>
+                    </div>
+
+                    <div class="option-group">
+                        <h4>📄 Output Extension</h4>
+                        <input type="text" id="customExtension" placeholder=".enc, .secure, .locked, etc." value=".enc">
+                    </div>
+                </div>
+
+                <div class="encryption-options">
+                    <div class="option-group">
+                        <h4>🔑 Key Options</h4>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="autoKey" checked>
+                                <label for="autoKey">Auto-generate key</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="saveKey">
+                                <label for="saveKey">Save key to file</label>
+                            </div>
+                        </div>
+                        <input type="text" id="customKey" placeholder="Custom key (optional)" style="margin-top: 10px;">
+                    </div>
+
+                    <div class="option-group">
+                        <h4>🛡️ Security Options</h4>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="compress" checked>
+                                <label for="compress">Compress before encryption</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="obfuscate">
+                                <label for="obfuscate">Obfuscate file structure</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="encryptFiles()">🔐 Encrypt Files</button>
+                <button class="btn btn-secondary" onclick="clearFiles()">🗑️ Clear All</button>
+            </div>
+
+            <!-- Text Encryption Panel -->
+            <div class="panel">
+                <div class="panel-title">
+                    <span class="status-indicator status-online"></span>
+                    📝 Text Encryption
+                </div>
+
+                <div class="input-group">
+                    <label>Text/Data to Encrypt:</label>
+                    <textarea id="textInput" placeholder="Enter text, JSON, XML, or any data to encrypt..."></textarea>
+                </div>
+
+                <div class="encryption-options">
+                    <div class="option-group">
+                        <h4>🔒 Algorithm</h4>
+                        <select id="textAlgorithm">
+                            <option value="aes-256-gcm">AES-256-GCM</option>
+                            <option value="aes-256-cbc">AES-256-CBC</option>
+                            <option value="camellia-256">Camellia-256</option>
+                            <option value="chacha20-poly1305">ChaCha20-Poly1305</option>
+                        </select>
+                    </div>
+
+                    <div class="option-group">
+                        <h4>📤 Output Format</h4>
+                        <select id="outputFormat">
+                            <option value="base64">Base64</option>
+                            <option value="hex">Hexadecimal</option>
+                            <option value="json">JSON</option>
+                            <option value="binary">Binary</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Custom Key (optional):</label>
+                    <input type="text" id="textCustomKey" placeholder="Leave empty for auto-generated key">
+                </div>
+
+                <button class="btn" onclick="encryptText()">🔐 Encrypt Text</button>
+                <button class="btn btn-warning" onclick="decryptText()">🔓 Decrypt Text</button>
+            </div>
+        </div>
+
+        <!-- Advanced Options Panel -->
+        <div class="panel">
+            <div class="panel-title">
+                <span class="status-indicator status-online"></span>
+                ⚙️ Advanced Encryption Options
+            </div>
+            
+            <div class="encryption-options">
+                <div class="option-group">
+                    <h4>🔐 Multiple Encryption</h4>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="doubleEncrypt">
+                            <label for="doubleEncrypt">Double encryption (AES + Camellia)</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="tripleEncrypt">
+                            <label for="tripleEncrypt">Triple encryption (AES + Camellia + ChaCha20)</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="option-group">
+                    <h4>🛡️ Anti-Analysis</h4>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="antiDebug">
+                            <label for="antiDebug">Anti-debugging protection</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="antiVM">
+                            <label for="antiVM">Anti-VM detection</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="option-group">
+                    <h4>📦 Packaging</h4>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="selfExtract">
+                            <label for="selfExtract">Create self-extracting archive</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="passwordProtect">
+                            <label for="passwordProtect">Password protect archive</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="option-group">
+                    <h4>🔧 Custom Extensions</h4>
+                    <input type="text" id="customExtList" placeholder=".secure, .locked, .private, .encrypted" style="width: 100%;">
+                    <small style="color: #888; font-size: 0.8em;">Comma-separated list of custom extensions</small>
+                </div>
+            </div>
+
+            <button class="btn btn-info" onclick="showAdvancedOptions()">⚙️ Show Advanced Options</button>
+            <button class="btn btn-warning" onclick="batchEncrypt()">📦 Batch Encrypt</button>
+        </div>
+
+        <!-- Output Panel -->
+        <div class="output-panel" id="outputPanel" style="display: none;">
+            <h3>📊 Encryption Output</h3>
+            <div class="progress-bar" id="progressBar" style="display: none;">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="log-output" id="logOutput"></div>
+            <div id="downloadLinks"></div>
+            <button class="btn btn-secondary" onclick="clearOutput()" style="margin-top: 15px;">🗑️ Clear Output</button>
+        </div>
+    </div>
+
+    <script>
+        let selectedFiles = [];
+        let isProcessing = false;
+
+        // File handling
+        const fileDropZone = document.getElementById('fileDropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+
+        fileDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileDropZone.classList.add('dragover');
+        });
+
+        fileDropZone.addEventListener('dragleave', () => {
+            fileDropZone.classList.remove('dragover');
+        });
+
+        fileDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileDropZone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        fileDropZone.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(fileList) {
+            Array.from(fileList).forEach(file => {
+                if (!selectedFiles.find(f => f.name === file.name && f.size === file.size)) {
+                    selectedFiles.push(file);
+                }
+            });
+            updateFileList();
+        }
+
+        function updateFileList() {
+            fileList.innerHTML = '';
+            selectedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-details">${formatFileSize(file.size)} | ${file.type || 'Unknown type'}</div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="removeFile(${index})" style="padding: 6px 12px; font-size: 0.8em;">Remove</button>
+                `;
+                fileList.appendChild(fileItem);
+            });
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            updateFileList();
+        }
+
+        function clearFiles() {
+            selectedFiles = [];
+            updateFileList();
+            log('Files cleared', 'info');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        async function encryptFiles() {
+            if (selectedFiles.length === 0) {
+                log('Error: No files selected for encryption', 'error');
+                return;
+            }
+
+            if (isProcessing) {
+                log('Already processing files...', 'warning');
+                return;
+            }
+
+            isProcessing = true;
+            showOutput();
+            showProgress();
+            log('Starting file encryption process...', 'info');
+
+            try {
+                const algorithm = document.getElementById('encryptionAlgorithm').value;
+                const customExtension = document.getElementById('customExtension').value;
+                const autoKey = document.getElementById('autoKey').checked;
+                const saveKey = document.getElementById('saveKey').checked;
+                const customKey = document.getElementById('customKey').value;
+                const compress = document.getElementById('compress').checked;
+                const obfuscate = document.getElementById('obfuscate').checked;
+
+                const totalFiles = selectedFiles.length;
+                let processedFiles = 0;
+
+                for (const file of selectedFiles) {
+                    log(`Processing ${file.name}...`, 'info');
+                    
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('algorithm', algorithm);
+                    formData.append('extension', customExtension);
+                    formData.append('autoKey', autoKey);
+                    formData.append('saveKey', saveKey);
+                    formData.append('customKey', customKey);
+                    formData.append('compress', compress);
+                    formData.append('obfuscate', obfuscate);
+
+                    const response = await fetch('/api/encrypt-file', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        log(`✅ ${file.name} encrypted successfully`, 'success');
+                        log(`   Algorithm: ${result.algorithm}`, 'info');
+                        log(`   Output: ${result.filename}`, 'info');
+                        if (result.key) {
+                            log(`   Key: ${result.key}`, 'info');
+                        }
+                        
+                        // Add download link
+                        addDownloadLink(result.filename, result.key);
+                    } else {
+                        log(`❌ Failed to encrypt ${file.name}: ${result.error}`, 'error');
+                    }
+
+                    processedFiles++;
+                    updateProgress((processedFiles / totalFiles) * 100);
+                }
+
+                log(`🎉 Encryption complete! Processed ${processedFiles}/${totalFiles} files`, 'success');
+            } catch (error) {
+                log(`💥 Encryption error: ${error.message}`, 'error');
+            } finally {
+                isProcessing = false;
+                hideProgress();
+            }
+        }
+
+        async function encryptText() {
+            const text = document.getElementById('textInput').value;
+            const algorithm = document.getElementById('textAlgorithm').value;
+            const format = document.getElementById('outputFormat').value;
+            const customKey = document.getElementById('textCustomKey').value;
+
+            if (!text.trim()) {
+                log('Error: No text provided for encryption', 'error');
+                return;
+            }
+
+            showOutput();
+            log('Encrypting text...', 'info');
+
+            try {
+                const response = await fetch('/api/encrypt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        input: text,
+                        algorithm: algorithm,
+                        key: customKey || undefined,
+                        format: format
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    log('✅ Text encrypted successfully', 'success');
+                    log(`Algorithm: ${algorithm}`, 'info');
+                    log(`Format: ${format}`, 'info');
+                    log(`Encrypted data:`, 'info');
+                    log(result.data, 'success');
+                } else {
+                    log(`❌ Encryption failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                log(`💥 Encryption error: ${error.message}`, 'error');
+            }
+        }
+
+        async function decryptText() {
+            const text = document.getElementById('textInput').value;
+            const algorithm = document.getElementById('textAlgorithm').value;
+            const customKey = document.getElementById('textCustomKey').value;
+
+            if (!text.trim()) {
+                log('Error: No encrypted text provided', 'error');
+                return;
+            }
+
+            showOutput();
+            log('Decrypting text...', 'info');
+
+            try {
+                const response = await fetch('/api/decrypt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        input: text,
+                        algorithm: algorithm,
+                        key: customKey || undefined
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    log('✅ Text decrypted successfully', 'success');
+                    log(`Decrypted data:`, 'info');
+                    log(result.data, 'success');
+                } else {
+                    log(`❌ Decryption failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                log(`💥 Decryption error: ${error.message}`, 'error');
+            }
+        }
+
+        function showAdvancedOptions() {
+            log('🔧 Advanced Options:', 'info');
+            log('• Double encryption: AES + Camellia', 'info');
+            log('• Triple encryption: AES + Camellia + ChaCha20', 'info');
+            log('• Anti-debugging protection', 'info');
+            log('• Anti-VM detection', 'info');
+            log('• Self-extracting archives', 'info');
+            log('• Password protection', 'info');
+            log('• Custom file extensions', 'info');
+        }
+
+        function batchEncrypt() {
+            if (selectedFiles.length === 0) {
+                log('Error: No files selected for batch encryption', 'error');
+                return;
+            }
+            
+            log('Starting batch encryption...', 'info');
+            encryptFiles();
+        }
+
+        function addDownloadLink(filename, key) {
+            const downloadLinks = document.getElementById('downloadLinks');
+            const link = document.createElement('a');
+            link.href = `/download?filename=${filename}`;
+            link.className = 'download-link';
+            link.textContent = `📥 Download ${filename}`;
+            link.target = '_blank';
+            downloadLinks.appendChild(link);
+            
+            if (key) {
+                const keyLink = document.createElement('a');
+                keyLink.href = `data:text/plain;charset=utf-8,${encodeURIComponent(key)}`;
+                keyLink.className = 'download-link';
+                keyLink.textContent = `🔑 Download Key`;
+                keyLink.download = `${filename}.key`;
+                downloadLinks.appendChild(keyLink);
+            }
+        }
+
+        function showOutput() {
+            document.getElementById('outputPanel').style.display = 'block';
+        }
+
+        function showProgress() {
+            document.getElementById('progressBar').style.display = 'block';
+        }
+
+        function hideProgress() {
+            document.getElementById('progressBar').style.display = 'none';
+        }
+
+        function updateProgress(percentage) {
+            document.getElementById('progressFill').style.width = percentage + '%';
+        }
+
+        function clearOutput() {
+            document.getElementById('logOutput').innerHTML = '';
+            document.getElementById('downloadLinks').innerHTML = '';
+            document.getElementById('outputPanel').style.display = 'none';
+        }
+
+        function log(message, type = 'info') {
+            const output = document.getElementById('logOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            const typeColor = {
+                'info': '#00ffff',
+                'success': '#00ff88',
+                'error': '#ff6b6b',
+                'warning': '#ffd93d'
+            };
+            
+            const logEntry = `[${timestamp}] ${message}\n`;
+            output.innerHTML += `<span style="color: ${typeColor[type]}">${logEntry}</span>`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🔐 RawrZ Advanced Encryption Suite initialized', 'success');
+            log('Ready for file and text encryption operations', 'info');
+            log('Supports any file type with custom extensions', 'info');
+        });
+    </script>
+</body>
+</html>

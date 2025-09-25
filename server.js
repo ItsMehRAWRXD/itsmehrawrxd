@@ -8,7 +8,8 @@ app.get('/health',(_req,res)=>res.json({ok:true,status:'healthy'}));
 app.get('/panel',(_req,res)=>res.sendFile(path.join(__dirname,'public','panel.html')));
 app.get('/compact',(_req,res)=>res.sendFile(path.join(__dirname,'public','compact-panel.html')));
 app.get('/ultra',(_req,res)=>res.sendFile(path.join(__dirname,'public','ultra-compact.html')));
-app.get('/',(_req,res)=>res.redirect('/ultra'));
+app.get('/encrypt',(_req,res)=>res.sendFile(path.join(__dirname,'public','advanced-encryption.html')));
+app.get('/',(_req,res)=>res.redirect('/encrypt'));
 app.post('/hash',requireAuth,async(req,res)=>{try{const{input,algorithm='sha256',save=false,extension}=req.body||{};if(!input)return res.status(400).json({error:'input is required'});res.json(await rawrz.hash(input,algorithm,!!save,extension))}catch(e){res.status(500).json({error:e.message})}});
 app.post('/encrypt',requireAuth,async(req,res)=>{try{const{algorithm,input,extension}=req.body||{};if(!algorithm||!input)return res.status(400).json({error:'algorithm and input required'});res.json(await rawrz.encrypt(algorithm,input,extension))}catch(e){res.status(500).json({error:e.message})}});
 app.post('/decrypt',requireAuth,async(req,res)=>{try{const{algorithm,input,key,iv,extension}=req.body||{};if(!algorithm||!input)return res.status(400).json({error:'algorithm and input required'});res.json(await rawrz.decrypt(algorithm,input,key,iv,extension))}catch(e){res.status(500).json({error:e.message})}});
@@ -19,4 +20,5 @@ app.post('/upload',requireAuth,async(req,res)=>{try{const{filename,base64}=req.b
 app.get('/download',requireAuth,async(req,res)=>{try{const fn=String(req.query.filename||'');if(!fn)return res.status(400).json({error:'filename required'});res.download(path.join(__dirname,'uploads',fn),fn)}catch(e){res.status(500).json({error:e.message})}});
 app.post('/cli',requireAuth,async(req,res)=>{try{const{command,args=[]}=req.body||{};if(!command)return res.status(400).json({error:'command required'});const i=new RawrZStandalone();const out=await i.processCommand([command,...args]);res.json({success:true,result:out})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/api/process-file',requireAuth,upload.single('file'),async(req,res)=>{try{const{mode,algorithm}=req.body||{};const file=req.file;if(!file)return res.status(400).json({error:'file required'});const result=await rawrz.processFile(file,mode,algorithm);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+app.post('/api/encrypt-file',requireAuth,upload.single('file'),async(req,res)=>{try{const{algorithm,extension,autoKey,saveKey,customKey,compress,obfuscate}=req.body||{};const file=req.file;if(!file)return res.status(400).json({error:'file required'});const result=await rawrz.encryptFile(file,algorithm,extension,autoKey,saveKey,customKey,compress,obfuscate);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 app.listen(port,()=>console.log('[OK] RawrZ API listening on port',port));
