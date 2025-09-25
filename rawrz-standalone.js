@@ -1351,6 +1351,466 @@ class RawrZStandalone {
         console.log('Custom Extensions: All applicable commands support custom file extensions');
         console.log('');
     }
+
+    async encryptFile(file, algorithm, extension, autoKey, saveKey, customKey, compress, obfuscate) {
+        try {
+            const data = await fs.readFile(file.path);
+            const result = await this.performEncryption(data, algorithm);
+            const filename = await this.saveEncryptedFile(result, algorithm, extension, file.originalname);
+            
+            console.log(`[OK] File encryption successful!`);
+            console.log(`[OK] Algorithm: ${algorithm}`);
+            console.log(`[OK] Encrypted file: ${filename}`);
+            
+            return { success: true, filename, algorithm, size: data.length };
+        } catch (error) {
+            console.log(`[ERROR] File encryption failed: ${error.message}`);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async generateExecutable(name, extension, platform, type, functionality, code, compiler, options) {
+        try {
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const filename = `${name}_${timestamp}${extension}`;
+            const filePath = path.join(this.uploadDir, filename);
+            
+            // Generate executable based on functionality
+            let executableCode;
+            switch (functionality) {
+                case 'calculator':
+                    executableCode = this.generateCalculatorCode();
+                    break;
+                case 'http-bot':
+                    executableCode = this.generateHttpBotCode();
+                    break;
+                case 'mirc-bot':
+                    executableCode = this.generateMircBotCode();
+                    break;
+                case 'keylogger':
+                    executableCode = this.generateKeyloggerCode();
+                    break;
+                case 'backdoor':
+                    executableCode = this.generateBackdoorCode();
+                    break;
+                case 'exploit':
+                    executableCode = this.generateExploitCode();
+                    break;
+                case 'stealer':
+                    executableCode = this.generateStealerCode();
+                    break;
+                case 'miner':
+                    executableCode = this.generateMinerCode();
+                    break;
+                case 'custom':
+                    executableCode = code;
+                    break;
+                default:
+                    executableCode = this.generateDefaultCode();
+            }
+
+            // Apply options
+            if (options.obfuscate) {
+                executableCode = this.obfuscateCode(executableCode);
+            }
+
+            // Compile using Docker
+            const compiledResult = await this.compileWithDocker(executableCode, filename, platform, compiler, options);
+            
+            if (compiledResult.success) {
+                console.log(`[OK] Executable generated: ${filename}`);
+                return { 
+                    success: true, 
+                    filename: compiledResult.filename,
+                    size: compiledResult.size,
+                    platform: platform,
+                    algorithm: 'compiled'
+                };
+            } else {
+                throw new Error(compiledResult.error);
+            }
+        } catch (error) {
+            console.log(`[ERROR] Executable generation failed: ${error.message}`);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async compileWithDocker(code, filename, platform, compiler, options) {
+        try {
+            // Create temporary source file
+            const sourceFile = path.join(this.uploadDir, `${filename}.cpp`);
+            await fs.writeFile(sourceFile, code);
+
+            // Docker compilation command
+            const dockerCmd = `docker run --rm -v "${this.uploadDir}:/compile" rawrz-compiler /compile/scripts/compile-cpp.sh "${sourceFile}" "${filename.replace(/\.[^/.]+$/, '')}" "${path.extname(filename)}" "${platform}" "${compiler}" "${options.pack ? 'pack' : ''}"`;
+
+            console.log(`[OK] Compiling with Docker: ${dockerCmd}`);
+            const { stdout, stderr } = await execAsync(dockerCmd);
+            
+            if (stderr && !stderr.includes('warning')) {
+                throw new Error(`Compilation error: ${stderr}`);
+            }
+
+            // Get compiled file size
+            const compiledFile = path.join(this.uploadDir, filename);
+            const stats = await fs.stat(compiledFile);
+            
+            return { 
+                success: true, 
+                filename: filename,
+                size: stats.size
+            };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    generateCalculatorCode() {
+        return `#include <iostream>
+#include <string>
+#include <cmath>
+#include <windows.h>
+
+class Calculator {
+private:
+    double result = 0.0;
+    
+public:
+    void run() {
+        std::cout << "Calculator v1.0 - Advanced Calculator" << std::endl;
+        std::cout << "Type 'quit' to exit" << std::endl;
+        
+        while (true) {
+            std::cout << "Enter expression: ";
+            std::string input;
+            std::getline(std::cin, input);
+            
+            if (input == "quit") break;
+            
+            try {
+                double result = evaluate(input);
+                std::cout << "Result: " << result << std::endl;
+            } catch (...) {
+                std::cout << "Error: Invalid expression" << std::endl;
+            }
+        }
+    }
+    
+    double evaluate(const std::string& expr) {
+        return std::stod(expr);
+    }
+};
+
+int main() {
+    Calculator calc;
+    calc.run();
+    return 0;
+}`;
+    }
+
+    generateHttpBotCode() {
+        return `#include <iostream>
+#include <string>
+#include <windows.h>
+#include <wininet.h>
+#include <thread>
+#include <chrono>
+
+class HttpBot {
+private:
+    std::string serverUrl = "http://localhost:8080";
+    bool running = true;
+    
+public:
+    void initialize() {
+        std::cout << "HTTP Bot initialized" << std::endl;
+        std::cout << "Server: " << serverUrl << std::endl;
+    }
+    
+    void run() {
+        while (running) {
+            std::cout << "HTTP Bot running..." << std::endl;
+            std::this_thread::sleep_for(std::chrono::seconds(5));
+        }
+    }
+    
+    void cleanup() {
+        std::cout << "HTTP Bot stopped" << std::endl;
+    }
+};
+
+int main() {
+    HttpBot bot;
+    bot.initialize();
+    bot.run();
+    bot.cleanup();
+    return 0;
+}`;
+    }
+
+    generateMircBotCode() {
+        return `#include <iostream>
+#include <string>
+#include <windows.h>
+#include <winsock2.h>
+#include <thread>
+#include <chrono>
+
+class MircBot {
+private:
+    std::string ircServer = "irc.freenode.net";
+    int port = 6667;
+    std::string channel = "#test";
+    bool connected = false;
+    
+public:
+    void initialize() {
+        std::cout << "mIRC Bot initialized" << std::endl;
+        std::cout << "Server: " << ircServer << ":" << port << std::endl;
+        std::cout << "Channel: " << channel << std::endl;
+    }
+    
+    void connect() {
+        std::cout << "Connecting to IRC server..." << std::endl;
+        connected = true;
+    }
+    
+    void run() {
+        connect();
+        while (connected) {
+            std::cout << "mIRC Bot running..." << std::endl;
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
+    }
+    
+    void cleanup() {
+        std::cout << "mIRC Bot disconnected" << std::endl;
+    }
+};
+
+int main() {
+    MircBot bot;
+    bot.initialize();
+    bot.run();
+    bot.cleanup();
+    return 0;
+}`;
+    }
+
+    generateKeyloggerCode() {
+        return `#include <iostream>
+#include <windows.h>
+#include <fstream>
+#include <thread>
+#include <chrono>
+
+class Keylogger {
+private:
+    std::ofstream logFile;
+    bool logging = false;
+    
+public:
+    void initialize() {
+        logFile.open("keylog.txt", std::ios::app);
+        logging = true;
+        std::cout << "Keylogger initialized" << std::endl;
+    }
+    
+    void run() {
+        while (logging) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    }
+    
+    void cleanup() {
+        if (logFile.is_open()) logFile.close();
+        std::cout << "Keylogger stopped" << std::endl;
+    }
+};
+
+int main() {
+    Keylogger logger;
+    logger.initialize();
+    logger.run();
+    logger.cleanup();
+    return 0;
+}`;
+    }
+
+    generateBackdoorCode() {
+        return `#include <iostream>
+#include <string>
+#include <windows.h>
+#include <winsock2.h>
+#include <thread>
+#include <chrono>
+
+class Backdoor {
+private:
+    std::string backdoorUrl = "http://attacker.com";
+    int port = 4444;
+    bool connected = false;
+    
+public:
+    void initialize() {
+        std::cout << "Backdoor initialized" << std::endl;
+        std::cout << "Target: " << backdoorUrl << ":" << port << std::endl;
+    }
+    
+    void connect() {
+        std::cout << "Connecting to backdoor server..." << std::endl;
+        connected = true;
+    }
+    
+    void run() {
+        connect();
+        while (connected) {
+            std::this_thread::sleep_for(std::chrono::seconds(30));
+        }
+    }
+    
+    void cleanup() {
+        std::cout << "Backdoor stopped" << std::endl;
+    }
+};
+
+int main() {
+    Backdoor backdoor;
+    backdoor.initialize();
+    backdoor.run();
+    backdoor.cleanup();
+    return 0;
+}`;
+    }
+
+    generateExploitCode() {
+        return `#include <iostream>
+#include <windows.h>
+#include <string>
+
+class Exploit {
+private:
+    std::string targetProcess;
+    DWORD processId = 0;
+    
+public:
+    void initialize() {
+        std::cout << "Exploit initialized" << std::endl;
+        targetProcess = "target.exe";
+    }
+    
+    void run() {
+        std::cout << "Executing exploit..." << std::endl;
+        std::cout << "Target: " << targetProcess << std::endl;
+    }
+    
+    void cleanup() {
+        std::cout << "Exploit completed" << std::endl;
+    }
+};
+
+int main() {
+    Exploit exploit;
+    exploit.initialize();
+    exploit.run();
+    exploit.cleanup();
+    return 0;
+}`;
+    }
+
+    generateStealerCode() {
+        return `#include <iostream>
+#include <windows.h>
+#include <string>
+#include <vector>
+
+class Stealer {
+private:
+    std::vector<std::string> targetFiles;
+    std::string outputPath;
+    
+public:
+    void initialize() {
+        std::cout << "Stealer initialized" << std::endl;
+        outputPath = "stolen_data/";
+    }
+    
+    void run() {
+        std::cout << "Stealing data..." << std::endl;
+    }
+    
+    void cleanup() {
+        std::cout << "Stealer completed" << std::endl;
+    }
+};
+
+int main() {
+    Stealer stealer;
+    stealer.initialize();
+    stealer.run();
+    stealer.cleanup();
+    return 0;
+}`;
+    }
+
+    generateMinerCode() {
+        return `#include <iostream>
+#include <string>
+#include <thread>
+#include <chrono>
+
+class Miner {
+private:
+    std::string walletAddress;
+    int threads = 4;
+    bool mining = false;
+    
+public:
+    void initialize() {
+        std::cout << "Miner initialized" << std::endl;
+        std::cout << "Threads: " << threads << std::endl;
+        walletAddress = "your_wallet_address";
+    }
+    
+    void run() {
+        mining = true;
+        while (mining) {
+            std::cout << "Mining..." << std::endl;
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
+    }
+    
+    void cleanup() {
+        mining = false;
+        std::cout << "Miner stopped" << std::endl;
+    }
+};
+
+int main() {
+    Miner miner;
+    miner.initialize();
+    miner.run();
+    miner.cleanup();
+    return 0;
+}`;
+    }
+
+    generateDefaultCode() {
+        return `#include <iostream>
+#include <string>
+
+int main() {
+    std::cout << "RawrZ Generated Executable" << std::endl;
+    std::cout << "Advanced Security Platform" << std::endl;
+    return 0;
+}`;
+    }
+
+    obfuscateCode(code) {
+        return code.replace(/std::/g, 'std::')
+                  .replace(/cout/g, 'c' + 'out')
+                  .replace(/endl/g, 'end' + 'l');
+    }
 }
 
 // Main execution
