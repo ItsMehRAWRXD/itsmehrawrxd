@@ -10,6 +10,7 @@ app.get('/compact',(_req,res)=>res.sendFile(path.join(__dirname,'public','compac
 app.get('/ultra',(_req,res)=>res.sendFile(path.join(__dirname,'public','ultra-compact.html')));
 app.get('/encrypt',(_req,res)=>res.sendFile(path.join(__dirname,'public','advanced-encryption.html')));
 app.get('/executable-generator',(_req,res)=>res.sendFile(path.join(__dirname,'public','executable-generator.html')));
+app.get('/terminal',(_req,res)=>res.sendFile(path.join(__dirname,'public','rawrz-terminal.html')));
 app.get('/',(_req,res)=>res.redirect('/encrypt'));
 // Text encryption/decryption removed - file operations only
 app.get('/dns',requireAuth,async(req,res)=>{try{const h=req.query.hostname;if(!h)return res.status(400).json({error:'hostname required'});res.json(await rawrz.dnsLookup(String(h)))}catch(e){res.status(500).json({error:e.message})}});

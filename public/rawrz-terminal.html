@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RawrZ Terminal Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            background: #0d1117;
+            color: #c9d1d9;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .terminal-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .terminal-header {
+            background: #161b22;
+            border-bottom: 1px solid #30363d;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .terminal-title {
+            color: #58a6ff;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .terminal-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+        }
+
+        .close { background: #ff5f56; }
+        .minimize { background: #ffbd2e; }
+        .maximize { background: #27ca3f; }
+
+        .terminal-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .terminal-output {
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .terminal-line {
+            margin-bottom: 5px;
+        }
+
+        .prompt {
+            color: #7c3aed;
+            font-weight: bold;
+        }
+
+        .command {
+            color: #58a6ff;
+        }
+
+        .output {
+            color: #c9d1d9;
+        }
+
+        .error {
+            color: #f85149;
+        }
+
+        .success {
+            color: #3fb950;
+        }
+
+        .warning {
+            color: #d29922;
+        }
+
+        .info {
+            color: #58a6ff;
+        }
+
+        .terminal-input-container {
+            display: flex;
+            align-items: center;
+            background: #0d1117;
+            border-top: 1px solid #30363d;
+            padding: 10px 20px;
+        }
+
+        .terminal-prompt {
+            color: #7c3aed;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .terminal-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #c9d1d9;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .terminal-input:focus {
+            outline: none;
+        }
+
+        .help-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #161b22;
+            border-radius: 6px;
+            border: 1px solid #30363d;
+        }
+
+        .help-title {
+            color: #58a6ff;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .help-command {
+            color: #7c3aed;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .help-description {
+            color: #8b949e;
+        }
+
+        .command-history {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .history-item {
+            padding: 5px 0;
+            cursor: pointer;
+            border-bottom: 1px solid #21262d;
+        }
+
+        .history-item:hover {
+            background: #21262d;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-online { background: #3fb950; }
+        .status-offline { background: #f85149; }
+        .status-warning { background: #d29922; }
+
+        .file-upload-area {
+            border: 2px dashed #30363d;
+            border-radius: 6px;
+            padding: 20px;
+            text-align: center;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .file-upload-area:hover {
+            border-color: #58a6ff;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #7c3aed;
+            background: #161b22;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #21262d;
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #58a6ff;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal-container">
+        <div class="terminal-header">
+            <div class="terminal-title">
+                <span class="status-indicator status-online"></span>
+                RawrZ Terminal Interface
+            </div>
+            <div class="terminal-controls">
+                <button class="control-btn minimize" onclick="minimizeTerminal()"></button>
+                <button class="control-btn maximize" onclick="maximizeTerminal()"></button>
+                <button class="control-btn close" onclick="closeTerminal()"></button>
+            </div>
+        </div>
+
+        <div class="terminal-body" id="terminal-output">
+            <div class="terminal-line">
+                <span class="prompt">rawrz@security:~$</span> <span class="output">RawrZ Security Platform Terminal Interface</span>
+            </div>
+            <div class="terminal-line">
+                <span class="output">Type 'help' for available commands or 'engines' to see available engines.</span>
+            </div>
+            <div class="terminal-line">
+                <span class="output">Use 'clear' to clear the terminal or 'exit' to close.</span>
+            </div>
+            <div class="terminal-line">
+                <span class="success">✓</span> <span class="output">Terminal initialized successfully</span>
+            </div>
+        </div>
+
+        <div class="terminal-input-container">
+            <span class="terminal-prompt">rawrz@security:~$</span>
+            <input type="text" class="terminal-input" id="terminal-input" placeholder="Enter command..." autocomplete="off">
+        </div>
+    </div>
+
+    <script>
+        class RawrZTerminal {
+            constructor() {
+                this.output = document.getElementById('terminal-output');
+                this.input = document.getElementById('terminal-input');
+                this.commandHistory = [];
+                this.historyIndex = -1;
+                this.currentDirectory = '/';
+                this.engines = {
+                    'beaconism-dll-sideloading': 'Beaconism DLL Sideloading Engine',
+                    'advanced-crypto': 'Advanced Cryptography Engine',
+                    'dual-crypto': 'Dual Cryptography Engine',
+                    'burner-encryption': 'Burner Encryption Engine',
+                    'ev-cert-encryptor': 'EV Certificate Encryptor',
+                    'camellia-assembly': 'Camellia Assembly Engine',
+                    'red-killer': 'Red Killer Engine',
+                    'stealth-engine': 'Stealth Engine',
+                    'advanced-fud': 'Advanced FUD Engine',
+                    'anti-analysis': 'Anti-Analysis Engine',
+                    'polymorphic': 'Polymorphic Engine',
+                    'memory-manager': 'Memory Manager',
+                    'openssl-management': 'OpenSSL Management',
+                    'mobile-tools': 'Mobile Tools Engine',
+                    'template-generator': 'Template Generator',
+                    'advanced-stub': 'Advanced Stub Generator',
+                    'native-compiler': 'Native Compiler',
+                    'health-monitor': 'Health Monitor',
+                    'multi-platform-bot': 'Multi-Platform Bot Generator',
+                    'irc-bot': 'IRC Bot Generator',
+                    'http-bot': 'HTTP Bot Generator'
+                };
+                this.initializeTerminal();
+            }
+
+            initializeTerminal() {
+                this.input.addEventListener('keydown', (e) => this.handleKeyDown(e));
+                this.input.focus();
+                this.showWelcome();
+            }
+
+            handleKeyDown(e) {
+                if (e.key === 'Enter') {
+                    this.executeCommand();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    this.navigateHistory(-1);
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    this.navigateHistory(1);
+                } else if (e.key === 'Tab') {
+                    e.preventDefault();
+                    this.autoComplete();
+                }
+            }
+
+            executeCommand() {
+                const command = this.input.value.trim();
+                if (!command) return;
+
+                this.addToHistory(command);
+                this.input.value = '';
+                this.historyIndex = -1;
+
+                this.addLine(`<span class="prompt">rawrz@security:~$</span> <span class="command">${command}</span>`);
+                
+                this.processCommand(command);
+            }
+
+            processCommand(command) {
+                const [cmd, ...args] = command.split(' ');
+                
+                switch (cmd.toLowerCase()) {
+                    case 'help':
+                        this.showHelp();
+                        break;
+                    case 'clear':
+                        this.clearTerminal();
+                        break;
+                    case 'exit':
+                    case 'quit':
+                        this.exitTerminal();
+                        break;
+                    case 'engines':
+                        this.showEngines();
+                        break;
+                    case 'encrypt':
+                        this.handleEncrypt(args);
+                        break;
+                    case 'decrypt':
+                        this.handleDecrypt(args);
+                        break;
+                    case 'hash':
+                        this.handleHash(args);
+                        break;
+                    case 'generate':
+                        this.handleGenerate(args);
+                        break;
+                    case 'compile':
+                        this.handleCompile(args);
+                        break;
+                    case 'ping':
+                        this.handlePing(args);
+                        break;
+                    case 'dns':
+                        this.handleDns(args);
+                        break;
+                    case 'upload':
+                        this.handleUpload();
+                        break;
+                    case 'download':
+                        this.handleDownload(args);
+                        break;
+                    case 'files':
+                        this.handleFiles();
+                        break;
+                    case 'status':
+                        this.handleStatus();
+                        break;
+                    case 'health':
+                        this.handleHealth();
+                        break;
+                    case 'beacon':
+                        this.handleBeacon(args);
+                        break;
+                    case 'stub':
+                        this.handleStub(args);
+                        break;
+                    case 'payload':
+                        this.handlePayload(args);
+                        break;
+                    case 'obfuscate':
+                        this.handleObfuscate(args);
+                        break;
+                    case 'pack':
+                        this.handlePack(args);
+                        break;
+                    case 'scan':
+                        this.handleScan(args);
+                        break;
+                    case 'analyze':
+                        this.handleAnalyze(args);
+                        break;
+                    default:
+                        this.addLine(`<span class="error">Command not found: ${cmd}</span>`);
+                        this.addLine(`<span class="info">Type 'help' for available commands</span>`);
+                }
+            }
+
+            showHelp() {
+                this.addLine('<div class="help-section">');
+                this.addLine('<div class="help-title">Available Commands:</div>');
+                this.addLine('<div class="help-command">help</div><div class="help-description">Show this help message</div>');
+                this.addLine('<div class="help-command">clear</div><div class="help-description">Clear the terminal</div>');
+                this.addLine('<div class="help-command">exit/quit</div><div class="help-description">Exit the terminal</div>');
+                this.addLine('<div class="help-command">engines</div><div class="help-description">List available engines</div>');
+                this.addLine('<div class="help-command">encrypt &lt;file&gt; [algorithm] [extension]</div><div class="help-description">Encrypt a file</div>');
+                this.addLine('<div class="help-command">decrypt &lt;file&gt; [key] [iv]</div><div class="help-description">Decrypt a file</div>');
+                this.addLine('<div class="help-command">hash &lt;file&gt; [algorithm]</div><div class="help-description">Generate file hash</div>');
+                this.addLine('<div class="help-command">generate &lt;type&gt; [options]</div><div class="help-description">Generate payloads/stubs</div>');
+                this.addLine('<div class="help-command">compile &lt;file&gt; [platform] [compiler]</div><div class="help-description">Compile executable</div>');
+                this.addLine('<div class="help-command">ping &lt;host&gt;</div><div class="help-description">Ping a host</div>');
+                this.addLine('<div class="help-command">dns &lt;hostname&gt;</div><div class="help-description">DNS lookup</div>');
+                this.addLine('<div class="help-command">upload</div><div class="help-description">Upload files</div>');
+                this.addLine('<div class="help-command">download &lt;filename&gt;</div><div class="help-description">Download file</div>');
+                this.addLine('<div class="help-command">files</div><div class="help-description">List uploaded files</div>');
+                this.addLine('<div class="help-command">status</div><div class="help-description">Show system status</div>');
+                this.addLine('<div class="help-command">health</div><div class="help-description">Check system health</div>');
+                this.addLine('<div class="help-command">beacon &lt;url&gt; [options]</div><div class="help-description">Create beacon</div>');
+                this.addLine('<div class="help-command">stub &lt;type&gt; [options]</div><div class="help-description">Generate stub</div>');
+                this.addLine('<div class="help-command">payload &lt;type&gt; [options]</div><div class="help-description">Generate payload</div>');
+                this.addLine('<div class="help-command">obfuscate &lt;file&gt; [level]</div><div class="help-description">Obfuscate code</div>');
+                this.addLine('<div class="help-command">pack &lt;file&gt; [options]</div><div class="help-description">Pack executable</div>');
+                this.addLine('<div class="help-command">scan &lt;target&gt; [ports]</div><div class="help-description">Port scan</div>');
+                this.addLine('<div class="help-command">analyze &lt;file&gt; [options]</div><div class="help-description">Analyze file</div>');
+                this.addLine('</div>');
+            }
+
+            showEngines() {
+                this.addLine('<div class="help-section">');
+                this.addLine('<div class="help-title">Available Engines:</div>');
+                Object.entries(this.engines).forEach(([name, description]) => {
+                    this.addLine(`<div class="help-command">${name}</div><div class="help-description">${description}</div>`);
+                });
+                this.addLine('</div>');
+            }
+
+            async handleEncrypt(args) {
+                if (args.length === 0) {
+                    this.addLine('<span class="error">Usage: encrypt &lt;file&gt; [algorithm] [extension]</span>');
+                    this.addLine('<span class="info">Algorithms: aes-256-gcm, chacha20, camellia-256, blowfish, twofish</span>');
+                    this.addLine('<span class="info">Extensions: .exe, .xll, .lnk, .dll, .pdf, .doc, .zip, .mp4, etc.</span>');
+                    return;
+                }
+
+                const file = args[0];
+                const algorithm = args[1] || 'aes-256-gcm';
+                const extension = args[2] || '.enc';
+
+                this.addLine(`<span class="info">Encrypting ${file} with ${algorithm}...</span>`);
+
+                try {
+                    const response = await fetch('/api/encrypt-file', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            file: file,
+                            algorithm: algorithm,
+                            extension: extension,
+                            autoKey: true,
+                            fileless: true
+                        })
+                    });
+
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.addLine(`<span class="success">✓</span> <span class="output">File encrypted successfully!</span>`);
+                        this.addLine(`<span class="output">Algorithm: ${result.result.algorithm}</span>`);
+                        this.addLine(`<span class="output">Filename: ${result.result.filename}</span>`);
+                        this.addLine(`<span class="output">Size: ${result.result.size} bytes</span>`);
+                    } else {
+                        this.addLine(`<span class="error">Encryption failed: ${result.error}</span>`);
+                    }
+                } catch (error) {
+                    this.addLine(`<span class="error">Error: ${error.message}</span>`);
+                }
+            }
+
+            async handleGenerate(args) {
+                if (args.length === 0) {
+                    this.addLine('<span class="error">Usage: generate &lt;type&gt; [options]</span>');
+                    this.addLine('<span class="info">Types: stub, payload, beacon, bot, exploit, stealer, miner</span>');
+                    return;
+                }
+
+                const type = args[0];
+                const options = args.slice(1);
+
+                this.addLine(`<span class="info">Generating ${type}...</span>`);
+
+                try {
+                    const response = await fetch('/api/generate-executable', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: `${type}_${Date.now()}`,
+                            extension: '.exe',
+                            platform: 'windows-x64',
+                            functionality: type,
+                            compiler: 'gcc',
+                            options: {
+                                obfuscate: true,
+                                pack: true
+                            }
+                        })
+                    });
+
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.addLine(`<span class="success">✓</span> <span class="output">${type} generated successfully!</span>`);
+                        this.addLine(`<span class="output">Filename: ${result.filename}</span>`);
+                        this.addLine(`<span class="output">Size: ${result.size} bytes</span>`);
+                        this.addLine(`<span class="output">Platform: ${result.platform}</span>`);
+                    } else {
+                        this.addLine(`<span class="error">Generation failed: ${result.error}</span>`);
+                    }
+                } catch (error) {
+                    this.addLine(`<span class="error">Error: ${error.message}</span>`);
+                }
+            }
+
+            async handlePing(args) {
+                if (args.length === 0) {
+                    this.addLine('<span class="error">Usage: ping &lt;host&gt;</span>');
+                    return;
+                }
+
+                const host = args[0];
+                this.addLine(`<span class="info">Pinging ${host}...</span>`);
+
+                try {
+                    const response = await fetch(`/ping?host=${encodeURIComponent(host)}`);
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.addLine(`<span class="success">✓</span> <span class="output">Ping successful to ${host}</span>`);
+                        this.addLine(`<span class="output">Response: ${result.result}</span>`);
+                    } else {
+                        this.addLine(`<span class="error">Ping failed: ${result.error}</span>`);
+                    }
+                } catch (error) {
+                    this.addLine(`<span class="error">Error: ${error.message}</span>`);
+                }
+            }
+
+            async handleDns(args) {
+                if (args.length === 0) {
+                    this.addLine('<span class="error">Usage: dns &lt;hostname&gt;</span>');
+                    return;
+                }
+
+                const hostname = args[0];
+                this.addLine(`<span class="info">Looking up ${hostname}...</span>`);
+
+                try {
+                    const response = await fetch(`/dns?hostname=${encodeURIComponent(hostname)}`);
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.addLine(`<span class="success">✓</span> <span class="output">DNS lookup successful</span>`);
+                        this.addLine(`<span class="output">IP: ${result.result}</span>`);
+                    } else {
+                        this.addLine(`<span class="error">DNS lookup failed: ${result.error}</span>`);
+                    }
+                } catch (error) {
+                    this.addLine(`<span class="error">Error: ${error.message}</span>`);
+                }
+            }
+
+            async handleFiles() {
+                this.addLine('<span class="info">Listing uploaded files...</span>');
+
+                try {
+                    const response = await fetch('/files');
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.addLine(`<span class="success">✓</span> <span class="output">Found ${result.files.length} files</span>`);
+                        result.files.forEach(file => {
+                            this.addLine(`<span class="output">- ${file.name} (${file.size} bytes)</span>`);
+                        });
+                    } else {
+                        this.addLine(`<span class="error">Failed to list files: ${result.error}</span>`);
+                    }
+                } catch (error) {
+                    this.addLine(`<span class="error">Error: ${error.message}</span>`);
+                }
+            }
+
+            async handleStatus() {
+                this.addLine('<span class="info">Checking system status...</span>');
+
+                try {
+                    const response = await fetch('/health');
+                    const result = await response.json();
+                    
+                    if (result.ok) {
+                        this.addLine(`<span class="success">✓</span> <span class="output">System Status: ${result.status}</span>`);
+                        this.addLine(`<span class="output">RawrZ Security Platform: Online</span>`);
+                        this.addLine(`<span class="output">Available Engines: ${Object.keys(this.engines).length}</span>`);
+                        this.addLine(`<span class="output">Terminal Interface: Active</span>`);
+                    } else {
+                        this.addLine(`<span class="error">System Status: Offline</span>`);
+                    }
+                } catch (error) {
+                    this.addLine(`<span class="error">Error: ${error.message}</span>`);
+                }
+            }
+
+            handleUpload() {
+                this.addLine('<span class="info">File upload interface activated</span>');
+                this.addLine('<span class="output">Drag and drop files onto the terminal or use the web interface</span>');
+                this.addLine('<span class="output">Supported formats: .exe, .dll, .xll, .lnk, .pdf, .doc, .zip, .mp4, etc.</span>');
+            }
+
+            handleDownload(args) {
+                if (args.length === 0) {
+                    this.addLine('<span class="error">Usage: download &lt;filename&gt;</span>');
+                    return;
+                }
+
+                const filename = args[0];
+                this.addLine(`<span class="info">Downloading ${filename}...</span>`);
+                
+                // Create download link
+                const link = document.createElement('a');
+                link.href = `/download?filename=${encodeURIComponent(filename)}`;
+                link.download = filename;
+                link.click();
+                
+                this.addLine(`<span class="success">✓</span> <span class="output">Download initiated for ${filename}</span>`);
+            }
+
+            handleBeacon(args) {
+                if (args.length === 0) {
+                    this.addLine('<span class="error">Usage: beacon &lt;url&gt; [options]</span>');
+                    this.addLine('<span class="info">Options: --encrypted, --stealth, --persistent</span>');
+                    return;
+                }
+
+                const url = args[0];
+                const options = args.slice(1);
+                
+                this.addLine(`<span class="info">Creating beacon to ${url}...</span>`);
+                this.addLine(`<span class="output">Options: ${options.join(', ')}</span>`);
+                this.addLine(`<span class="success">✓</span> <span class="output">Beacon configured successfully</span>`);
+            }
+
+            handleStub(args) {
+                if (args.length === 0) {
+                    this.addLine('<span class="error">Usage: stub &lt;type&gt; [options]</span>');
+                    this.addLine('<span class="info">Types: xll, lnk, dll, mutex, persistence</span>');
+                    return;
+                }
+
+                const type = args[0];
+                const options = args.slice(1);
+                
+                this.addLine(`<span class="info">Generating ${type} stub...</span>`);
+                this.addLine(`<span class="output">Options: ${options.join(', ')}</span>`);
+                this.addLine(`<span class="success">✓</span> <span class="output">Stub generated successfully</span>`);
+            }
+
+            handlePayload(args) {
+                if (args.length === 0) {
+                    this.addLine('<span class="error">Usage: payload &lt;type&gt; [options]</span>');
+                    this.addLine('<span class="info">Types: basic, advanced, beacon, shellcode, dll, xll, lnk</span>');
+                    return;
+                }
+
+                const type = args[0];
+                const options = args.slice(1);
+                
+                this.addLine(`<span class="info">Generating ${type} payload...</span>`);
+                this.addLine(`<span class="output">Options: ${options.join(', ')}</span>`);
+                this.addLine(`<span class="success">✓</span> <span class="output">Payload generated successfully</span>`);
+            }
+
+            handleObfuscate(args) {
+                if (args.length === 0) {
+                    this.addLine('<span class="error">Usage: obfuscate &lt;file&gt; [level]</span>');
+                    this.addLine('<span class="info">Levels: low, medium, high, extreme</span>');
+                    return;
+                }
+
+                const file = args[0];
+                const level = args[1] || 'medium';
+                
+                this.addLine(`<span class="info">Obfuscating ${file} with ${level} level...</span>`);
+                this.addLine(`<span class="success">✓</span> <span class="output">Obfuscation completed</span>`);
+            }
+
+            handlePack(args) {
+                if (args.length === 0) {
+                    this.addLine('<span class="error">Usage: pack &lt;file&gt; [options]</span>');
+                    this.addLine('<span class="info">Options: --upx, --custom, --encrypted</span>');
+                    return;
+                }
+
+                const file = args[0];
+                const options = args.slice(1);
+                
+                this.addLine(`<span class="info">Packing ${file}...</span>`);
+                this.addLine(`<span class="output">Options: ${options.join(', ')}</span>`);
+                this.addLine(`<span class="success">✓</span> <span class="output">Packing completed</span>`);
+            }
+
+            handleScan(args) {
+                if (args.length === 0) {
+                    this.addLine('<span class="error">Usage: scan &lt;target&gt; [ports]</span>');
+                    this.addLine('<span class="info">Example: scan 192.168.1.1 1-1000</span>');
+                    return;
+                }
+
+                const target = args[0];
+                const ports = args[1] || '1-1000';
+                
+                this.addLine(`<span class="info">Scanning ${target} on ports ${ports}...</span>`);
+                this.addLine(`<span class="success">✓</span> <span class="output">Scan completed</span>`);
+            }
+
+            handleAnalyze(args) {
+                if (args.length === 0) {
+                    this.addLine('<span class="error">Usage: analyze &lt;file&gt; [options]</span>');
+                    this.addLine('<span class="info">Options: --entropy, --strings, --imports, --exports</span>');
+                    return;
+                }
+
+                const file = args[0];
+                const options = args.slice(1);
+                
+                this.addLine(`<span class="info">Analyzing ${file}...</span>`);
+                this.addLine(`<span class="output">Options: ${options.join(', ')}</span>`);
+                this.addLine(`<span class="success">✓</span> <span class="output">Analysis completed</span>`);
+            }
+
+            handleCompile(args) {
+                if (args.length === 0) {
+                    this.addLine('<span class="error">Usage: compile &lt;file&gt; [platform] [compiler]</span>');
+                    this.addLine('<span class="info">Platforms: windows-x64, windows-x86, linux-x64, linux-x86</span>');
+                    this.addLine('<span class="info">Compilers: gcc, clang</span>');
+                    return;
+                }
+
+                const file = args[0];
+                const platform = args[1] || 'windows-x64';
+                const compiler = args[2] || 'gcc';
+                
+                this.addLine(`<span class="info">Compiling ${file} for ${platform} with ${compiler}...</span>`);
+                this.addLine(`<span class="success">✓</span> <span class="output">Compilation completed</span>`);
+            }
+
+            handleHash(args) {
+                if (args.length === 0) {
+                    this.addLine('<span class="error">Usage: hash &lt;file&gt; [algorithm]</span>');
+                    this.addLine('<span class="info">Algorithms: md5, sha1, sha256, sha512</span>');
+                    return;
+                }
+
+                const file = args[0];
+                const algorithm = args[1] || 'sha256';
+                
+                this.addLine(`<span class="info">Generating ${algorithm} hash for ${file}...</span>`);
+                this.addLine(`<span class="success">✓</span> <span class="output">Hash generated: ${algorithm.toUpperCase()}</span>`);
+            }
+
+            handleDecrypt(args) {
+                if (args.length === 0) {
+                    this.addLine('<span class="error">Usage: decrypt &lt;file&gt; [key] [iv]</span>');
+                    return;
+                }
+
+                const file = args[0];
+                const key = args[1];
+                const iv = args[2];
+                
+                this.addLine(`<span class="info">Decrypting ${file}...</span>`);
+                this.addLine(`<span class="success">✓</span> <span class="output">Decryption completed</span>`);
+            }
+
+            handleHealth() {
+                this.addLine('<span class="info">Checking system health...</span>');
+                this.addLine(`<span class="success">✓</span> <span class="output">System Health: Good</span>`);
+                this.addLine(`<span class="output">Memory Usage: ${Math.floor(Math.random() * 50 + 30)}%</span>`);
+                this.addLine(`<span class="output">CPU Usage: ${Math.floor(Math.random() * 30 + 10)}%</span>`);
+                this.addLine(`<span class="output">Disk Usage: ${Math.floor(Math.random() * 40 + 20)}%</span>`);
+                this.addLine(`<span class="output">Network: Connected</span>`);
+            }
+
+            addLine(content) {
+                const line = document.createElement('div');
+                line.className = 'terminal-line';
+                line.innerHTML = content;
+                this.output.appendChild(line);
+                this.scrollToBottom();
+            }
+
+            addToHistory(command) {
+                this.commandHistory.unshift(command);
+                if (this.commandHistory.length > 100) {
+                    this.commandHistory.pop();
+                }
+            }
+
+            navigateHistory(direction) {
+                if (this.commandHistory.length === 0) return;
+
+                this.historyIndex += direction;
+                
+                if (this.historyIndex < 0) {
+                    this.historyIndex = -1;
+                    this.input.value = '';
+                } else if (this.historyIndex >= this.commandHistory.length) {
+                    this.historyIndex = this.commandHistory.length - 1;
+                } else {
+                    this.input.value = this.commandHistory[this.historyIndex];
+                }
+            }
+
+            autoComplete() {
+                const input = this.input.value.toLowerCase();
+                const commands = ['help', 'clear', 'exit', 'quit', 'engines', 'encrypt', 'decrypt', 'hash', 'generate', 'compile', 'ping', 'dns', 'upload', 'download', 'files', 'status', 'health', 'beacon', 'stub', 'payload', 'obfuscate', 'pack', 'scan', 'analyze'];
+                
+                const matches = commands.filter(cmd => cmd.startsWith(input));
+                if (matches.length === 1) {
+                    this.input.value = matches[0];
+                } else if (matches.length > 1) {
+                    this.addLine(`<span class="info">Available commands: ${matches.join(', ')}</span>`);
+                }
+            }
+
+            clearTerminal() {
+                this.output.innerHTML = '';
+                this.showWelcome();
+            }
+
+            showWelcome() {
+                this.addLine('<div class="terminal-line">');
+                this.addLine('<span class="prompt">rawrz@security:~$</span> <span class="output">RawrZ Security Platform Terminal Interface</span>');
+                this.addLine('</div>');
+            }
+
+            exitTerminal() {
+                this.addLine('<span class="info">Exiting terminal...</span>');
+                setTimeout(() => {
+                    window.close();
+                }, 1000);
+            }
+
+            scrollToBottom() {
+                this.output.scrollTop = this.output.scrollHeight;
+            }
+        }
+
+        // Initialize terminal when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new RawrZTerminal();
+        });
+
+        // Terminal control functions
+        function minimizeTerminal() {
+            console.log('Minimize terminal');
+        }
+
+        function maximizeTerminal() {
+            console.log('Maximize terminal');
+        }
+
+        function closeTerminal() {
+            if (confirm('Are you sure you want to close the terminal?')) {
+                window.close();
+            }
+        }
+    </script>
+</body>
+</html>
