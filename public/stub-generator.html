@@ -417,6 +417,17 @@
                         <label for="enableEvasion">Enable Anti-Detection</label>
                     </div>
 
+                    <div class="form-group">
+                        <label for="repackSpins">Repack Spins (Unlimited Stub Generator)</label>
+                        <input type="number" id="repackSpins" min="1" max="10" value="3" placeholder="Number of spins before final stub">
+                        <small style="color: #8b949e; font-size: 12px;">Number of times to spin/repack before producing final stub (1-10)</small>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="enableRepack" checked>
+                        <label for="enableRepack">Enable Repack Spinning</label>
+                    </div>
+
                     <button class="btn btn-secondary" onclick="configureHotPatch()">Configure Hot Patch</button>
                 </div>
             </div>
@@ -622,6 +633,8 @@ int main() {
             const enableObfuscation = document.getElementById('enableObfuscation').checked;
             const enablePacking = document.getElementById('enablePacking').checked;
             const enableEncryption = document.getElementById('enableEncryption').checked;
+            const enableRepack = document.getElementById('enableRepack').checked;
+            const repackSpins = parseInt(document.getElementById('repackSpins').value) || 3;
 
             addOutput(`🚀 Starting stub generation...`, 'info');
             addOutput(`📝 Stub Name: ${stubName}`, 'info');
@@ -629,28 +642,61 @@ int main() {
             addOutput(`💻 Platform: ${targetPlatform}`, 'info');
             addOutput(`⚙️ Compiler: ${compiler}`, 'info');
 
+            if (enableRepack) {
+                addOutput(`🔄 Repack Spinning: ${repackSpins} spins enabled`, 'info');
+            }
+
             try {
-                // Simulate generation process
-                for (let i = 0; i <= 100; i += 10) {
-                    await new Promise(resolve => setTimeout(resolve, 200));
+                let totalProgress = 0;
+                const progressIncrement = 100 / (enableRepack ? repackSpins + 1 : 1);
+                
+                if (enableRepack) {
+                    // Repack spinning process
+                    for (let spin = 1; spin <= repackSpins; spin++) {
+                        addOutput(`🔄 Repack Spin ${spin}/${repackSpins}...`, 'info');
+                        
+                        // Simulate spinning process
+                        for (let i = 0; i < progressIncrement; i += 2) {
+                            await new Promise(resolve => setTimeout(resolve, 100));
+                            totalProgress += 2;
+                            updateProgress(Math.min(totalProgress, 100));
+                        }
+                        
+                        addOutput(`✅ Spin ${spin} completed`, 'success');
+                        
+                        if (spin < repackSpins) {
+                            addOutput(`🔄 Preparing next spin...`, 'info');
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                        }
+                    }
+                    
+                    addOutput(`🎯 Final stub generation...`, 'info');
+                }
+                
+                // Final generation process
+                for (let i = totalProgress; i <= 100; i += 5) {
+                    await new Promise(resolve => setTimeout(resolve, 150));
                     updateProgress(i);
                     
-                    if (i === 20) {
+                    if (i === totalProgress + 20) {
                         addOutput(`🔍 Analyzing requirements...`, 'info');
-                    } else if (i === 40) {
+                    } else if (i === totalProgress + 40) {
                         addOutput(`📦 Generating source code...`, 'info');
-                    } else if (i === 60) {
+                    } else if (i === totalProgress + 60) {
                         if (enableObfuscation) {
                             addOutput(`🔒 Applying obfuscation...`, 'info');
                         }
-                    } else if (i === 80) {
+                    } else if (i === totalProgress + 80) {
                         if (enablePacking) {
                             addOutput(`📦 Packing executable...`, 'info');
                         }
-                    } else if (i === 100) {
+                    } else if (i >= 100) {
                         addOutput(`✅ Stub generated successfully!`, 'success');
                         addOutput(`📁 Output: ${stubName}.exe`, 'success');
                         addOutput(`🔧 Size: ${Math.floor(Math.random() * 500 + 100)}KB`, 'success');
+                        if (enableRepack) {
+                            addOutput(`🔄 Repack Spins: ${repackSpins} completed`, 'success');
+                        }
                         updateStatus('Stub generated successfully!', 'success');
                     }
                 }
