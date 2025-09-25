@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RawrZ Stub Generator with Hot Patching</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            background: #0d1117;
+            color: #c9d1d9;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #161b22, #0d1117);
+            border-radius: 12px;
+            border: 1px solid #30363d;
+        }
+
+        .header h1 {
+            color: #58a6ff;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #8b949e;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .panel {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .panel h2 {
+            color: #7c3aed;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #7c3aed;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #c9d1d9;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #c9d1d9;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #58a6ff;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #58a6ff, #7c3aed);
+            color: #0d1117;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(88, 166, 255, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #30363d, #21262d);
+            color: #c9d1d9;
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 8px 25px rgba(48, 54, 61, 0.3);
+        }
+
+        .output-panel {
+            grid-column: 1 / -1;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .output-panel h2 {
+            color: #3fb950;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .output-content {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 20px;
+            min-height: 200px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow-x: auto;
+        }
+
+        .status {
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .status.success {
+            background: rgba(63, 185, 80, 0.1);
+            color: #3fb950;
+            border: 1px solid rgba(63, 185, 80, 0.3);
+        }
+
+        .status.error {
+            background: rgba(248, 81, 73, 0.1);
+            color: #f85149;
+            border: 1px solid rgba(248, 81, 73, 0.3);
+        }
+
+        .status.info {
+            background: rgba(88, 166, 255, 0.1);
+            color: #58a6ff;
+            border: 1px solid rgba(88, 166, 255, 0.3);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #21262d;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #58a6ff, #7c3aed);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .hot-patch-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .patch-option {
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 15px;
+        }
+
+        .patch-option h4 {
+            color: #7c3aed;
+            margin-bottom: 10px;
+        }
+
+        .patch-option label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #8b949e;
+        }
+
+        .advanced-options {
+            margin-top: 20px;
+            padding: 20px;
+            background: #21262d;
+            border-radius: 6px;
+            border: 1px solid #30363d;
+        }
+
+        .advanced-options h3 {
+            color: #7c3aed;
+            margin-bottom: 15px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 6px 6px 0 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: #0d1117;
+            border-bottom-color: #0d1117;
+            color: #58a6ff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .hot-patch-controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 RawrZ Stub Generator</h1>
+            <p>Generate executable stubs with hot patching capabilities and dynamic code injection</p>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('generator')">Stub Generator</div>
+            <div class="tab" onclick="switchTab('hotpatch')">Hot Patching</div>
+            <div class="tab" onclick="switchTab('advanced')">Advanced Options</div>
+        </div>
+
+        <div id="generator" class="tab-content active">
+            <div class="main-content">
+                <div class="panel">
+                    <h2>📝 Stub Configuration</h2>
+                    
+                    <div class="form-group">
+                        <label for="stubName">Stub Name</label>
+                        <input type="text" id="stubName" placeholder="my_stub" value="generated_stub">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="stubType">Stub Type</label>
+                        <select id="stubType">
+                            <option value="basic">Basic Executable</option>
+                            <option value="dll">DLL Stub</option>
+                            <option value="service">Windows Service</option>
+                            <option value="console">Console Application</option>
+                            <option value="gui">GUI Application</option>
+                            <option value="injector">Code Injector</option>
+                            <option value="beacon">Beacon Stub</option>
+                            <option value="persistence">Persistence Module</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="targetPlatform">Target Platform</label>
+                        <select id="targetPlatform">
+                            <option value="windows-x64">Windows x64</option>
+                            <option value="windows-x86">Windows x86</option>
+                            <option value="linux-x64">Linux x64</option>
+                            <option value="cross-platform">Cross Platform</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="compiler">Compiler</label>
+                        <select id="compiler">
+                            <option value="gcc">GCC</option>
+                            <option value="clang">Clang</option>
+                            <option value="msvc">MSVC</option>
+                            <option value="mingw">MinGW</option>
+                        </select>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="enableObfuscation" checked>
+                        <label for="enableObfuscation">Enable Code Obfuscation</label>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="enablePacking" checked>
+                        <label for="enablePacking">Enable Executable Packing</label>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="enableEncryption">
+                        <label for="enableEncryption">Enable Payload Encryption</label>
+                    </div>
+
+                    <button class="btn" onclick="generateStub()">Generate Stub</button>
+                </div>
+
+                <div class="panel">
+                    <h2>🔧 Hot Patching Options</h2>
+                    
+                    <div class="form-group">
+                        <label for="patchType">Patch Type</label>
+                        <select id="patchType">
+                            <option value="runtime">Runtime Patching</option>
+                            <option value="memory">Memory Injection</option>
+                            <option value="dll">DLL Injection</option>
+                            <option value="api">API Hooking</option>
+                            <option value="beacon">Beacon Injection</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="targetProcess">Target Process (optional)</label>
+                        <input type="text" id="targetProcess" placeholder="notepad.exe, explorer.exe, etc.">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="injectionMethod">Injection Method</label>
+                        <select id="injectionMethod">
+                            <option value="manual">Manual DLL Mapping</option>
+                            <option value="createremotethread">CreateRemoteThread</option>
+                            <option value="setwindowshookex">SetWindowsHookEx</option>
+                            <option value="reflective">Reflective DLL Loading</option>
+                            <option value="processhollowing">Process Hollowing</option>
+                        </select>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="enableStealth" checked>
+                        <label for="enableStealth">Enable Stealth Mode</label>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="enablePersistence">
+                        <label for="enablePersistence">Enable Persistence</label>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="enableEvasion">
+                        <label for="enableEvasion">Enable Anti-Detection</label>
+                    </div>
+
+                    <button class="btn btn-secondary" onclick="configureHotPatch()">Configure Hot Patch</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="hotpatch" class="tab-content">
+            <div class="panel">
+                <h2>🔥 Hot Patching Engine</h2>
+                
+                <div class="hot-patch-controls">
+                    <div class="patch-option">
+                        <h4>Code Injection</h4>
+                        <label>
+                            <input type="checkbox" id="codeInjection" checked>
+                            Enable Code Injection
+                        </label>
+                        <label>
+                            <input type="checkbox" id="dynamicPatching">
+                            Dynamic Patching
+                        </label>
+                    </div>
+
+                    <div class="patch-option">
+                        <h4>Memory Management</h4>
+                        <label>
+                            <input type="checkbox" id="memoryProtection" checked>
+                            Memory Protection
+                        </label>
+                        <label>
+                            <input type="checkbox" id="heapSpray">
+                            Heap Spraying
+                        </label>
+                    </div>
+
+                    <div class="patch-option">
+                        <h4>API Hooking</h4>
+                        <label>
+                            <input type="checkbox" id="apiHooking" checked>
+                            API Hooking
+                        </label>
+                        <label>
+                            <input type="checkbox" id="inlineHooking">
+                            Inline Hooking
+                        </label>
+                    </div>
+
+                    <div class="patch-option">
+                        <h4>Evasion Techniques</h4>
+                        <label>
+                            <input type="checkbox" id="antiDebug" checked>
+                            Anti-Debug
+                        </label>
+                        <label>
+                            <input type="checkbox" id="antiVM">
+                            Anti-VM
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="patchCode">Custom Patch Code (C/C++)</label>
+                    <textarea id="patchCode" placeholder="// Enter your custom patch code here
+#include &lt;windows.h&gt;
+#include &lt;stdio.h&gt;
+
+int main() {
+    // Your custom code here
+    return 0;
+}"></textarea>
+                </div>
+
+                <button class="btn" onclick="applyHotPatch()">Apply Hot Patch</button>
+            </div>
+        </div>
+
+        <div id="advanced" class="tab-content">
+            <div class="advanced-options">
+                <h3>🔬 Advanced Configuration</h3>
+                
+                <div class="form-group">
+                    <label for="obfuscationLevel">Obfuscation Level</label>
+                    <select id="obfuscationLevel">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                        <option value="extreme">Extreme</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="encryptionAlgorithm">Encryption Algorithm</label>
+                    <select id="encryptionAlgorithm">
+                        <option value="aes-256-gcm">AES-256-GCM</option>
+                        <option value="aes-256-cbc">AES-256-CBC</option>
+                        <option value="chacha20">ChaCha20</option>
+                        <option value="camellia-256">Camellia-256</option>
+                        <option value="blowfish">Blowfish</option>
+                        <option value="twofish">Twofish</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="packingMethod">Packing Method</label>
+                    <select id="packingMethod">
+                        <option value="upx">UPX</option>
+                        <option value="custom">Custom Packer</option>
+                        <option value="morphine">Morphine</option>
+                        <option value="themida">Themida</option>
+                    </select>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="enablePolymorphism" checked>
+                    <label for="enablePolymorphism">Enable Polymorphism</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="enableMetamorphism">
+                    <label for="enableMetamorphism">Enable Metamorphism</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="enableAntiAnalysis" checked>
+                    <label for="enableAntiAnalysis">Enable Anti-Analysis</label>
+                </div>
+
+                <button class="btn" onclick="configureAdvanced()">Configure Advanced Options</button>
+            </div>
+        </div>
+
+        <div class="output-panel">
+            <h2>📊 Generation Output</h2>
+            <div id="status" class="status info">Ready to generate stub...</div>
+            <div class="progress-bar">
+                <div id="progress" class="progress-fill"></div>
+            </div>
+            <div id="output" class="output-content">
+                <div style="color: #8b949e;">
+                    <p>🔧 RawrZ Stub Generator Ready</p>
+                    <p>• Select your stub type and configuration</p>
+                    <p>• Configure hot patching options</p>
+                    <p>• Set advanced parameters</p>
+                    <p>• Click "Generate Stub" to create your executable</p>
+                    <br>
+                    <p style="color: #7c3aed;">💡 Pro Tip: Enable stealth mode and anti-detection for maximum effectiveness</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'generator';
+
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            currentTab = tabName;
+        }
+
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        function updateProgress(percent) {
+            document.getElementById('progress').style.width = percent + '%';
+        }
+
+        function addOutput(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#f85149' : type === 'success' ? '#3fb950' : type === 'warning' ? '#d29922' : '#58a6ff';
+            
+            output.innerHTML += `<div style="color: ${color}; margin-bottom: 8px;">
+                <span style="color: #8b949e;">[${timestamp}]</span> ${message}
+            </div>`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        async function generateStub() {
+            updateStatus('Generating stub...', 'info');
+            updateProgress(0);
+            
+            const stubName = document.getElementById('stubName').value || 'generated_stub';
+            const stubType = document.getElementById('stubType').value;
+            const targetPlatform = document.getElementById('targetPlatform').value;
+            const compiler = document.getElementById('compiler').value;
+            const enableObfuscation = document.getElementById('enableObfuscation').checked;
+            const enablePacking = document.getElementById('enablePacking').checked;
+            const enableEncryption = document.getElementById('enableEncryption').checked;
+
+            addOutput(`🚀 Starting stub generation...`, 'info');
+            addOutput(`📝 Stub Name: ${stubName}`, 'info');
+            addOutput(`🔧 Type: ${stubType}`, 'info');
+            addOutput(`💻 Platform: ${targetPlatform}`, 'info');
+            addOutput(`⚙️ Compiler: ${compiler}`, 'info');
+
+            try {
+                // Simulate generation process
+                for (let i = 0; i <= 100; i += 10) {
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    updateProgress(i);
+                    
+                    if (i === 20) {
+                        addOutput(`🔍 Analyzing requirements...`, 'info');
+                    } else if (i === 40) {
+                        addOutput(`📦 Generating source code...`, 'info');
+                    } else if (i === 60) {
+                        if (enableObfuscation) {
+                            addOutput(`🔒 Applying obfuscation...`, 'info');
+                        }
+                    } else if (i === 80) {
+                        if (enablePacking) {
+                            addOutput(`📦 Packing executable...`, 'info');
+                        }
+                    } else if (i === 100) {
+                        addOutput(`✅ Stub generated successfully!`, 'success');
+                        addOutput(`📁 Output: ${stubName}.exe`, 'success');
+                        addOutput(`🔧 Size: ${Math.floor(Math.random() * 500 + 100)}KB`, 'success');
+                        updateStatus('Stub generated successfully!', 'success');
+                    }
+                }
+            } catch (error) {
+                addOutput(`❌ Error: ${error.message}`, 'error');
+                updateStatus('Generation failed!', 'error');
+            }
+        }
+
+        function configureHotPatch() {
+            const patchType = document.getElementById('patchType').value;
+            const targetProcess = document.getElementById('targetProcess').value;
+            const injectionMethod = document.getElementById('injectionMethod').value;
+            const enableStealth = document.getElementById('enableStealth').checked;
+            const enablePersistence = document.getElementById('enablePersistence').checked;
+            const enableEvasion = document.getElementById('enableEvasion').checked;
+
+            addOutput(`🔥 Configuring hot patch...`, 'info');
+            addOutput(`🎯 Patch Type: ${patchType}`, 'info');
+            if (targetProcess) {
+                addOutput(`🎯 Target Process: ${targetProcess}`, 'info');
+            }
+            addOutput(`💉 Injection Method: ${injectionMethod}`, 'info');
+            
+            if (enableStealth) {
+                addOutput(`🥷 Stealth Mode: Enabled`, 'success');
+            }
+            if (enablePersistence) {
+                addOutput(`🔄 Persistence: Enabled`, 'success');
+            }
+            if (enableEvasion) {
+                addOutput(`🛡️ Anti-Detection: Enabled`, 'success');
+            }
+
+            updateStatus('Hot patch configured!', 'success');
+        }
+
+        function applyHotPatch() {
+            const codeInjection = document.getElementById('codeInjection').checked;
+            const dynamicPatching = document.getElementById('dynamicPatching').checked;
+            const memoryProtection = document.getElementById('memoryProtection').checked;
+            const apiHooking = document.getElementById('apiHooking').checked;
+            const antiDebug = document.getElementById('antiDebug').checked;
+            const patchCode = document.getElementById('patchCode').value;
+
+            addOutput(`🔥 Applying hot patch...`, 'info');
+            
+            if (codeInjection) {
+                addOutput(`💉 Code injection enabled`, 'success');
+            }
+            if (dynamicPatching) {
+                addOutput(`🔄 Dynamic patching enabled`, 'success');
+            }
+            if (memoryProtection) {
+                addOutput(`🛡️ Memory protection enabled`, 'success');
+            }
+            if (apiHooking) {
+                addOutput(`🎣 API hooking enabled`, 'success');
+            }
+            if (antiDebug) {
+                addOutput(`🚫 Anti-debug enabled`, 'success');
+            }
+            
+            if (patchCode.trim()) {
+                addOutput(`📝 Custom patch code applied`, 'success');
+            }
+
+            updateStatus('Hot patch applied successfully!', 'success');
+        }
+
+        function configureAdvanced() {
+            const obfuscationLevel = document.getElementById('obfuscationLevel').value;
+            const encryptionAlgorithm = document.getElementById('encryptionAlgorithm').value;
+            const packingMethod = document.getElementById('packingMethod').value;
+            const enablePolymorphism = document.getElementById('enablePolymorphism').checked;
+            const enableMetamorphism = document.getElementById('enableMetamorphism').checked;
+            const enableAntiAnalysis = document.getElementById('enableAntiAnalysis').checked;
+
+            addOutput(`🔬 Configuring advanced options...`, 'info');
+            addOutput(`🔒 Obfuscation Level: ${obfuscationLevel}`, 'info');
+            addOutput(`🔐 Encryption: ${encryptionAlgorithm}`, 'info');
+            addOutput(`📦 Packing: ${packingMethod}`, 'info');
+            
+            if (enablePolymorphism) {
+                addOutput(`🔄 Polymorphism: Enabled`, 'success');
+            }
+            if (enableMetamorphism) {
+                addOutput(`🦋 Metamorphism: Enabled`, 'success');
+            }
+            if (enableAntiAnalysis) {
+                addOutput(`🛡️ Anti-Analysis: Enabled`, 'success');
+            }
+
+            updateStatus('Advanced options configured!', 'success');
+        }
+
+        // Initialize with some default patch code
+        document.getElementById('patchCode').value = `// Hot Patch Code Template
+#include <windows.h>
+#include <stdio.h>
+
+// Anti-debug check
+BOOL IsDebuggerPresent() {
+    return ::IsDebuggerPresent();
+}
+
+// Memory protection
+void EnableMemoryProtection() {
+    DWORD oldProtect;
+    VirtualProtect((LPVOID)GetModuleHandle(NULL), 0x1000, PAGE_EXECUTE_READ, &oldProtect);
+}
+
+// API hooking example
+typedef BOOL (WINAPI *pMessageBoxA)(HWND, LPCSTR, LPCSTR, UINT);
+pMessageBoxA OriginalMessageBoxA;
+
+BOOL WINAPI HookedMessageBoxA(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType) {
+    // Custom behavior here
+    return OriginalMessageBoxA(hWnd, "Hooked!", lpCaption, uType);
+}
+
+int main() {
+    // Your hot patch code here
+    EnableMemoryProtection();
+    
+    if (IsDebuggerPresent()) {
+        ExitProcess(0);
+    }
+    
+    return 0;
+}`;
+    </script>
+</body>
+</html>
