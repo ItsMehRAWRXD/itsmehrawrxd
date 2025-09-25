@@ -1806,10 +1806,146 @@ int main() {
 }`;
     }
 
-    obfuscateCode(code) {
-        return code.replace(/std::/g, 'std::')
-                  .replace(/cout/g, 'c' + 'out')
-                  .replace(/endl/g, 'end' + 'l');
+    obfuscateCode(code, options = {}) {
+        let obfuscated = code;
+        
+        // Basic string obfuscation
+        if (options.stringObfuscation) {
+            obfuscated = this.obfuscateStrings(obfuscated);
+        }
+        
+        // Variable name obfuscation
+        if (options.variableObfuscation) {
+            obfuscated = this.obfuscateVariables(obfuscated);
+        }
+        
+        // Control flow obfuscation
+        if (options.controlFlowObfuscation) {
+            obfuscated = this.obfuscateControlFlow(obfuscated);
+        }
+        
+        // Function name obfuscation
+        if (options.functionObfuscation) {
+            obfuscated = this.obfuscateFunctions(obfuscated);
+        }
+        
+        // Comment removal
+        if (options.removeComments) {
+            obfuscated = this.removeComments(obfuscated);
+        }
+        
+        // Whitespace obfuscation
+        if (options.whitespaceObfuscation) {
+            obfuscated = this.obfuscateWhitespace(obfuscated);
+        }
+        
+        // Basic obfuscation (always applied)
+        obfuscated = obfuscated.replace(/std::/g, 'std::')
+                              .replace(/cout/g, 'c' + 'out')
+                              .replace(/endl/g, 'end' + 'l')
+                              .replace(/string/g, 'str' + 'ing')
+                              .replace(/include/g, 'inc' + 'lude');
+        
+        return obfuscated;
+    }
+
+    obfuscateStrings(code) {
+        // String encryption and obfuscation
+        const stringRegex = /"([^"]+)"/g;
+        return code.replace(stringRegex, (match, str) => {
+            const encrypted = this.encryptString(str);
+            return `decryptString("${encrypted}")`;
+        });
+    }
+
+    encryptString(str) {
+        // Simple XOR encryption for strings
+        let encrypted = '';
+        const key = 0x42;
+        for (let i = 0; i < str.length; i++) {
+            encrypted += String.fromCharCode(str.charCodeAt(i) ^ key);
+        }
+        return Buffer.from(encrypted).toString('base64');
+    }
+
+    obfuscateVariables(code) {
+        const variableMap = new Map();
+        let counter = 0;
+        
+        // Replace common variable names with obfuscated ones
+        const commonVars = ['result', 'data', 'input', 'output', 'value', 'temp', 'count', 'index'];
+        
+        commonVars.forEach(varName => {
+            if (code.includes(varName)) {
+                const obfuscatedName = `_${String.fromCharCode(97 + (counter % 26))}${counter}`;
+                variableMap.set(varName, obfuscatedName);
+                counter++;
+            }
+        });
+        
+        // Apply variable replacements
+        variableMap.forEach((obfuscated, original) => {
+            const regex = new RegExp(`\\b${original}\\b`, 'g');
+            code = code.replace(regex, obfuscated);
+        });
+        
+        return code;
+    }
+
+    obfuscateControlFlow(code) {
+        // Add dummy control flow
+        const dummyCode = `
+        if (true) {
+            // Dummy operation
+            volatile int dummy = 0;
+            dummy++;
+        }
+        `;
+        
+        // Insert dummy code at strategic points
+        return code.replace(/void run\(\) {/g, `void run() {${dummyCode}`);
+    }
+
+    obfuscateFunctions(code) {
+        const functionMap = new Map();
+        let counter = 0;
+        
+        // Replace function names
+        const commonFunctions = ['initialize', 'run', 'cleanup', 'connect', 'process'];
+        
+        commonFunctions.forEach(funcName => {
+            if (code.includes(funcName)) {
+                const obfuscatedName = `func_${counter}_${Math.random().toString(36).substr(2, 5)}`;
+                functionMap.set(funcName, obfuscatedName);
+                counter++;
+            }
+        });
+        
+        // Apply function name replacements
+        functionMap.forEach((obfuscated, original) => {
+            const regex = new RegExp(`\\b${original}\\b`, 'g');
+            code = code.replace(regex, obfuscated);
+        });
+        
+        return code;
+    }
+
+    removeComments(code) {
+        // Remove single-line comments
+        code = code.replace(/\/\/.*$/gm, '');
+        
+        // Remove multi-line comments
+        code = code.replace(/\/\*[\s\S]*?\*\//g, '');
+        
+        return code;
+    }
+
+    obfuscateWhitespace(code) {
+        // Remove unnecessary whitespace and add random spacing
+        return code.replace(/\s+/g, ' ')
+                  .replace(/\s*{\s*/g, '{')
+                  .replace(/\s*}\s*/g, '}')
+                  .replace(/\s*;\s*/g, ';');
     }
 }
 
