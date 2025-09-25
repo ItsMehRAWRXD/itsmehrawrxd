@@ -2,12 +2,13 @@
   "name": "rawrz-security-platform",
   "version": "2.0.0",
   "description": "Complete Standalone Security Platform - 110+ Security Features with Enterprise-Level Capabilities",
-  "main": "rawrz-standalone.js",
+  "main": "api-server-no-cli.js",
   "scripts": {
-    "start": "node api-server.js",
+    "start": "./start.sh",
+    "start:direct": "node api-server-no-cli.js",
     "help": "node rawrz-standalone.js help",
     "test": "node rawrz-standalone.js sysinfo",
-    "start:web": "node api-server.js",
+    "start:web": "node api-server-no-cli.js",
     "start:standalone": "node rawrz-standalone.js"
   },
   "dependencies": {
