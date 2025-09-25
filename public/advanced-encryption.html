@@ -435,7 +435,15 @@
 
                     <div class="option-group">
                         <h4>📄 Output Extension</h4>
-                        <input type="text" id="customExtension" placeholder=".enc, .secure, .locked, etc." value=".enc">
+                        <input type="text" id="customExtension" placeholder=".exe, .xll, .lnk, .dll, .pdf, .secure, etc." value=".exe">
+                        <select id="extensionType" style="margin-top: 10px; width: 100%; padding: 8px; border-radius: 4px; background: #1a1a1a; color: #00ff88; border: 1px solid #333;">
+                            <option value="executable">Executable (.exe, .dll, .xll, .sys)</option>
+                            <option value="document">Document (.pdf, .doc, .xls, .ppt)</option>
+                            <option value="shortcut">Shortcut (.lnk, .url, .desktop)</option>
+                            <option value="archive">Archive (.zip, .rar, .7z, .tar)</option>
+                            <option value="media">Media (.mp4, .avi, .mp3, .jpg)</option>
+                            <option value="custom">Custom Extension</option>
+                        </select>
                     </div>
                 </div>
 
@@ -571,7 +579,7 @@
                 <div class="option-group">
                     <h4>🔧 Custom Extensions</h4>
                     <input type="text" id="customExtList" placeholder=".secure, .locked, .private, .encrypted" style="width: 100%;">
-                    <small style="color: #888; font-size: 0.8em;">Comma-separated list of custom extensions</small>
+                    <small style="color: #888; font-size: 0.8em;">Supports all file types: .exe, .xll, .lnk, .dll, .pdf, .doc, .zip, .mp4, etc.</small>
                 </div>
             </div>
 
@@ -903,7 +911,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             log('🔐 RawrZ Advanced Encryption Suite initialized', 'success');
             log('Ready for file and text encryption operations', 'info');
-            log('Supports any file type with custom extensions', 'info');
+            log('Supports all file types: .exe, .xll, .lnk, .dll, .pdf, .doc, .zip, .mp4, etc.', 'info');
         });
     </script>
 </body>

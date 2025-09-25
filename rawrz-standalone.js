@@ -1056,7 +1056,7 @@ class RawrZStandalone {
                     console.log('[ERROR] Usage: encrypt <algorithm> <input> [extension]');
                     console.log('[INFO] Algorithms: aes256, aes192, aes128, blowfish, rsa2048, rsa4096');
                     console.log('[INFO] Input: text, file:filename, C:\\path\\file, https://url');
-                    console.log('[INFO] Extension: .exe, .enc, .bin, .dat (default: .enc)');
+                    console.log('[INFO] Extension: .exe, .xll, .lnk, .dll, .pdf, .doc, .zip, .mp4, .enc, .bin, .dat (default: .enc)');
                     return;
                 }
                 return await this.encrypt(commandArgs[0], commandArgs[1], commandArgs[2]);
@@ -1064,7 +1064,7 @@ class RawrZStandalone {
             case 'decrypt':
                 if (commandArgs.length < 2) {
                     console.log('[ERROR] Usage: decrypt <algorithm> <input> [key] [iv] [extension]');
-                    console.log('[INFO] Extension: .exe, .bin, .dat, .txt (default: .bin)');
+                    console.log('[INFO] Extension: .exe, .xll, .lnk, .dll, .pdf, .doc, .zip, .mp4, .bin, .dat, .txt (default: .bin)');
                     return;
                 }
                 return await this.decrypt(commandArgs[0], commandArgs[1], commandArgs[2], commandArgs[3], commandArgs[4]);
@@ -1348,7 +1348,7 @@ class RawrZStandalone {
         console.log('');
         console.log('Total Commands: 72+ Security Features');
         console.log('File Input Support: URLs, Local files, Absolute paths, Home directory');
-        console.log('Custom Extensions: All applicable commands support custom file extensions');
+        console.log('Custom Extensions: Supports all file types (.exe, .xll, .lnk, .dll, .pdf, .doc, .zip, .mp4, etc.)');
         console.log('');
     }
 
