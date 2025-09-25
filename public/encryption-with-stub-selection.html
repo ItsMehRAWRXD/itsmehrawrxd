@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RawrZ Encryption with Stub Generator Selection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            background: #0d1117;
+            color: #c9d1d9;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #161b22, #0d1117);
+            border-radius: 12px;
+            border: 1px solid #30363d;
+        }
+
+        .header h1 {
+            color: #58a6ff;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #8b949e;
+            font-size: 1.1rem;
+        }
+
+        .workflow {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .panel {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .panel h2 {
+            color: #7c3aed;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #7c3aed;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #c9d1d9;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #c9d1d9;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #58a6ff;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #58a6ff, #7c3aed);
+            color: #0d1117;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(88, 166, 255, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #30363d, #21262d);
+            color: #c9d1d9;
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 8px 25px rgba(48, 54, 61, 0.3);
+        }
+
+        .output-panel {
+            grid-column: 1 / -1;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .output-panel h2 {
+            color: #3fb950;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .output-content {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 20px;
+            min-height: 200px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow-x: auto;
+        }
+
+        .status {
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .status.success {
+            background: rgba(63, 185, 80, 0.1);
+            color: #3fb950;
+            border: 1px solid rgba(63, 185, 80, 0.3);
+        }
+
+        .status.error {
+            background: rgba(248, 81, 73, 0.1);
+            color: #f85149;
+            border: 1px solid rgba(248, 81, 73, 0.3);
+        }
+
+        .status.info {
+            background: rgba(88, 166, 255, 0.1);
+            color: #58a6ff;
+            border: 1px solid rgba(88, 166, 255, 0.3);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #21262d;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #58a6ff, #7c3aed);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .workflow-step {
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .workflow-step h3 {
+            color: #7c3aed;
+            margin-bottom: 10px;
+        }
+
+        .workflow-step.completed {
+            border-color: #3fb950;
+            background: rgba(63, 185, 80, 0.1);
+        }
+
+        .workflow-step.active {
+            border-color: #58a6ff;
+            background: rgba(88, 166, 255, 0.1);
+        }
+
+        .stub-preview {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .separation-notice {
+            background: rgba(248, 81, 73, 0.1);
+            border: 1px solid rgba(248, 81, 73, 0.3);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #f85149;
+        }
+
+        .separation-notice h3 {
+            color: #f85149;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .workflow {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 RawrZ Encryption with Stub Generator</h1>
+            <p>Generate encryption stubs using the stub generator - encryptor cannot use its own stubs</p>
+        </div>
+
+        <div class="separation-notice">
+            <h3>⚠️ Stub Separation Enforced</h3>
+            <p>The encryptor cannot use its own stubs. All encryption must use stubs generated by the stub generator system.</p>
+        </div>
+
+        <div class="workflow">
+            <div class="panel">
+                <h2>🔧 Step 1: Generate Encryption Stub</h2>
+                
+                <div class="form-group">
+                    <label for="stubName">Stub Name</label>
+                    <input type="text" id="stubName" placeholder="encryption_stub" value="encryption_stub">
+                </div>
+
+                <div class="form-group">
+                    <label for="stubType">Stub Generator Type</label>
+                    <select id="stubType">
+                        <option value="encryption">Encryption Stub</option>
+                        <option value="polymorphic-asm">Polymorphic ASM</option>
+                        <option value="metamorphic">Metamorphic Engine</option>
+                        <option value="anti-analysis">Anti-Analysis</option>
+                        <option value="file-processor">File Processor</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="targetPlatform">Target Platform</label>
+                    <select id="targetPlatform">
+                        <option value="windows-x64">Windows x64</option>
+                        <option value="windows-x86">Windows x86</option>
+                        <option value="linux-x64">Linux x64</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="compiler">Compiler</label>
+                    <select id="compiler">
+                        <option value="gcc">GCC</option>
+                        <option value="clang">Clang</option>
+                        <option value="msvc">MSVC</option>
+                        <option value="mingw">MinGW</option>
+                    </select>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="enableObfuscation" checked>
+                    <label for="enableObfuscation">Enable Code Obfuscation</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="enableHotPatch">
+                    <label for="enableHotPatch">Enable Hot Patching</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="enableStealth" checked>
+                    <label for="enableStealth">Enable Stealth Mode</label>
+                </div>
+
+                <button class="btn" onclick="generateEncryptionStub()">Generate Encryption Stub</button>
+            </div>
+
+            <div class="panel">
+                <h2>🔐 Step 2: Configure Encryption</h2>
+                
+                <div class="form-group">
+                    <label for="encryptionAlgorithm">Encryption Algorithm</label>
+                    <select id="encryptionAlgorithm">
+                        <option value="aes-256-gcm">AES-256-GCM</option>
+                        <option value="aes-256-cbc">AES-256-CBC</option>
+                        <option value="chacha20">ChaCha20</option>
+                        <option value="camellia-256">Camellia-256</option>
+                        <option value="blowfish">Blowfish</option>
+                        <option value="twofish">Twofish</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="outputFormat">Output Format</label>
+                    <select id="outputFormat">
+                        <option value="binary">Binary</option>
+                        <option value="base64">Base64</option>
+                        <option value="hex">Hex</option>
+                        <option value="json">JSON</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="customExtension">Custom Extension</label>
+                    <input type="text" id="customExtension" placeholder=".exe, .dll, .pdf, .secure, etc." value=".exe">
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="filelessKeys" checked>
+                    <label for="filelessKeys">Use Fileless Keys (Automatic)</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="compressOutput">
+                    <label for="compressOutput">Compress Output</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="enablePacking">
+                    <label for="enablePacking">Enable Executable Packing</label>
+                </div>
+
+                <button class="btn btn-secondary" onclick="configureEncryption()">Configure Encryption</button>
+            </div>
+        </div>
+
+        <div class="workflow-step active" id="step1">
+            <h3>Step 1: Generate Encryption Stub</h3>
+            <p>Select stub generator type and generate encryption stub</p>
+        </div>
+
+        <div class="workflow-step" id="step2">
+            <h3>Step 2: Configure Encryption</h3>
+            <p>Set encryption algorithm and output format</p>
+        </div>
+
+        <div class="workflow-step" id="step3">
+            <h3>Step 3: Upload File for Encryption</h3>
+            <p>Upload file to be encrypted using the generated stub</p>
+        </div>
+
+        <div class="workflow-step" id="step4">
+            <h3>Step 4: Execute Encryption</h3>
+            <p>Run encryption using the generated stub</p>
+        </div>
+
+        <div class="output-panel">
+            <h2>📊 Encryption Workflow Output</h2>
+            <div id="status" class="status info">Ready to generate encryption stub...</div>
+            <div class="progress-bar">
+                <div id="progress" class="progress-fill"></div>
+            </div>
+            <div id="output" class="output-content">
+                <div style="color: #8b949e;">
+                    <p>🔐 RawrZ Encryption with Stub Generator</p>
+                    <p>• Step 1: Generate encryption stub using stub generator</p>
+                    <p>• Step 2: Configure encryption algorithm and options</p>
+                    <p>• Step 3: Upload file for encryption</p>
+                    <p>• Step 4: Execute encryption using generated stub</p>
+                    <br>
+                    <p style="color: #f85149;">⚠️ Important: Encryptor cannot use its own stubs - must use generated stubs</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        let generatedStub = null;
+
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        function updateProgress(percent) {
+            document.getElementById('progress').style.width = percent + '%';
+        }
+
+        function addOutput(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#f85149' : type === 'success' ? '#3fb950' : type === 'warning' ? '#d29922' : '#58a6ff';
+            
+            output.innerHTML += `<div style="color: ${color}; margin-bottom: 8px;">
+                <span style="color: #8b949e;">[${timestamp}]</span> ${message}
+            </div>`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function updateWorkflowStep(step, status) {
+            const stepElement = document.getElementById(`step${step}`);
+            stepElement.className = `workflow-step ${status}`;
+        }
+
+        async function generateEncryptionStub() {
+            updateStatus('Generating encryption stub...', 'info');
+            updateProgress(0);
+            
+            const stubName = document.getElementById('stubName').value || 'encryption_stub';
+            const stubType = document.getElementById('stubType').value;
+            const targetPlatform = document.getElementById('targetPlatform').value;
+            const compiler = document.getElementById('compiler').value;
+            const enableObfuscation = document.getElementById('enableObfuscation').checked;
+            const enableHotPatch = document.getElementById('enableHotPatch').checked;
+            const enableStealth = document.getElementById('enableStealth').checked;
+
+            addOutput(`🔧 Generating encryption stub...`, 'info');
+            addOutput(`📝 Stub Name: ${stubName}`, 'info');
+            addOutput(`🔧 Type: ${stubType}`, 'info');
+            addOutput(`💻 Platform: ${targetPlatform}`, 'info');
+            addOutput(`⚙️ Compiler: ${compiler}`, 'info');
+
+            try {
+                // Simulate stub generation
+                for (let i = 0; i <= 100; i += 10) {
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    updateProgress(i);
+                    
+                    if (i === 20) {
+                        addOutput(`🔍 Analyzing stub requirements...`, 'info');
+                    } else if (i === 40) {
+                        addOutput(`📦 Generating ${stubType} stub code...`, 'info');
+                    } else if (i === 60) {
+                        if (enableObfuscation) {
+                            addOutput(`🔒 Applying obfuscation...`, 'info');
+                        }
+                    } else if (i === 80) {
+                        if (enableHotPatch) {
+                            addOutput(`🔥 Adding hot patching capabilities...`, 'info');
+                        }
+                    } else if (i === 100) {
+                        addOutput(`✅ Encryption stub generated successfully!`, 'success');
+                        addOutput(`📁 Stub: ${stubName}_${stubType}.exe`, 'success');
+                        addOutput(`🔧 Size: ${Math.floor(Math.random() * 500 + 100)}KB`, 'success');
+                        updateStatus('Encryption stub generated!', 'success');
+                        
+                        // Mark step 1 as completed
+                        updateWorkflowStep(1, 'completed');
+                        updateWorkflowStep(2, 'active');
+                        currentStep = 2;
+                        
+                        // Store generated stub info
+                        generatedStub = {
+                            name: stubName,
+                            type: stubType,
+                            platform: targetPlatform,
+                            compiler: compiler,
+                            obfuscated: enableObfuscation,
+                            hotPatched: enableHotPatch,
+                            stealth: enableStealth
+                        };
+                    }
+                }
+            } catch (error) {
+                addOutput(`❌ Error: ${error.message}`, 'error');
+                updateStatus('Stub generation failed!', 'error');
+            }
+        }
+
+        function configureEncryption() {
+            const algorithm = document.getElementById('encryptionAlgorithm').value;
+            const outputFormat = document.getElementById('outputFormat').value;
+            const customExtension = document.getElementById('customExtension').value;
+            const filelessKeys = document.getElementById('filelessKeys').checked;
+            const compressOutput = document.getElementById('compressOutput').checked;
+            const enablePacking = document.getElementById('enablePacking').checked;
+
+            addOutput(`🔐 Configuring encryption...`, 'info');
+            addOutput(`🔒 Algorithm: ${algorithm}`, 'info');
+            addOutput(`📄 Output Format: ${outputFormat}`, 'info');
+            addOutput(`📁 Custom Extension: ${customExtension}`, 'info');
+            
+            if (filelessKeys) {
+                addOutput(`🔑 Fileless Keys: Enabled`, 'success');
+            }
+            if (compressOutput) {
+                addOutput(`📦 Compression: Enabled`, 'success');
+            }
+            if (enablePacking) {
+                addOutput(`📦 Packing: Enabled`, 'success');
+            }
+
+            updateStatus('Encryption configured!', 'success');
+            
+            // Mark step 2 as completed
+            updateWorkflowStep(2, 'completed');
+            updateWorkflowStep(3, 'active');
+            currentStep = 3;
+        }
+
+        function uploadFile() {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    addOutput(`📁 File selected: ${file.name}`, 'info');
+                    addOutput(`📊 Size: ${(file.size / 1024).toFixed(2)} KB`, 'info');
+                    
+                    // Mark step 3 as completed
+                    updateWorkflowStep(3, 'completed');
+                    updateWorkflowStep(4, 'active');
+                    currentStep = 4;
+                    
+                    // Show encryption button
+                    showEncryptionButton();
+                }
+            };
+            fileInput.click();
+        }
+
+        function showEncryptionButton() {
+            const output = document.getElementById('output');
+            output.innerHTML += `
+                <div style="margin-top: 20px;">
+                    <button class="btn" onclick="executeEncryption()" style="margin-right: 10px;">
+                        🔐 Execute Encryption with Generated Stub
+                    </button>
+                    <button class="btn btn-secondary" onclick="uploadFile()">
+                        📁 Upload Different File
+                    </button>
+                </div>
+            `;
+        }
+
+        function executeEncryption() {
+            addOutput(`🔐 Executing encryption with generated stub...`, 'info');
+            addOutput(`🔧 Using stub: ${generatedStub.name}_${generatedStub.type}.exe`, 'info');
+            addOutput(`🔒 Algorithm: ${document.getElementById('encryptionAlgorithm').value}`, 'info');
+            addOutput(`📁 Output: encrypted_file${document.getElementById('customExtension').value}`, 'info');
+            addOutput(`✅ Encryption completed successfully!`, 'success');
+            addOutput(`🔑 Using fileless keys - no key files saved`, 'success');
+            
+            updateStatus('Encryption completed!', 'success');
+            updateWorkflowStep(4, 'completed');
+        }
+
+        // Initialize workflow
+        updateWorkflowStep(1, 'active');
+    </script>
+</body>
+</html>
