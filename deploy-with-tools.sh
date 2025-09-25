@@ -17,11 +17,11 @@ docker run -d \
   -e NODE_ENV=production \
   -e PORT=8080 \
   -e LOG_LEVEL=error \
-  -e MAX_FILE_SIZE=50MB \
+  -e MAX_FILE_SIZE=500MB \
   rawrz-build-tools
 
 echo "✅ Deployed with build tools (950MB RAM limit)"
 echo "🌐 Access: http://localhost:8080"
 echo "🔧 Build tools: GCC, Clang, CMake available"
 echo "⚙️ Executable generation: Enabled"
-echo "📁 File size limit: 50MB"
+echo "📁 File size limit: 500MB"

@@ -31,7 +31,7 @@ const upload = multer({ dest: 'uploads/' });
 
 app.use(helmet());
 app.use(cors());
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({ limit: '500mb' }));
 app.use('/static', express.static(path.join(__dirname, 'public')));
 
 // Health check
