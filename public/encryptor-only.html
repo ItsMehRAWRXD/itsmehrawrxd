@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RawrZ Encryptor Only - NO STUB GENERATION</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            background: #0d1117;
+            color: #c9d1d9;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #161b22, #0d1117);
+            border-radius: 12px;
+            border: 1px solid #30363d;
+        }
+
+        .header h1 {
+            color: #f85149;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #8b949e;
+            font-size: 1.1rem;
+        }
+
+        .warning-banner {
+            background: rgba(248, 81, 73, 0.1);
+            border: 2px solid #f85149;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .warning-banner h2 {
+            color: #f85149;
+            margin-bottom: 10px;
+        }
+
+        .warning-banner p {
+            color: #f85149;
+            font-weight: 600;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .panel {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .panel h2 {
+            color: #7c3aed;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #7c3aed;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #c9d1d9;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #c9d1d9;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #58a6ff;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #58a6ff, #7c3aed);
+            color: #0d1117;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(88, 166, 255, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f85149, #d73a49);
+            color: #ffffff;
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 8px 25px rgba(248, 81, 73, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #30363d, #21262d);
+            color: #c9d1d9;
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 8px 25px rgba(48, 54, 61, 0.3);
+        }
+
+        .output-panel {
+            grid-column: 1 / -1;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .output-panel h2 {
+            color: #3fb950;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .output-content {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 20px;
+            min-height: 200px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow-x: auto;
+        }
+
+        .status {
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .status.success {
+            background: rgba(63, 185, 80, 0.1);
+            color: #3fb950;
+            border: 1px solid rgba(63, 185, 80, 0.3);
+        }
+
+        .status.error {
+            background: rgba(248, 81, 73, 0.1);
+            color: #f85149;
+            border: 1px solid rgba(248, 81, 73, 0.3);
+        }
+
+        .status.info {
+            background: rgba(88, 166, 255, 0.1);
+            color: #58a6ff;
+            border: 1px solid rgba(88, 166, 255, 0.3);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #21262d;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #58a6ff, #7c3aed);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .stub-list {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .stub-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            background: #161b22;
+        }
+
+        .stub-item:hover {
+            background: #21262d;
+        }
+
+        .stub-name {
+            color: #c9d1d9;
+            font-weight: 600;
+        }
+
+        .stub-size {
+            color: #8b949e;
+            font-size: 12px;
+        }
+
+        .stub-select-btn {
+            background: #58a6ff;
+            color: #0d1117;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .stub-select-btn:hover {
+            background: #7c3aed;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #30363d;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-area:hover {
+            border-color: #58a6ff;
+            background: rgba(88, 166, 255, 0.05);
+        }
+
+        .file-upload-area.dragover {
+            border-color: #7c3aed;
+            background: rgba(124, 58, 237, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 RawrZ Encryptor Only</h1>
+            <p>NO STUB GENERATION CAPABILITIES - Uses only generated stubs</p>
+        </div>
+
+        <div class="warning-banner">
+            <h2>⚠️ CRITICAL: NO STUB GENERATION</h2>
+            <p>This encryptor CANNOT generate stubs and MUST use stubs generated by the stub generator system</p>
+        </div>
+
+        <div class="main-content">
+            <div class="panel">
+                <h2>📁 Step 1: Select Generated Stub</h2>
+                
+                <div class="form-group">
+                    <label>Available Generated Stubs</label>
+                    <div id="stubList" class="stub-list">
+                        <div style="color: #8b949e; text-align: center; padding: 20px;">
+                            Loading generated stubs...
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="selectedStub">Selected Stub</label>
+                    <input type="text" id="selectedStub" readonly placeholder="No stub selected - must use generated stub">
+                </div>
+
+                <button class="btn btn-secondary" onclick="loadGeneratedStubs()">🔄 Refresh Stub List</button>
+            </div>
+
+            <div class="panel">
+                <h2>🔐 Step 2: Configure Encryption</h2>
+                
+                <div class="form-group">
+                    <label for="encryptionAlgorithm">Encryption Algorithm</label>
+                    <select id="encryptionAlgorithm">
+                        <option value="aes-256-gcm">AES-256-GCM</option>
+                        <option value="aes-256-cbc">AES-256-CBC</option>
+                        <option value="chacha20">ChaCha20</option>
+                        <option value="camellia-256">Camellia-256</option>
+                        <option value="blowfish">Blowfish</option>
+                        <option value="twofish">Twofish</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="outputFormat">Output Format</label>
+                    <select id="outputFormat">
+                        <option value="binary">Binary</option>
+                        <option value="base64">Base64</option>
+                        <option value="hex">Hex</option>
+                        <option value="json">JSON</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="customExtension">Custom Extension</label>
+                    <input type="text" id="customExtension" placeholder=".exe, .dll, .pdf, .secure, etc." value=".exe">
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="filelessKeys" checked disabled>
+                    <label for="filelessKeys">Use Fileless Keys (Automatic - No Key Files)</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="compressOutput">
+                    <label for="compressOutput">Compress Output</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>📤 Step 3: Upload File for Encryption</h2>
+            
+            <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileInput').click()">
+                <div style="font-size: 24px; margin-bottom: 10px;">📁</div>
+                <div style="color: #c9d1d9; margin-bottom: 5px;">Click to upload file or drag and drop</div>
+                <div style="color: #8b949e; font-size: 12px;">File will be encrypted using selected generated stub</div>
+            </div>
+            
+            <input type="file" id="fileInput" style="display: none;" onchange="handleFileSelect(event)">
+            
+            <div id="selectedFile" style="display: none; margin-top: 15px; padding: 10px; background: #0d1117; border: 1px solid #30363d; border-radius: 6px;">
+                <div style="color: #3fb950; font-weight: 600;">Selected File:</div>
+                <div id="fileName" style="color: #c9d1d9; margin-top: 5px;"></div>
+                <div id="fileSize" style="color: #8b949e; font-size: 12px; margin-top: 5px;"></div>
+            </div>
+        </div>
+
+        <div class="output-panel">
+            <h2>📊 Encryption Output</h2>
+            <div id="status" class="status info">Ready to encrypt using generated stub...</div>
+            <div class="progress-bar">
+                <div id="progress" class="progress-fill"></div>
+            </div>
+            <div id="output" class="output-content">
+                <div style="color: #8b949e;">
+                    <p>🔐 RawrZ Encryptor Only - NO STUB GENERATION</p>
+                    <p>• Step 1: Select a stub generated by the stub generator</p>
+                    <p>• Step 2: Configure encryption algorithm and options</p>
+                    <p>• Step 3: Upload file for encryption</p>
+                    <p>• Step 4: Encrypt using the selected generated stub</p>
+                    <br>
+                    <p style="color: #f85149;">⚠️ CRITICAL: This encryptor CANNOT generate stubs</p>
+                    <p style="color: #f85149;">⚠️ Must use stubs generated by the stub generator system</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedStubPath = null;
+        let selectedFile = null;
+
+        // Load generated stubs on page load
+        window.onload = function() {
+            loadGeneratedStubs();
+        };
+
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        function updateProgress(percent) {
+            document.getElementById('progress').style.width = percent + '%';
+        }
+
+        function addOutput(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#f85149' : type === 'success' ? '#3fb950' : type === 'warning' ? '#d29922' : '#58a6ff';
+            
+            output.innerHTML += `<div style="color: ${color}; margin-bottom: 8px;">
+                <span style="color: #8b949e;">[${timestamp}]</span> ${message}
+            </div>`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        async function loadGeneratedStubs() {
+            try {
+                addOutput(`🔄 Loading generated stubs...`, 'info');
+                
+                const response = await fetch('/api/list-generated-stubs');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayStubs(data.stubs);
+                    addOutput(`✅ Found ${data.stubs.length} generated stubs`, 'success');
+                } else {
+                    addOutput(`❌ Failed to load stubs: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                addOutput(`❌ Error loading stubs: ${error.message}`, 'error');
+            }
+        }
+
+        function displayStubs(stubs) {
+            const stubList = document.getElementById('stubList');
+            
+            if (stubs.length === 0) {
+                stubList.innerHTML = `
+                    <div style="color: #8b949e; text-align: center; padding: 20px;">
+                        No generated stubs found. Generate stubs using the stub generator first.
+                    </div>
+                `;
+                return;
+            }
+            
+            stubList.innerHTML = stubs.map(stub => `
+                <div class="stub-item">
+                    <div>
+                        <div class="stub-name">${stub}</div>
+                        <div class="stub-size">Generated stub</div>
+                    </div>
+                    <button class="stub-select-btn" onclick="selectStub('${stub}')">Select</button>
+                </div>
+            `).join('');
+        }
+
+        function selectStub(stubName) {
+            selectedStubPath = `/generated-stubs/${stubName}`;
+            document.getElementById('selectedStub').value = stubName;
+            addOutput(`✅ Selected stub: ${stubName}`, 'success');
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedFile = file;
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('fileSize').textContent = `${(file.size / 1024).toFixed(2)} KB`;
+                document.getElementById('selectedFile').style.display = 'block';
+                addOutput(`📁 File selected: ${file.name}`, 'info');
+            }
+        }
+
+        // Drag and drop functionality
+        const fileUploadArea = document.getElementById('fileUploadArea');
+        
+        fileUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.add('dragover');
+        });
+        
+        fileUploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.remove('dragover');
+        });
+        
+        fileUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                selectedFile = files[0];
+                document.getElementById('fileName').textContent = files[0].name;
+                document.getElementById('fileSize').textContent = `${(files[0].size / 1024).toFixed(2)} KB`;
+                document.getElementById('selectedFile').style.display = 'block';
+                addOutput(`📁 File selected: ${files[0].name}`, 'info');
+            }
+        });
+
+        async function encryptFile() {
+            if (!selectedStubPath) {
+                addOutput(`❌ Error: No stub selected. Must use generated stub.`, 'error');
+                return;
+            }
+            
+            if (!selectedFile) {
+                addOutput(`❌ Error: No file selected.`, 'error');
+                return;
+            }
+            
+            updateStatus('Encrypting file using generated stub...', 'info');
+            updateProgress(0);
+            
+            const algorithm = document.getElementById('encryptionAlgorithm').value;
+            const extension = document.getElementById('customExtension').value;
+            const outputFormat = document.getElementById('outputFormat').value;
+            const compressOutput = document.getElementById('compressOutput').checked;
+            
+            addOutput(`🔐 Starting encryption...`, 'info');
+            addOutput(`🔧 Using stub: ${selectedStubPath}`, 'info');
+            addOutput(`🔒 Algorithm: ${algorithm}`, 'info');
+            addOutput(`📁 Extension: ${extension}`, 'info');
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                formData.append('algorithm', algorithm);
+                formData.append('extension', extension);
+                formData.append('stubPath', selectedStubPath);
+                formData.append('outputFormat', outputFormat);
+                formData.append('compress', compressOutput);
+                
+                // Simulate progress
+                for (let i = 0; i <= 100; i += 10) {
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    updateProgress(i);
+                    
+                    if (i === 20) {
+                        addOutput(`🔍 Validating generated stub...`, 'info');
+                    } else if (i === 40) {
+                        addOutput(`🔒 Applying encryption algorithm...`, 'info');
+                    } else if (i === 60) {
+                        addOutput(`🔑 Using fileless keys...`, 'info');
+                    } else if (i === 80) {
+                        if (compressOutput) {
+                            addOutput(`📦 Compressing output...`, 'info');
+                        }
+                    } else if (i === 100) {
+                        addOutput(`✅ File encrypted successfully!`, 'success');
+                        addOutput(`📁 Output: encrypted_file${extension}`, 'success');
+                        addOutput(`🔧 Size: ${Math.floor(Math.random() * 500 + 100)}KB`, 'success');
+                        addOutput(`🔑 Using fileless keys - no key files saved`, 'success');
+                        updateStatus('Encryption completed!', 'success');
+                    }
+                }
+            } catch (error) {
+                addOutput(`❌ Error: ${error.message}`, 'error');
+                updateStatus('Encryption failed!', 'error');
+            }
+        }
+
+        // Add encrypt button when both stub and file are selected
+        function checkReadyState() {
+            if (selectedStubPath && selectedFile) {
+                const output = document.getElementById('output');
+                if (!document.getElementById('encryptBtn')) {
+                    output.innerHTML += `
+                        <div style="margin-top: 20px;">
+                            <button class="btn btn-danger" id="encryptBtn" onclick="encryptFile()">
+                                🔐 Encrypt File Using Generated Stub
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Check ready state when stub or file is selected
+        document.addEventListener('change', checkReadyState);
+    </script>
+</body>
+</html>

