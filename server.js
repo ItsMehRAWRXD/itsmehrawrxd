@@ -2,7 +2,7 @@ const express=require('express');const cors=require('cors');const helmet=require
 const RawrZStandalone=require('./rawrz-standalone');const rawrzEngine=require('./src/engines/rawrz-engine');const RawrZEncryptorOnly=require('./rawrz-encryptor-only');
 const app=express();const port=parseInt(process.env.PORT||'8080',10);const authToken=process.env.AUTH_TOKEN||'';const rawrz=new RawrZStandalone();const encryptorOnly=new RawrZEncryptorOnly();
 function requireAuth(req,res,next){if(!authToken)return next();const h=(req.headers['authorization']||'');const q=req.query.token;if(h.startsWith('Bearer ')){const p=h.slice(7).trim();if(p===authToken)return next()}if(q&&q===authToken)return next();return res.status(401).json({error:'Unauthorized'})}
-const upload=multer({dest:'uploads/'});app.use(helmet());app.use(cors());app.use(express.json({limit:'5mb'}));app.use('/static',express.static(path.join(__dirname,'public')));
+const upload=multer({dest:'uploads/'});app.use(helmet({contentSecurityPolicy:{directives:{defaultSrc:["'self'"],scriptSrc:["'self'","'unsafe-inline'","'unsafe-eval'"],styleSrc:["'self'","'unsafe-inline'","https:"],imgSrc:["'self'","data:","https:"],connectSrc:["'self'"],fontSrc:["'self'","https:","data:"],objectSrc:["'none'"],mediaSrc:["'self'"],frameSrc:["'none'"]}}}));app.use(cors());app.use(express.json({limit:'5mb'}));app.use('/static',express.static(path.join(__dirname,'public')));
 (async()=>{try{await rawrzEngine.initializeModules();console.log('[OK] RawrZ core engine initialized')}catch(e){console.error('[WARN] Core engine init failed:',e.message)}})();
 app.get('/health',(_req,res)=>res.json({ok:true,status:'healthy'}));
 // Main panel routes - clean URLs without .html extension
