@@ -1,24 +1,30 @@
-name: rawrz-security-platform
+name: rawrz-platform
 services:
-- name: api
+- name: rawrz-app
   source_dir: /
   github:
     repo: ItsMehRAWRXD/itsmehrawrxd
-    branch: master
-  run_command: node api-server.js
+    branch: cursor/refactor-paneling-for-endpoint-generation-and-customization-5167
+  run_command: npm start
   environment_slug: node-js
   instance_count: 1
   instance_size_slug: basic-xxs
-  http_port: 3000
-  routes:
-  - path: /
+  http_port: 8080
   envs:
   - key: NODE_ENV
     value: production
   - key: PORT
-    value: "3000"
-  - key: JOTTI_API_URL
-    value: "https://virusscan.jotti.org"
+    value: "8080"
+  - key: MAX_FILE_SIZE
+    value: "500MB"
+  - key: LOG_LEVEL
+    value: "warn"
+  - key: NODE_OPTIONS
+    value: "--max-old-space-size=768"
+  - key: AUTH_TOKEN
+    value: "dop_v1_31e52e2e6e6cd0b837e35d79d5c1b68304962e66ed1549352f1dae152c488994"
+  routes:
+  - path: /
   health_check:
     http_path: /health
     initial_delay_seconds: 10
@@ -26,3 +32,16 @@ services:
     timeout_seconds: 5
     success_threshold: 1
     failure_threshold: 3
+  build_command: |
+    npm install
+    npm audit fix --force || true
+  static_sites:
+  - name: rawrz-static
+    source_dir: /public
+    github:
+      repo: ItsMehRAWRXD/itsmehrawrxd
+      branch: cursor/refactor-paneling-for-endpoint-generation-and-customization-5167
+    routes:
+    - path: /static
+    build_command: echo "Static files ready"
+    output_dir: /public
