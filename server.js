@@ -5,6 +5,7 @@ function requireAuth(req,res,next){if(!authToken)return next();const h=(req.head
 const upload=multer({dest:'uploads/'});app.use(helmet());app.use(cors());app.use(express.json({limit:'5mb'}));app.use('/static',express.static(path.join(__dirname,'public')));
 (async()=>{try{await rawrzEngine.initializeModules();console.log('[OK] RawrZ core engine initialized')}catch(e){console.error('[WARN] Core engine init failed:',e.message)}})();
 app.get('/health',(_req,res)=>res.json({ok:true,status:'healthy'}));
+// Main panel routes - clean URLs without .html extension
 app.get('/panel',(_req,res)=>res.sendFile(path.join(__dirname,'public','panel.html')));
 app.get('/compact',(_req,res)=>res.sendFile(path.join(__dirname,'public','compact-panel.html')));
 app.get('/ultra',(_req,res)=>res.sendFile(path.join(__dirname,'public','ultra-compact.html')));
@@ -14,7 +15,24 @@ app.get('/terminal',(_req,res)=>res.sendFile(path.join(__dirname,'public','rawrz
 app.get('/stub-generator',(_req,res)=>res.sendFile(path.join(__dirname,'public','stub-generator.html')));
 app.get('/encryption-with-stubs',(_req,res)=>res.sendFile(path.join(__dirname,'public','encryption-with-stub-selection.html')));
 app.get('/encryptor-only',(_req,res)=>res.sendFile(path.join(__dirname,'public','encryptor-only.html')));
-app.get('/',(_req,res)=>res.redirect('/encrypt'));
+
+// Additional panel routes for comprehensive access
+app.get('/dashboard',(_req,res)=>res.sendFile(path.join(__dirname,'public','panel.html')));
+app.get('/main',(_req,res)=>res.sendFile(path.join(__dirname,'public','panel.html')));
+app.get('/home',(_req,res)=>res.sendFile(path.join(__dirname,'public','panel.html')));
+
+// Advanced panels
+app.get('/advanced-encryption',(_req,res)=>res.sendFile(path.join(__dirname,'public','advanced-encryption.html')));
+app.get('/payload-generator',(_req,res)=>res.sendFile(path.join(__dirname,'public','executable-generator.html')));
+app.get('/stub-gen',(_req,res)=>res.sendFile(path.join(__dirname,'public','stub-generator.html')));
+app.get('/encryptor',(_req,res)=>res.sendFile(path.join(__dirname,'public','encryptor-only.html')));
+app.get('/cli',(_req,res)=>res.sendFile(path.join(__dirname,'public','rawrz-terminal.html')));
+
+// Unified panel system - single entry point with tabs
+app.get('/unified',(_req,res)=>res.sendFile(path.join(__dirname,'public','unified-panel.html')));
+
+// Root redirect to main panel
+app.get('/',(_req,res)=>res.redirect('/panel'));
 // Text encryption/decryption removed - file operations only
 app.get('/dns',requireAuth,async(req,res)=>{try{const h=req.query.hostname;if(!h)return res.status(400).json({error:'hostname required'});res.json(await rawrz.dnsLookup(String(h)))}catch(e){res.status(500).json({error:e.message})}});
 app.get('/ping',requireAuth,async(req,res)=>{try{const h=req.query.host;if(!h)return res.status(400).json({error:'host required'});res.json(await rawrz.ping(String(h),false))}catch(e){res.status(500).json({error:e.message})}});
