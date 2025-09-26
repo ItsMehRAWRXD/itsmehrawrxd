@@ -1,23 +1,46 @@
-# Ensure consistent line endings across platforms
-* text=auto
+# RawrZ Security Platform - Git Attributes
+# Ensures consistent line endings and file handling
+
+# Core files - always use LF
 *.js text eol=lf
 *.json text eol=lf
 *.md text eol=lf
+*.html text eol=lf
+*.css text eol=lf
 *.sh text eol=lf
+
+# PowerShell files - always use CRLF
 *.ps1 text eol=crlf
-*.bat text eol=crlf
-*.cmd text eol=crlf
 
 # Binary files
-*.png binary
-*.jpg binary
-*.jpeg binary
-*.gif binary
-*.ico binary
-*.pdf binary
-*.zip binary
-*.tar.gz binary
 *.exe binary
 *.dll binary
-*.so binary
-*.dylib binary
+*.sys binary
+*.zip binary
+*.tar.gz binary
+
+# Assembly files
+*.asm text eol=lf
+*.inc text eol=lf
+
+# C/C++ files
+*.c text eol=lf
+*.cpp text eol=lf
+*.h text eol=lf
+
+# Lock files
+package-lock.json text eol=lf
+yarn.lock text eol=lf
+
+# Ensure these files are never removed
+!api-server-real.js
+!Dockerfile
+!package.json
+!src/
+!public/
+!*.ps1
+!*.asm
+!*.c
+!*.h
+!*.sh
+!*.md

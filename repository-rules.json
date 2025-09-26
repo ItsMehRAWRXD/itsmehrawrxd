@@ -1,0 +1,34 @@
+{
+  "rules": [
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "required_status_checks": [
+          {
+            "context": "ci/tests",
+            "integration_id": null
+          },
+          {
+            "context": "security/scan",
+            "integration_id": null
+          }
+        ],
+        "strict_required_status_checks_policy": true
+      }
+    },
+    {
+      "type": "non_fast_forward",
+      "parameters": {}
+    },
+    {
+      "type": "required_linear_history",
+      "parameters": {}
+    },
+    {
+      "type": "required_deployments",
+      "parameters": {
+        "required_deployment_environments": ["production"]
+      }
+    }
+  ]
+}

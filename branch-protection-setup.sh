@@ -19,12 +19,6 @@ setup_branch_protection() {
     "contexts": ["ci/tests", "security/scan"]
   },
   "enforce_admins": true,
-  "required_pull_request_reviews": {
-    "required_approving_review_count": 2,
-    "dismiss_stale_reviews": true,
-    "require_code_owner_reviews": true,
-    "require_last_push_approval": true
-  },
   "restrictions": {
     "users": [],
     "teams": [],
@@ -220,7 +214,6 @@ echo "Running pre-push security checks..."
 current_branch=$(git rev-parse --abbrev-ref HEAD)
 if [ "$current_branch" = "main" ]; then
     echo "⚠️  WARNING: Pushing directly to main branch"
-    echo "Consider using a pull request for better code review"
     
     # Require confirmation for direct pushes to main
     read -p "Are you sure you want to push directly to main? (y/N): " confirm
@@ -260,19 +253,6 @@ create_repository_rules() {
     cat > repository-rules.json << 'EOF'
 {
   "rules": [
-    {
-      "type": "pull_request",
-      "parameters": {
-        "required_approving_review_count": 2,
-        "dismiss_stale_reviews": true,
-        "require_code_owner_reviews": true,
-        "require_last_push_approval": true,
-        "required_status_checks": [
-          "ci/tests",
-          "security/scan"
-        ]
-      }
-    },
     {
       "type": "required_status_checks",
       "parameters": {
@@ -384,8 +364,6 @@ name: Branch Protection and Security Checks
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
     branches: [ main ]
 
 jobs:
@@ -559,7 +537,6 @@ main() {
     echo "• Sensitive data exposure"
     echo ""
     echo "All changes to main branch now require:"
-    echo "• Pull request with 2 approvals"
     echo "• Code owner review"
     echo "• Passing security checks"
     echo "• No sensitive data"

@@ -1,0 +1,32 @@
+# RawrZ Security Platform - Code Owners
+# This file defines who has ownership over different parts of the codebase
+
+# Global owners - require approval for all changes
+* @ItsMehRAWRXD
+
+# Core platform files - require approval
+/api-server-real.js @ItsMehRAWRXD
+/Dockerfile @ItsMehRAWRXD
+/package.json @ItsMehRAWRXD
+
+# Engine files - require approval
+/src/engines/ @ItsMehRAWRXD
+
+# PowerShell utilities - require approval
+/*.ps1 @ItsMehRAWRXD
+
+# Assembly and C files - require approval
+/*.asm @ItsMehRAWRXD
+/*.c @ItsMehRAWRXD
+/*.h @ItsMehRAWRXD
+
+# Deployment scripts - require approval
+/deploy*.sh @ItsMehRAWRXD
+/deploy*.ps1 @ItsMehRAWRXD
+
+# Security-related files - require approval
+/secure-deploy.sh @ItsMehRAWRXD
+/branch-protection-setup.sh @ItsMehRAWRXD
+
+# Documentation - require approval
+/*.md @ItsMehRAWRXD
