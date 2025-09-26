@@ -2,3 +2,9 @@ node_modules/
 uploads/
 logs/
 .env
+
+# PowerShell artifacts and output redirection files
+$null
+*$null*
+$error
+*$error*
