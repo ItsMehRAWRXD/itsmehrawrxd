@@ -249,6 +249,6 @@ This platform is ready for showcasing on:
 
 ---
 
-**Built with ❤️ for the security research community**
+**Built to piss off everyone, fuck you antis, with ❤️ for the security research community**
 
 *Use responsibly. Test ethically. Learn continuously.*
