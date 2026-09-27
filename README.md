@@ -1,5 +1,7 @@
 # RawrZ Security Platform
 
+Welcome to Art-Con: The Act of Rawr
+
 ## ⚠️ **DISCLAIMER - USE AT YOUR OWN RISK** ⚠️
 
 **This software is for educational and authorized security testing purposes only. The authors are not responsible for any misuse or damage caused by this software. Use responsibly and in compliance with applicable laws.**
